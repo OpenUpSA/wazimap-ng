@@ -8,12 +8,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Common(Configuration):
 
-    INSTALLED_APPS = (
+    INSTALLED_APPS = [
         "django.contrib.admin",
         "django.contrib.auth",
         "django.contrib.contenttypes",
         "django.contrib.sessions",
         "django.contrib.messages",
+        'whitenoise.runserver_nostatic',
         "django.contrib.staticfiles",
 
 
@@ -25,18 +26,19 @@ class Common(Configuration):
         # Your apps
         "wazimap_ng.users",
 
-    )
+    ]
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
-    MIDDLEWARE = (
+    MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
+        'whitenoise.middleware.WhiteNoiseMiddleware',
         "django.contrib.sessions.middleware.SessionMiddleware",
         "django.middleware.common.CommonMiddleware",
         "django.middleware.csrf.CsrfViewMiddleware",
         "django.contrib.auth.middleware.AuthenticationMiddleware",
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    )
+    ]
 
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = "wazimap_ng.urls"
@@ -78,6 +80,7 @@ class Common(Configuration):
         "django.contrib.staticfiles.finders.FileSystemFinder",
         "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     )
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
     # Media files
     MEDIA_ROOT = join(os.path.dirname(BASE_DIR), "media")

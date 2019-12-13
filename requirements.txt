@@ -36,5 +36,4 @@ django-storages==1.7.1
 boto3==1.9.93
 
 # Serving static content
-whitenoise
-
+whitenoise==5.0.1
