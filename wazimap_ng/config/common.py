@@ -25,6 +25,7 @@ class Common(Configuration):
 
         # Your apps
         "wazimap_ng.users",
+        "wazimap_ng.datasets",
 
     ]
 
@@ -193,12 +194,6 @@ class Common(Configuration):
         "DEFAULT_RENDERER_CLASSES": (
             "rest_framework.renderers.JSONRenderer",
             "rest_framework.renderers.BrowsableAPIRenderer",
+            "rest_framework_csv.renderers.PaginatedCSVRenderer",
         ),
-        "DEFAULT_PERMISSION_CLASSES": [
-            "rest_framework.permissions.IsAuthenticated",
-        ],
-        "DEFAULT_AUTHENTICATION_CLASSES": (
-            "rest_framework.authentication.SessionAuthentication",
-            "rest_framework.authentication.TokenAuthentication",
-        )
     }
