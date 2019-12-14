@@ -9,7 +9,7 @@ RUN pip install -r requirements.txt
 COPY . code
 WORKDIR code
 
-EXPOSE 8000
+EXPOSE 5000
 
 # Migrates the database, uploads staticfiles, and runs the production server
-CMD ./manage.py migrate && ./manage.py collectstatic --noinput && newrelic-admin run-program gunicorn --bind 0.0.0.0:8000 --access-logfile - wazimap_ng.wsgi:application
+CMD ./manage.py migrate && ./manage.py collectstatic --noinput && newrelic-admin run-program gunicorn --bind 0.0.0.0:5000 --access-logfile - wazimap_ng.wsgi:application
