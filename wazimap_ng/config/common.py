@@ -26,6 +26,7 @@ class Common(Configuration):
         # Your apps
         "wazimap_ng.users",
         "wazimap_ng.datasets",
+        "wazimap_ng.ui",
 
     ]
 
