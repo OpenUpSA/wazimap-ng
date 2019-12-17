@@ -357,5 +357,5 @@ def get_indicator(indicator_id):
 
 @api_view()
 def profile_geography_data(request, profile_id, geography_id):
-    profile = Profile.objects.get(id=geography_id)
+    profile = Profile.objects.get(id=profile_id)
     return Response(profile.data)
