@@ -6,6 +6,8 @@ from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.settings import api_settings
 from rest_framework_csv import renderers as r
+import copy
+from .models import Profile
 
 profiles_list = [
     {
@@ -16,14 +18,9 @@ profiles_list = [
     },
 ]
 
-profile_indicator_ids = {
-    1: [1, 3],
-    2: [1, 2, 4]
-}
-
 datasets_list = [
     {
-        "id": 1, "name": "Census 2011",
+        "id": 1, "name": "2016 Community Survey",
     },
     {
         "id": 2, "name": "2016 Community Survey"
@@ -32,14 +29,58 @@ datasets_list = [
 
 indicators_list = {
     1: [
-        {"id": 1, "name": "Population"},
-        {"id": 2, "name": "Gender"},
-        {"id": 3, "name": "Race"},
+        {"id": 1, "name": "People"},
+        {"id": 2, "name": "Youth aged 15-24"},
+        {"id": 3, "name": "Total population by age group", "classes": [
+            "0-14", "15-24", "25-34", "35-44", "45-54", "55-64", "65+"
+        ]},
+        {"id": 4, "name": "Youth population by race"},
+        {"id": 5, "name": "Youth population by gender"},
+        {"id": 6, "name": "Language most spoken at home"},
+        {"id": 7, "name": "Born in South Africa"},
+        {"id": 8, "name": "Youth by region of birth"},
+        {"id": 9, "name": "Youth by province of birth"},
+        {"id": 10, "name": "Youth citizens"},
+        {"id": 11, "name": "Progress through school"},
+        {"id": 12, "name": "Youth aged 16-17 by grade 9 completion"},
+        {"id": 13, "name": "Youth aged 16-17 who completed grade 9 by gender"},
+
     ],
     2: [
-        {"id": 4, "name": "Income"},
-        {"id": 5, "name": "Crime"},
+        {"id": 14, "name": "Income"},
+        {"id": 15, "name": "Crime"},
     ]
+}
+
+profile_indicator_ids = {
+    1: [
+            {
+                "category": "Youth Demographics", "sub-categories": [
+                    {"name": "Population", "indicators": [indicators_list[1][i] for i in range(0, 5)]},
+                    {"name": "Language", "indicators": [indicators_list[1][i] for i in [5]]},
+                    {"name": "Migration", "indicators": [indicators_list[1][i] for i in [6, 7, 8]]},
+                    {"name": "Citizenship", "indicators": [indicators_list[1][i] for i in [9]]},
+                ]
+            },
+            {
+                "category": "Youth Education", "sub-categories": [
+                    {"name": "Progress through school", "indicators": [indicators_list[1][i] for i in [10, 11, 12]]},
+                ]
+            },
+    ],
+    2: [
+            {
+                "category": "Demographics", "sub-categories": [
+                    {"name": "Age", "indicators": [1]},
+                    {"name": "Population", "indicators": [2]},
+                ]
+            },
+            {
+                "category": "Income", "sub-categories": [
+                    {"name": "Household", "indicators": [4]},
+                ]
+            },
+    ],
 }
 
 indicator_data = {
@@ -118,6 +159,127 @@ indicator_data = {
         {"geography_id": 11, "geography": "eThewini", "value": 50},
         {"geography_id": 12, "geography": "eThewini", "value": 50},
     ],
+    6: [
+        {"geography_id": 1, "geography": "Cape Town", "value": 50},
+        {"geography_id": 2, "geography": "Johannesburg", "value": 51},
+        {"geography_id": 3, "geography": "eThewini", "value": 52},
+        {"geography_id": 3, "geography": "eThewini", "value": 53},
+        {"geography_id": 4, "geography": "eThewini", "value": 54},
+        {"geography_id": 5, "geography": "eThewini", "value": 55},
+        {"geography_id": 6, "geography": "eThewini", "value": 56},
+        {"geography_id": 7, "geography": "eThewini", "value": 57},
+        {"geography_id": 8, "geography": "eThewini", "value": 59},
+        {"geography_id": 9, "geography": "eThewini", "value": 50},
+        {"geography_id": 10, "geography": "eThewini", "value": 50},
+        {"geography_id": 11, "geography": "eThewini", "value": 50},
+        {"geography_id": 12, "geography": "eThewini", "value": 50},
+    ],
+    7: [
+        {"geography_id": 1, "geography": "Cape Town", "value": 50},
+        {"geography_id": 2, "geography": "Johannesburg", "value": 51},
+        {"geography_id": 3, "geography": "eThewini", "value": 52},
+        {"geography_id": 3, "geography": "eThewini", "value": 53},
+        {"geography_id": 4, "geography": "eThewini", "value": 54},
+        {"geography_id": 5, "geography": "eThewini", "value": 55},
+        {"geography_id": 6, "geography": "eThewini", "value": 56},
+        {"geography_id": 7, "geography": "eThewini", "value": 57},
+        {"geography_id": 8, "geography": "eThewini", "value": 59},
+        {"geography_id": 9, "geography": "eThewini", "value": 50},
+        {"geography_id": 10, "geography": "eThewini", "value": 50},
+        {"geography_id": 11, "geography": "eThewini", "value": 50},
+        {"geography_id": 12, "geography": "eThewini", "value": 50},
+    ],
+    8: [
+        {"geography_id": 1, "geography": "Cape Town", "value": 50},
+        {"geography_id": 2, "geography": "Johannesburg", "value": 51},
+        {"geography_id": 3, "geography": "eThewini", "value": 52},
+        {"geography_id": 3, "geography": "eThewini", "value": 53},
+        {"geography_id": 4, "geography": "eThewini", "value": 54},
+        {"geography_id": 5, "geography": "eThewini", "value": 55},
+        {"geography_id": 6, "geography": "eThewini", "value": 56},
+        {"geography_id": 7, "geography": "eThewini", "value": 57},
+        {"geography_id": 8, "geography": "eThewini", "value": 59},
+        {"geography_id": 9, "geography": "eThewini", "value": 50},
+        {"geography_id": 10, "geography": "eThewini", "value": 50},
+        {"geography_id": 11, "geography": "eThewini", "value": 50},
+        {"geography_id": 12, "geography": "eThewini", "value": 50},
+    ],
+    9: [
+        {"geography_id": 1, "geography": "Cape Town", "value": 50},
+        {"geography_id": 2, "geography": "Johannesburg", "value": 51},
+        {"geography_id": 3, "geography": "eThewini", "value": 52},
+        {"geography_id": 3, "geography": "eThewini", "value": 53},
+        {"geography_id": 4, "geography": "eThewini", "value": 54},
+        {"geography_id": 5, "geography": "eThewini", "value": 55},
+        {"geography_id": 6, "geography": "eThewini", "value": 56},
+        {"geography_id": 7, "geography": "eThewini", "value": 57},
+        {"geography_id": 8, "geography": "eThewini", "value": 59},
+        {"geography_id": 9, "geography": "eThewini", "value": 50},
+        {"geography_id": 10, "geography": "eThewini", "value": 50},
+        {"geography_id": 11, "geography": "eThewini", "value": 50},
+        {"geography_id": 12, "geography": "eThewini", "value": 50},
+    ],
+    10: [
+        {"geography_id": 1, "geography": "Cape Town", "value": 50},
+        {"geography_id": 2, "geography": "Johannesburg", "value": 51},
+        {"geography_id": 3, "geography": "eThewini", "value": 52},
+        {"geography_id": 3, "geography": "eThewini", "value": 53},
+        {"geography_id": 4, "geography": "eThewini", "value": 54},
+        {"geography_id": 5, "geography": "eThewini", "value": 55},
+        {"geography_id": 6, "geography": "eThewini", "value": 56},
+        {"geography_id": 7, "geography": "eThewini", "value": 57},
+        {"geography_id": 8, "geography": "eThewini", "value": 59},
+        {"geography_id": 9, "geography": "eThewini", "value": 50},
+        {"geography_id": 10, "geography": "eThewini", "value": 50},
+        {"geography_id": 11, "geography": "eThewini", "value": 50},
+        {"geography_id": 12, "geography": "eThewini", "value": 50},
+    ],
+    11: [
+        {"geography_id": 1, "geography": "Cape Town", "value": 50},
+        {"geography_id": 2, "geography": "Johannesburg", "value": 51},
+        {"geography_id": 3, "geography": "eThewini", "value": 52},
+        {"geography_id": 3, "geography": "eThewini", "value": 53},
+        {"geography_id": 4, "geography": "eThewini", "value": 54},
+        {"geography_id": 5, "geography": "eThewini", "value": 55},
+        {"geography_id": 6, "geography": "eThewini", "value": 56},
+        {"geography_id": 7, "geography": "eThewini", "value": 57},
+        {"geography_id": 8, "geography": "eThewini", "value": 59},
+        {"geography_id": 9, "geography": "eThewini", "value": 50},
+        {"geography_id": 10, "geography": "eThewini", "value": 50},
+        {"geography_id": 11, "geography": "eThewini", "value": 50},
+        {"geography_id": 12, "geography": "eThewini", "value": 50},
+    ],
+    12: [
+        {"geography_id": 1, "geography": "Cape Town", "value": 50},
+        {"geography_id": 2, "geography": "Johannesburg", "value": 51},
+        {"geography_id": 3, "geography": "eThewini", "value": 52},
+        {"geography_id": 3, "geography": "eThewini", "value": 53},
+        {"geography_id": 4, "geography": "eThewini", "value": 54},
+        {"geography_id": 5, "geography": "eThewini", "value": 55},
+        {"geography_id": 6, "geography": "eThewini", "value": 56},
+        {"geography_id": 7, "geography": "eThewini", "value": 57},
+        {"geography_id": 8, "geography": "eThewini", "value": 59},
+        {"geography_id": 9, "geography": "eThewini", "value": 50},
+        {"geography_id": 10, "geography": "eThewini", "value": 50},
+        {"geography_id": 11, "geography": "eThewini", "value": 50},
+        {"geography_id": 12, "geography": "eThewini", "value": 50},
+    ],
+    13: [
+        {"geography_id": 1, "geography": "Cape Town", "value": 50},
+        {"geography_id": 2, "geography": "Johannesburg", "value": 51},
+        {"geography_id": 3, "geography": "eThewini", "value": 52},
+        {"geography_id": 3, "geography": "eThewini", "value": 53},
+        {"geography_id": 4, "geography": "eThewini", "value": 54},
+        {"geography_id": 5, "geography": "eThewini", "value": 55},
+        {"geography_id": 6, "geography": "eThewini", "value": 56},
+        {"geography_id": 7, "geography": "eThewini", "value": 57},
+        {"geography_id": 8, "geography": "eThewini", "value": 59},
+        {"geography_id": 9, "geography": "eThewini", "value": 50},
+        {"geography_id": 10, "geography": "eThewini", "value": 50},
+        {"geography_id": 11, "geography": "eThewini", "value": 50},
+        {"geography_id": 12, "geography": "eThewini", "value": 50},
+    ],
+
 }
 
 @api_view()
@@ -166,6 +328,8 @@ def profiles(request):
 
 @api_view()
 def profile_indicators(request, profile_id):
+    return Response(profile_indicator_ids[profile_id])
+        
     indicator_ids = profile_indicator_ids[profile_id]
     indicators = []
     for dataset in indicators_list.values():
@@ -175,14 +339,23 @@ def profile_indicators(request, profile_id):
 
     return Response(indicators)
 
+
+def extract_indicators(profile):
+    all_indicators = []
+    for category in profile:
+        for subcategory in category["sub-categories"]:
+            for indicator in subcategory["indicators"]:
+                all_indicators.append(indicator["id"])
+
+    return all_indicators
+
+def get_indicator(indicator_id):
+    for dataset_id, indicators in indicators_list.items():
+        for indicator in indicators:
+            if indicator["id"] == indicator_id:
+                return indicator
+
 @api_view()
 def profile_geography_data(request, profile_id, geography_id):
-    all_data = {}
-    indicator_ids = profile_indicator_ids[profile_id]
-    for indicator_id in indicator_ids:
-        data = indicator_data[indicator_id]
-        for geo in data:
-            if geo["geography_id"] == geography_id:
-                all_data[indicator_id] = geo
-
-    return Response(all_data)
+    profile = Profile.objects.get(id=geography_id)
+    return Response(profile.data)
