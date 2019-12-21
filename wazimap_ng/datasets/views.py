@@ -7,7 +7,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.settings import api_settings
 from rest_framework_csv import renderers as r
 import copy
-from .models import Profile
+from .models import ProfileData, Profile
 
 profiles_list = [
     {
@@ -356,6 +356,18 @@ def get_indicator(indicator_id):
                 return indicator
 
 @api_view()
-def profile_geography_data(request, profile_id, geography_id):
-    profile = Profile.objects.get(id=profile_id)
-    return Response(profile.data)
+def profile_geography_data(request, profile_id, geography_code):
+    profile = Profile.objects.get(pk=profile_id)
+    profile_data = ProfileData.objects.filter(profile_id=profile_id, geography__code=geography_code)[0]
+    data = profile_data.data
+
+    js = {}
+
+    for pi in profile.profileindicator_set.order_by("subcategory__category__name", "subcategory__name"):
+        indicator = pi.indicator
+        category_js = js.setdefault(pi.subcategory.category.name, {})
+        subcat_js = category_js.setdefault(pi.subcategory.name, {})
+        subcat_js[indicator.label] = data.get(indicator.name, {})
+       
+
+    return Response(js)

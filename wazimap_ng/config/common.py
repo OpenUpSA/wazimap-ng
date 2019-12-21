@@ -23,6 +23,8 @@ class Common(Configuration):
         "rest_framework.authtoken",  # token authentication
         "django_filters",            # for filtering rest endpoints
         "corsheaders",               # enabled cross domain CORS requests
+        "treebeard",                 # efficient tree representation
+        "django_select2",             # select2 widgets
 
         # Your apps
         "wazimap_ng.users",
