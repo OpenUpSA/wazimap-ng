@@ -105,6 +105,9 @@ class ProfileDataManager(models.Manager):
             # Not supporting multiple variables to disaggregate on temporarily
             #value = {g: count["data__" + g] for g in indicator.groups}
             value = {"key": count["data__" + g] for g in indicator.groups}
+            if len(value) == 0:
+                value = {"key": "Total"}
+
             value["count"] = count["count"]
             indicator_value.append(value)
 
