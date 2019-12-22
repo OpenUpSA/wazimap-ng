@@ -5,7 +5,6 @@ import csv
 from django.db import models
 from django.db import transaction
 from django.contrib.postgres.fields import JSONField, ArrayField
-
 from .geography import Geography
 
 class Dataset(models.Model):
