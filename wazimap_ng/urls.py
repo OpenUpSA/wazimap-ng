@@ -26,6 +26,5 @@ urlpatterns = [
     path("api/v1/profiles/", dataset_views.profiles),
     path("api/v1/profiles/<int:profile_id>/", dataset_views.profile_indicators),
     path("api/v1/profiles/<int:profile_id>/geographies/<str:geography_code>/", dataset_views.profile_geography_data),
-    path(r'select2/', include('django_select2.urls')),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
