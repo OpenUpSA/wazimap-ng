@@ -242,10 +242,9 @@ class IndicatorDataView(generics.ListAPIView):
     def get(self, request, indicator_id):
         indicator = models.Indicator.objects.get(id=indicator_id)
 
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().filter(dataset=indicator.dataset)
         page = self.paginate_queryset(queryset)
         if page is not None:
-            #serializer = self.get_serializer_class()(page, *indicator.groups, many=True)
             serializer = self.get_serializer_class()(page, group=indicator.groups, many=True)
             return self.get_paginated_response(serializer.data)
 
