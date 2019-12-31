@@ -8,12 +8,9 @@ from .users.views import UserViewSet, UserCreateViewSet
 from .datasets import views as dataset_views
 
 router = DefaultRouter()
-router.register(r"users", UserViewSet)
-router.register(r"users", UserCreateViewSet)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    #re_path(r"^$", RedirectView.as_view(url=reverse_lazy("ui"), permanent=False)),
     path("api/v1/", include(router.urls)),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view()),
     path("api/v1/datasets/<int:dataset_id>/indicators/", dataset_views.DatasetIndicatorsList.as_view()),
