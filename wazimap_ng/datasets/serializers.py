@@ -64,8 +64,19 @@ class IndicatorSerializer(serializers.ModelSerializer):
 		model = models.Indicator
 		fields = "__all__"
 
+
 class DataSerializer(serializers.Serializer):
+	def __init__(self, queryset, *args, **kwargs):
+		group = kwargs.setdefault("group", [])
+		del kwargs["group"]
+
+		super(DataSerializer, self).__init__(queryset, *args, **kwargs)
+		self.columns = group + ["Count"]
+
 	data = serializers.SerializerMethodField()
 
 	def get_data(self, obj):
-		return obj.data
+
+		output = {c: obj.data[c] for c in self.columns if c in obj.data}
+		output["geography"] = obj.geography.code
+		return output

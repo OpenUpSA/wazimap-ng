@@ -230,14 +230,54 @@ class IndicatorsList(generics.ListAPIView):
     serializer_class = serializers.IndicatorSerializer
 
 class LargeResultsSetPagination(PageNumberPagination):
-    page_size = 100
+    page_size = 20
     page_size_query_param = 'page_size'
-    max_page_size = 100000
+    max_page_size = 10000
 
 class IndicatorDataView(generics.ListAPIView):
     queryset = models.DatasetData.objects.all()
     serializer_class = serializers.DataSerializer
     pagination_class = LargeResultsSetPagination
+
+    def get(self, request, indicator_id):
+        indicator = models.Indicator.objects.get(id=indicator_id)
+
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            #serializer = self.get_serializer_class()(page, *indicator.groups, many=True)
+            serializer = self.get_serializer_class()(page, group=indicator.groups, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer_class()(queryset, *indicator.groups, many=True)
+        return Response(serializer.data)
+
+    @property
+    def paginator(self):
+        """
+        The paginator instance associated with the view, or `None`.
+        """
+        if not hasattr(self, '_paginator'):
+            if self.pagination_class is None:
+                self._paginator = None
+            else:
+                self._paginator = self.pagination_class()
+        return self._paginator
+
+    def paginate_queryset(self, queryset):
+        """
+        Return a single page of results, or `None` if pagination is disabled.
+        """
+        if self.paginator is None:
+            return None
+        return self.paginator.paginate_queryset(queryset, self.request, view=self)
+
+    def get_paginated_response(self, data):
+        """
+        Return a paginated style `Response` object for the given output data.
+        """
+        assert self.paginator is not None
+        return self.paginator.get_paginated_response(data)
 
 @api_view()
 def indicator_geography(request, indicator_id, geography_id):
