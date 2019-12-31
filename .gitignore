@@ -109,3 +109,4 @@ venv.bak/
 # vim
 \.*.sw[op]
 staticfiles
+.DS_Store
