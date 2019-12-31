@@ -1,14 +1,8 @@
-from django.shortcuts import render
-from django.http import Http404
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.settings import api_settings
 from rest_framework_csv import renderers as r
 from rest_framework import generics
-import copy
-from .models import ProfileData, Profile, Geography
 from .serializers import AncestorGeographySerializer
 from . import serializers
 from . import models
@@ -93,27 +87,18 @@ class IndicatorDataView(mixins.PaginatorMixin, generics.ListAPIView):
         return self._paginate_response(queryset, indicator)
 
 class ProfileList(generics.ListAPIView):
-    queryset = Profile.objects.all()
+    queryset = models.Profile.objects.all()
     serializer_class = serializers.ProfileSerializer
 
 class ProfileDetail(generics.RetrieveAPIView):
     queryset = models.Profile
     serializer_class = serializers.FullProfileSerializer
 
-def extract_indicators(profile):
-    all_indicators = []
-    for category in profile:
-        for subcategory in category["sub-categories"]:
-            for indicator in subcategory["indicators"]:
-                all_indicators.append(indicator["id"])
-
-    return all_indicators
-
 @api_view()
 def profile_geography_data(request, profile_id, geography_code):
-    profile = Profile.objects.get(pk=profile_id)
-    geography = Geography.objects.get(code=geography_code)
-    profile_data = ProfileData.objects.get(profile_id=profile_id, geography=geography)
+    profile = models.Profile.objects.get(pk=profile_id)
+    geography = models.Geography.objects.get(code=geography_code)
+    profile_data = models.ProfileData.objects.get(profile_id=profile_id, geography=geography)
     data = profile_data.data
 
     geo_js = AncestorGeographySerializer().to_representation(geography)
