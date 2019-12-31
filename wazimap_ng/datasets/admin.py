@@ -18,6 +18,11 @@ def customTitledFilter(title):
 
 class GeographyAdmin(TreeAdmin):
     form = movenodeform_factory(Geography)
+    list_display = (
+        "name", "code", "level"
+    )
+
+    list_filter = ("level",)
 
 def description(description, func):
     func.short_description = description
