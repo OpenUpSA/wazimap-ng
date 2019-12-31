@@ -40,7 +40,8 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         "profile", 
         description("Indicator", lambda x: x.indicator.name), 
         description("Category", lambda x: x.subcategory.category.name),
-        "subcategory"
+        "subcategory",
+        "key_metric",
     )
 
 admin.site.register(Geography, GeographyAdmin)
