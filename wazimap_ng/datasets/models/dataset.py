@@ -21,11 +21,12 @@ class DatasetData(models.Model):
 
     @classmethod
     @transaction.atomic()
-    def load_from_csv(cls, filename, name, encoding="utf8"):
+    def load_from_csv(cls, filename, dataset_name, encoding="utf8"):
         def ensure_integer_count(js):
             js["Count"] = int(js["Count"])
             return js
 
+        dataset, _ = Dataset.objects.get_or_create(name=dataset_name)
         batch_size = 10000
         geocodes = {obj.code: obj for obj in Geography.objects.all()}
         if filename.endswith(".gz"):
@@ -37,7 +38,7 @@ class DatasetData(models.Model):
         reader = csv.DictReader(fp)
         rows = (ensure_integer_count(row) for row in reader)
         objs = (
-            DatasetData(name=name, data=row, geography=geocodes[row["Geography"]])
+            DatasetData(dataset=dataset, data=row, geography=geocodes[row["Geography"]])
             for row in rows
             if row["Geography"] in geocodes
         )
