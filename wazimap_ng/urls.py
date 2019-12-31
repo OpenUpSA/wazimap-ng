@@ -21,7 +21,7 @@ urlpatterns = [
     path("api/v1/datasets/<int:dataset_id>/indicators/", dataset_views.DatasetIndicatorsList.as_view()),
     path("api/v1/indicators/", dataset_views.IndicatorsList.as_view()),
     path("api/v1/indicators/<int:indicator_id>/", dataset_views.IndicatorDataView.as_view()),
-    path("api/v1/indicators/<int:indicator_id>/geographies/<int:geography_id>/", dataset_views.indicator_geography),
+    path("api/v1/indicators/<int:indicator_id>/geographies/<str:geography_code>/", dataset_views.IndicatorDataView.as_view()),
     path("api/v1/profiles/", dataset_views.ProfileList.as_view()),
     path("api/v1/profiles/<int:pk>/", dataset_views.ProfileDetail.as_view()),
     path("api/v1/profiles/<int:profile_id>/geographies/<str:geography_code>/", dataset_views.profile_geography_data),

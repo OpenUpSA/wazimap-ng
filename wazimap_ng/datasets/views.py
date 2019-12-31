@@ -235,23 +235,61 @@ class LargeResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 10000
 
-class IndicatorDataView(generics.ListAPIView):
+
+def truthy(s):
+    return str(s).lower() == "true" or str(s) == 1
+
+class IndicatorDataView(mixins.PaginatorMixin, generics.ListAPIView):
     queryset = models.DatasetData.objects.all()
     serializer_class = serializers.DataSerializer
     pagination_class = LargeResultsSetPagination
 
-    def get(self, request, indicator_id):
-        indicator = models.Indicator.objects.get(id=indicator_id)
+    def _filter_by_value(self, qs, indicator, values):
+        def split_values(s):
+            if "," not in s:
+                return {}
 
-        queryset = self.get_queryset().filter(dataset=indicator.dataset)
-        page = self.paginate_queryset(queryset)
+            return {
+                pair.split(":", 1)[0]: pair.split(":", 1)[1]
+                for pair in s.split(",")
+            }
+
+        values_dict = split_values(values)
+        new_dict = {"data__" + k: v for k, v in values_dict.items() if k in indicator.groups}
+        qs = qs.filter(**new_dict)
+
+        return qs
+
+    def _filter_by_geography(self, qs, geography_code, use_parent):
+        if geography_code != None:
+            if use_parent:
+                geography = models.Geography.objects.filter(code=geography_code).first()
+                qs = qs.filter(geography__in=geography.get_children())
+            else:
+                qs = qs.filter(geography__code=geography_code)
+        return qs
+
+    def _paginate_response(self, qs, indicator):
+        page = self.paginate_queryset(qs)
         if page is not None:
             serializer = self.get_serializer_class()(page, group=indicator.groups, many=True)
             return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer_class()(queryset, *indicator.groups, many=True)
+        serializer = self.get_serializer_class()(qs, group=indicator.groups, many=True)
         return Response(serializer.data)
 
+    def get(self, request, indicator_id, geography_code=None):
+        # TODO - this view is not yet finished - currently doesn't aggregate values - not sure if it should
+        # May want to look at the add_indicator method of Profile
+        use_parent = truthy(request.GET.get("parent", False))
+        values = request.GET.get("values", "")
+
+        indicator = models.Indicator.objects.get(id=indicator_id)
+        queryset = self.get_queryset().filter(dataset=indicator.dataset)
+
+        queryset = self._filter_by_geography(queryset, geography_code, use_parent)
+        queryset = self._filter_by_value(queryset, indicator, values)
+        return self._paginate_response(queryset, indicator)
 
 @api_view()
 def indicator_geography(request, indicator_id, geography_id):
