@@ -24,6 +24,7 @@ class Common(Configuration):
         "django_filters",            # for filtering rest endpoints
         "corsheaders",               # enabled cross domain CORS requests
         "treebeard",                 # efficient tree representation
+        "django_json_widget",        # admin widget for JSONField
 
         # Your apps
         "wazimap_ng.users",
