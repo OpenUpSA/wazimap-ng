@@ -1,11 +1,8 @@
 from django.db import models
 
 from django.contrib.postgres.fields import JSONField
-from django.contrib.postgres.fields.jsonb import KeyTextTransform, KeyTransform
-from django.db.models.functions import Cast
-from django.db.models import Sum
 
-from .dataset import Indicator, DatasetData
+from .dataset import Indicator, DatasetData, Universe, DataExtractor
 from .geography import Geography
 
 class Profile(models.Model):
@@ -38,14 +35,18 @@ class IndicatorSubcategory(models.Model):
 
 class ProfileIndicator(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE)
+    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.")
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
-    key_metric = models.BooleanField(default=False)
+    key_metric = models.BooleanField(default=False, help_text="Used as a headline metric in the profile.")
+    universe = models.ForeignKey(Universe, null=True, blank=True, on_delete=models.CASCADE, help_text="The subset of the population considered for this indicator.")
+    name = models.CharField(max_length=60, null=False, blank=True, help_text="Name of the indicator in the database")
+    label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
 
     def __str__(self):
-        return f"{self.profile.name} -> {self.indicator.name}"
+        return f"{self.profile.name} -> {self.label}"
 
 class ProfileDataQuerySet(models.QuerySet):
+
     def load_profiles(self, profile):
         return {
             profile_datum.geography.pk: profile_datum
@@ -56,22 +57,25 @@ class ProfileDataQuerySet(models.QuerySet):
             )
         }
 
-    def add_all_indicators(self, profile):
-        for indicator in profile.indicators.all():
-            print(f"Loading {indicator.name}")
-            self.add_indicator(profile, indicator)
+    def clear_profiles(self, profile):
+        profiles = self.load_profiles(profile).values()
+        for profile in profiles:
+            profile.data = {}
 
-    def add_indicator(self, profile, indicator):
-        groups = ["data__" + i for i in indicator.groups] + ["geography"]
-        c = Cast(KeyTextTransform("Count", "data"), models.IntegerField())
-        counts = (
-            DatasetData.objects
-                .filter(dataset=indicator.dataset)
-                .filter(geography__in=self.values("geography"))
-                .values(*groups)
-                .annotate(count=Sum(c))
-                .order_by("geography")
-        )
+        self.bulk_update(profiles, ["data"], batch_size=1000)
+
+    def add_all_indicators(self, profile):
+        for profile_indicator in profile.profileindicator_set.all():
+            print(f"Loading {profile_indicator.indicator.name}")
+            self.add_indicator(profile, profile_indicator)
+
+    def add_indicator(self, profile, profile_indicator):
+        universe = profile_indicator.universe
+        indicator = profile_indicator.indicator
+
+        data_extractor = DataExtractor(indicator, self.values("geography"), universe=universe)
+
+        counts = data_extractor.get_queryset()
         print(counts.query)
 
         profile_code = None
@@ -108,7 +112,7 @@ class ProfileDataQuerySet(models.QuerySet):
             indicator_value.append(value)
 
         if obj is not None:
-            obj.data[indicator.name] = indicator_value
+            obj.data[profile_indicator.name] = indicator_value
             objs.append(obj)
 
         self.bulk_update(objs, ["data"], batch_size=1000)

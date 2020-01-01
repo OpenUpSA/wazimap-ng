@@ -4,7 +4,11 @@ import csv
 
 from django.db import models
 from django.db import transaction
+from django.db.models.functions import Cast
+from django.db.models import Sum
+from django.contrib.postgres.fields.jsonb import KeyTextTransform, KeyTransform
 from django.contrib.postgres.fields import JSONField, ArrayField
+
 from .geography import Geography
 
 class Dataset(models.Model):
@@ -64,3 +68,38 @@ class Indicator(models.Model):
     def __str__(self):
         return f"{self.dataset.name} -> {self.label}"
 
+class Universe(models.Model):
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
+    filters = JSONField()
+
+    name = models.CharField(max_length=50)
+    label = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.dataset.name} -> {self.label}"
+
+class DataExtractor:
+    def __init__(self, indicator, geographies, universe=None):
+        self.indicator = indicator
+        self.universe = universe
+        self.geographies = geographies
+
+    def get_queryset(self):
+        groups = ["data__" + i for i in self.indicator.groups] + ["geography"]
+        c = Cast(KeyTextTransform("Count", "data"), models.IntegerField())
+
+        qs = (
+            DatasetData.objects
+                .filter(dataset=self.indicator.dataset)
+                .filter(geography__in=self.geographies)
+        )
+
+        if self.universe is not None:
+            filters = {f"data__{k}": v for k, v in self.universe.filters.items()}
+            qs = qs.filter(**filters)
+
+        qs = (qs.values(*groups)
+                .annotate(count=Sum(c))
+                .order_by("geography"))
+
+        return qs

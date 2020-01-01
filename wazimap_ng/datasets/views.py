@@ -129,14 +129,12 @@ def profile_geography_data(request, profile_id, geography_code):
     data = profile_data.data
 
     children_profiles = models.ProfileData.objects.filter(profile_id=profile_id, geography__in=geography.get_children())
-    children_data = {}
+    children_profile = get_children_profile(profile_id, geography)
 
     geo_js = AncestorGeographySerializer().to_representation(geography)
-
     data_js = {}
     key_metrics = []
 
-    children_profile = get_children_profile(profile_id, geography)
 
     for pi in profile.profileindicator_set.order_by("subcategory__category__name", "subcategory__name"):
         indicator = pi.indicator
@@ -148,7 +146,7 @@ def profile_geography_data(request, profile_id, geography_code):
             category_js = data_js.setdefault(pi.subcategory.category.name, {})
             subcat_js = category_js.setdefault(pi.subcategory.name, {})
             indicator_data = data.get(indicator.name, {})
-            subcat_js[indicator.label] = indicator_data
+            subcat_js[pi.label] = indicator_data
             for subindicator in indicator_data:
                 if indicator.name in children_profile:
                     subindicator["children"] = children_profile[indicator.name][subindicator["key"]]
