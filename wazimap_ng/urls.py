@@ -20,5 +20,6 @@ urlpatterns = [
     path("api/v1/profiles/", dataset_views.ProfileList.as_view()),
     path("api/v1/profiles/<int:pk>/", dataset_views.ProfileDetail.as_view()),
     path("api/v1/profiles/<int:profile_id>/geographies/<str:geography_code>/", dataset_views.profile_geography_data),
+    re_path(r"^$", RedirectView.as_view(url="/api/v1/", permanent=False)),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
