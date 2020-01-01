@@ -94,17 +94,49 @@ class ProfileDetail(generics.RetrieveAPIView):
     queryset = models.Profile
     serializer_class = serializers.FullProfileSerializer
 
+def get_children_data(children, indicator, subindicator):
+    return {}
+
+def get_children_profile(profile_id, geography):
+    profile = {}
+    children_profiles = models.ProfileData.objects.filter(profile_id=profile_id, geography__in=geography.get_children())
+    for child_profile in children_profiles:
+        for indicator, subindicators in child_profile.data.items():
+            indicator_data = profile.setdefault(indicator, {})
+            for subindicator in subindicators:
+                key = subindicator["key"]
+                subindicator_data = indicator_data.setdefault(key, {})
+                subindicator_data[child_profile.geography.code] = subindicator["count"]
+    import json
+    print(json.dumps(profile, indent=4))
+    return profile
+
 @api_view()
 def profile_geography_data(request, profile_id, geography_code):
     profile = models.Profile.objects.get(pk=profile_id)
-    geography = models.Geography.objects.get(code=geography_code)
+    try:
+        geography = models.Geography.objects.get(code=geography_code)
+    except models.Geography.MultipleObjectsReturned as e:
+        # TODO this needed because the metro municipalities are considered both districts and local municipalities
+        # This dataset-specific code should not be here. I'll move it once I figure out the best course of action
+        munis = models.Geography.objects.filter(code=geography_code, level="municipality")
+        if munis.count() == 1:
+            geography = munis.first()
+        else:
+            raise e
+
     profile_data = models.ProfileData.objects.get(profile_id=profile_id, geography=geography)
     data = profile_data.data
+
+    children_profiles = models.ProfileData.objects.filter(profile_id=profile_id, geography__in=geography.get_children())
+    children_data = {}
 
     geo_js = AncestorGeographySerializer().to_representation(geography)
 
     data_js = {}
     key_metrics = []
+
+    children_profile = get_children_profile(profile_id, geography)
 
     for pi in profile.profileindicator_set.order_by("subcategory__category__name", "subcategory__name"):
         indicator = pi.indicator
@@ -115,13 +147,18 @@ def profile_geography_data(request, profile_id, geography_code):
         else:
             category_js = data_js.setdefault(pi.subcategory.category.name, {})
             subcat_js = category_js.setdefault(pi.subcategory.name, {})
-            subcat_js[indicator.label] = data.get(indicator.name, {})
-       
+            indicator_data = data.get(indicator.name, {})
+            subcat_js[indicator.label] = indicator_data
+            for subindicator in indicator_data:
+                if indicator.name in children_profile:
+                    subindicator["children"] = children_profile[indicator.name][subindicator["key"]]
+
+
 
     js = {
         "geography": geo_js,
         "key_metrics": key_metrics,
-        "indicators": data_js
+        "indicators": data_js,
     }
 
     return Response(js)
