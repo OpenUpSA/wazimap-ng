@@ -27,7 +27,7 @@ class IndicatorSubcategory(models.Model):
     category = models.ForeignKey(IndicatorCategory, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.name
+        return f"{self.category.name} -> {self.name}"
 
     class Meta:
         verbose_name_plural = "Indicator Subcategories"
