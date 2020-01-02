@@ -12,7 +12,7 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from .geography import Geography
 
 class Dataset(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=60)
 
     def __str__(self):
         return self.name
