@@ -1,4 +1,3 @@
-from django.forms import ModelForm
 from django.contrib import admin
 from django.contrib.postgres import fields
 from treebeard.admin import TreeAdmin
@@ -12,13 +11,15 @@ admin.site.register(models.IndicatorSubcategory)
 admin.site.register(models.Dataset)
 admin.site.register(models.Profile)
 
+
 def customTitledFilter(title):
-   class Wrapper(admin.FieldListFilter):
-       def __new__(cls, *args, **kwargs):
-           instance = admin.FieldListFilter.create(*args, **kwargs)
-           instance.title = title
-           return instance
-   return Wrapper
+    class Wrapper(admin.FieldListFilter):
+        def __new__(cls, *args, **kwargs):
+            instance = admin.FieldListFilter.create(*args, **kwargs)
+            instance.title = title
+            return instance
+    return Wrapper
+
 
 @admin.register(models.Geography)
 class GeographyAdmin(TreeAdmin):
@@ -29,9 +30,11 @@ class GeographyAdmin(TreeAdmin):
 
     list_filter = ("level",)
 
+
 def description(description, func):
     func.short_description = description
     return func
+
 
 @admin.register(models.ProfileIndicator)
 class ProfileIndicatorAdmin(admin.ModelAdmin):

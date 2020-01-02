@@ -5,12 +5,14 @@ from django.contrib.postgres.fields import JSONField
 from .dataset import Indicator, DatasetData, Universe, DataExtractor
 from .geography import Geography
 
+
 class Profile(models.Model):
     name = models.CharField(max_length=50)
     indicators = models.ManyToManyField(Indicator, through="ProfileIndicator")
 
     def __str__(self):
         return self.name
+
 
 class IndicatorCategory(models.Model):
     name = models.CharField(max_length=25)
@@ -21,6 +23,7 @@ class IndicatorCategory(models.Model):
 
     class Meta:
         verbose_name_plural = "Indicator Categories"
+
 
 class IndicatorSubcategory(models.Model):
     name = models.CharField(max_length=25)
