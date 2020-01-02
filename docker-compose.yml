@@ -1,13 +1,19 @@
-version: '2'
+version: '3'
 
 services:
   postgres:
     image: postgres:9.6
+    container_name: wazimap-ng-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - "wazimap-data:/var/lib/postgresql/data"
   web:
     restart: always
     environment:
       - DJANGO_SECRET_KEY=local
     image: web
+    container_name: wazimap-ng-web
     build: ./
     command: >
       bash -c "python wait_for_postgres.py &&
