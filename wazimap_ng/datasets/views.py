@@ -145,11 +145,12 @@ def profile_geography_data(request, profile_id, geography_code):
         else:
             category_js = data_js.setdefault(pi.subcategory.category.name, {})
             subcat_js = category_js.setdefault(pi.subcategory.name, {})
-            indicator_data = data.get(indicator.name, {})
+            indicator_data = data.get(pi.name, {})
             subcat_js[pi.label] = indicator_data
             for subindicator in indicator_data:
-                if indicator.name in children_profile:
-                    subindicator["children"] = children_profile[indicator.name][subindicator["key"]]
+                if pi.name in children_profile:
+                    # TODO change name from children to child_geographies - need to change the UI as well
+                    subindicator["children"] = children_profile[pi.name][subindicator["key"]]
 
 
 

@@ -93,7 +93,7 @@ class ProfileDataQuerySet(models.QuerySet):
                 profile_code = new_code
 
                 if obj is not None:
-                    obj.data[indicator.name] = indicator_value
+                    obj.data[profile_indicator.name] = indicator_value
                     objs.append(obj)
 
                 obj = profiles[new_code]
