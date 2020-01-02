@@ -10,6 +10,7 @@ from . import models
 admin.site.register(models.IndicatorCategory)
 admin.site.register(models.IndicatorSubcategory)
 admin.site.register(models.Dataset)
+admin.site.register(models.Profile)
 
 def customTitledFilter(title):
    class Wrapper(admin.FieldListFilter):
@@ -55,7 +56,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'universe', 'name')
+            'fields': ('profile', 'universe', 'name', 'indicator')
         }),
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'key_metric')
