@@ -67,6 +67,10 @@ class ProfileDataQuerySet(models.QuerySet):
 
         self.bulk_update(profiles, ["data"], batch_size=1000)
 
+    def refresh_profiles(self, profile):
+        self.clear_profiles(profile)
+        self.add_all_indicators(profile)
+
     def add_all_indicators(self, profile):
         for profile_indicator in profile.profileindicator_set.all():
             print(f"Loading {profile_indicator.indicator.name}")
@@ -79,7 +83,7 @@ class ProfileDataQuerySet(models.QuerySet):
         data_extractor = DataExtractor(indicator, self.values("geography"), universe=universe)
 
         counts = data_extractor.get_queryset()
-        print(counts.query)
+        #print(counts.query)
 
         profile_code = None
         obj = None
@@ -88,7 +92,6 @@ class ProfileDataQuerySet(models.QuerySet):
         profiles = self.load_profiles(profile)
 
         for count in counts:
-            print(count)
             new_code = count["geography"]
             del count["geography"]
 
