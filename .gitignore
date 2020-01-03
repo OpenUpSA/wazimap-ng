@@ -110,3 +110,5 @@ venv.bak/
 \.*.sw[op]
 staticfiles
 .DS_Store
+
+data/
