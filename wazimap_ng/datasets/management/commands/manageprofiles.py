@@ -37,26 +37,36 @@ class Command(BaseCommand):
 
     def _get_profile_data(self, levels=None):
         if levels is not None:
-            return models.ProfileData.objects.filter(geography__level__in=levels)
-        return models.ProfileData.objects.all()
+            profiles = models.ProfileData.objects.filter(geography__level__in=levels)
+        else:
+            profiles = models.ProfileData.objects.all()
+        print(f"Loaded {len(profiles)} profiles")
+        return profiles
+
+    def _list_profiles(self):
+        for profile in models.Profile.objects.all():
+            print(f"{profile.id}) {profile.name}")
+
+    def _list_indicators(self, profile):
+        for indicator in models.ProfileIndicator.objects.filter(profile=profile):
+            print(f"{indicator.id}) {indicator.name}")
 
     def handle(self, *args, **options):
         profile = models.Profile.objects.get(pk=options["profile_id"])
 
         if options["list_profiles"]:
-            for profile in models.Profile.objects.all():
-                print(f"{profile.id}) {profile.name}")
+            self._list_profiles()
         elif options["list_indicators"]:
-            profile_id = options["profile_id"]
-            for indicator in models.ProfileIndicator.objects.filter(profile=profile, profile_id=profile_id):
-                print(f"{indicator.id}) {indicator.name}")
+            self._list_indicators(profile)
         else:
-            profile_data = self._get_profile_data(options["level"])
+            dataextractor = models.DataExtractor()
+            profiles = self._get_profile_data(options["level"])
+
             if options["indicator"]:
                 indicators = [int(i) for i in options["indicator"]]
                 for pi in models.ProfileIndicator.objects.filter(pk__in=indicators):
                     print(f"Loading {pi.label}")
-                    profile_data.add_indicator(profile, pi)
+                    profiles.add_indicator(profile, pi, dataextractor)
             else:
                 print(f"Loading all indicators")
-                profile_data.refresh_profiles(profile)
+                profiles.refresh_profiles(profile, dataextractor)

@@ -2,7 +2,7 @@ from django.db import models
 
 from django.contrib.postgres.fields import JSONField
 
-from .dataset import Indicator, DatasetData, Universe, DataExtractor
+from .dataset import Indicator, DatasetData, Universe, DataExtractor, CountryDataExtractor
 from .geography import Geography
 
 
@@ -67,22 +67,21 @@ class ProfileDataQuerySet(models.QuerySet):
 
         self.bulk_update(profiles, ["data"], batch_size=1000)
 
-    def refresh_profiles(self, profile):
+    def refresh_profiles(self, profile, data_extractor):
         self.clear_profiles(profile)
-        self.add_all_indicators(profile)
+        self.add_all_indicators(profile, data_extractor)
 
-    def add_all_indicators(self, profile):
-        for profile_indicator in profile.profileindicator_set.all():
+
+    def add_all_indicators(self, profile, data_extractor):
+        for profile_indicator in ProfileIndicator.objects.filter(profile=profile):
             print(f"Loading {profile_indicator.indicator.name}")
-            self.add_indicator(profile, profile_indicator)
+            self.add_indicator(profile, profile_indicator, data_extractor)
 
-    def add_indicator(self, profile, profile_indicator):
+    def add_indicator(self, profile, profile_indicator, data_extractor):
         universe = profile_indicator.universe
         indicator = profile_indicator.indicator
 
-        data_extractor = DataExtractor(indicator, self.values("geography"), universe=universe)
-
-        counts = data_extractor.get_queryset()
+        counts = data_extractor.get_queryset(indicator, self.values("geography"), universe=universe)
         #print(counts.query)
 
         profile_code = None
@@ -145,6 +144,15 @@ class ProfileDataManager(models.Manager):
 
     def add_indicator(self, profile, indicator):
         return self.get_queryset().add_indicator(profile, indicator)
+
+    def rollup_country(self, profile):
+        """
+        Country data is generally not available in uploaded querysets and needs to be aggregated from lower-level data
+        """
+        country = Geography.objects.filter(level='country').first()
+        extractor = CountryDataExtractor(country)
+        self.get_queryset().add_all_indicators(profile, extractor)
+
 
 class ProfileData(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
