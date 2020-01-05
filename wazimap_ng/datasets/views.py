@@ -107,8 +107,6 @@ def get_children_profile(profile_id, geography):
                 key = subindicator["key"]
                 subindicator_data = indicator_data.setdefault(key, {})
                 subindicator_data[child_profile.geography.code] = subindicator["count"]
-    import json
-    print(json.dumps(profile, indent=4))
     return profile
 
 @api_view()
@@ -151,8 +149,6 @@ def profile_geography_data(request, profile_id, geography_code):
                 if pi.name in children_profile:
                     # TODO change name from children to child_geographies - need to change the UI as well
                     subindicator["children"] = children_profile[pi.name][subindicator["key"]]
-
-
 
     js = {
         "geography": geo_js,
