@@ -34,6 +34,7 @@ class Common(Configuration):
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
     MIDDLEWARE = [
+        "django.middleware.cache.UpdateCacheMiddleware",
         "django.middleware.security.SecurityMiddleware",
         "corsheaders.middleware.CorsMiddleware",
         'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -43,6 +44,7 @@ class Common(Configuration):
         "django.contrib.auth.middleware.AuthenticationMiddleware",
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
+        "django.middleware.cache.FetchFromCacheMiddleware",
     ]
 
     ALLOWED_HOSTS = ["*"]
@@ -63,6 +65,13 @@ class Common(Configuration):
             default=os.getenv("DATABASE_URL", "postgres://postgres:@postgres:5432/postgres"),
             conn_max_age=int(os.getenv("POSTGRES_CONN_MAX_AGE", 600))
         )
+    }
+
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-snowflake",
+        }
     }
 
     # General
