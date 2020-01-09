@@ -8,11 +8,11 @@ from rest_framework.routers import DefaultRouter
 from .datasets import views as dataset_views
 
 
+
 router = DefaultRouter()
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("api/v1/", include(router.urls)),
+    path("admin", admin.site.urls),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view()),
     path("api/v1/datasets/<int:dataset_id>/indicators/", dataset_views.DatasetIndicatorsList.as_view()),
     path("api/v1/indicators/", dataset_views.IndicatorsList.as_view()),
@@ -21,6 +21,6 @@ urlpatterns = [
     path("api/v1/profiles/", dataset_views.ProfileList.as_view()),
     path("api/v1/profiles/<int:pk>/", dataset_views.ProfileDetail.as_view()),
     path("api/v1/profiles/<int:profile_id>/geographies/<str:geography_code>/", dataset_views.profile_geography_data),
-    re_path(r"^$", RedirectView.as_view(url="/api/v1/", permanent=False)),
+    re_path(r"^$", RedirectView.as_view(url="/api/v1/datasets/", permanent=False)),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
