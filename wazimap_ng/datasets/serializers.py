@@ -44,7 +44,7 @@ class ProfileIndicatorSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = models.Profile
-	exclude = ["indicators"]
+		exclude = ["indicators"]
 
 class FullProfileSerializer(serializers.ModelSerializer):
 	indicators = ProfileIndicatorSerializer(source="profileindicator_set", many=True)
