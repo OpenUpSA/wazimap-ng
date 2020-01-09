@@ -112,3 +112,6 @@ staticfiles
 .DS_Store
 
 data/
+
+wazimap-ng.sublime-project
+wazimap-ng.sublime-workspace
