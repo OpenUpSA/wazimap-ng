@@ -41,7 +41,7 @@ class IndicatorDataView(mixins.PaginatorMixin, generics.ListAPIView):
 
     def _filter_by_value(self, qs, indicator, values):
         def split_values(s):
-            if "," not in s:
+            if ":" not in s:
                 return {}
 
             return {
