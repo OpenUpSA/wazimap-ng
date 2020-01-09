@@ -1,18 +1,15 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, re_path, include
+from django.urls import path, re_path
 from django.views.generic.base import RedirectView
-from rest_framework.routers import DefaultRouter
 
 from .datasets import views as dataset_views
 
 
-
-router = DefaultRouter()
-
 urlpatterns = [
-    path("admin", admin.site.urls),
+    path("admin/", admin.site.urls),
+    re_path(r"admin$", RedirectView.as_view(url="admin/", permanent=True)),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view()),
     path("api/v1/datasets/<int:dataset_id>/indicators/", dataset_views.DatasetIndicatorsList.as_view()),
     path("api/v1/indicators/", dataset_views.IndicatorsList.as_view()),
