@@ -2,7 +2,7 @@
 
 from django.db import migrations
 import wazimap_ng.datasets.models.geography
-from django.contrib.postgres.operations import TrigramExtension
+from django.conf import settings
 
 
 class Migration(migrations.Migration):
@@ -12,9 +12,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        TrigramExtension(),
-        migrations.AddIndex(
+            migrations.AddIndex(
             model_name='geography',
-            index=wazimap_ng.datasets.models.geography.GinTrgmIndex(fields=['name'], name='datasets_ge_name_53e877_gin'),
+            index=wazimap_ng.extensions.index.GinTrgmIndex(fields=['name'], name='datasets_ge_name_53e877_gin'),
         ),
     ]
