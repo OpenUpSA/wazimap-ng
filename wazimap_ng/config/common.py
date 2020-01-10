@@ -5,12 +5,6 @@ import dj_database_url
 from configurations import Configuration
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# An app responsible for installing extensions into postgres
-# Should only be enabled when the database user is a superuser
-# e.g. RDS doesn't allow extensions to be created
-
-INSTALL_EXTENSIONS = os.getenv("DJANGO_INSTALL_EXTENSIONS", False)
-
 class Common(Configuration):
 
 
@@ -35,11 +29,9 @@ class Common(Configuration):
         # Your apps
         "wazimap_ng.users",
         "wazimap_ng.datasets",
+        "wazimap_ng.extensions",
 
     ]
-
-    if INSTALL_EXTENSIONS:
-        INSTALLED_APPS = ["wazimap_ng.extensions"] + INSTALLED_APPS
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
     MIDDLEWARE = [
