@@ -4,13 +4,18 @@ from django_json_widget.widgets import JSONEditorWidget
 from django.contrib.postgres import fields
 from . import models
 
-admin.site.register(models.Category)
+admin.site.register(models.Theme)
+
+@admin.register(models.Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ("name", "theme",)
+    list_filter = ("theme",)
 
 @admin.register(models.Location)
 class LocationAdmin(admin.OSMGeoAdmin):
-  formfield_overrides = {
-    fields.JSONField: {"widget": JSONEditorWidget},
-  }
+    formfield_overrides = {
+        fields.JSONField: {"widget": JSONEditorWidget},
+      }
 
-  list_display = ("name", "category",)
-  list_filter = ("category",)
+    list_display = ("name", "category",)
+    list_filter = ("category",)

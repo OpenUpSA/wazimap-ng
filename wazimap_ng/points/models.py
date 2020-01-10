@@ -1,8 +1,15 @@
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 
+class Theme(models.Model):
+    name = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.name
+
 class Category(models.Model):
     name = models.CharField(max_length=50)
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, related_name="categories")
 
     def __str__(self):
         return self.name
