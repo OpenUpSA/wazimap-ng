@@ -14,6 +14,7 @@ class Common(Configuration):
         "django.contrib.contenttypes",
         "django.contrib.sessions",
         "django.contrib.messages",
+        "django.contrib.gis",
         'whitenoise.runserver_nostatic',
         "django.contrib.staticfiles",
 
@@ -30,6 +31,7 @@ class Common(Configuration):
         "wazimap_ng.users",
         "wazimap_ng.datasets",
         "wazimap_ng.extensions",
+        "wazimap_ng.points",
 
     ]
 
