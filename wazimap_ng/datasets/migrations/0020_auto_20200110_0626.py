@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('datasets', '0019_auto_20200110_0535'),
+        ('extensions', '0001_initial'),
     ]
 
     operations = [
