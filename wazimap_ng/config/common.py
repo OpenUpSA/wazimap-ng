@@ -15,17 +15,18 @@ class Common(Configuration):
         "django.contrib.sessions",
         "django.contrib.messages",
         "django.contrib.gis",
-        'whitenoise.runserver_nostatic',
         "django.contrib.staticfiles",
 
 
         # Third party apps
         "rest_framework",            # utilities for rest apis
+        "rest_framework_gis",        # GIS rest framework
         "rest_framework.authtoken",  # token authentication
         "django_filters",            # for filtering rest endpoints
         "corsheaders",               # enabled cross domain CORS requests
         "treebeard",                 # efficient tree representation
         "django_json_widget",        # admin widget for JSONField
+        'whitenoise.runserver_nostatic',
 
         # Your apps
         "wazimap_ng.users",
