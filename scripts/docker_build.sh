@@ -4,6 +4,7 @@ mkdir -p build
 cd build
 cp ../Dockerfile.build ./Dockerfile
 cp ../requirements.txt .
+cp -R ../scripts .
 
 docker pull adieyal/wazimap-ng || true
 
