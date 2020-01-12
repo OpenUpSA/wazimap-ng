@@ -221,7 +221,7 @@ class IndicatorsDetailTestCase(TestCase):
             data={"Count": 1, "Language": "second_language", "another": 1},
         )
         self.indicator = Indicator.objects.create(
-            groups=[],
+            groups=["Language"],
             name="first_indicator",
             label="first_label",
             dataset=self.first_dataset,
@@ -232,14 +232,15 @@ class IndicatorsDetailTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        number_of_results = len(response.data)
-        # self.assertEqual(number_of_results, 2)
+        number_of_results = response.data["count"]
+        self.assertEqual(number_of_results, 2)
         results = response.data["results"]
-        # self.assertEqual(results[0]["data"]["Language"], "first_language")
+
+        self.assertEqual(results[0]["data"]["Language"], "first_language")
         self.assertEqual(results[0]["data"]["Count"], 100)
         self.assertEqual(results[0]["data"]["geography"], "first_code")
 
-        # self.assertEqual(results[1]["data"]["Language"], "second_language")
+        self.assertEqual(results[1]["data"]["Language"], "second_language")
         self.assertEqual(results[1]["data"]["Count"], 1)
         self.assertEqual(results[1]["data"]["geography"], "second_code")
 
@@ -252,19 +253,126 @@ class IndicatorsDetailTestCase(TestCase):
 
         number_of_results = response.data["count"]
         self.assertEqual(number_of_results, 1)
+
         results = response.data["results"]
+        self.assertEqual(results[0]["data"]["Language"], "first_language")
         self.assertEqual(results[0]["data"]["Count"], 100)
+        self.assertEqual(results[0]["data"]["geography"], "first_code")
 
 
 class IndicatorsGeographyTestCase(TestCase):
     def setUp(self):
         cache.clear()
-        pass
+        self.first_dataset = Dataset.objects.create(name="first")
+        self.geography = Geography.objects.create(
+            path="first_path",
+            depth=0,
+            name="first_geog",
+            code="first_code",
+            level="first_level",
+        )
+        DatasetData.objects.create(
+            dataset=self.first_dataset,
+            geography=self.geography,
+            data={"Count": 100, "Language": "first_language", "another": 333, "geography": "first_geog"},
+        )
+        self.geography_2 = Geography.objects.create(
+            path="second_path",
+            depth=0,
+            name="second_geog",
+            code="second_code",
+            level="second_level",
+        )
+        DatasetData.objects.create(
+            dataset=self.first_dataset,
+            geography=self.geography_2,
+            data={"Count": 1, "Language": "second_language", "another": 1, "geography": "first_geog"},
+        )
+        self.indicator = Indicator.objects.create(
+            groups=[],
+            name="first_indicator",
+            label="first_label",
+            dataset=self.first_dataset,
+        )
 
     def test_correct_data_returned(self):
-        pass
+        url = reverse("indicator-data-view-geography", kwargs={"indicator_id": self.indicator.pk, "geography_code": self.geography.code})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        number_of_results = response.data["count"]
+        self.assertEqual(number_of_results, 1)
+
+        print(DatasetData.objects.all()[0].data)
+        results = response.data["results"]
+        self.assertEqual(results[0]["data"]["Count"], 100)
+        self.assertEqual(results[0]["data"]["geography"], "first_code")
 
     def test_filtering_works(self):
-        pass
+        url = reverse("indicator-data-view-geography",
+                      kwargs={"indicator_id": self.indicator.pk,
+                              "geography_code": self.geography.code})
+        data = {"parent": True}
+        response = self.client.get(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        print(response.request)
 
 
+class ProfileGeographyTestCase(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.first_dataset = Dataset.objects.create(name="first")
+        self.geography = Geography.objects.create(
+            path="first_path",
+            depth=0,
+            name="first_geog",
+            code="first_code",
+            level="municipality",
+        )
+        DatasetData.objects.create(
+            dataset=self.first_dataset,
+            geography=self.geography,
+            data={"Count": 100, "Language": "first_language", "another": 333, "geography": "first_geog"},
+        )
+        self.geography_2 = Geography.objects.create(
+            path="second_path",
+            depth=0,
+            name="second_geog",
+            code="second_code",
+            level="municipality",
+        )
+        DatasetData.objects.create(
+            dataset=self.first_dataset,
+            geography=self.geography_2,
+            data={"Count": 1, "Language": "second_language", "another": 1, "geography": "first_geog"},
+        )
+        self.indicator = Indicator.objects.create(
+            groups=[],
+            name="first_indicator",
+            label="first_label",
+            dataset=self.first_dataset,
+        )
+
+    def test_correct_data_returned(self):
+        url = reverse("profile-geography-data", kwargs={"profile_id": self.profile.pk, "geography_code": self.geography.code})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        number_of_results = response.data["count"]
+        self.assertEqual(number_of_results, 1)
+
+        print(response.data)
+        results = response.data["results"]
+        self.assertEqual(results[0]["data"]["Count"], 100)
+        self.assertEqual(results[0]["data"]["geography"], "first_code")
+
+    # def test_filtering_works(self):
+    #     url = reverse("indicator-data-view-geography",
+    #                   kwargs={"indicator_id": self.indicator.pk,
+    #                           "geography_code": self.geography.code})
+    #     data = {"parent": True}
+    #     response = self.client.get(url, data=data)
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #
+    #     print(response.request)
