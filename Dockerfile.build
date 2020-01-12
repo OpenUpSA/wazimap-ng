@@ -16,4 +16,5 @@ COPY scripts /scripts
 
 RUN pip3 install -r /config/requirements.txt
 
+RUN rm -rf /app
 CMD /scripts/django/startup.sh
