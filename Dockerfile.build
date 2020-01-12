@@ -2,20 +2,18 @@
 FROM adieyal/wazimap:latest
 
 RUN apt-get update && apt-get install -y \
-  postgresql-client vim less curl apt-transport-https
+  postgresql-client vim less curl apt-transport-https \
+  git python3-pip libpq-dev
 
 
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get install -y python3-pip libpq-dev
+RUN mkdir -p /config
+WORKDIR /config
 
-RUN mkdir -p /app
-COPY requirements.txt /app/requirements.txt
-COPY scripts/django/startup.sh /scripts/django/startup.sh
+COPY requirements.txt /config/requirements.txt
+COPY scripts /scripts
 
-RUN pip3 install -r /app/requirements.txt
-
-WORKDIR /app
-RUN apt-get install -y git
+RUN pip3 install -r /config/requirements.txt
 
 CMD /scripts/django/startup.sh
