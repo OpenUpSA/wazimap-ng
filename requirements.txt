@@ -44,4 +44,4 @@ django-treebeard==4.3
 django-json-widget==0.2.0
 
 # GIS libraries
-#pygdal==2.4.2.6
+GDAL==2.4.2
