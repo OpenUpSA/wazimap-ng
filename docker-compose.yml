@@ -1,15 +1,26 @@
 version: '3'
 
 services:
-  postgres:
+  db:
     image: kartoza/postgis:11.0-2.5
     ports:
       - "5432:5432"
     volumes:
-      - "wazimap-data13:/var/lib/postgresql/data"
+      - "wazimap-ng:/var/lib/postgresql/data"
     environment:
       - POSTGRES_USER=wazimap_ng
       - POSTGRES_PASS=wazimap_ng
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,pg_trgm
+  web:
+    image: adieyal/wazimap-ng:latest
+    depends_on:
+     - db
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./config/django/django.env
+    volumes:
+      - ./:/app/
+      - ./scripts:/scripts/
 volumes:
-  wazimap-data13:
+  wazimap-ng:
