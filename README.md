@@ -9,9 +9,10 @@ Start the dev server for local development. Before you've created your database,
 docker-compose up
 ```
 
-Load up the database
+Create the database user and databae. Load up the database
 
 ```bash
+docker exec --user=postgres -it wazimap-ng_db_1  createuser wazimap_ng -W
 docker exec --user=postgres wazimap-ng_db_1 createdb -O wazimap_ng  wazimap_ng
 ```
 
