@@ -71,5 +71,5 @@ class DatasetIndicatorsTestCase(TestCase):
         results = response.data["results"]
         number_of_results = response.data["count"]
         self.assertEqual(number_of_results, 2)
-        self.assertEqual(results[0]["dataset"], self.first_dataset.pk)
-        self.assertEqual(results[1]["dataset"], self.second_dataset.pk)
+        self.assertEqual(results[0]["name"], "first_indicator")
+        self.assertEqual(results[1]["name"], "second_indicator")

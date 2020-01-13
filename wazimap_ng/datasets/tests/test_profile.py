@@ -38,7 +38,19 @@ class ProfileTestCase(TestCase):
             indicator=indicator,
             subcategory=indicator_subcategory,
         )
+
         self.second_profile = Profile.objects.create(name="second_profile")
+        indicator_category_2 = IndicatorCategory.objects.create(
+            name="category_2", profile=self.second_profile
+        )
+        indicator_subcategory_2 = IndicatorSubcategory.objects.create(
+            name="sub_category_2", category=indicator_category_2
+        )
+        ProfileIndicator.objects.create(
+            profile=self.second_profile,
+            indicator=indicator,
+            subcategory=indicator_subcategory_2,
+        )
 
     def test_correct_profile_list_returned(self):
         url = reverse("profile-list")

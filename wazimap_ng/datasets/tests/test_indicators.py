@@ -25,7 +25,7 @@ class IndicatorsDetailTestCase(TestCase):
         DatasetData.objects.create(
             dataset=self.first_dataset,
             geography=self.geography,
-            data={"Count": 100, "Language": "first_language", "another": 333},
+            data={"Count": 1, "Language": "first_language"},
         )
         self.geography_2 = Geography.objects.create(
             path="second_path",
@@ -37,7 +37,7 @@ class IndicatorsDetailTestCase(TestCase):
         DatasetData.objects.create(
             dataset=self.first_dataset,
             geography=self.geography_2,
-            data={"Count": 1, "Language": "second_language", "another": 1},
+            data={"Count": 2, "Language": "second_language",},
         )
         self.indicator = Indicator.objects.create(
             groups=["Language"],
@@ -56,11 +56,11 @@ class IndicatorsDetailTestCase(TestCase):
         results = response.data["results"]
 
         self.assertEqual(results[0]["data"]["Language"], "first_language")
-        self.assertEqual(results[0]["data"]["Count"], 100)
+        self.assertEqual(results[0]["data"]["Count"], 1)
         self.assertEqual(results[0]["data"]["geography"], "first_code")
 
         self.assertEqual(results[1]["data"]["Language"], "second_language")
-        self.assertEqual(results[1]["data"]["Count"], 1)
+        self.assertEqual(results[1]["data"]["Count"], 2)
         self.assertEqual(results[1]["data"]["geography"], "second_code")
 
     def test_filtering_works(self):
@@ -74,7 +74,7 @@ class IndicatorsDetailTestCase(TestCase):
 
         results = response.data["results"]
         self.assertEqual(results[0]["data"]["Language"], "first_language")
-        self.assertEqual(results[0]["data"]["Count"], 100)
+        self.assertEqual(results[0]["data"]["Count"], 1)
         self.assertEqual(results[0]["data"]["geography"], "first_code")
 
 
