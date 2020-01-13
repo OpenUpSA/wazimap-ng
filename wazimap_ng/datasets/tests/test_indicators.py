@@ -181,3 +181,12 @@ class IndicatorsGeographyTestCase(TestCase):
         self.assertEqual(results[0]["data"]["Language"], "child_language")
         self.assertEqual(results[0]["data"]["Count"], 4)
         self.assertEqual(results[0]["data"]["geography"], "child_geog")
+
+    def test_incorrect_geography_throws_404(self):
+        # TODO: Returns internal server error instead of 404!
+        url = reverse(
+            "profile-geography-data",
+            kwargs={"profile_id": self.indicator.pk, "geography_code": "TEST"},
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

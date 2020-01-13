@@ -61,10 +61,7 @@ class DatasetIndicatorsTestCase(TestCase):
         dataset_id = 123456789
         url = reverse("dataset-indicator-list", kwargs={"dataset_id": dataset_id})
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        number_of_results = len(response.data)
-        self.assertEqual(number_of_results, 0)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_all_indicators_return(self):
         url = reverse("indicator-list")

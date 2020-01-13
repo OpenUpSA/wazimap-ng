@@ -135,3 +135,12 @@ class ProfileGeographyTestCase(TestCase):
         self.assertEqual(results["geography"]["level"], "first_level")
         self.assertEqual(results["key_metrics"][0]["label"], "first_label")
         self.assertEqual(results["key_metrics"][0]["value"], "-")
+
+    def test_incorrect_geography_throws_404(self):
+        # TODO: Returns internal server error instead of 404!
+        url = reverse(
+            "profile-geography-data",
+            kwargs={"profile_id": self.profile.pk, "geography_code": "TEST"},
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
