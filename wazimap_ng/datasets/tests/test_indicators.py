@@ -3,6 +3,7 @@ from wazimap_ng.datasets.models import (
     DatasetData,
     Geography,
     Indicator,
+    Profile,
 )
 
 from rest_framework import status
@@ -183,10 +184,10 @@ class IndicatorsGeographyTestCase(TestCase):
         self.assertEqual(results[0]["data"]["geography"], "child_geog")
 
     def test_incorrect_geography_throws_404(self):
-        # TODO: Returns internal server error instead of 404!
+        profile = Profile.objects.create(name="test")
         url = reverse(
             "profile-geography-data",
-            kwargs={"profile_id": self.indicator.pk, "geography_code": "TEST"},
+            kwargs={"profile_id": profile.pk, "geography_code": "TEST"},
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

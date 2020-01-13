@@ -17,6 +17,9 @@ class Dataset(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ["id"]
+
 
 class DatasetData(models.Model):
     dataset = models.ForeignKey(Dataset, null=True, on_delete=models.CASCADE)
@@ -58,6 +61,9 @@ class DatasetData(models.Model):
             total += len(batch)
             print(f"{total} total loads")
 
+    class Meta:
+        ordering = ["id"]
+
 class Indicator(models.Model):
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     # Fields to group by
@@ -68,6 +74,9 @@ class Indicator(models.Model):
     def __str__(self):
         return f"{self.dataset.name} -> {self.label}"
 
+    class Meta:
+        ordering = ["id"]
+
 class Universe(models.Model):
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     filters = JSONField()
@@ -77,6 +86,9 @@ class Universe(models.Model):
 
     def __str__(self):
         return f"{self.dataset.name} -> {self.label}"
+        
+    class Meta:
+        ordering = ["id"]
 
 class DataExtractor:
 

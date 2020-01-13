@@ -135,12 +135,12 @@ class GeneralReadOnlyTestCase(TestCase):
 class GeneralPaginationTestCase(TestCase):
     def setUp(self):
         cache.clear()
+        Geography.add_root(
+            name=f"geography-1", code=f"code-1", level=f"test-level-1",
+        )
         for i in range(25):
             Dataset.objects.create(name=f"dataset-{i}")
             Profile.objects.create(name=f"profile-{i}")
-            Geography.add_root(
-                name=f"geography-{i}", code=f"code-{i}", level=f"test-level-{i}",
-            )
             ProfileData.objects.create(
                 profile=Profile.objects.first(),
                 geography=Geography.objects.first(),
@@ -167,7 +167,6 @@ class GeneralPaginationTestCase(TestCase):
         self.assertEqual(number_of_results, 10)
 
     def test_dataset_indicator_list_is_paginated(self):
-        # TODO: Fails now!
         dataset_id = Dataset.objects.first().pk
         url = reverse("dataset-indicator-list", kwargs={"dataset_id": dataset_id})
         response = self.client.get(url)

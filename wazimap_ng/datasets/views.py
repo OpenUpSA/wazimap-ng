@@ -1,3 +1,4 @@
+from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
@@ -17,7 +18,11 @@ class DatasetIndicatorsList(generics.ListAPIView):
     serializer_class = serializers.IndicatorSerializer
 
     def get(self, request, dataset_id):
+        if models.Dataset.objects.filter(id=dataset_id).count() == 0:
+            raise Http404 
+
         queryset = self.get_queryset().filter(dataset=dataset_id)
+        queryset = self.paginate_queryset(queryset)
         serializer = self.get_serializer_class()(queryset, many=True)
         return Response(serializer.data)
 
@@ -57,6 +62,9 @@ class IndicatorDataView(mixins.PaginatorMixin, generics.ListAPIView):
 
     def _filter_by_geography(self, qs, geography_code, use_parent):
         if geography_code != None:
+            if models.Geography.objects.filter(code=geography_code).count() == 0:
+                raise Http404
+
             if use_parent:
                 geography = models.Geography.objects.filter(code=geography_code).first()
                 qs = qs.filter(geography__in=geography.get_children())
@@ -114,6 +122,8 @@ def profile_geography_data(request, profile_id, geography_code):
     profile = models.Profile.objects.get(pk=profile_id)
     try:
         geography = models.Geography.objects.get(code=geography_code)
+    except models.Geography.DoesNotExist:
+        raise Http404
     except models.Geography.MultipleObjectsReturned as e:
         # TODO this needed because the metro municipalities are considered both districts and local municipalities
         # This dataset-specific code should not be here. I'll move it once I figure out the best course of action

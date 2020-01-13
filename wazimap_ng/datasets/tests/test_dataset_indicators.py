@@ -57,7 +57,6 @@ class DatasetIndicatorsTestCase(TestCase):
         self.assertEqual(result["label"], "first_label")
 
     def test_incorrect_dataset_fails(self):
-        # TODO: it returns empty instead of failing
         dataset_id = 123456789
         url = reverse("dataset-indicator-list", kwargs={"dataset_id": dataset_id})
         response = self.client.get(url)
