@@ -130,7 +130,7 @@ class ProfileGeographyTestCase(TestCase):
             subcategory=indicator_subcategory,
             key_metric=True,
             name="profile_indicator",
-            label="profile_indicator_label"
+            label="profile_indicator_label",
         )
 
     def test_correct_data_returned(self):

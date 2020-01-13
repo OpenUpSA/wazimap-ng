@@ -4,7 +4,8 @@ from wazimap_ng.datasets.models import (
     Geography,
     Indicator,
     Profile,
-    ProfileData)
+    ProfileData,
+)
 
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -69,7 +70,10 @@ class GeneralReadOnlyTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_indicator_data_view_geography_is_readonly(self):
-        url = reverse("indicator-data-view-geography", kwargs={"indicator_id": 2, "geography_code": "Test"})
+        url = reverse(
+            "indicator-data-view-geography",
+            kwargs={"indicator_id": 2, "geography_code": "Test"},
+        )
         data = {"data": {"Language": "Unspecified", "Count": 0, "geography": "TEST123"}}
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -93,7 +97,9 @@ class GeneralReadOnlyTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_profile_geography_data_is_readonly(self):
-        url = reverse("profile-geography-data", kwargs={"profile_id": 2, "geography_code": "Test"})
+        url = reverse(
+            "profile-geography-data", kwargs={"profile_id": 2, "geography_code": "Test"}
+        )
         data = {"data": {"Language": "Unspecified", "Count": 0, "geography": "TEST123"}}
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -133,12 +139,12 @@ class GeneralPaginationTestCase(TestCase):
             Dataset.objects.create(name=f"dataset-{i}")
             Profile.objects.create(name=f"profile-{i}")
             Geography.add_root(
-                name=f"geography-{i}",
-                code=f"code-{i}",
-                level=f"test-level-{i}",
+                name=f"geography-{i}", code=f"code-{i}", level=f"test-level-{i}",
             )
             ProfileData.objects.create(
-                profile=Profile.objects.first(), geography=Geography.objects.first(), data={"Count": i}
+                profile=Profile.objects.first(),
+                geography=Geography.objects.first(),
+                data={"Count": i},
             )
             Indicator.objects.create(
                 groups=[],
@@ -191,8 +197,10 @@ class GeneralPaginationTestCase(TestCase):
     def test_indicator_data_view_geography_is_paginated(self):
         indicator_id = Indicator.objects.first().pk
         geography_code = Geography.objects.first().code
-        url = reverse("indicator-data-view-geography",
-                      kwargs={"indicator_id": indicator_id, "geography_code": geography_code})
+        url = reverse(
+            "indicator-data-view-geography",
+            kwargs={"indicator_id": indicator_id, "geography_code": geography_code},
+        )
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
