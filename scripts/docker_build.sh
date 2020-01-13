@@ -1,14 +1,13 @@
 set -euo pipefail
 
-mkdir -p build
+rm -rf build
+git clone -l . ./build
 cd build
-cp ../Dockerfile.build ./Dockerfile
-cp ../requirements.txt .
-cp -R ../scripts .
 
 docker pull adieyal/wazimap-ng || true
-
-docker build -t adieyal/wazimap-ng .
+cp ../Dockerfile.build Dockerfile
+docker build -t adieyal/wazimap-ng:latest .
+#docker build -t adieyal/wazimap-ng:latest -f Dockerfile.build .
 
 docker push adieyal/wazimap-ng
 

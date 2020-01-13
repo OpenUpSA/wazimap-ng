@@ -8,13 +8,9 @@ RUN apt-get update && apt-get install -y \
 
 ENV PYTHONUNBUFFERED 1
 
-RUN mkdir -p /config
-WORKDIR /config
+COPY ./ /app
+WORKDIR /app
 
-COPY requirements.txt /config/requirements.txt
-COPY scripts /scripts
+RUN pip3 install -r ./requirements.txt
 
-RUN pip3 install -r /config/requirements.txt
-
-RUN rm -rf /app
-CMD /scripts/django/startup.sh
+CMD /app/scripts/django/startup.sh
