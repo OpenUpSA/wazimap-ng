@@ -9,7 +9,7 @@ from wazimap_ng.extensions.index import GinTrgmIndex
 
 class GeographyQuerySet(NS_NodeQuerySet):
     def search(self, text, similarity=0.3):
-        return self.annotate(similarity=TrigramSimilarity("name", text)).filter(similarity__gt=similarity)
+        return self.annotate(similarity=TrigramSimilarity("name", text)).filter(similarity__gt=similarity).order_by("-similarity")
 
 class GeographyManager(NS_NodeManager):
     def get_queryset(self):
