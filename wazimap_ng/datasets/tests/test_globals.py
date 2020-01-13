@@ -117,7 +117,7 @@ class GeneralReadOnlyTestCase(TestCase):
 class GeneralPaginationTestCase(TestCase):
     def setUp(self):
         cache.clear()
-        for i in range(15):
+        for i in range(25):
             Dataset.objects.create(name=f"dataset-{i}")
             Profile.objects.create(name=f"profile-{i}")
             Indicator.objects.create(
@@ -126,7 +126,7 @@ class GeneralPaginationTestCase(TestCase):
                 label=f"test-label-{i}",
                 dataset=Dataset.objects.first(),
             )
-            Geography.objects.create(
+            geog = Geography.objects.create(
                 path=f"PATH-{i}",
                 depth=0,
                 name=f"geography-{i}",
@@ -142,7 +142,7 @@ class GeneralPaginationTestCase(TestCase):
             }
             DatasetData.objects.create(
                 dataset=Dataset.objects.first(),
-                geography=Geography.objects.first(),
+                geography=geog,
                 data=data,
             )
 
@@ -173,15 +173,14 @@ class GeneralPaginationTestCase(TestCase):
         self.assertEqual(number_of_results, 10)
 
     def test_indicator_data_view_is_paginated(self):
-        # TODO: Fails now
         indicator_id = Indicator.objects.first().pk
         url = reverse("indicator-data-view", kwargs={"indicator_id": indicator_id})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # print(response.data)
+        # Note that pagination for indicator data view is 20 items per page
         number_of_results = len(response.data["results"])
-        self.assertEqual(number_of_results, 10)
+        self.assertEqual(number_of_results, 20)
 
     def test_profile_list_is_paginated(self):
         url = reverse("profile-list")
