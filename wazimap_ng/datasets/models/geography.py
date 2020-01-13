@@ -4,7 +4,6 @@ from django.contrib.postgres.indexes import GinIndex
 from treebeard.mp_tree import MP_Node
 from treebeard.ns_tree import NS_NodeManager, NS_NodeQuerySet
 
-from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import TrigramSimilarity
 from wazimap_ng.extensions.index import GinTrgmIndex
 
@@ -34,6 +33,7 @@ class Geography(MP_Node):
         indexes = [
             GinTrgmIndex(fields=["name"])
         ]
+        ordering = ["id"]
 
 
 

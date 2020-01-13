@@ -13,6 +13,9 @@ class Profile(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ["id"]
+
 
 class IndicatorCategory(models.Model):
     name = models.CharField(max_length=25)
@@ -23,6 +26,7 @@ class IndicatorCategory(models.Model):
 
     class Meta:
         verbose_name_plural = "Indicator Categories"
+        ordering = ["id"]
 
 
 class IndicatorSubcategory(models.Model):
@@ -34,6 +38,7 @@ class IndicatorSubcategory(models.Model):
 
     class Meta:
         verbose_name_plural = "Indicator Subcategories"
+        ordering = ["id"]
 
 
 class ProfileIndicator(models.Model):
@@ -47,6 +52,9 @@ class ProfileIndicator(models.Model):
 
     def __str__(self):
         return f"{self.profile.name} -> {self.label}"
+
+    class Meta:
+        ordering = ["id"]
 
 class ProfileDataQuerySet(models.QuerySet):
 
@@ -160,4 +168,7 @@ class ProfileData(models.Model):
     data = JSONField()
 
     objects = ProfileDataManager()
+    
+    class Meta:
+        ordering = ["id"]
 
