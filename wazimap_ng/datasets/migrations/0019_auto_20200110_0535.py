@@ -26,6 +26,8 @@ class Migration(migrations.Migration):
     '''
 
     operations = [
-        migrations.RunSQL(migration, reverse_migration)
+        # No longer being used
+
+        #migrations.RunSQL(migration, reverse_migration)
     ]
 
