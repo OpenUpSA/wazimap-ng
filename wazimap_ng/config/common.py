@@ -5,8 +5,8 @@ import dj_database_url
 from configurations import Configuration
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 class Common(Configuration):
+
 
     INSTALLED_APPS = [
         "django.contrib.admin",
@@ -14,21 +14,25 @@ class Common(Configuration):
         "django.contrib.contenttypes",
         "django.contrib.sessions",
         "django.contrib.messages",
-        'whitenoise.runserver_nostatic',
+        "django.contrib.gis",
         "django.contrib.staticfiles",
 
 
         # Third party apps
         "rest_framework",            # utilities for rest apis
+        "rest_framework_gis",        # GIS rest framework
         "rest_framework.authtoken",  # token authentication
         "django_filters",            # for filtering rest endpoints
         "corsheaders",               # enabled cross domain CORS requests
         "treebeard",                 # efficient tree representation
         "django_json_widget",        # admin widget for JSONField
+        'whitenoise.runserver_nostatic',
 
         # Your apps
         "wazimap_ng.users",
         "wazimap_ng.datasets",
+        "wazimap_ng.extensions",
+        "wazimap_ng.points",
 
     ]
 

@@ -1,0 +1,16 @@
+#FROM osgeo/gdal:ubuntu-small-latest
+FROM adieyal/wazimap:latest
+
+RUN apt-get update && apt-get install -y \
+  postgresql-client vim less curl apt-transport-https \
+  git python3-pip libpq-dev
+
+
+ENV PYTHONUNBUFFERED 1
+
+COPY ./ /app
+WORKDIR /app
+
+RUN pip3 install -r ./requirements.txt
+
+CMD /app/scripts/django/startup.sh

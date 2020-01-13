@@ -1,30 +1,27 @@
 version: '3'
 
 services:
-  postgres:
-    image: postgres:9.6
-    container_name: wazimap-ng-db
+  db:
+    image: kartoza/postgis:11.0-2.5
     ports:
       - "5432:5432"
     volumes:
-      - "wazimap-data:/var/lib/postgresql/data"
-  web:
-    restart: always
+      - "wazimap-data:/var/lib/postgresql/"
     environment:
-      - DJANGO_SECRET_KEY=local
-    image: web
-    container_name: wazimap-ng-web
-    build: ./
-    command: >
-      bash -c "python wait_for_postgres.py &&
-               ./manage.py migrate &&
-               ./manage.py runserver 0.0.0.0:8000"
-    volumes:
-      - ./:/code
-    ports:
-      - "8000:8000"
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASS=postgres
+      - POSTGRES_MULTIPLE_EXTENSIONS=postgis,pg_trgm
+    stop_grace_period: 60s
+  web:
+    image: adieyal/wazimap-ng:latest
     depends_on:
-      - postgres
-
+     - db
+    ports:
+      - "8000:5000"
+    env_file:
+      - ./config/django/django.env
+    volumes:
+      - ./:/app/
+      - ./scripts:/scripts/
 volumes:
   wazimap-data:

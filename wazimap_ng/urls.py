@@ -5,6 +5,7 @@ from django.urls import path, re_path
 from django.views.generic.base import RedirectView
 
 from .datasets import views as dataset_views
+from .points import views as points_views
 
 
 urlpatterns = [
@@ -42,6 +43,15 @@ urlpatterns = [
         dataset_views.profile_geography_data,
         name="profile-geography-data",
     ),
+    path("api/v1/geography/search/", dataset_views.search_geography),
+    path("api/v1/points/", points_views.LocationList.as_view()),
+    path("api/v1/points/themes/", points_views.ThemeList.as_view()),
+    path("api/v1/points/themes/<int:theme_id>/",
+       points_views.LocationList.as_view()),
+    path("api/v1/points/categories/",
+       points_views.CategoryList.as_view()),
+    path("api/v1/points/categories/<int:category_id>/",
+       points_views.LocationList.as_view()),
     re_path(r"^$", RedirectView.as_view(url="/api/v1/datasets/", permanent=False)),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

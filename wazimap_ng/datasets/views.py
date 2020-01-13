@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_csv import renderers as r
 from rest_framework import generics
-from .serializers import AncestorGeographySerializer
+from .serializers import AncestorGeographySerializer, GeographySerializer
 from . import serializers
 from . import models
 from . import mixins
@@ -157,3 +157,21 @@ def profile_geography_data(request, profile_id, geography_code):
     }
 
     return Response(js)
+
+@api_view()
+def search_geography(request):
+    default_results = 10
+    max_results = request.GET.get("max_results", default_results)
+    try:
+        max_results = int(max_results)
+        if max_results <= 0:
+            max_results = default_results
+    except ValueError:
+        max_results = default_results
+
+    q = request.GET.get("q", "")
+
+    geographies = models.Geography.objects.search(q)[0:max_results]
+    serializer = serializers.GeographySerializer(geographies, many=True)
+
+    return Response(serializer.data)
