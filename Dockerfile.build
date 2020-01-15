@@ -6,11 +6,15 @@ RUN apt-get update && apt-get install -y \
   git python3-pip libpq-dev
 
 
+RUN mkdir -p /config
+COPY ./requirements.txt /config
+WORKDIR /config
+RUN pip3 install -r ./requirements.txt
+
 ENV PYTHONUNBUFFERED 1
 
 COPY ./ /app
 WORKDIR /app
-
-RUN pip3 install -r ./requirements.txt
+RUN rm -rf .git
 
 CMD /app/scripts/django/startup.sh
