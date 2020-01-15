@@ -63,6 +63,7 @@ class Common(Configuration):
         ("Author", "adi@openup.org.za"),
     )
 
+
     # Postgres
     DATABASES = {
         "default": dj_database_url.config(
