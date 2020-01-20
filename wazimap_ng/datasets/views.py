@@ -181,7 +181,7 @@ def search_geography(request):
 
     q = request.GET.get("q", "")
 
-    geographies = models.Geography.objects.search(q)[0:max_results]
+    geographies = models.Geography.objects.exclude(level="mainplace").search(q)[0:max_results]
     serializer = serializers.GeographySerializer(geographies, many=True)
 
     return Response(serializer.data)
