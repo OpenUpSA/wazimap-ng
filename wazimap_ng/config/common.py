@@ -1,4 +1,5 @@
 import os
+import sys
 from os.path import join
 from distutils.util import strtobool
 import dj_database_url
@@ -217,3 +218,26 @@ class Common(Configuration):
     }
 
     CORS_ORIGIN_ALLOW_ALL = True
+
+
+
+TESTING = "test" in sys.argv
+
+
+if TESTING:
+    PASSWORD_HASHERS = [
+        'django.contrib.auth.hashers.MD5PasswordHasher',
+    ]
+    print('=========================')
+    print('In TEST Mode - Disableling Migrations')
+    print('=========================')
+
+    class DisableMigrations(object):
+
+        def __contains__(self, item):
+            return True
+
+        def __getitem__(self, item):
+            return "notmigrations"
+
+    MIGRATION_MODULES = DisableMigrations()
