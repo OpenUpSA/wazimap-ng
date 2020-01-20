@@ -116,3 +116,4 @@ data/
 wazimap-ng.sublime-project
 wazimap-ng.sublime-workspace
 wazimap-ng/
+*.gz
