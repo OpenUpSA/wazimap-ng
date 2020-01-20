@@ -44,6 +44,7 @@ urlpatterns = [
         name="profile-geography-data",
     ),
     path("api/v1/geography/search/", dataset_views.search_geography),
+    path("api/v1/geography/ancestors/<str:geography_code>/", dataset_views.geography_ancestors, name="geography-ancestors"),
     path("api/v1/points/", points_views.LocationList.as_view()),
     path("api/v1/points/themes/", points_views.ThemeList.as_view()),
     path("api/v1/points/themes/<int:theme_id>/",

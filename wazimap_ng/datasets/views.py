@@ -185,3 +185,14 @@ def search_geography(request):
     serializer = serializers.GeographySerializer(geographies, many=True)
 
     return Response(serializer.data)
+
+@api_view()
+def geography_ancestors(request, geography_code):
+    geos = models.Geography.objects.filter(code=geography_code)
+    if geos.count() == 0:
+        raise Http404 
+
+    geography = geos.first()
+    geo_js = AncestorGeographySerializer().to_representation(geography)
+
+    return Response(geo_js)
