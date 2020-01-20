@@ -7,7 +7,6 @@ cd build
 docker pull adieyal/wazimap-ng || true
 cp ../Dockerfile.build Dockerfile
 docker build -t adieyal/wazimap-ng:latest .
-#docker build -t adieyal/wazimap-ng:latest -f Dockerfile.build .
 
 docker push adieyal/wazimap-ng
 
