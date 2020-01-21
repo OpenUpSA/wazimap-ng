@@ -6,6 +6,8 @@ import dj_database_url
 from configurations import Configuration
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+os.environ["GDAL_DATA"] = "/usr/share/gdal/"
+
 class Common(Configuration):
 
 
@@ -34,6 +36,7 @@ class Common(Configuration):
         "wazimap_ng.datasets",
         "wazimap_ng.extensions",
         "wazimap_ng.points",
+        "wazimap_ng.boundaries",
 
     ]
 

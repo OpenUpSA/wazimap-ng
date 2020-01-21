@@ -6,6 +6,7 @@ from django.views.generic.base import RedirectView
 
 from .datasets import views as dataset_views
 from .points import views as points_views
+from .boundaries import views as boundaries_views
 
 
 urlpatterns = [
@@ -47,12 +48,14 @@ urlpatterns = [
     path("api/v1/geography/ancestors/<str:geography_code>/", dataset_views.geography_ancestors, name="geography-ancestors"),
     path("api/v1/points/", points_views.LocationList.as_view()),
     path("api/v1/points/themes/", points_views.ThemeList.as_view()),
-    path("api/v1/points/themes/<int:theme_id>/",
-       points_views.LocationList.as_view()),
-    path("api/v1/points/categories/",
-       points_views.CategoryList.as_view()),
-    path("api/v1/points/categories/<int:category_id>/",
-       points_views.LocationList.as_view()),
+    path("api/v1/points/themes/<int:theme_id>/", points_views.LocationList.as_view()),
+    path("api/v1/points/categories/", points_views.CategoryList.as_view()),
+    path("api/v1/points/categories/<int:category_id>/", points_views.LocationList.as_view()),
     re_path(r"^$", RedirectView.as_view(url="/api/v1/datasets/", permanent=False)),
+
+    path("api/v1/boundaries/", boundaries_views.GeographyList.as_view()),
+    path("api/v1/boundaries/<str:code>/", boundaries_views.GeographyItem.as_view()),
+    path("api/v1/boundaries/<str:code>/children/", boundaries_views.GeographyChildren.as_view()),
+    #path("api/v1/boundaries/provinces/", boundaries_views.provinces),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
