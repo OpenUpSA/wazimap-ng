@@ -171,7 +171,7 @@ def profile_geography_data(request, profile_id, geography_code):
 @api_view()
 def search_geography(request):
     
-    default_results = 10
+    default_results = 30
     max_results = request.GET.get("max_results", default_results)
     try:
         max_results = int(max_results)
