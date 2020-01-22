@@ -188,6 +188,7 @@ def search_geography(request):
         exact_match = x.name.lower() == q.lower()
         if exact_match:
             return 0
+            
         else:
             return {
                 "province": 1,
