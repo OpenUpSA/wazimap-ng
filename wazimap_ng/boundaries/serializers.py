@@ -66,7 +66,7 @@ class DistrictSerializer(GeographySerializer):
     level = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        super(DistrictSerializer, self).__init__(*args, simplification=0.02, **kwargs)
+        super(DistrictSerializer, self).__init__(*args, simplification=0.0002, **kwargs)
 
     def get_level(self, obj):
         return "District"
@@ -81,7 +81,7 @@ class MunicipalitySerializer(GeographySerializer):
     level = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        super(MunicipalitySerializer, self).__init__(*args, simplification=0.005, **kwargs)
+        super(MunicipalitySerializer, self).__init__(*args, simplification=0.0005, **kwargs)
 
     def get_level(self, obj):
         return "Municipality"
@@ -96,7 +96,7 @@ class WardSerializer(GeographySerializer):
     level = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        super(WardSerializer, self).__init__(*args, simplification=0.005, **kwargs)
+        super(WardSerializer, self).__init__(*args, simplification=0.00005, **kwargs)
 
     def get_level(self, obj):
         return "Ward"

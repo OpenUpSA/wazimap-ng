@@ -10,7 +10,6 @@ from django.contrib.postgres.fields.jsonb import KeyTextTransform, KeyTransform
 from django.contrib.postgres.fields import JSONField, ArrayField
 
 from .geography import Geography
-
 class Dataset(models.Model):
     name = models.CharField(max_length=60)
 
