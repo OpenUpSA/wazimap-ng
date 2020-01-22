@@ -182,8 +182,17 @@ def search_geography(request):
 
     q = request.GET.get("q", "")
 
-    geographies = models.Geography.objects.exclude(level="mainplace").search(q)[0:max_results]
-    serializer = serializers.GeographySerializer(geographies, many=True)
+    geographies = models.Geography.objects.search(q)[0:max_results]
+    sort_map = {
+        "province": 1,
+        "district": 2,
+        "municipality": 3,
+        "mainplace": 4,
+        "subplace": 5,
+        "ward": 6,
+    }
+    geogs = sorted(geographies, key=lambda x: sort_map[x.level])
+    serializer = serializers.GeographySerializer(geogs, many=True)
 
     return Response(serializer.data)
 
