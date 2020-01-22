@@ -4,6 +4,8 @@ rm -rf build
 git clone -l . ./build
 cd build
 
+rm -rf .git
+
 docker pull adieyal/wazimap-ng || true
 cp ../Dockerfile.build Dockerfile
 docker build -t adieyal/wazimap-ng:latest .
