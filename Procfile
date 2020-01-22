@@ -1,1 +1,1 @@
-web: gunicorn wazimap_ng.wsgi
+web: ./scripts/django/startup.sh
