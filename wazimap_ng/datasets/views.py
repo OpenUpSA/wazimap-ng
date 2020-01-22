@@ -183,15 +183,22 @@ def search_geography(request):
     q = request.GET.get("q", "")
 
     geographies = models.Geography.objects.search(q)[0:max_results]
-    sort_map = {
-        "province": 1,
-        "district": 2,
-        "municipality": 3,
-        "mainplace": 4,
-        "subplace": 5,
-        "ward": 6,
-    }
-    geogs = sorted(geographies, key=lambda x: sort_map[x.level])
+
+    def sort_key(x):
+        exact_match = x.name.lower() == q.lower()
+        if exact_match:
+            return 0
+        else:
+            return {
+                "province": 1,
+                "district": 2,
+                "municipality": 3,
+                "mainplace": 4,
+                "subplace": 5,
+                "ward": 6,
+            }.get(x.level, 7)
+
+    geogs = sorted(geographies, key=sort_key)
     serializer = serializers.GeographySerializer(geogs, many=True)
 
     return Response(serializer.data)
