@@ -1,1 +1,1 @@
-web: ./scripts/django/startup.sh
+web: /bin/bash /app/scripts/django/startup.sh
