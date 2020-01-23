@@ -32,7 +32,7 @@ class IndicatorsList(generics.ListAPIView):
 
 class LargeResultsSetPagination(PageNumberPagination):
     page_size = 20
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 10000
 
 
@@ -95,10 +95,17 @@ class IndicatorDataView(mixins.PaginatorMixin, generics.ListAPIView):
         return self._paginate_response(queryset, indicator)
 
 class ProfileList(generics.ListAPIView):
+    """
+    Return a list of profiles
+    """
     queryset = models.Profile.objects.all()
     serializer_class = serializers.ProfileSerializer
 
 class ProfileDetail(generics.RetrieveAPIView):
+    """
+    Returns meta data for the given profile id
+    """
+
     queryset = models.Profile
     serializer_class = serializers.FullProfileSerializer
 
@@ -170,6 +177,15 @@ def profile_geography_data(request, profile_id, geography_code):
 
 @api_view()
 def search_geography(request):
+    """
+    Search autocompletion - provides recommendations from place names
+    Prioritises higher-level geographies in the results, e.g. 
+    Provinces of Municipalities. 
+
+    Querystring parameters
+    q - search string
+    max-results number of results to be returned [default is 30] 
+    """
     
     default_results = 30
     max_results = request.GET.get("max_results", default_results)
@@ -188,7 +204,7 @@ def search_geography(request):
         exact_match = x.name.lower() == q.lower()
         if exact_match:
             return 0
-            
+
         else:
             return {
                 "province": 1,
@@ -206,6 +222,10 @@ def search_geography(request):
 
 @api_view()
 def geography_ancestors(request, geography_code):
+    """
+    Returns parent geographies of the given geographhy code
+    Return a 404 HTTP response if the is the code is not found
+    """
     geos = models.Geography.objects.filter(code=geography_code)
     if geos.count() == 0:
         raise Http404 
