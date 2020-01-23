@@ -57,11 +57,22 @@ class GeographySwitchMixin(object):
 
         return classes[0].objects.all()
 
+    def get_geography(self, code):
+        # TODO south africa specific code - metros are
+        # both municipalities and districts
+        geos = Geography.objects.filter(code=code)
+        if len(geos) > 1:
+            return geos[1]
+        return geos[0]
+
 
 class GeographyItem(GeographySwitchMixin, generics.RetrieveAPIView):
     def get(self, request, code):
+
         try:
-            self.geography = Geography.objects.get(code=code)
+            # TODO south africa specific code - metros are
+            # both municipalities and districts
+            self.geography = self.get_geography(code)
             queryset = self.get_queryset()
             serializer_class = self.get_serializer_class()
 
@@ -91,7 +102,7 @@ class GeographyChildren(GeographySwitchMixin, generics.ListAPIView):
 
     def get(self, request, code):
         try:
-            geography = Geography.objects.get(code=code)
+            geography = self.get_geography(code)
             child_boundaries = geography.get_child_boundaries()
             children = geography.get_children()
             if len(children) > 0:
