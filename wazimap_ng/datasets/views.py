@@ -116,7 +116,7 @@ def get_children_profile(profile_id, geography):
     profile = {}
     children_profiles = models.ProfileData.objects.filter(profile_id=profile_id, geography__in=geography.get_children())
     for child_profile in children_profiles:
-        for indicator, subindicators in child_profile.data.items():
+        for indicator, subindicators in child_profile.data["indicators"].items():
             indicator_data = profile.setdefault(indicator, {})
             for subindicator in subindicators:
                 key = subindicator["key"]
@@ -141,7 +141,7 @@ def profile_geography_data(request, profile_id, geography_code):
             raise e
 
     profile_data = models.ProfileData.objects.get(profile_id=profile_id, geography=geography)
-    data = profile_data.data
+    data = profile_data.data["indicators"]
 
     children_profiles = models.ProfileData.objects.filter(profile_id=profile_id, geography__in=geography.get_children())
     children_profile = get_children_profile(profile_id, geography)
@@ -165,12 +165,34 @@ def profile_geography_data(request, profile_id, geography_code):
             for subindicator in indicator_data:
                 if pi.name in children_profile:
                     # TODO change name from children to child_geographies - need to change the UI as well
-                    subindicator["children"] = children_profile[pi.name][subindicator["key"]]
+                    try:
+                        subindicator["children"] = children_profile[pi.name][subindicator["key"]]
+                    except KeyError:
+                        print("Error" * 10)
+
+    highlights = {}
+    for highlight in profile.profilehighlight_set.all():
+        highlight_data = profile_data.data["highlights"]
+        indicator = pi.indicator;
+        value = highlight_data[highlight.name][0]["count"]
+
+        for v in highlight_data[highlight.name]:
+            if v["key"] == highlight.value:
+                value = v["count"]
+
+
+        highlights[highlight.name] = {
+            "label": highlight.label,
+            "count": value
+        }
+
+
 
     js = {
         "geography": geo_js,
         "key_metrics": key_metrics,
         "indicators": data_js,
+        "highlights": highlights,
     }
 
     return Response(js)

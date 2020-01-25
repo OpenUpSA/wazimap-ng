@@ -72,6 +72,36 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
             return ("profile", "universe", "name") + self.readonly_fields
         return self.readonly_fields
 
+@admin.register(models.ProfileHighlight)
+class ProfileHighlightAdmin(admin.ModelAdmin):
+    list_filter = (
+        ("profile__name", customTitledFilter("Profile")),
+        ("indicator__name", customTitledFilter("Indicator")),
+        "universe",
+    )
+
+    list_display = (
+        "profile", 
+        "name", 
+        "label", 
+        description("Indicator", lambda x: x.indicator.name), 
+        "universe",
+    )
+
+    fieldsets = (
+        ("Database fields (can't change after being created)", {
+            "fields": ("profile", "universe", "name", "indicator")
+        }),
+        ("Profile fields", {
+          "fields": ("label", "value")
+        })
+    )
+
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj: # editing an existing object
+            return ("profile", "universe", "name") + self.readonly_fields
+        return self.readonly_fields
 
 @admin.register(models.Indicator)
 class IndicatorAdmin(admin.ModelAdmin):

@@ -56,6 +56,17 @@ class ProfileIndicator(models.Model):
     class Meta:
         ordering = ["id"]
 
+class ProfileHighlight(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this highlight is based on.")
+    universe = models.ForeignKey(Universe, null=True, blank=True, on_delete=models.CASCADE, help_text="The subset of the population considered for this indicator.")
+    name = models.CharField(max_length=60, null=False, blank=True, help_text="Name of the indicator in the database")
+    label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
+    value = models.CharField(max_length=60, null=False, blank=True, help_text="The value used for the highlight. Should be one of the possible values for the given indicator.")
+
+    def __str__(self):
+        return f"Highlight: {self.label}"
+
 class ProfileDataQuerySet(models.QuerySet):
 
     def load_profiles(self, profile):
@@ -78,14 +89,21 @@ class ProfileDataQuerySet(models.QuerySet):
     def refresh_profiles(self, profile, data_extractor):
         self.clear_profiles(profile)
         self.add_all_indicators(profile, data_extractor)
+        self.add_highlights(profile, data_extractor)
 
+    def add_highlights(self, profile, data_extractor):
+        print("== Adding highlights ==")
+        for highlight in ProfileHighlight.objects.filter(profile=profile):
+            print(f"Loading {highlight.indicator.name}")
+            self.add_indicator(profile, highlight, data_extractor, "highlights")
 
     def add_all_indicators(self, profile, data_extractor):
+        print("== Adding indicators ==")
         for profile_indicator in ProfileIndicator.objects.filter(profile=profile):
             print(f"Loading {profile_indicator.indicator.name}")
-            self.add_indicator(profile, profile_indicator, data_extractor)
+            self.add_indicator(profile, profile_indicator, data_extractor, "indicators")
 
-    def add_indicator(self, profile, profile_indicator, data_extractor):
+    def add_indicator(self, profile, profile_indicator, data_extractor, namespace=None):
         universe = profile_indicator.universe
         indicator = profile_indicator.indicator
 
@@ -94,6 +112,7 @@ class ProfileDataQuerySet(models.QuerySet):
 
         profile_code = None
         obj = None
+        indicator_data = None
 
         objs = []
         profiles = self.load_profiles(profile)
@@ -106,10 +125,12 @@ class ProfileDataQuerySet(models.QuerySet):
                 profile_code = new_code
 
                 if obj is not None:
-                    obj.data[profile_indicator.name] = indicator_value
+                    indicator_data[profile_indicator.name] = indicator_value
+                    #obj.data[profile_indicator.name] = indicator_value
                     objs.append(obj)
 
                 obj = profiles[new_code]
+                indicator_data = obj.data.setdefault(namespace, {})
 
                 indicator_value = []
 
