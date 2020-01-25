@@ -146,7 +146,7 @@ class ProfileDataQuerySet(models.QuerySet):
             indicator_value.append(value)
 
         if obj is not None:
-            obj.data[profile_indicator.name] = indicator_value
+            indicator_data[profile_indicator.name] = indicator_value
             objs.append(obj)
 
         self.bulk_update(objs, ["data"], batch_size=1000)
