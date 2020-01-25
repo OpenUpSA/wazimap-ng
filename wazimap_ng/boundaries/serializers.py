@@ -25,7 +25,7 @@ class GeographySerializer(GeoFeatureModelSerializer):
         code = obj.code
         # TODO how to handle no results
         # TODO this might get inefficient with many children
-        geo = Geography.objects.filter(code=code)[0] # Metros are both districts and munis
+        geo = obj.geography
         parent = geo.get_parent()
         if parent is not None:
             return parent.code

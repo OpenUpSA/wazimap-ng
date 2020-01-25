@@ -7,7 +7,6 @@ from treebeard.ns_tree import NS_NodeManager, NS_NodeQuerySet
 from django.contrib.postgres.search import TrigramSimilarity
 from wazimap_ng.extensions.index import GinTrgmIndex
 
-from ...boundaries.models import get_boundary_model_class
 
 class GeographyQuerySet(NS_NodeQuerySet):
     def search(self, text, similarity=0.3):
@@ -43,6 +42,7 @@ class Geography(MP_Node):
         ordering = ["id"]
 
     def get_child_boundaries(self):
+        from ...boundaries.models import get_boundary_model_class
         children = self.get_children()
         codes = [c.code for c in children]
         if len(children) > 0:
@@ -50,7 +50,7 @@ class Geography(MP_Node):
             child_level = first_child.level
             boundary_class = get_boundary_model_class(child_level)
             if boundary_class is not None:
-                return boundary_class.objects.filter(code__in=codes)
+                return boundary_class.objects.filter(code__in=codes).select_related("geography")
         return None
 
 

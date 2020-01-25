@@ -1,6 +1,7 @@
 from django.db import models
 
 from django.contrib.gis.db import models
+from ..datasets.models import Geography
 
 def get_boundary_model_class(level):
     level = level.lower()
@@ -17,11 +18,15 @@ def get_boundary_model_class(level):
     return model_classes.get(level, None)
 
 class Country(models.Model):
+    geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=True)
     code = models.CharField(max_length=10)
     name = models.CharField(max_length=50)
 
     area = models.FloatField()
     geom = models.MultiPolygonField(srid=4326, null=True)
+    
+    class Meta:
+        indexes = [models.Index(fields=["code"])]
 
 class Province(models.Model):
     mapping = {
@@ -31,10 +36,14 @@ class Province(models.Model):
         'geom': 'MULTIPOLYGON',
     }
 
+    geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=True)
     code = models.CharField(max_length=5)
     name = models.CharField(max_length=25)
     area = models.FloatField()
     geom = models.MultiPolygonField(srid=4326)
+
+    class Meta:
+        indexes = [models.Index(fields=["code"])]
 
 class District(models.Model):
     mapping = {
@@ -47,6 +56,8 @@ class District(models.Model):
         'area': 'ALBERS_ARE',
         'geom': 'MULTIPOLYGON',
     }
+
+    geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=True)
     category = models.CharField(max_length=5)
     code = models.CharField(max_length=25)
     name = models.CharField(max_length=100)
@@ -59,6 +70,9 @@ class District(models.Model):
     def __str__(self):
         return f"{self.province}: {self.name}"
 
+    class Meta:
+        indexes = [models.Index(fields=["code"])]
+
 
 class Municipality(models.Model):
     mapping = {
@@ -69,6 +83,8 @@ class Municipality(models.Model):
         'area': 'ALBERS_ARE',
         'geom': 'MULTIPOLYGON',
     }
+
+    geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=True)
     category_code = models.CharField(max_length=5)
     category = models.CharField(max_length=254)
     code = models.CharField(max_length=150)
@@ -80,6 +96,9 @@ class Municipality(models.Model):
     def __str__(self):
         return f"{self.name} ({self.code})"
 
+    class Meta:
+        indexes = [models.Index(fields=["code"])]
+
 
 class Ward(models.Model):
     mapping = {
@@ -88,13 +107,18 @@ class Ward(models.Model):
         'area': 'ALBERS_ARE',
         'geom': 'MULTIPOLYGON',
     }
+
+    geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=True)
     municipality_code = models.CharField(max_length=25)
     code = models.CharField(max_length=8)
     area = models.FloatField()
     geom = models.MultiPolygonField(srid=4326)
 
     def __str__(self):
-        return f"{self.municipality_code}: {self.wardno}"
+        return f"{self.municipality_code}: {self.code}"
+
+    class Meta:
+        indexes = [models.Index(fields=["code"])]
 
 class Mainplace(models.Model):
     mapping = {
@@ -106,6 +130,7 @@ class Mainplace(models.Model):
         'geom': 'MULTIPOLYGON',
     }
 
+    geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=True)
     code = models.CharField(max_length=6)
     name = models.CharField(max_length=254)
     municipality_code = models.CharField(max_length=7)
@@ -113,8 +138,11 @@ class Mainplace(models.Model):
     area = models.FloatField()
     geom = models.MultiPolygonField(srid=4326)
 
-def __str__(self):
-    return f"{self.municipality_name}: {self.name}"
+    def __str__(self):
+        return f"{self.municipality_name}: {self.name}"
+
+    class Meta:
+        indexes = [models.Index(fields=["code"])]
 
 
 class Subplace(models.Model):
@@ -126,6 +154,7 @@ class Subplace(models.Model):
         'geom': 'MULTIPOLYGON',
     }
 
+    geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=True)
     code = models.CharField(max_length=9)
     name = models.CharField(max_length=254)
     mainplace_code = models.CharField(max_length=6)
@@ -134,4 +163,7 @@ class Subplace(models.Model):
 
     def __str__(self):
         return f"{self.mainplace_code}: {self.name}"
+
+    class Meta:
+        indexes = [models.Index(fields=["code"])]
 

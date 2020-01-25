@@ -37,8 +37,10 @@ class Command(BaseCommand):
 
     def _get_profile_data(self, levels=None):
         if levels is not None:
+            print(f"Loading profiles for: {levels}")
             profiles = models.ProfileData.objects.filter(geography__level__in=levels)
         else:
+            print(f"Loading profiles for all levels")
             profiles = models.ProfileData.objects.all()
         print(f"Loaded {len(profiles)} profiles")
         return profiles
