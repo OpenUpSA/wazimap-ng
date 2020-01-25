@@ -175,17 +175,18 @@ def profile_geography_data(request, profile_id, geography_code):
     for highlight in profile.profilehighlight_set.all():
         highlight_data = profile_data.data["highlights"]
         indicator = pi.indicator;
-        value = highlight_data[highlight.name][0]["count"]
+        if highlight.name in highlight_data:
+            value = highlight_data[highlight.name][0]["count"]
 
-        for v in highlight_data[highlight.name]:
-            if v["key"] == highlight.value:
-                value = v["count"]
+            for v in highlight_data[highlight.name]:
+                if v["key"] == highlight.value:
+                    value = v["count"]
 
 
-        highlights[highlight.name] = {
-            "label": highlight.label,
-            "count": value
-        }
+            highlights[highlight.name] = {
+                "label": highlight.label,
+                "count": value
+            }
 
 
 
