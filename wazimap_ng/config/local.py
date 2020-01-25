@@ -5,6 +5,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Local(Common):
     DEBUG = True
+    INTERNAL_IPS = [
+        '127.0.0.1',
+        '172.22.0.3',
+        '0.0.0.0',
+        '172.22.0.1',
+    ]
 
     # Testing
     INSTALLED_APPS = Common.INSTALLED_APPS

@@ -31,6 +31,8 @@ class Common(Configuration):
         "django_json_widget",        # admin widget for JSONField
         'whitenoise.runserver_nostatic',
 
+        "debug_toolbar",
+
         # Your apps
         "wazimap_ng.users",
         "wazimap_ng.datasets",
@@ -42,11 +44,12 @@ class Common(Configuration):
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
     MIDDLEWARE = [
-        "django.middleware.cache.UpdateCacheMiddleware",
         "django.middleware.security.SecurityMiddleware",
         "corsheaders.middleware.CorsMiddleware",
-        'whitenoise.middleware.WhiteNoiseMiddleware',
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+        "whitenoise.middleware.WhiteNoiseMiddleware",
         "django.contrib.sessions.middleware.SessionMiddleware",
+        "django.middleware.cache.UpdateCacheMiddleware",
         "django.middleware.common.CommonMiddleware",
         "django.middleware.csrf.CsrfViewMiddleware",
         "django.contrib.auth.middleware.AuthenticationMiddleware",
