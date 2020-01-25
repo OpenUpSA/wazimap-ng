@@ -80,9 +80,9 @@ class Common(Configuration):
     }
 
     CACHES = {
-        "default": {
-            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "LOCATION": "unique-snowflake",
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'table_cache',
         }
     }
 
@@ -224,7 +224,6 @@ class Common(Configuration):
     }
 
     CORS_ORIGIN_ALLOW_ALL = True
-
 
 
 TESTING = "test" in sys.argv
