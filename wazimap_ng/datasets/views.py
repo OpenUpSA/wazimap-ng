@@ -245,7 +245,7 @@ def search_geography(request):
 @api_view()
 def geography_ancestors(request, geography_code):
     """
-    Returns parent geographies of the given geographhy code
+    Returns parent geographies of the given geography code
     Return a 404 HTTP response if the is the code is not found
     """
     geos = models.Geography.objects.filter(code=geography_code)
