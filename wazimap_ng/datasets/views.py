@@ -114,14 +114,15 @@ def get_children_data(children, indicator, subindicator):
 
 def get_children_profile(profile_id, geography):
     profile = {}
-    children_profiles = models.ProfileData.objects.filter(profile_id=profile_id, geography__in=geography.get_children())
+    children_profiles = models.ProfileData.objects.filter(profile_id=profile_id, geography__in=geography.get_children()).select_related()
     for child_profile in children_profiles:
-        for indicator, subindicators in child_profile.data["indicators"].items():
-            indicator_data = profile.setdefault(indicator, {})
-            for subindicator in subindicators:
-                key = subindicator["key"]
-                subindicator_data = indicator_data.setdefault(key, {})
-                subindicator_data[child_profile.geography.code] = subindicator["count"]
+        if "indicators" in child_profile.data:
+            for indicator, subindicators in child_profile.data["indicators"].items():
+                indicator_data = profile.setdefault(indicator, {})
+                for subindicator in subindicators:
+                    key = subindicator["key"]
+                    subindicator_data = indicator_data.setdefault(key, {})
+                    subindicator_data[child_profile.geography.code] = subindicator["count"]
     return profile
 
 @api_view()
