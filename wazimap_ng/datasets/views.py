@@ -152,7 +152,7 @@ def profile_geography_data(request, profile_id, geography_code):
     key_metrics = []
 
 
-    for pi in profile.profileindicator_set.order_by("subcategory__category__name", "subcategory__name"):
+    for pi in profile.profileindicator_set.order_by("subcategory__category__name", "subcategory__name").select_related():
         indicator = pi.indicator
 
         if pi.key_metric:
