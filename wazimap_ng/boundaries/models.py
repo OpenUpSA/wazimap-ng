@@ -12,7 +12,7 @@ def get_boundary_model_class(level):
         "mn": Municipality, "municipality": Municipality,
         "wd": Ward, "ward": Ward,
         "mp": Mainplace, "mainplace": Mainplace,
-        "sp": Subplace, "Subplace": Subplace,
+        "sp": Subplace, "subplace": Subplace,
     }
 
     return model_classes.get(level, None)
