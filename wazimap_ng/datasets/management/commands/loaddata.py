@@ -46,7 +46,7 @@ class Command(BaseCommand):
                 if geo_code in cache:
                     geography = cache[geo_code]
                 else:
-                    geography = models.Geography.objects.get(code=geo_code, level="district")
+                    geography = models.Geography.objects.get(code=geo_code, level="municipality")
                     cache[geo_code] = geography
                     models.DatasetData.objects.filter(geography=geography, dataset=dataset).delete()
                 dd = models.DatasetData(dataset=dataset, geography=geography, data=row)

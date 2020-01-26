@@ -108,7 +108,6 @@ class ProfileDataQuerySet(models.QuerySet):
         indicator = profile_indicator.indicator
 
         counts = data_extractor.get_queryset(indicator, self.values("geography"), universe=universe)
-        #print(counts.query)
 
         profile_code = None
         obj = None

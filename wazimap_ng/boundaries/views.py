@@ -107,7 +107,7 @@ class GeographyChildren(GeographySwitchMixin, generics.ListAPIView):
             children = geography.get_children()
             if len(children) > 0:
                 first_child = children[0]
-                self.geography = first_child
+                self.geography = first_child # gross code - another way of doing it?
 
                 serializer_class = self.get_serializer_class()
                 serializer = serializer_class(child_boundaries, many=True)
