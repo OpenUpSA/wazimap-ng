@@ -48,8 +48,8 @@ class Common(Configuration):
         "corsheaders.middleware.CorsMiddleware",
         "debug_toolbar.middleware.DebugToolbarMiddleware",
         "whitenoise.middleware.WhiteNoiseMiddleware",
-        "django.contrib.sessions.middleware.SessionMiddleware",
         "django.middleware.cache.UpdateCacheMiddleware",
+        "django.contrib.sessions.middleware.SessionMiddleware",
         "django.middleware.common.CommonMiddleware",
         "django.middleware.csrf.CsrfViewMiddleware",
         "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -81,8 +81,9 @@ class Common(Configuration):
 
     CACHES = {
         'default': {
-            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-            'LOCATION': 'table_cache',
+            # 'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            # 'LOCATION': 'table_cache',
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         }
     }
 

@@ -11,8 +11,11 @@ from .datasets import views as dataset_views
 from .points import views as points_views
 from .boundaries import views as boundaries_views
 
+
 cache = cache_page(60*60)
+
 urlpatterns = [
+
     path("admin/", admin.site.urls),
     re_path(r"admin$", RedirectView.as_view(url="admin/", permanent=True)),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view(), name="dataset"),
@@ -54,7 +57,7 @@ urlpatterns = [
         cache(points_views.LocationList.as_view()),
         name="points"
     ),
-    
+
     path("api/v1/points/themes/", cache(points_views.ThemeList.as_view())),
     path("api/v1/points/themes/<int:theme_id>/", cache(points_views.LocationList.as_view())),
     path("api/v1/points/categories/", cache(points_views.CategoryList.as_view())),

@@ -8,6 +8,7 @@ from .serializers import AncestorGeographySerializer, GeographySerializer
 from . import serializers
 from . import models
 from . import mixins
+from django.core.cache import cache
 
 class DatasetList(generics.ListAPIView):
     queryset = models.Dataset.objects.all()
@@ -127,6 +128,10 @@ def get_children_profile(profile_id, geography):
 
 @api_view()
 def profile_geography_data(request, profile_id, geography_code):
+    key = f"profile-{profile_id}-{geography_code}"
+    if cache.get(key) is not None:
+        return Response(cache.get(key))
+
     profile = models.Profile.objects.get(pk=profile_id)
     try:
         geography = models.Geography.objects.get(code=geography_code)
@@ -196,6 +201,8 @@ def profile_geography_data(request, profile_id, geography_code):
         "indicators": data_js,
         "highlights": highlights,
     }
+
+    cache.set(key, js, 60 * 60)
 
     return Response(js)
 

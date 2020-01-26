@@ -8,6 +8,9 @@ from django.core.serializers import serialize
 from . import models
 from . import serializers
 from ..datasets.models import Geography
+from django.views.decorators.cache import cache_control
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 
 # TODO these models make assumptions about a specfic geography hierarchy
 # May need to abstract it in future
@@ -65,11 +68,17 @@ class GeographySwitchMixin(object):
             return geos[1]
         return geos[0]
 
+    @method_decorator(cache_control(public=True))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 class GeographyItem(GeographySwitchMixin, generics.RetrieveAPIView):
     def get(self, request, code):
 
         try:
+            key = f"geography-{code}"
+            if cache.get(key) is not None:
+                return Response(cache.get(key))
             # TODO south africa specific code - metros are
             # both municipalities and districts
             self.geography = self.get_geography(code)
@@ -84,6 +93,8 @@ class GeographyItem(GeographySwitchMixin, generics.RetrieveAPIView):
             else:
                 obj = objs[0]
                 serializer = serializer_class(obj)
+                data = serializer.data
+                cache.set(key, data, 60*60)
                 return Response(serializer.data)
         except Geography.DoesNotExist:
             raise Http404
@@ -102,6 +113,10 @@ class GeographyChildren(GeographySwitchMixin, generics.ListAPIView):
 
     def get(self, request, code):
         try:
+            key = f"children-{code}"
+            if cache.get(key) is not None:
+                return Response(cache.get(key))
+
             geography = self.get_geography(code)
             child_boundaries = geography.get_child_boundaries()
             children = geography.get_children()
@@ -111,7 +126,9 @@ class GeographyChildren(GeographySwitchMixin, generics.ListAPIView):
 
                 serializer_class = self.get_serializer_class()
                 serializer = serializer_class(child_boundaries, many=True)
-                return Response(serializer.data)
+                data = serializer.data
+                cache.set(key, data, 60*60)
+                return Response(data)
             return Response(None)
 
         except Geography.DoesNotExist:
