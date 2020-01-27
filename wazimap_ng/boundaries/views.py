@@ -25,23 +25,26 @@ code_map = {
     "subplace": "SP"
 }
 
+def get_classes(geo_type):
+    if geo_type == "CY":
+        return (models.Country, serializers.CountrySerializer)
+    elif geo_type == "PR":
+        return (models.Province, serializers.ProvinceSerializer)
+    elif geo_type == "DC":
+        return (models.District, serializers.DistrictSerializer)
+    elif geo_type == "MN":
+        return (models.Municipality, serializers.MunicipalitySerializer)
+    elif geo_type == "WD":
+        return (models.Ward, serializers.WardSerializer)
+    elif geo_type == "MP":
+        return (models.Mainplace, serializers.MainplaceSerializer)
+    elif geo_type == "SP":
+        return (models.Subplace, serializers.SubplaceSerializer)
+    return None
+
 class GeographySwitchMixin(object):
     def _get_classes(self, geo_type):
-        if geo_type == "CY":
-            return (models.Country, serializers.CountrySerializer)
-        elif geo_type == "PR":
-            return (models.Province, serializers.ProvinceSerializer)
-        elif geo_type == "DC":
-            return (models.District, serializers.DistrictSerializer)
-        elif geo_type == "MN":
-            return (models.Municipality, serializers.MunicipalitySerializer)
-        elif geo_type == "WD":
-            return (models.Ward, serializers.WardSerializer)
-        elif geo_type == "MP":
-            return (models.Mainplace, serializers.MainplaceSerializer)
-        elif geo_type == "SP":
-            return (models.Subplace, serializers.SubplaceSerializer)
-        return None
+        return get_classes(geo_type)
 
     def _get_geotype(self):
         request = self.request
@@ -72,6 +75,16 @@ class GeographySwitchMixin(object):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
+def geography_item_helper(code):
+    geography = Geography.objects.get(code=code)
+    geo_type = code_map[geography.level]
+    model_class, serializer_class = get_classes(geo_type)
+    obj = model_class.objects.get(code=code)
+    serializer = serializer_class(obj)
+    data = serializer.data
+
+    return data
+
 class GeographyItem(GeographySwitchMixin, generics.RetrieveAPIView):
     def get(self, request, code):
 
@@ -79,57 +92,44 @@ class GeographyItem(GeographySwitchMixin, generics.RetrieveAPIView):
             key = f"geography-{code}"
             if cache.get(key) is not None:
                 return Response(cache.get(key))
-            # TODO south africa specific code - metros are
-            # both municipalities and districts
-            self.geography = self.get_geography(code)
-            queryset = self.get_queryset()
-            serializer_class = self.get_serializer_class()
 
-            objs = queryset.filter(code=code)
-            if objs.count() == 0:
-                raise Http404
-            elif objs.count() > 1:
-                raise Geography.MultipleObjectsReturned()
-            else:
-                obj = objs[0]
-                serializer = serializer_class(obj)
-                data = serializer.data
-                cache.set(key, data, 60*60)
-                return Response(serializer.data)
+            js = geography_item_helper(code)
+
+            cache.set(key, js, 60 * 60) 
+            return Response(js)
+
         except Geography.DoesNotExist:
             raise Http404
-
-    def _get_geotype(self):
-        return code_map[self.geography.level]
-
-
 
 class GeographyList(GeographySwitchMixin, generics.ListAPIView):
     pass
 
-class GeographyChildren(GeographySwitchMixin, generics.ListAPIView):
-    def _get_geotype(self):
-        return code_map[self.geography.level]
+def geography_children_helper(code):
+    geography = Geography.objects.get(code=code)
+    child_boundaries = geography.get_child_boundaries()
+    children = geography.get_children()
+    if len(children) > 0:
+        first_child = children[0]
+        geo_type = code_map[first_child.level]
+        model_class, serializer_class = get_classes(geo_type)
+        serializer = serializer_class(child_boundaries, many=True)
+        data = serializer.data
 
+        return data
+    return {}
+
+
+class GeographyChildren(GeographySwitchMixin, generics.ListAPIView):
     def get(self, request, code):
         try:
             key = f"children-{code}"
             if cache.get(key) is not None:
                 return Response(cache.get(key))
 
-            geography = self.get_geography(code)
-            child_boundaries = geography.get_child_boundaries()
-            children = geography.get_children()
-            if len(children) > 0:
-                first_child = children[0]
-                self.geography = first_child # gross code - another way of doing it?
+            js = geography_children_helper(code)
 
-                serializer_class = self.get_serializer_class()
-                serializer = serializer_class(child_boundaries, many=True)
-                data = serializer.data
-                cache.set(key, data, 60*60)
-                return Response(data)
-            return Response(None)
+            cache.set(key, js, 60*60)
+            return Response(js)
 
         except Geography.DoesNotExist:
             raise Http404

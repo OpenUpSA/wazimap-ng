@@ -131,6 +131,13 @@ def profile_geography_data(request, profile_id, geography_code):
     key = f"profile-{profile_id}-{geography_code}"
     if cache.get(key) is not None:
         return Response(cache.get(key))
+    js = profile_geography_data_helper(profile_id, geography_code)
+    
+    cache.set(key, js, 60 * 60)
+
+    return Response(js)
+
+def profile_geography_data_helper(profile_id, geography_code):
 
     profile = models.Profile.objects.get(pk=profile_id)
     try:
@@ -202,9 +209,8 @@ def profile_geography_data(request, profile_id, geography_code):
         "highlights": highlights,
     }
 
-    cache.set(key, js, 60 * 60)
+    return js
 
-    return Response(js)
 
 @api_view()
 def search_geography(request):

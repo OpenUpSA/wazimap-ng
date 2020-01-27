@@ -17,6 +17,7 @@ class GeographySerializer(GeoFeatureModelSerializer):
 
 
     def get_geom(self, obj):
+        
         if obj.geom is not None:
             return obj.geom.simplify(self.simplification)
         return obj.geom

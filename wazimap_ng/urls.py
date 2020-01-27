@@ -10,6 +10,7 @@ from django.views.generic.base import RedirectView
 from .datasets import views as dataset_views
 from .points import views as points_views
 from .boundaries import views as boundaries_views
+from .general import views as general_views
 
 
 cache = cache_page(60*60)
@@ -88,6 +89,18 @@ urlpatterns = [
         name="boundaries-children"
     ),
     #path("api/v1/boundaries/provinces/", boundaries_views.provinces),
+
+    path(
+        "api/v1/all_details/profile/<int:profile_id>/geography/<str:code>/",
+        cache(general_views.consolidated_profile),
+        name="all-details"
+    ),
+
+    path(
+        "api/v1/all_details/profile/<int:profile_id>/geography/<str:code>/test/",
+        cache(general_views.consolidated_profile_test),
+        name="all-details-test"
+    ),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
