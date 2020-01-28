@@ -161,7 +161,8 @@ def profile_geography_data_helper(profile_id, geography_code):
             for subindicator in indicator_data:
                 if pi.name in children_profile:
                     # TODO change name from children to child_geographies - need to change the UI as well
-                    subindicator["children"] = children_profile[pi.name][subindicator["key"]]
+                    key = subindicator["key"]
+                    subindicator["children"] = children_profile[pi.name].get(key, 0)
                     # try:
                     #     subindicator["children"] = children_profile[pi.name][subindicator["key"]]
                     # except KeyError:
