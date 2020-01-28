@@ -8,7 +8,7 @@ from .serializers import AncestorGeographySerializer, GeographySerializer
 from . import serializers
 from . import models
 from . import mixins
-from django.core.cache import cache
+from ..utils import cache_decorator
 
 class DatasetList(generics.ListAPIView):
     queryset = models.Dataset.objects.all()
@@ -128,30 +128,13 @@ def get_children_profile(profile_id, geography):
 
 @api_view()
 def profile_geography_data(request, profile_id, geography_code):
-    key = f"profile-{profile_id}-{geography_code}"
-    if cache.get(key) is not None:
-        return Response(cache.get(key))
     js = profile_geography_data_helper(profile_id, geography_code)
-    
-    cache.set(key, js, 60 * 60)
-
     return Response(js)
 
+@cache_decorator("profile_geography_data")
 def profile_geography_data_helper(profile_id, geography_code):
-
     profile = models.Profile.objects.get(pk=profile_id)
-    try:
-        geography = models.Geography.objects.get(code=geography_code)
-    except models.Geography.DoesNotExist:
-        raise Http404
-    except models.Geography.MultipleObjectsReturned as e:
-        # TODO this needed because the metro municipalities are considered both districts and local municipalities
-        # This dataset-specific code should not be here. I'll move it once I figure out the best course of action
-        munis = models.Geography.objects.filter(code=geography_code, level="municipality")
-        if munis.count() == 1:
-            geography = munis.first()
-        else:
-            raise e
+    geography = models.Geography.objects.get(code=geography_code)
 
     profile_data = models.ProfileData.objects.get(profile_id=profile_id, geography=geography)
     data = profile_data.data["indicators"]
@@ -178,10 +161,11 @@ def profile_geography_data_helper(profile_id, geography_code):
             for subindicator in indicator_data:
                 if pi.name in children_profile:
                     # TODO change name from children to child_geographies - need to change the UI as well
-                    try:
-                        subindicator["children"] = children_profile[pi.name][subindicator["key"]]
-                    except KeyError:
-                        print("Error" * 10)
+                    subindicator["children"] = children_profile[pi.name][subindicator["key"]]
+                    # try:
+                    #     subindicator["children"] = children_profile[pi.name][subindicator["key"]]
+                    # except KeyError:
+                    #     print("Error" * 10)
 
     highlights = {}
     for highlight in profile.profilehighlight_set.all():

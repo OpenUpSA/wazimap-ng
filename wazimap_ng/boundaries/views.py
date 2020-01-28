@@ -8,6 +8,7 @@ from django.core.serializers import serialize
 from . import models
 from . import serializers
 from ..datasets.models import Geography
+from ..utils import cache_decorator
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
@@ -75,6 +76,7 @@ class GeographySwitchMixin(object):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
+@cache_decorator("geography_item")
 def geography_item_helper(code):
     geography = Geography.objects.get(code=code)
     geo_type = code_map[geography.level]
@@ -85,25 +87,8 @@ def geography_item_helper(code):
 
     return data
 
-class GeographyItem(GeographySwitchMixin, generics.RetrieveAPIView):
-    def get(self, request, code):
 
-        try:
-            key = f"geography-{code}"
-            if cache.get(key) is not None:
-                return Response(cache.get(key))
-
-            js = geography_item_helper(code)
-
-            cache.set(key, js, 60 * 60) 
-            return Response(js)
-
-        except Geography.DoesNotExist:
-            raise Http404
-
-class GeographyList(GeographySwitchMixin, generics.ListAPIView):
-    pass
-
+@cache_decorator("geography_children")
 def geography_children_helper(code):
     geography = Geography.objects.get(code=code)
     child_boundaries = geography.get_child_boundaries()
@@ -121,15 +106,13 @@ def geography_children_helper(code):
 
 class GeographyChildren(GeographySwitchMixin, generics.ListAPIView):
     def get(self, request, code):
-        try:
-            key = f"children-{code}"
-            if cache.get(key) is not None:
-                return Response(cache.get(key))
+        js = geography_children_helper(code)
+        return Response(js)
 
-            js = geography_children_helper(code)
+class GeographyItem(GeographySwitchMixin, generics.RetrieveAPIView):
+    def get(self, request, code):
+        js = geography_item_helper(code)
+        return Response(js)
 
-            cache.set(key, js, 60*60)
-            return Response(js)
-
-        except Geography.DoesNotExist:
-            raise Http404
+class GeographyList(GeographySwitchMixin, generics.ListAPIView):
+    pass
