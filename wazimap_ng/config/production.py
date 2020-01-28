@@ -36,3 +36,13 @@ class Production(Common):
     # Disable Django's own staticfiles handling in favour of WhiteNoise, for
     # greater consistency between gunicorn and `./manage.py runserver`. See:
     # http://whitenoise.evans.io/en/stable/django.html#using-whitenoise-in-development
+
+    if os.environ["MEMCACHED_URL"] != ""
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+                'LOCATION': os.environ["MEMCACHED_URL"].replace("memcached://", "")
+            }
+        }
+    else:
+        CACHES = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', }}

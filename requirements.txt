@@ -25,6 +25,7 @@ ipdb==0.11
 ipython==7.2.0
 mkdocs==1.0.4
 flake8==3.7.5
+django-debug-toolbar==2.1
 
 # Testing
 mock==2.0.0
@@ -47,4 +48,5 @@ django-json-widget==0.2.0
 GDAL==3.0.2
 djangorestframework-gis==0.14
 
-django-debug-toolbar==2.1
+# Memcached server
+python-memcached==1.59
