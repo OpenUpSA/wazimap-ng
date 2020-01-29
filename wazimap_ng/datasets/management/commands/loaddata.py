@@ -17,6 +17,13 @@ class Command(BaseCommand):
             help="List all datasets. No updates are made."
         )
 
+        parser.add_argument(
+            "--encoding",
+            action="store_true",
+            default="latin1",
+            help="File encoding - default is latin1"
+        )
+
     def _get_profile_data(self, levels=None):
         if levels is not None:
             print(f"Loading profiles for: {levels}")
@@ -37,16 +44,17 @@ class Command(BaseCommand):
             self._list_datasets()
         else:
             dataset = models.Dataset.objects.get(pk=options["dataset_id"])
+            encoding = options["encoding"]
             cache = {}
             datarows = []
-            for row in csv.DictReader(open(options["filename"])):
+            for row in csv.DictReader(open(options["filename"], encoding=encoding)):
                 geo_code = row["Geography"]
                 del row["Geography"]
                 print(geo_code)
                 if geo_code in cache:
                     geography = cache[geo_code]
                 else:
-                    geography = models.Geography.objects.get(code=geo_code, level="municipality")
+                    geography = models.Geography.objects.get(code=geo_code)
                     cache[geo_code] = geography
                     models.DatasetData.objects.filter(geography=geography, dataset=dataset).delete()
                 dd = models.DatasetData(dataset=dataset, geography=geography, data=row)
