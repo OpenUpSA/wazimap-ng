@@ -37,12 +37,9 @@ class Production(Common):
     # greater consistency between gunicorn and `./manage.py runserver`. See:
     # http://whitenoise.evans.io/en/stable/django.html#using-whitenoise-in-development
 
-    if os.environ["MEMCACHED_URL"] != "":
-        CACHES = {
-            'default': {
-                'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-                'LOCATION': os.environ["MEMCACHED_URL"].replace("memcached://", "")
-            }
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+            'LOCATION': '/var/tmp/django_cache',
         }
-    else:
-        CACHES = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', }}
+    }
