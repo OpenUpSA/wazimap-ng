@@ -47,16 +47,22 @@ class Command(BaseCommand):
             encoding = options["encoding"]
             cache = {}
             datarows = []
-            for row in csv.DictReader(open(options["filename"], encoding=encoding)):
+            for idx, row in enumerate(csv.DictReader(open(options["filename"], encoding=encoding))):
                 geo_code = row["Geography"]
                 del row["Geography"]
-                print(geo_code)
                 if geo_code in cache:
                     geography = cache[geo_code]
                 else:
-                    geography = models.Geography.objects.get(code=geo_code)
-                    cache[geo_code] = geography
-                    models.DatasetData.objects.filter(geography=geography, dataset=dataset).delete()
+                    try:
+                        geography = models.Geography.objects.get(code=geo_code)
+                        cache[geo_code] = geography
+                        models.DatasetData.objects.filter(geography=geography, dataset=dataset).delete()
+                    except models.Geography.DoesNotExist:
+                        print(f"Geography {geo_code} not found - skipping it.")
+                        continue
                 dd = models.DatasetData(dataset=dataset, geography=geography, data=row)
                 datarows.append(dd)
-            models.DatasetData.objects.bulk_create(datarows, 1000)
+                if len(datarows) >= 10000:
+                    print(f"{idx} rows committed")
+                    models.DatasetData.objects.bulk_create(datarows, 1000)
+                    datarows = []
