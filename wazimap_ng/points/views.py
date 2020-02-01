@@ -16,7 +16,7 @@ class ThemeList(generics.ListAPIView):
 class LocationList(generics.ListAPIView):
     pagination_class = GeoJsonPagination
     serializer_class = serializers.LocationSerializer
-    queryset = models.Location.objects.all()
+    queryset = models.Location.objects.all().select_related("category")
 
     def list(self, request, theme_id=None, category_id=None):
 
@@ -27,8 +27,5 @@ class LocationList(generics.ListAPIView):
         if category_id is not None:
             queryset = queryset.filter(category__pk=category_id)
 
-        queryset = self.paginate_queryset(queryset)
-
         serializer = self.get_serializer_class()(queryset, many=True)
-        #return Response(serializer.data)
-        return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
