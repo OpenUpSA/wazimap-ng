@@ -111,6 +111,7 @@ class Ward(models.Model):
     geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=True)
     municipality_code = models.CharField(max_length=25)
     code = models.CharField(max_length=8)
+    name = models.CharField(max_length=8, null=False, blank=True)
     area = models.FloatField()
     geom = models.MultiPolygonField(srid=4326)
 
