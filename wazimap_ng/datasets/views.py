@@ -142,7 +142,7 @@ def profile_geography_data_helper(profile_id, geography_code):
 
     try:
         profile_data = models.ProfileData.objects.get(profile_id=profile_id, geography=geography)
-        data = profile_data.data["indicators"]
+        data = profile_data.data.get("indicators", {})
         children_profiles = models.ProfileData.objects.filter(profile_id=profile_id, geography__in=geography.get_children())
         children_profile = get_children_profile(profile_id, geography)
 
@@ -164,7 +164,7 @@ def profile_geography_data_helper(profile_id, geography_code):
                         subindicator["children"] = children_profile[pi.name].get(key, 0)
 
         for highlight in profile.profilehighlight_set.all():
-            highlight_data = profile_data.data["highlights"]
+            highlight_data = profile_data.data.get("highlights", {})
             indicator = pi.indicator;
             if highlight.name in highlight_data:
                 value = highlight_data[highlight.name][0]["count"]
