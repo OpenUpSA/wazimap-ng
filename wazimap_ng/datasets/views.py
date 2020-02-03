@@ -223,6 +223,7 @@ def search_geography(request):
             return 0
 
         else:
+            # TODO South Africa specific geography 
             return {
                 "province": 1,
                 "district": 2,
