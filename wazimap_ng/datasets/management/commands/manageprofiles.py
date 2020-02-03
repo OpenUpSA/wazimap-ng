@@ -68,7 +68,7 @@ class Command(BaseCommand):
                 indicators = [int(i) for i in options["indicator"]]
                 for pi in models.ProfileIndicator.objects.filter(pk__in=indicators):
                     print(f"Loading {pi.label}")
-                    profiles.add_indicator(profile, pi, dataextractor)
+                    profiles.add_indicator(profile, pi, dataextractor, "indicators")
             else:
                 print(f"Loading all indicators")
                 profiles.refresh_profiles(profile, dataextractor)

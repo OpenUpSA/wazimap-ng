@@ -66,3 +66,4 @@ class Command(BaseCommand):
                     print(f"{idx} rows committed")
                     models.DatasetData.objects.bulk_create(datarows, 1000)
                     datarows = []
+            models.DatasetData.objects.bulk_create(datarows, 1000)
