@@ -33,10 +33,27 @@ class District(models.Model):
 You'll probably need to edit the SRID on the geom column - e.g.
 geom = models.MultiPolygonField(srid=4326)
 
+Make sure to have a unique 'code' field. All geographies must have a name field as well.
+
+Also add the following field:
+    geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=True)
+
 3. ./manage.py makemigrations
 4. ./manage.py migrate
 5. ./manage loadshp District ./DC_SA_2011.shp
+6. Link the new boundaries to datasets.models.Geography e.g.:
+    muni_map = {m.code : m for m in models.Geography.objects.filter(level='municipality')}
+    with transaction.atomic():
+        for ward in Ward.objects.all():
+            g = muni.add_child(name=ward.code, code=ward.code, level="ward")
+...         ward.geography=g
+...         ward.save()
+7. Add your new geography to datasets.views:search_geography to define the sort order
+8. Add your geography code to boundaries.models:get_boundary_model_class
+9. Create a serializer for your geography in boundaries.serializers
+10. Add your geography to boundaries.views.get_code and get_classes
 """
+
 
 class Command(BaseCommand):
     help = "Loads shapefiles into the database. Assume that the models already exist."
