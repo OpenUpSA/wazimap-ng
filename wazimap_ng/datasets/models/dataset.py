@@ -94,12 +94,13 @@ class DataExtractor:
     def get_queryset(self, indicator, geographies, universe=None):
         groups = ["data__" + i for i in indicator.groups] + ["geography"]
 
-        c = Cast(KeyTextTransform("Count", "data"), models.IntegerField())
+        c = Cast(KeyTextTransform("Count", "data"), models.FloatField())
 
         qs = (
             DatasetData.objects
                 .filter(dataset=indicator.dataset)
                 .filter(geography__in=geographies)
+                .exclude(data__Count="")
         )
 
         if universe is not None:
