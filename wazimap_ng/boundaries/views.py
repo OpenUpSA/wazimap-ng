@@ -93,15 +93,14 @@ def geography_children_helper(code):
     geography = Geography.objects.get(code=code)
     child_boundaries = geography.get_child_boundaries()
     children = geography.get_children()
+    data = {}
     if len(children) > 0:
-        first_child = children[0]
-        geo_type = code_map[first_child.level]
-        model_class, serializer_class = get_classes(geo_type)
-        serializer = serializer_class(child_boundaries, many=True)
-        data = serializer.data
-
-        return data
-    return {}
+        for child_level, child_level_boundaries in child_boundaries.items():
+            geo_type = code_map[child_level]
+            model_class, serializer_class = get_classes(geo_type)
+            serializer = serializer_class(child_level_boundaries, many=True)
+            data[child_level] = serializer.data
+    return data
 
 
 class GeographyChildren(GeographySwitchMixin, generics.ListAPIView):

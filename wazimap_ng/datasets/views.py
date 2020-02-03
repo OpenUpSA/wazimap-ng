@@ -135,56 +135,51 @@ def profile_geography_data(request, profile_id, geography_code):
 def profile_geography_data_helper(profile_id, geography_code):
     profile = models.Profile.objects.get(pk=profile_id)
     geography = models.Geography.objects.get(code=geography_code)
-
-    profile_data = models.ProfileData.objects.get(profile_id=profile_id, geography=geography)
-    data = profile_data.data["indicators"]
-
-    children_profiles = models.ProfileData.objects.filter(profile_id=profile_id, geography__in=geography.get_children())
-    children_profile = get_children_profile(profile_id, geography)
-
     geo_js = AncestorGeographySerializer().to_representation(geography)
     data_js = {}
     key_metrics = []
-
-
-    for pi in profile.profileindicator_set.order_by("subcategory__category__name", "subcategory__name").select_related():
-        indicator = pi.indicator
-
-        if pi.key_metric:
-            value = data.get(indicator.name, [{"count": "-"}])[0]
-            key_metrics.append({"label": pi.indicator.label, "value": value["count"]})
-        else:
-            category_js = data_js.setdefault(pi.subcategory.category.name, {})
-            subcat_js = category_js.setdefault(pi.subcategory.name, {})
-            indicator_data = data.get(pi.name, {})
-            subcat_js[pi.label] = indicator_data
-            for subindicator in indicator_data:
-                if pi.name in children_profile:
-                    # TODO change name from children to child_geographies - need to change the UI as well
-                    key = subindicator["key"]
-                    subindicator["children"] = children_profile[pi.name].get(key, 0)
-                    # try:
-                    #     subindicator["children"] = children_profile[pi.name][subindicator["key"]]
-                    # except KeyError:
-                    #     print("Error" * 10)
-
     highlights = {}
-    for highlight in profile.profilehighlight_set.all():
-        highlight_data = profile_data.data["highlights"]
-        indicator = pi.indicator;
-        if highlight.name in highlight_data:
-            value = highlight_data[highlight.name][0]["count"]
 
-            for v in highlight_data[highlight.name]:
-                if v["key"] == highlight.value:
-                    value = v["count"]
+    try:
+        profile_data = models.ProfileData.objects.get(profile_id=profile_id, geography=geography)
+        data = profile_data.data["indicators"]
+        children_profiles = models.ProfileData.objects.filter(profile_id=profile_id, geography__in=geography.get_children())
+        children_profile = get_children_profile(profile_id, geography)
+
+        for pi in profile.profileindicator_set.order_by("subcategory__category__name", "subcategory__name").select_related():
+            indicator = pi.indicator
+
+            if pi.key_metric:
+                value = data.get(indicator.name, [{"count": "-"}])[0]
+                key_metrics.append({"label": pi.indicator.label, "value": value["count"]})
+            else:
+                category_js = data_js.setdefault(pi.subcategory.category.name, {})
+                subcat_js = category_js.setdefault(pi.subcategory.name, {})
+                indicator_data = data.get(pi.name, {})
+                subcat_js[pi.label] = indicator_data
+                for subindicator in indicator_data:
+                    if pi.name in children_profile:
+                        # TODO change name from children to child_geographies - need to change the UI as well
+                        key = subindicator["key"]
+                        subindicator["children"] = children_profile[pi.name].get(key, 0)
+
+        for highlight in profile.profilehighlight_set.all():
+            highlight_data = profile_data.data["highlights"]
+            indicator = pi.indicator;
+            if highlight.name in highlight_data:
+                value = highlight_data[highlight.name][0]["count"]
+
+                for v in highlight_data[highlight.name]:
+                    if v["key"] == highlight.value:
+                        value = v["count"]
 
 
-            highlights[highlight.name] = {
-                "label": highlight.label,
-                "count": value
-            }
-
+                highlights[highlight.name] = {
+                    "label": highlight.label,
+                    "count": value
+                }
+    except models.ProfileData.DoesNotExist:
+        print(f"ProfileData for {geography_code} does not exist")
 
 
     js = {

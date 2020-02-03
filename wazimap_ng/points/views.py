@@ -19,7 +19,6 @@ class LocationList(generics.ListAPIView):
     queryset = models.Location.objects.all().select_related("category")
 
     def list(self, request, theme_id=None, category_id=None):
-
         queryset = self.get_queryset()
         if theme_id is not None:
             queryset = queryset.filter(category__theme__pk=theme_id)
@@ -28,4 +27,5 @@ class LocationList(generics.ListAPIView):
             queryset = queryset.filter(category__pk=category_id)
 
         serializer = self.get_serializer_class()(queryset, many=True)
-        return Response(serializer.data)
+        data = serializer.data
+        return Response(data)

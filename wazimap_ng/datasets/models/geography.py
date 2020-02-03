@@ -45,13 +45,16 @@ class Geography(MP_Node):
         from ...boundaries.models import get_boundary_model_class
         children = self.get_children()
         codes = [c.code for c in children]
+        levels = set(c.level for c in children)
+
+        child_types = {}
+
         if len(children) > 0:
-            first_child = children[0]
-            child_level = first_child.level
-            boundary_class = get_boundary_model_class(child_level)
-            if boundary_class is not None:
-                return boundary_class.objects.filter(code__in=codes).select_related("geography")
-        return None
+            for child_level in levels:
+                boundary_class = get_boundary_model_class(child_level)
+                if boundary_class is not None:
+                    child_types[child_level] = boundary_class.objects.filter(code__in=codes).select_related("geography")
+        return child_types
 
 
 
