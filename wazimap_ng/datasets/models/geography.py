@@ -37,7 +37,8 @@ class Geography(MP_Node):
     class Meta:
         verbose_name_plural = "geographies"
         indexes = [
-            GinTrgmIndex(fields=["name"])
+            GinTrgmIndex(fields=["name"]),
+            models.Index(fields=["code"], name="idx_datasets_geography_code"),
         ]
         ordering = ["id"]
 
