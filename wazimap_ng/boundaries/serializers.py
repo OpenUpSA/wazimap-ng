@@ -6,14 +6,16 @@ from ..datasets.models import Geography
 
 from django.core.serializers import serialize
 
+
 class GeographySerializer(GeoFeatureModelSerializer):
     geom = GeometrySerializerMethodField()
     parent = serializers.SerializerMethodField()
 
     # TODO might want simplification to come from settings.py
-    def __init__(self, *args, simplification=0.05, **kwargs):
+    def __init__(self, *args, simplification=0.05, parentCode=None, **kwargs):
         super(GeographySerializer, self).__init__(*args, **kwargs)
         self.simplification = simplification
+        self.parentCode = parentCode
 
 
     def get_geom(self, obj):
@@ -23,6 +25,9 @@ class GeographySerializer(GeoFeatureModelSerializer):
         return obj.geom
 
     def get_parent(self, obj):
+        if self.parentCode is not None:
+            return self.parentCode
+
         code = obj.code
         # TODO how to handle no results
         # TODO this might get inefficient with many children

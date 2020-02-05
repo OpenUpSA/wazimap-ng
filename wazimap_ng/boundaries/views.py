@@ -90,6 +90,7 @@ def geography_item_helper(code):
 
 @cache_decorator("geography_children")
 def geography_children_helper(code):
+
     geography = Geography.objects.get(code=code)
     child_boundaries = geography.get_child_boundaries()
     children = geography.get_children()
@@ -98,7 +99,7 @@ def geography_children_helper(code):
         for child_level, child_level_boundaries in child_boundaries.items():
             geo_type = code_map[child_level]
             model_class, serializer_class = get_classes(geo_type)
-            serializer = serializer_class(child_level_boundaries, many=True)
+            serializer = serializer_class(child_level_boundaries, many=True, parentCode=code)
             data[child_level] = serializer.data
     return data
 
