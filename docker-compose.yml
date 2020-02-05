@@ -12,6 +12,7 @@ services:
       - POSTGRES_PASS=postgres
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,pg_trgm
     stop_grace_period: 60s
+    container_name: wazimap-ng_db_1
   web:
     image: adieyal/wazimap-ng:latest
     depends_on:
@@ -23,5 +24,6 @@ services:
     volumes:
       - ./:/app/
       - ./scripts:/scripts/
+    container_name: wazimap-ng_web_1
 volumes:
   wazimap-data:
