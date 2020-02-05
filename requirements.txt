@@ -12,6 +12,9 @@ dj-database-url==0.5.0
 # Model Tools
 django-model-utils==3.1.2
 django_unique_upload==0.2.1
+django-picklefield==2.1.1
+django-treebeard==4.3
+django-json-widget==0.2.0
 
 # Rest apis
 djangorestframework==3.11.0
@@ -41,12 +44,14 @@ boto3==1.9.93
 # Serving static content
 whitenoise==5.0.1
 django-cors-headers==3.2.0
-django-treebeard==4.3
-django-json-widget==0.2.0
 
 # GIS libraries
 GDAL==3.0.2
 djangorestframework-gis==0.14
 
-# Memcached server
-python-memcached==1.59
+django-q==1.0.2
+
+# Data manipulation
+pandas==1.0.0
+xlrd==1.2.0
+

@@ -4,6 +4,8 @@ from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 from django_json_widget.widgets import JSONEditorWidget
 
+from django_q.tasks import async_task
+
 from . import models
 
 admin.site.register(models.IndicatorCategory)
@@ -112,3 +114,16 @@ class UniverseAdmin(admin.ModelAdmin):
   formfield_overrides = {
     fields.JSONField: {"widget": JSONEditorWidget},
   }
+
+
+@admin.register(models.DatasetFile)
+class DatasetFileAdmin(admin.ModelAdmin):
+
+    def save_model(self, request, obj, form, change):
+        is_created = obj.pk == None and change == False
+        super().save_model(request, obj, form, change)
+        if is_created:
+            async_task("wazimap_ng.datasets.tasks.process_uploaded_file", obj)
+
+        return obj
+    

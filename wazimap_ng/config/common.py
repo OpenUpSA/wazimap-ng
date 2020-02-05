@@ -32,6 +32,7 @@ class Common(Configuration):
         'whitenoise.runserver_nostatic',
 
         "debug_toolbar",
+        "django_q",
 
         # Your apps
         "wazimap_ng.users",
@@ -226,6 +227,8 @@ class Common(Configuration):
 
     CORS_ORIGIN_ALLOW_ALL = True
 
+FILE_SIZE_LIMIT = 20 * 1024 * 1024
+ALLOWED_FILE_EXTENSIONS = ["csv", "xls", "xlsx"]
 
 TESTING = "test" in sys.argv
 

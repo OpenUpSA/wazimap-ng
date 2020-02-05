@@ -39,3 +39,7 @@ class Local(Common):
             'LOCATION': '/var/tmp/django_cache',
         }
     }
+
+    Q_CLUSTER = {
+       "orm": 'default',
+    }
