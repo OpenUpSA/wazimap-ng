@@ -150,3 +150,11 @@ class CountryDataExtractor:
 
         return counts
 
+class IndicatorData(models.Model):
+    """
+    Indicator Data for caching results of indicator group according to
+    geography.
+    """
+    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE)
+    geography = models.ForeignKey(Geography, on_delete=models.CASCADE)
+    data = JSONField(default=dict, null=True, blank=True)

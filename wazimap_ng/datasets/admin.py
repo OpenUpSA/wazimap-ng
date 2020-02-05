@@ -126,4 +126,20 @@ class DatasetFileAdmin(admin.ModelAdmin):
             async_task("wazimap_ng.datasets.tasks.process_uploaded_file", obj)
 
         return obj
-    
+
+@admin.register(models.IndicatorData)
+class IndicatorDataAdmin(admin.ModelAdmin):
+
+    formfield_overrides = {
+        fields.JSONField: {"widget": JSONEditorWidget},
+    }
+
+    def save_model(self, request, obj, form, change):
+        is_created = obj.pk == None and change == False
+        super().save_model(request, obj, form, change)
+        if is_created:
+            async_task(
+                "wazimap_ng.datasets.tasks.indicator_data_extraction", obj
+            )
+
+        return obj
