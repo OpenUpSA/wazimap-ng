@@ -26,28 +26,3 @@ def process_uploaded_file(dataset_file):
     datasource = (dict(d[1]) for d in df.iterrows())
     loaddata(dataset_file.title, datasource)
 
-
-    # print(header)
-    # geography_header_index = header.index("geography")
-    # count_header_index = header.index("count")
-
-    # dataset = models.Dataset.objects.create(name=document.title)
-
-    # data_rows = []
-    # for line in data[1:]:
-    #     extra_params = {}
-    #     geo_code = line[geography_header_index]
-    #     count = line[count_header_index]
-    #     for index, value in enumerate(line):
-    #         if index != geography_header_index:
-    #             extra_params[header[index]] = value
-    #     geography = geolookup[geo_code]
-
-
-    #     data_rows.append(
-    #         models.DatasetData(
-    #             dataset=dataset, geography=geography, data=extra_params
-    #         )
-    #     )
-
-    # models.DatasetData.objects.bulk_create(data_rows, 1000)
