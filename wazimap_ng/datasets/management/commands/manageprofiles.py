@@ -55,6 +55,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         profile = models.Profile.objects.get(pk=options["profile_id"])
+        models.ProfileData.objects.create_profiles(profile)
 
         if options["list_profiles"]:
             self._list_profiles()
