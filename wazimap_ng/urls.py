@@ -13,7 +13,7 @@ from .boundaries import views as boundaries_views
 from .general import views as general_views
 
 
-cache = cache_page(60*60)
+cache = cache_page(60*60 * 24 * 365)
 
 urlpatterns = [
 
