@@ -22,7 +22,7 @@ echo "create extension postgis;" | psql -U wazimap_ng -h localhost wazimap_ng
 echo "create extension pg_trgm;" | psql -U wazimap_ng -h localhost wazimap_ng
  -->```
 
-curl https://wazimap-ng.s3-eu-west-1.amazonaws.com/wazimap-ng-20200113.dump.gz | gunzip -c | docker exec -i wazimap-ng_db_1 pg_restore -U postgres -d wazimap_ng
+curl https://wazimap-ng.s3-eu-west-1.amazonaws.com/wazimap_ng-2020203.bak.gz | gunzip -c | docker exec -i wazimap-ng_db_1 pg_restore -U postgres -d wazimap_ng
 ```
 
 If this is the first time you're running this, bring the containers down, then up again
