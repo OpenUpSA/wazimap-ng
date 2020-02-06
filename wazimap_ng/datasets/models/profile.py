@@ -20,6 +20,7 @@ class Profile(models.Model):
 class IndicatorCategory(models.Model):
     name = models.CharField(max_length=25)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.profile.name} -> {self.name}"
@@ -32,6 +33,7 @@ class IndicatorCategory(models.Model):
 class IndicatorSubcategory(models.Model):
     name = models.CharField(max_length=25)
     category = models.ForeignKey(IndicatorCategory, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.category.name} -> {self.name}"
@@ -49,6 +51,7 @@ class ProfileIndicator(models.Model):
     universe = models.ForeignKey(Universe, null=True, blank=True, on_delete=models.CASCADE, help_text="The subset of the population considered for this indicator.")
     name = models.CharField(max_length=60, null=False, blank=True, help_text="Name of the indicator in the database")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.profile.name} -> {self.label}"

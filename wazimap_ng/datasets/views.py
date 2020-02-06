@@ -154,10 +154,21 @@ def profile_geography_data_helper(profile_id, geography_code):
                 value = data.get(indicator.name, [{"count": "-"}])[0]
                 key_metrics.append({"label": pi.indicator.label, "value": value["count"]})
             else:
-                category_js = data_js.setdefault(pi.subcategory.category.name, {})
-                subcat_js = category_js.setdefault(pi.subcategory.name, {})
+                subcategory = pi.subcategory
+                category = subcategory.category
+
+                category_js = data_js.setdefault(category.name, {})
+                category_js["description"] = category.description
+                subcat_js = category_js.setdefault(subcategory.name, {})
+                subcat_js["description"] = subcategory.description
+                indicators_js  = subcat_js.setdefault("indicators", {})
+
                 indicator_data = data.get(pi.name, {})
-                subcat_js[pi.label] = indicator_data
+                indicators_js[pi.label] = {
+                    "description": pi.description,
+                    "subindicators": indicator_data
+                }
+
                 for subindicator in indicator_data:
                     if pi.name in children_profile:
                         # TODO change name from children to child_geographies - need to change the UI as well
@@ -186,7 +197,7 @@ def profile_geography_data_helper(profile_id, geography_code):
     js = {
         "geography": geo_js,
         "key_metrics": key_metrics,
-        "indicators": data_js,
+        "profile_data": data_js,
         "highlights": highlights,
     }
 
