@@ -107,7 +107,14 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
 
 @admin.register(models.Indicator)
 class IndicatorAdmin(admin.ModelAdmin):
-    pass
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        async_task(
+            "wazimap_ng.datasets.tasks.indicator_data_extraction",
+            obj
+        )
+        return obj
 
 @admin.register(models.Universe)
 class UniverseAdmin(admin.ModelAdmin):
@@ -124,7 +131,6 @@ class DatasetFileAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if is_created:
             async_task("wazimap_ng.datasets.tasks.process_uploaded_file", obj)
-
         return obj
 
 @admin.register(models.IndicatorData)
@@ -133,13 +139,3 @@ class IndicatorDataAdmin(admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
-
-    def save_model(self, request, obj, form, change):
-        is_created = obj.pk == None and change == False
-        super().save_model(request, obj, form, change)
-        if is_created:
-            async_task(
-                "wazimap_ng.datasets.tasks.indicator_data_extraction", obj
-            )
-
-        return obj
