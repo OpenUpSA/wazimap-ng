@@ -8,8 +8,9 @@ services:
     volumes:
       - "wazimap-data:/var/lib/postgresql/"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASS=postgres
+      - POSTGRES_DBNAME=wazimap_ng
+      - POSTGRES_USER=wazimap_ng
+      - POSTGRES_PASS=wazimap_ng
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,pg_trgm
     stop_grace_period: 60s
     container_name: wazimap-ng_db_1
