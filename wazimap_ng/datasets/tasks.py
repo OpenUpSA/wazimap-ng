@@ -44,33 +44,53 @@ def indicator_data_extraction(indicator):
 
     So for Gender group object should look like : {"Gender": "Male", "count": 123, ...}
     """
-    # Delete already existing
+    # Delete already existing Indicator Data objects for specific indicator
     models.IndicatorData.objects.filter(indicator=indicator).delete()
+
+    # Fetch all Geographies and filters
     geographies = models.Geography.objects.all()
+
+    filters = {}
+    if indicator.universe:
+        filters = indicator.universe.filters
+        if filters and isinstance(filters, dict):
+            filters = {f"data__{k}": v for k, v in filters.items()}
+
+    # Format groups & Count
     groups = ["data__" + i for i in indicator.groups]
     c = Cast(KeyTextTransform("Count", "data"), FloatField())
 
+    # Create Indicator Data models according to geographies
     for geography in geographies:
         datarows = []
-        qs = (
-            models.DatasetData.objects
-                .filter(
-                    dataset=indicator.dataset,
-                    geography=geography,
-                    data__has_keys=indicator.groups
-                )
-                .exclude(data__Count="")
-        )
+
+        # Get Data set data according to geography and dataset linked to
+        # indicator and make sure that all groups exist in DatasetData object
+
+        filter_query = {
+            "dataset": indicator.dataset,
+            "geography": geography,
+            "data__has_keys": indicator.groups
+        }
+
+        if filters:
+            filter_query.update(filters)
+
+        qs = models.DatasetData.objects.filter(**filter_query).exclude(data__Count="")
 
         if qs.exists():
+            # Get data according to groups and get sum of count
             data_list = list(
                 qs.values(*groups).annotate(count=Sum(c)).order_by("geography")
             )
 
+            # Replace data__ from result group keys
             data_dump = json.dumps(data_list)
             data = json.loads(data_dump.replace("data__", ""))
 
             datarows.append(models.IndicatorData(
                 indicator=indicator, geography=geography, data=data
             ))
-        models.IndicatorData.objects.bulk_create(datarows, 1000)
+
+        if datarows:
+            models.IndicatorData.objects.bulk_create(datarows, 1000)
