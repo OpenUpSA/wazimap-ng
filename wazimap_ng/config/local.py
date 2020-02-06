@@ -42,4 +42,5 @@ class Local(Common):
 
     Q_CLUSTER = {
        "orm": 'default',
+       "retry": 2000,
     }
