@@ -141,3 +141,17 @@ class IndicatorDataAdmin(admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
+
+    fieldsets = (
+        ("Database fields (can't change after being created)", {
+            "fields": ("geography",)
+        }),
+        ("Data fields", {
+          "fields": ("indicator", "data")
+        })
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj: # editing an existing object
+            return ("geography",) + self.readonly_fields
+        return self.readonly_fields
