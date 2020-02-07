@@ -159,7 +159,8 @@ def profile_geography_data_helper(profile_id, geography_code):
 
                 category_js = data_js.setdefault(category.name, {})
                 category_js["description"] = category.description
-                subcat_js = category_js.setdefault(subcategory.name, {})
+                subcats_js = category_js.setdefault("subcategories", {})
+                subcat_js = subcats_js.setdefault(subcategory.name, {})
                 subcat_js["description"] = subcategory.description
                 indicators_js  = subcat_js.setdefault("indicators", {})
 
