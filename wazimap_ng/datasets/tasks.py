@@ -1,13 +1,18 @@
 import json
+import collections
 import pandas as pd
 
 from django.db import transaction
 from django.db.models import Sum, FloatField
 from django.db.models.functions import Cast
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db.models import Count
 
 from . import models
 from .dataloader import loaddata
+from itertools import groupby
+from operator import itemgetter
+
 
 @transaction.atomic
 def process_uploaded_file(dataset_file):
@@ -30,6 +35,7 @@ def process_uploaded_file(dataset_file):
     datasource = (dict(d[1]) for d in df.iterrows())
     loaddata(dataset_file.title, datasource)
 
+
 @transaction.atomic
 def indicator_data_extraction(indicator):
     """
@@ -47,9 +53,7 @@ def indicator_data_extraction(indicator):
     # Delete already existing Indicator Data objects for specific indicator
     models.IndicatorData.objects.filter(indicator=indicator).delete()
 
-    # Fetch all Geographies and filters
-    geographies = models.Geography.objects.all()
-
+    # Fetch filters for universe
     filters = {}
     if indicator.universe:
         filters = indicator.universe.filters
@@ -60,37 +64,37 @@ def indicator_data_extraction(indicator):
     groups = ["data__" + i for i in indicator.groups]
     c = Cast(KeyTextTransform("Count", "data"), FloatField())
 
-    # Create Indicator Data models according to geographies
-    for geography in geographies:
-        datarows = []
+    filter_query = {
+        "dataset": indicator.dataset,
+        "data__has_keys": indicator.groups
+    }
 
-        # Get Data set data according to geography and dataset linked to
-        # indicator and make sure that all groups exist in DatasetData object
+    if filters:
+        filter_query.update(filters)
 
-        filter_query = {
-            "dataset": indicator.dataset,
-            "geography": geography,
-            "data__has_keys": indicator.groups
-        }
+    qs = models.DatasetData.objects.filter(**filter_query).exclude(data__Count="").order_by("geography_id")
 
-        if filters:
-            filter_query.update(filters)
+    # Group data according to geography_id and get sum of data__Count
+    data = list(
+        qs.values(*groups, "geography_id").annotate(Count=Sum(c))
+    )
 
-        qs = models.DatasetData.objects.filter(**filter_query).exclude(data__Count="")
+    # group data according to geography_id
+    grouped = collections.defaultdict(list)
+    for item in data:
+        geography_id = item.pop("geography_id")
+        grouped[geography_id].append(item)
 
-        if qs.exists():
-            # Get data according to groups and get sum of count
-            data_list = list(
-                qs.values(*groups).annotate(count=Sum(c)).order_by("geography")
-            )
+    # Replace data__ from result group keys
+    data_dump = json.dumps(grouped)
+    grouped = json.loads(data_dump.replace("data__", ""))
 
-            # Replace data__ from result group keys
-            data_dump = json.dumps(data_list)
-            data = json.loads(data_dump.replace("data__", ""))
+    datarows = []
 
-            datarows.append(models.IndicatorData(
-                indicator=indicator, geography=geography, data=data
-            ))
-
-        if datarows:
-            models.IndicatorData.objects.bulk_create(datarows, 1000)
+    # Create indicator data
+    for key, value in grouped.items():
+        datarows.append(models.IndicatorData(
+            indicator=indicator, geography_id=key, data=value
+        ))
+    if datarows:
+        models.IndicatorData.objects.bulk_create(datarows, 1000)
