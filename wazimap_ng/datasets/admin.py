@@ -144,14 +144,14 @@ class IndicatorDataAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            "fields": ("geography",)
+            "fields": ("geography", "indicator")
         }),
         ("Data fields", {
-          "fields": ("indicator", "data")
+          "fields": ("data",)
         })
     )
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
-            return ("geography",) + self.readonly_fields
+            return ("geography", "indicator") + self.readonly_fields
         return self.readonly_fields
