@@ -112,8 +112,10 @@ class IndicatorAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         async_task(
             "wazimap_ng.datasets.tasks.indicator_data_extraction",
-            obj
+            obj,
+            task_name=f"Data Extraction: {obj.name}"
         )
+
         return obj
 
 @admin.register(models.Universe)

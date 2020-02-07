@@ -1,6 +1,7 @@
 import json
 import collections
 import pandas as pd
+from itertools import groupby
 
 from django.db import transaction
 from django.db.models import Sum, FloatField
@@ -35,7 +36,6 @@ def process_uploaded_file(dataset_file):
     datasource = (dict(d[1]) for d in df.iterrows())
     loaddata(dataset_file.title, datasource)
 
-
 @transaction.atomic
 def indicator_data_extraction(indicator):
     """
@@ -55,7 +55,7 @@ def indicator_data_extraction(indicator):
 
     # Fetch filters for universe
     filters = {}
-    if indicator.universe:
+    if indicator.universe is not None:
         filters = indicator.universe.filters
         if filters and isinstance(filters, dict):
             filters = {f"data__{k}": v for k, v in filters.items()}
@@ -75,26 +75,20 @@ def indicator_data_extraction(indicator):
     qs = models.DatasetData.objects.filter(**filter_query).exclude(data__Count="").order_by("geography_id")
 
     # Group data according to geography_id and get sum of data__Count
-    data = list(
-        qs.values(*groups, "geography_id").annotate(Count=Sum(c))
-    )
-
-    # group data according to geography_id
-    grouped = collections.defaultdict(list)
-    for item in data:
-        geography_id = item.pop("geography_id")
-        grouped[geography_id].append(item)
-
-    # Replace data__ from result group keys
-    data_dump = json.dumps(grouped)
-    grouped = json.loads(data_dump.replace("data__", ""))
+    data = groupby(qs.values(*groups, "geography_id").annotate(Count=Sum(c)), lambda x: x["geography_id"])
 
     datarows = []
 
     # Create indicator data
-    for key, value in grouped.items():
+    for key, group in data:
+        data_dump = json.dumps(list(group))
+        grouped = json.loads(data_dump.replace("data__", ""))
+        for item in grouped:
+            item.pop("geography_id")
+
         datarows.append(models.IndicatorData(
-            indicator=indicator, geography_id=key, data=value
+            indicator=indicator, geography_id=key, data=grouped
         ))
-    if datarows:
+
+    if len(datarows) > 0:
         models.IndicatorData.objects.bulk_create(datarows, 1000)
