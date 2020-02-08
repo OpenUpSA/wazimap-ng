@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, re_path
 from django.conf.urls import include
-from django.views.decorators.cache import cache_page
+from django.views.decorators.cache import cache_page, cache_control
 
 from django.views.generic.base import RedirectView
 
@@ -13,7 +13,10 @@ from .boundaries import views as boundaries_views
 from .general import views as general_views
 
 
-cache = cache_page(60*60 * 24 * 365)
+expiry = 60 * 60 * 24 * 365
+
+def cache(func):
+    return cache_page(expiry)(cache_control(public=True)(func))
 
 urlpatterns = [
 
