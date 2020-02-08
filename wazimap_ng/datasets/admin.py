@@ -164,7 +164,6 @@ class IndicatorDataAdmin(admin.ModelAdmin):
     list_filter = ("indicator__label",)
 
     search_fields = ["geography__name"]
-    autocomplete_fields = ["geography__name"]
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object

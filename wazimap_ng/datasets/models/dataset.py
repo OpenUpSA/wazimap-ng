@@ -64,14 +64,13 @@ class DatasetData(models.Model):
         ordering = ["id"]
 
 class Universe(models.Model):
-    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     filters = JSONField()
 
     name = models.CharField(max_length=50)
     label = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.dataset.name} -> {self.label}"
+        return f"{self.label}"
 
     class Meta:
         ordering = ["id"]
