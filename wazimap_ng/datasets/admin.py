@@ -138,6 +138,12 @@ class DatasetFileAdmin(admin.ModelAdmin):
 @admin.register(models.IndicatorData)
 class IndicatorDataAdmin(admin.ModelAdmin):
 
+    def indicator__label(self, obj):
+        return obj.indicator.label
+
+    def parent(self, obj):
+        return obj.geography.get_parent()
+
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
@@ -150,6 +156,15 @@ class IndicatorDataAdmin(admin.ModelAdmin):
           "fields": ("data",)
         })
     )
+
+    list_display = (
+        "indicator__label", "geography", "parent"
+    )
+
+    list_filter = ("indicator__label",)
+
+    search_fields = ["geography__name"]
+    autocomplete_fields = ["geography__name"]
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
