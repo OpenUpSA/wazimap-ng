@@ -227,7 +227,7 @@ class Common(Configuration):
 
     CORS_ORIGIN_ALLOW_ALL = True
 
-FILE_SIZE_LIMIT = 20 * 1024 * 1024
+FILE_SIZE_LIMIT = 1000 * 1024 * 1024
 ALLOWED_FILE_EXTENSIONS = ["csv", "xls", "xlsx"]
 
 TESTING = "test" in sys.argv
