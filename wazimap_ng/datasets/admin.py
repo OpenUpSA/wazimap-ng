@@ -132,7 +132,7 @@ class DatasetFileAdmin(admin.ModelAdmin):
         is_created = obj.pk == None and change == False
         super().save_model(request, obj, form, change)
         if is_created:
-            async_task("wazimap_ng.datasets.tasks.process_uploaded_file", obj)
+            async_task("wazimap_ng.datasets.tasks.process_uploaded_file", obj, task_name=f"Uploading data: {obj.title}")
         return obj
 
 @admin.register(models.IndicatorData)
