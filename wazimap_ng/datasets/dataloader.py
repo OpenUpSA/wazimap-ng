@@ -19,11 +19,10 @@ def loaddata(name, iterable):
     datarows = []
 
     for idx, row in enumerate(iterable):
-        print(row)
         geo_code = row["Geography"]
         try:
             geography = load_geography(geo_code)
-        except modes.Geography.DoesNotExist:
+        except models.Geography.DoesNotExist:
             print(f"Geography {geo_code} not found - skipping it.")
             continue
 

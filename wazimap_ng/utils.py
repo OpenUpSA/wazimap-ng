@@ -1,5 +1,6 @@
 from django.core.cache import cache
 
+
 def cache_decorator(key, expiry=60*60*24*365):
     def _cache_decorator(func):
         def wrapper(*args, **kwargs):
