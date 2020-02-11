@@ -173,7 +173,7 @@ def profile_geography_data_helper(profile_id, geography_code):
             subcat_js["description"] = subcategory.description
             indicators_js  = subcat_js.setdefault("indicators", {})
 
-            indicator_data = data.get(pi.indicator.label, {})
+            indicator_data = data.get(pi.indicator.label, [])
             indicators_js[pi.label] = {
                 "description": pi.description,
                 "subindicators": indicator_data
