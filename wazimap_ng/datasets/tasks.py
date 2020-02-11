@@ -32,9 +32,9 @@ def process_uploaded_file(dataset_file):
     else:
         df = pd.read_excel(dataset_file.document, engine="xlrd")
 
-
+    groups = [group for group in df.columns.values if group not in ["Geography", "Count"]]
     datasource = (dict(d[1]) for d in df.iterrows())
-    loaddata(dataset_file.title, datasource)
+    loaddata(dataset_file.title, datasource, groups)
 
 @transaction.atomic
 def indicator_data_extraction(indicator):

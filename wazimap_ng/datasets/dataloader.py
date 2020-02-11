@@ -14,8 +14,8 @@ def load_geography(geo_code):
     return cache[geo_code]
 
 @transaction.atomic
-def loaddata(name, iterable):
-    dataset = models.Dataset.objects.create(name=name)
+def loaddata(name, iterable, groups):
+    dataset = models.Dataset.objects.create(name=name, groups=groups)
     datarows = []
 
     for idx, row in enumerate(iterable):
@@ -33,7 +33,6 @@ def loaddata(name, iterable):
 
 
         del row["Geography"]
-        print(row)
 
         dd = models.DatasetData(dataset=dataset, geography=geography, data=row)
         datarows.append(dd)
