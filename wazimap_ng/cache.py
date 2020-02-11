@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 
 from django.core.cache import cache
 from django.db.models.signals import post_save
@@ -7,6 +8,8 @@ from django.views.decorators.cache import cache_page, cache_control
 
 from .datasets.models import ProfileIndicator
 from .points.models import Location, Category, Theme
+
+logger = logging.getLogger(__name__)
 
 profile_key = "etag-Profile-%s"
 location_key = "etag-Location-%s"
@@ -52,6 +55,7 @@ def point_updated_location(sender, instance, **kwargs):
 def point_updated_category(sender, instance, **kwargs):
     category_id = instance.id
     key =location_key % category_id
+    logger.debug(f"Set cache key: {key}")
     cache.set(key, datetime.now())
 
 def cache_headers(func):

@@ -189,6 +189,10 @@ class Common(Configuration):
             }
         },
         "loggers": {
+            "wazimap_ng": {
+                "handlers": ["console"],
+                "propagate": True,
+            },
             "django": {
                 "handlers": ["console"],
                 "propagate": True,
