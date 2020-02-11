@@ -1,4 +1,5 @@
 from django.http import Http404
+from django.views.decorators.http import condition
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
@@ -8,6 +9,7 @@ from .serializers import AncestorGeographySerializer, GeographySerializer
 from . import serializers
 from . import models
 from . import mixins
+from ..cache import etag_profile_updated, last_modified_profile_updated
 
 class DatasetList(generics.ListAPIView):
     queryset = models.Dataset.objects.all()
@@ -131,6 +133,7 @@ def get_children_profile(profile_indicator_ids, geography):
 
     return profile
 
+@condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
 def profile_geography_data(request, profile_id, geography_code):
     js = profile_geography_data_helper(profile_id, geography_code)

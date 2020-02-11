@@ -1,3 +1,5 @@
+from django.views.decorators.http import condition
+
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
@@ -5,11 +7,12 @@ from ..datasets import models as dataset_models
 from ..datasets import views as dataset_views
 from ..boundaries import models as boundaries_models
 from ..boundaries import views as boundaries_views
+from ..cache import etag_profile_updated, last_modified_profile_updated
 
-def consolidated_profile_helper(profile_id, code):
-    profile_js = dataset_views.profile_geography_data_helper(profile_id, code)
-    boundary_js = boundaries_views.geography_item_helper(code)
-    children_boundary_js = boundaries_views.geography_children_helper(code)
+def consolidated_profile_helper(profile_id, geography_code):
+    profile_js = dataset_views.profile_geography_data_helper(profile_id, geography_code)
+    boundary_js = boundaries_views.geography_item_helper(geography_code)
+    children_boundary_js = boundaries_views.geography_children_helper(geography_code)
 
     parent_layers = []
     parents = profile_js["geography"]["parents"]
@@ -26,12 +29,14 @@ def consolidated_profile_helper(profile_id, code):
         "parent_layers": parent_layers,
     })
 
+@condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
-def consolidated_profile(request, profile_id, code):
-    js = consolidated_profile_helper(profile_id, code)
+def consolidated_profile(request, profile_id, geography_code):
+    js = consolidated_profile_helper(profile_id, geography_code)
     return Response(js)
 
+@condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
-def consolidated_profile_test(request, profile_id, code):
-    js = consolidated_profile_helper(profile_id, code)
-    return Response("test")
+def consolidated_profile_test(request, profile_id, geography_code):
+    js = consolidated_profile_helper(profile_id, geography_code)
+    return Response("test2")

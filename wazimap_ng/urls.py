@@ -3,7 +3,6 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, re_path
 from django.conf.urls import include
-from django.views.decorators.cache import cache_page, cache_control
 
 from django.views.generic.base import RedirectView
 
@@ -11,12 +10,8 @@ from .datasets import views as dataset_views
 from .points import views as points_views
 from .boundaries import views as boundaries_views
 from .general import views as general_views
+from .cache import cache_headers as cache
 
-
-expiry = 60 * 60 * 24 * 365
-
-def cache(func):
-    return cache_page(expiry)(cache_control(public=True)(func))
 
 urlpatterns = [
 
@@ -94,13 +89,13 @@ urlpatterns = [
     #path("api/v1/boundaries/provinces/", boundaries_views.provinces),
 
     path(
-        "api/v1/all_details/profile/<int:profile_id>/geography/<str:code>/",
+        "api/v1/all_details/profile/<int:profile_id>/geography/<str:geography_code>/",
         cache(general_views.consolidated_profile),
         name="all-details"
     ),
 
     path(
-        "api/v1/all_details/profile/<int:profile_id>/geography/<str:code>/test/",
+        "api/v1/all_details/profile/<int:profile_id>/geography/<str:geography_code>/test/",
         cache(general_views.consolidated_profile_test),
         name="all-details-test"
     ),
