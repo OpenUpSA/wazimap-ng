@@ -45,13 +45,11 @@ def profile_updated(sender, instance, **kwargs):
     cache.set(key, datetime.now())
 
 @receiver(post_save, sender=Location)
-def point_updated(sender, instance, **kwargs):
-    category_id = instance.category.id
-    key =location_key % category_id
-    cache.set(key, datetime.now())
+def point_updated_location(sender, instance, **kwargs):
+    point_updated_category(sender, instance.category, **kwargs)
 
 @receiver(post_save, sender=Category)
-def point_updated(sender, instance, **kwargs):
+def point_updated_category(sender, instance, **kwargs):
     category_id = instance.id
     key =location_key % category_id
     cache.set(key, datetime.now())
