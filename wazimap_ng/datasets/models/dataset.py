@@ -12,6 +12,7 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from .geography import Geography
 class Dataset(models.Model):
     name = models.CharField(max_length=60)
+    groups = ArrayField(models.CharField(max_length=200), blank=True, default=list)
 
     def __str__(self):
         return self.name
@@ -68,6 +69,7 @@ class Universe(models.Model):
 
     name = models.CharField(max_length=50)
     label = models.CharField(max_length=100)
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return f"{self.label}"
@@ -81,7 +83,7 @@ class Indicator(models.Model):
         Universe, on_delete=models.CASCADE, blank=True, null=True
     )
     # Fields to group by
-    groups = ArrayField(models.CharField(max_length=50), blank=True)
+    groups = ArrayField(models.CharField(max_length=50), blank=True, default=list)
     name = models.CharField(max_length=50)
     label = models.CharField(max_length=100)
 

@@ -3,6 +3,7 @@ from django.contrib.postgres import fields
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 from django_json_widget.widgets import JSONEditorWidget
+from django import forms
 
 from django_q.tasks import async_task
 
@@ -105,8 +106,45 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
             return ("profile", "universe", "name") + self.readonly_fields
         return self.readonly_fields
 
+class IndicatorAdminForm(forms.ModelForm):
+    groups = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple)
+    class Meta:
+        model = models.Indicator
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            choices = [[group, group] for group in self.instance.dataset.groups]
+            self.fields['groups'].choices = choices
+            self.fields['groups'].initial = self.instance.groups
+            self.fields['universe'].queryset = models.Universe.objects.filter(dataset=self.instance.dataset)
+
 @admin.register(models.Indicator)
 class IndicatorAdmin(admin.ModelAdmin):
+
+    form = IndicatorAdminForm
+    fieldsets_add_view = [
+        (None, { 'fields': ('dataset', ) } ),
+    ]
+    fieldsets = [
+        (None, { 'fields': ('dataset','universe', 'groups', 'name', 'label') } ),
+    ]
+
+    def add_view(self, request, form_url='', extra_context=None):
+        if request.POST.get("_saveasnew"):
+            self.fieldsets = IndicatorAdmin.fieldsets
+        else:
+            self.fieldsets = IndicatorAdmin.fieldsets_add_view
+
+        extra_context = extra_context or {}
+        extra_context['show_save'] = False
+        return admin.ModelAdmin.add_view(self, request, form_url, extra_context)
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields + ('dataset',)
+        return self.readonly_fields
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
@@ -115,7 +153,6 @@ class IndicatorAdmin(admin.ModelAdmin):
             obj,
             task_name=f"Data Extraction: {obj.name}"
         )
-
         return obj
 
 @admin.register(models.Universe)
