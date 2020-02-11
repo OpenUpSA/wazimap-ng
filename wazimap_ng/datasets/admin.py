@@ -114,7 +114,7 @@ class IndicatorAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance:
+        if self.instance.id:
             choices = [[group, group] for group in self.instance.dataset.groups]
             self.fields['groups'].choices = choices
             self.fields['groups'].initial = self.instance.groups
@@ -140,6 +140,10 @@ class IndicatorAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context['show_save'] = False
         return admin.ModelAdmin.add_view(self, request, form_url, extra_context)
+
+    def change_view(self, request, *args, **kwargs):
+        self.fieldsets = IndicatorAdmin.fieldsets
+        return admin.ModelAdmin.change_view(self, request, *args, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
