@@ -8,8 +8,6 @@ from .serializers import AncestorGeographySerializer, GeographySerializer
 from . import serializers
 from . import models
 from . import mixins
-from ..utils import cache_decorator
-
 
 class DatasetList(generics.ListAPIView):
     queryset = models.Dataset.objects.all()

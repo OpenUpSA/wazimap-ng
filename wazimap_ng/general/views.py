@@ -5,10 +5,7 @@ from ..datasets import models as dataset_models
 from ..datasets import views as dataset_views
 from ..boundaries import models as boundaries_models
 from ..boundaries import views as boundaries_views
-from ..utils import cache_decorator
 
-
-@cache_decorator("consolidated_profile")
 def consolidated_profile_helper(profile_id, code):
     profile_js = dataset_views.profile_geography_data_helper(profile_id, code)
     boundary_js = boundaries_views.geography_item_helper(code)
