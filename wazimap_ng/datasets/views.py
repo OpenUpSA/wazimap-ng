@@ -211,13 +211,11 @@ def profile_geography_data_helper(profile_id, geography_code):
                             count = count + val["Count"]
             else:
                 count = sum([val["Count"] for val in data])
-        else:
-            count = 0
 
-        highlights[highlight.get("name")] = {
-            "label": highlight.get("label"),
-            "count": count
-        }
+            highlights[highlight.get("name")] = {
+                "label": highlight.get("label"),
+                "count": count
+            }
 
     js = {
         "geography": geo_js,
