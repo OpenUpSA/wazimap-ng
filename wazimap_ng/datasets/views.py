@@ -160,7 +160,8 @@ def profile_geography_data_helper(profile_id, geography_code):
         groups = pi.indicator.groups or [None]
 
         if pi.key_metric:
-            value = data.get(indicator.label, [{"count": "-"}])[0]
+
+            value = data.get(indicator.label, [{"Count": "-"}])[0]
             key_metrics.append({"label": pi.label, "value": value["Count"]})
         else:
             subcategory = pi.subcategory
@@ -201,6 +202,7 @@ def profile_geography_data_helper(profile_id, geography_code):
         highlight_value = highlight.get("value")
 
         if indicator_id in indicators:
+            # TODO: Multi group support for filtering for value in profile highlight
             data = indicators.get(indicator_id)
             if highlight_value:
                 groups = highlight.get("indicator__groups", None)
