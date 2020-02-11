@@ -40,7 +40,7 @@ def last_modified_point_updated(request, category_id):
 
 @receiver(post_save, sender=ProfileIndicator)
 def profile_updated(sender, instance, **kwargs):
-    profile_id = instance.indicator.dataset.id
+    profile_id = instance.profile.id
     key = profile_key % profile_id
     cache.set(key, datetime.now())
 
