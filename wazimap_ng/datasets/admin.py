@@ -8,6 +8,7 @@ from django import forms
 from django_q.tasks import async_task
 
 from . import models
+from . import widgets
 
 admin.site.register(models.IndicatorCategory)
 admin.site.register(models.IndicatorSubcategory)
@@ -71,6 +72,10 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
           'fields': ('subindicators',)
         })
     )
+
+    formfield_overrides = {
+        fields.ArrayField: {"widget": widgets.SortableWidget},
+    }
 
 
     def get_readonly_fields(self, request, obj=None):
