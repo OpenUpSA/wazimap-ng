@@ -74,6 +74,15 @@ def indicator_data_extraction(indicator):
 
     qs = models.DatasetData.objects.filter(**filter_query).exclude(data__Count="").order_by("geography_id")
 
+    if len(groups) > 1:
+        group_values = ["/".join(val) for val in list(set(list(qs.values_list(*groups).distinct())))]
+    elif len(groups) == 1:
+        group_values = [val[0] for val in list(set(list(qs.values_list(*groups).distinct())))]
+    else:
+        group_values = []
+
+    models.ProfileIndicator.objects.filter(indicator=indicator).update(subindicators=group_values)
+
     # Group data according to geography_id and get sum of data__Count
     data = groupby(qs.values(*groups, "geography_id").annotate(Count=Sum(c)), lambda x: x["geography_id"])
 

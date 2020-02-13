@@ -66,6 +66,9 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         }),
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'key_metric', 'description')
+        }),
+        ("Subindicators", {
+          'fields': ('subindicators',)
         })
     )
 

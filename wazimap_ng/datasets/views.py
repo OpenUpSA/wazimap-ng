@@ -176,11 +176,18 @@ def profile_geography_data_helper(profile_id, geography_code):
             indicators_js  = subcat_js.setdefault("indicators", {})
 
             indicator_data = data.get(pi.indicator.label, [])
+
+            if pi.subindicators and indicator_data and groups[0]:
+                order = {key: i for i, key in enumerate(pi.subindicators)}
+                if len(groups) == 1:
+                    indicator_data = sorted(indicator_data, key=lambda d: order[d[groups[0]]])
+                else:
+                    indicator_data = sorted(indicator_data, key=lambda d: order["/".join([d[group] for group in groups])])
+
             indicators_js[pi.label] = {
                 "description": pi.description,
                 "subindicators": indicator_data
             }
-
             for subindicator in indicator_data:
                 if pi.indicator.label in children_profile:
                     # TODO change name from children to child_geographies - need to change the UI as well
