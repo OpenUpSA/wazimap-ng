@@ -12,17 +12,14 @@ class GeographySerializer(GeoFeatureModelSerializer):
     parent = serializers.SerializerMethodField()
 
     # TODO might want simplification to come from settings.py
-    def __init__(self, *args, simplification=0.05, parentCode=None, **kwargs):
+    def __init__(self, *args, simplification=0.005, parentCode=None, **kwargs):
         super(GeographySerializer, self).__init__(*args, **kwargs)
         self.simplification = simplification
         self.parentCode = parentCode
 
 
     def get_geom(self, obj):
-        
-        if obj.geom is not None:
-            return obj.geom.simplify(self.simplification)
-        return obj.geom
+        return obj.geom_cache
 
     def get_parent(self, obj):
         if self.parentCode is not None:
@@ -37,108 +34,17 @@ class GeographySerializer(GeoFeatureModelSerializer):
             return parent.code
         return None
 
-class CountrySerializer(GeographySerializer):
+class GeographyBoundarySerializer(GeographySerializer):
     level = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        super(CountrySerializer, self).__init__(*args, simplification=0.5, **kwargs)
+        super().__init__(*args, simplification=0.005, **kwargs)
 
     def get_level(self, obj):
-        return "Country"
+        return obj.geography.level
 
     class Meta:
-        model = models.Country
-        geo_field = "geom"
-
-        fields = ("code", "name", "area", "parent", "level")
-
-class ProvinceSerializer(GeographySerializer):
-    level = serializers.SerializerMethodField()
-
-    def __init__(self, *args, **kwargs):
-        super(ProvinceSerializer, self).__init__(*args, simplification=0.02, **kwargs)
-
-
-    def get_level(self, obj):
-        return "Province"
-
-    class Meta:
-        model = models.Province
-        geo_field = "geom"
-
-        fields = ("code", "name", "area", "parent", "level")
-
-class DistrictSerializer(GeographySerializer):
-    level = serializers.SerializerMethodField()
-
-    def __init__(self, *args, **kwargs):
-        super(DistrictSerializer, self).__init__(*args, simplification=0.0002, **kwargs)
-
-    def get_level(self, obj):
-        return "District"
-
-    class Meta:
-        model = models.District
-        geo_field = "geom"
-
-        fields = ("code", "name", "area", "parent", "level")
-
-class MunicipalitySerializer(GeographySerializer):
-    level = serializers.SerializerMethodField()
-
-    def __init__(self, *args, **kwargs):
-        super(MunicipalitySerializer, self).__init__(*args, simplification=0.0005, **kwargs)
-
-    def get_level(self, obj):
-        return "Municipality"
-
-    class Meta:
-        model = models.Municipality
-        geo_field = "geom"
-
-        fields = ("code", "name", "area", "parent", "level")
-
-class WardSerializer(GeographySerializer):
-    level = serializers.SerializerMethodField()
-
-    def __init__(self, *args, **kwargs):
-        super(WardSerializer, self).__init__(*args, simplification=0.00005, **kwargs)
-
-    def get_level(self, obj):
-        return "Ward"
-
-    class Meta:
-        model = models.Ward
-        geo_field = "geom"
-
-        fields = ("code", "name", "area", "parent", "level")
-
-class MainplaceSerializer(GeographySerializer):
-    level = serializers.SerializerMethodField()
-
-    def __init__(self, *args, **kwargs):
-        super(MainplaceSerializer, self).__init__(*args, simplification=0.0005, **kwargs)
-
-    def get_level(self, obj):
-        return "Mainplace"
-        
-    class Meta:
-        model = models.Mainplace
-        geo_field = "geom"
-
-        fields = ("code", "name", "area", "parent", "level")
-
-class SubplaceSerializer(GeographySerializer):
-    level = serializers.SerializerMethodField()
-
-    def __init__(self, *args, **kwargs):
-        super(SubplaceSerializer, self).__init__(*args, simplification=0.0005, **kwargs)
-
-    def get_level(self, obj):
-        return "Subplace"
-
-    class Meta:
-        model = models.Subplace
-        geo_field = "geom"
+        model = models.GeographyBoundary
+        geo_field = "geom_cache"
 
         fields = ("code", "name", "area", "parent", "level")
