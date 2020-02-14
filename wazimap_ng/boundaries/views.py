@@ -48,9 +48,7 @@ def geography_children_helper(code):
     data = {}
     if len(children) > 0:
         for child_level, child_level_boundaries in child_boundaries.items():
-            geo_type = code_map[child_level]
-            model_class, serializer_class = get_classes(geo_type)
-            serializer = serializer_class(child_level_boundaries, many=True, parentCode=code)
+            serializer = serializers.GeographyBoundarySerializer(child_level_boundaries, many=True, parentCode=code)
             data[child_level] = serializer.data
     return data
 
