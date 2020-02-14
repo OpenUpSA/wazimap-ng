@@ -1,26 +1,10 @@
-  <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
-  <script src="/static/js/jquery-ui.min.js"></script>
-  <script>
-  $( function() {
-    $( "#sortable" ).sortable();
-    $( "#sortable" ).disableSelection();
-
-
-    $("#sortable").on("DOMSubtreeModified", function(){
-      var reorderedSubindicators = [];
-      $("#sortable li").each(function(){
-        reorderedSubindicators.push($(this).data('val'));
-        $('input[name="{{ widget.name }}"]').val(reorderedSubindicators.join(","));
-      });
-    });
-  } );
-  </script>
-
 <div id="sortable_widget">
   <input type="hidden" name="{{ widget.name }}" value="{{ widget.values.text }}" />
-  <ul id="sortable">
-    {% for value in widget.values.list %}
-        <li class="ui-state-default" data-val="{{ value }}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>{{ value }}</li>
-      {% endfor %}
-  </ul>
+      <ul id="sortable">
+        {% for value in widget.values.list %}
+            <li class="ui-state-default" data-val="{{ value }}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>{{ value }}</li>
+          {% empty %}
+            <p>Sub-Indicators not preset for this Indicator.</p>
+          {% endfor %}
+      </ul>
 </div>

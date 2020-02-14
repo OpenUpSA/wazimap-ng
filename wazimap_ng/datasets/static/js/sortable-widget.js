@@ -1,14 +1,13 @@
-(function($) {
+django.jQuery(document).ready(function($) {
     $( "#sortable" ).sortable();
     $( "#sortable" ).disableSelection();
 
-
-    $("#sortable").on("DOMSubtreeModified", function(){
+    $(document).find("#sortable").on("DOMSubtreeModified", function(){
     	var reorderedSubindicators = [];
-    	$("#sortable li").each(function(){
+    	$(this).find("li").each(function(){
     		reorderedSubindicators.push($(this).data('val'));
-    		$('input[name="{{ widget.name }}"]').val(reorderedSubindicators.join(","));
+    		$(document).find('input[name="subindicators"]').val(reorderedSubindicators.join(","));
     	});
     });
 
-} )(django.jQuery);
+} );
