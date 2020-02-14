@@ -83,6 +83,11 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
             return ("profile", "universe", "name") + self.readonly_fields
         return self.readonly_fields
 
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.subindicators = obj.indicator.subindicators
+        super().save_model(request, obj, form, change)
+
 @admin.register(models.ProfileHighlight)
 class ProfileHighlightAdmin(admin.ModelAdmin):
     list_filter = (
@@ -136,8 +141,12 @@ class IndicatorAdmin(admin.ModelAdmin):
         (None, { 'fields': ('dataset', ) } ),
     ]
     fieldsets = [
-        (None, { 'fields': ('dataset','universe', 'groups', 'name', 'label') } ),
+        (None, { 'fields': ('dataset','universe', 'groups', 'name', 'label', 'subindicators') } ),
     ]
+
+    formfield_overrides = {
+        fields.ArrayField: {"widget": widgets.SortableWidget},
+    }
 
     def add_view(self, request, form_url='', extra_context=None):
         if request.POST.get("_saveasnew"):
@@ -159,12 +168,18 @@ class IndicatorAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
     def save_model(self, request, obj, form, change):
+        run_task = False
+        if change:
+            db_obj = models.Indicator.objects.get(id=obj.id)
+            if not db_obj.name:
+                run_task = True
         super().save_model(request, obj, form, change)
-        async_task(
-            "wazimap_ng.datasets.tasks.indicator_data_extraction",
-            obj,
-            task_name=f"Data Extraction: {obj.name}"
-        )
+        if run_task:
+            async_task(
+                "wazimap_ng.datasets.tasks.indicator_data_extraction",
+                obj,
+                task_name=f"Data Extraction: {obj.name}"
+            )
         return obj
 
 @admin.register(models.Universe)

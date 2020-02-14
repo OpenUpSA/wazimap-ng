@@ -86,6 +86,7 @@ class Indicator(models.Model):
     groups = ArrayField(models.CharField(max_length=50), blank=True, default=list)
     name = models.CharField(max_length=50)
     label = models.CharField(max_length=100)
+    subindicators = ArrayField(models.CharField(max_length=50), blank=True, default=list)
 
     def __str__(self):
         return f"{self.dataset.name} -> {self.label}"
