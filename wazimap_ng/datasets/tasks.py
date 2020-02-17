@@ -37,7 +37,7 @@ def process_uploaded_file(dataset_file):
     loaddata(dataset_file.title, datasource, groups)
 
 @transaction.atomic
-def indicator_data_extraction(indicator):
+def indicator_data_extraction(indicator, **kwargs):
     """
     Data extraction for indicator data object.
 
@@ -103,3 +103,9 @@ def indicator_data_extraction(indicator):
 
     indicator.subindicators = subindicators
     indicator.save()
+
+    return {
+        "model": "indicator",
+        "name": indicator.name,
+        "id": indicator.id,
+    }
