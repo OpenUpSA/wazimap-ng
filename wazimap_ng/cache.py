@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 profile_key = "etag-Profile-%s"
 location_key = "etag-Location-%s"
+theme_key = "etag-Theme-%s"
 location_theme_key = "etag-Location-Theme-%s"
 
 def last_modified(request, key):
@@ -31,12 +32,18 @@ def last_modified_profile_updated(request, profile_id, geography_code):
     key = profile_key % profile_id
     return last_modified(request, key)
 
-def etag_point_updated(request, category_id):
-    last_modified = last_modified_point_updated(request, category_id)
+def etag_point_updated(request, category_id=None, theme_id=None):
+    last_modified = last_modified_point_updated(request, category_id, theme_id)
     return str(last_modified)
 
-def last_modified_point_updated(request, category_id):
-    key = location_key % category_id
+def last_modified_point_updated(request, category_id=None, theme_id=None):
+    if category_id is not None:
+        key = location_key % category_id
+    elif theme_id is not None:
+        key = theme_key % theme_id
+    else:
+        return None
+
     return last_modified(request, key)
 
 ########### Signals #################
@@ -54,9 +61,15 @@ def point_updated_location(sender, instance, **kwargs):
 @receiver(post_save, sender=Category)
 def point_updated_category(sender, instance, **kwargs):
     category_id = instance.id
-    key =location_key % category_id
-    logger.debug(f"Set cache key: {key}")
-    cache.set(key, datetime.now())
+    theme_id = instance.theme.id
+    key1 = location_key % category_id
+    key2 = theme_key % theme_id
+
+    logger.debug(f"Set cache key (category): {key1}")
+    logger.debug(f"Set cache key (theme): {key2}")
+
+    cache.set(key1, datetime.now())
+    cache.set(key2, datetime.now())
 
 def cache_headers(func):
     return cache_control(max_age=0, public=True, must_revalidate=True)(func)
