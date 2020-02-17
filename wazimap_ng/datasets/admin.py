@@ -13,7 +13,6 @@ from . import hooks
 
 admin.site.register(models.IndicatorCategory)
 admin.site.register(models.IndicatorSubcategory)
-admin.site.register(models.Dataset)
 admin.site.register(models.Profile)
 
 
@@ -25,6 +24,9 @@ def customTitledFilter(title):
             return instance
     return Wrapper
 
+@admin.register(models.Dataset)
+class DatasetAdmin(admin.ModelAdmin):
+    readonly_fields = ("groups",)
 
 @admin.register(models.Geography)
 class GeographyAdmin(TreeAdmin):
