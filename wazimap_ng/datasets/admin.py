@@ -114,7 +114,6 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
         })
     )
 
-
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
             return ("profile", "universe", "name") + self.readonly_fields
@@ -170,6 +169,7 @@ class IndicatorAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         run_task = False
+
         if change:
             db_obj = models.Indicator.objects.get(id=obj.id)
             if not db_obj.name:
@@ -190,6 +190,13 @@ class IndicatorAdmin(admin.ModelAdmin):
                     obj.name
                 )
             )
+
+        if not change:
+            hooks.custom_admin_notification(
+                request.session,
+                "warning",
+                "Please make sure you get data right before saving as fields : groups, dataset, label & universe will be set as non editable"
+            )
         return obj
 
 @admin.register(models.Universe)
@@ -198,14 +205,25 @@ class UniverseAdmin(admin.ModelAdmin):
     fields.JSONField: {"widget": JSONEditorWidget},
   }
 
-
 @admin.register(models.DatasetFile)
 class DatasetFileAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         is_created = obj.pk == None and change == False
         super().save_model(request, obj, form, change)
-        async_task("wazimap_ng.datasets.tasks.process_uploaded_file", obj, task_name=f"Uploading data: {obj.title}")
+        async_task(
+            "wazimap_ng.datasets.tasks.process_uploaded_file",
+            obj, task_name=f"Uploading data: {obj.title}",
+            hook="wazimap_ng.datasets.hooks.notify_user",
+            key=request.session.session_key
+        )
+        hooks.custom_admin_notification(
+            request.session,
+            "info",
+            "Data upload for %s started. We will let you know when process is done." % (
+                obj.title
+            )
+        )
         return obj
 
 @admin.register(models.IndicatorData)

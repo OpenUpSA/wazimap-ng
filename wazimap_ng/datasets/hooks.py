@@ -1,8 +1,32 @@
 from django.contrib.sessions.models import Session
-from django.contrib.sessions.backends.cache import SessionStore
 from django.urls import reverse
 
 import json
+
+def get_notification_details(success, model, name, idx):
+    """
+    Notification details according to the model.
+    """
+    admin_url_base = "admin:datasets_%s_%s"
+
+    messages_according_to_model = {
+        "indicator" : {
+            "success": "Data has been processed for %s named %s. Please check it out on <a href='%s'>this link</a>" %(
+                model, name, reverse(admin_url_base % (model, "change"), args=(idx,))
+            ),
+            "error": "Data processing failed for %s name %s. To restart process visit <a href='%s'>this link</a>" %(
+                model, name, reverse(admin_url_base % (model, "change"), args=(idx,))
+            ),
+        },
+        "datasetfile" : {
+            "success": "Dataset Imported successfully for %s" % name,
+            "error": "Error in uploading file %s. Re-upload file at <a href='%s'>this link</a>" % (
+                name, reverse(admin_url_base % (model, "add"))
+            ),
+        }
+    }
+
+    return messages_according_to_model[model][success]
 
 def notify_user(task):
     """
@@ -12,37 +36,26 @@ def notify_user(task):
     We get session key from kwargs of the task object and data of created object
     is passes through results value in task object.
     """
-    url_base = "admin:datasets_%s_change"
     # Task results
     success = task.success
     if success:
         result = task.result
     else:
-        error_msg = task.result
         obj = next(iter(task.args))
         result = {
-            "name": obj.name,
+            "name": getattr(obj, name, False) or obj.title,
             "id": obj.id,
             "model": obj.__class__.__name__.lower()
         }
 
+    notification_type = "success" if success else "error"
+
+    message = get_notification_details(
+        notification_type, result["model"], result["name"], result["id"]
+    )
     # Session variables
     session_key = session_key=task.kwargs["key"]
     session = Session.objects.filter(session_key=session_key).first()
-
-    # message to show user
-    url = reverse(url_base % result["model"], args=(result["id"],))
-
-    if success:
-        message = "Data has been processed for %s named %s. Please check it out on <a href='%s'>this link</a>" % (
-            result["model"], result["name"], url
-        )
-    else:
-        message = "Data processing failed for %s name %s. To restart process visit <a href='%s'>this link</a>" % (
-            result["model"], result["name"], url
-        )
-
-    notification_type = "success" if success else "error"
 
     if session:
         decoded_session = custom_admin_notification(

@@ -16,7 +16,7 @@ from operator import itemgetter
 
 
 @transaction.atomic
-def process_uploaded_file(dataset_file):
+def process_uploaded_file(dataset_file, **kwargs):
     """
     Run this Task after saving new document via admin panel.
 
@@ -35,6 +35,12 @@ def process_uploaded_file(dataset_file):
     groups = [group for group in df.columns.values if group not in ["Geography", "Count"]]
     datasource = (dict(d[1]) for d in df.iterrows())
     loaddata(dataset_file.title, datasource, groups)
+
+    return {
+        "model": "datasetfile",
+        "name": dataset_file.title,
+        "id": dataset_file.id
+    }
 
 @transaction.atomic
 def indicator_data_extraction(indicator, **kwargs):
