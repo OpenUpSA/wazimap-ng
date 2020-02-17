@@ -1,0 +1,28 @@
+{% extends 'admin/base.html' %}
+{% load template_tags %}
+
+{% block extrahead %}
+	<link rel="stylesheet" type="text/css" href="/static/css/toastr.min.css">
+	<script src="/static/admin/js/vendor/jquery/jquery.js"></script>
+	<script type="text/javascript" src="/static/js/toastr.min.js"></script>
+    <script type="text/javascript">
+
+    	var notifications = {{ request.session |get_notifications|safe }};
+
+    	toastr.options = {
+		  "closeButton": true,
+		  "newestOnTop": true,
+		  "progressBar": true,
+		  "positionClass": "toast-top-right",
+		  "preventDuplicates": false,
+		  "showDuration": "1000",
+		  "hideDuration": "1000",
+		}
+
+		$(document).ready(function($) {
+			$.each(notifications, function(index, notification){
+				toastr[notification.type](notification.message);
+			});
+		} );
+    </script>
+{% endblock %}
