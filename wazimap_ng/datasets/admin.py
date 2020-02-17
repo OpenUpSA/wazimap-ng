@@ -9,6 +9,7 @@ from django_q.tasks import async_task
 
 from . import models
 from . import widgets
+from . import hooks
 
 admin.site.register(models.IndicatorCategory)
 admin.site.register(models.IndicatorSubcategory)
@@ -178,7 +179,16 @@ class IndicatorAdmin(admin.ModelAdmin):
             async_task(
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",
                 obj,
-                task_name=f"Data Extraction: {obj.name}"
+                task_name=f"Data Extraction: {obj.name}",
+                hook="wazimap_ng.datasets.hooks.notify_user",
+                key=request.session.session_key
+            )
+            hooks.custom_admin_notification(
+                request.session,
+                "info",
+                "Process of Data extraction started for %s. We will let you know when process is done." % (
+                    obj.name
+                )
             )
         return obj
 
