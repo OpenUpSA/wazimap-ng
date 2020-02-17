@@ -76,8 +76,3 @@ def custom_admin_notification(session, notification_type, message):
     session['notifications'] = messages
 
     return session
-
-
-
-
-
