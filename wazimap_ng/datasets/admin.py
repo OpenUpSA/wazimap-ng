@@ -50,7 +50,6 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         ('indicator__name', customTitledFilter('Indicator')),
         ('subcategory__category__name', customTitledFilter('Category')),
         "subcategory",
-        "universe",
     )
 
     list_display = (
@@ -60,13 +59,12 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         description("Indicator", lambda x: x.indicator.name), 
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
-        "universe",
         "key_metric",
     )
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'universe', 'name', 'indicator')
+            'fields': ('profile', 'indicator__universe', 'name', 'indicator')
         }),
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'key_metric', 'description')
@@ -82,7 +80,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
-            return ("profile", "universe", "name") + self.readonly_fields
+            return ("profile", "indicator__universe", "name") + self.readonly_fields
         return self.readonly_fields
 
     def save_model(self, request, obj, form, change):
@@ -95,7 +93,6 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
     list_filter = (
         ("profile__name", customTitledFilter("Profile")),
         ("indicator__name", customTitledFilter("Indicator")),
-        "universe",
     )
 
     list_display = (
@@ -103,12 +100,11 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
         "name", 
         "label", 
         description("Indicator", lambda x: x.indicator.name), 
-        "universe",
     )
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            "fields": ("profile", "universe", "name", "indicator")
+            "fields": ("profile", "indicator__universe", "name", "indicator")
         }),
         ("Profile fields", {
           "fields": ("label", "value")
@@ -117,7 +113,7 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
-            return ("profile", "universe", "name") + self.readonly_fields
+            return ("profile", "indicator__universe", "name") + self.readonly_fields
         return self.readonly_fields
 
 class IndicatorAdminForm(forms.ModelForm):
