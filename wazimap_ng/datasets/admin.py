@@ -78,7 +78,6 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         fields.ArrayField: {"widget": widgets.SortableWidget},
     }
 
-
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
             return ("profile", "universe", "name") + self.readonly_fields
@@ -129,9 +128,11 @@ class IndicatorAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance.id:
             choices = [[group, group] for group in self.instance.dataset.groups]
-            self.fields['groups'].choices = choices
-            self.fields['groups'].initial = self.instance.groups
-            self.fields['universe'].queryset = models.Universe.objects.filter(dataset=self.instance.dataset)
+            if "groups" in self.fields:
+                self.fields['groups'].choices = choices
+                self.fields['groups'].initial = self.instance.groups
+            if "universe" in self.fields:
+                self.fields['universe'].queryset = models.Universe.objects.filter(dataset=self.instance.dataset)
 
 @admin.register(models.Indicator)
 class IndicatorAdmin(admin.ModelAdmin):
@@ -164,7 +165,10 @@ class IndicatorAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return self.readonly_fields + ('dataset',)
+            to_add = ('dataset',)
+            if obj.name:
+                to_add = to_add + ("groups", "universe", "label",)
+            return self.readonly_fields + to_add
         return self.readonly_fields
 
     def save_model(self, request, obj, form, change):
