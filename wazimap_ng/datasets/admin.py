@@ -13,7 +13,6 @@ from . import hooks
 
 admin.site.register(models.IndicatorCategory)
 admin.site.register(models.IndicatorSubcategory)
-admin.site.register(models.Dataset)
 admin.site.register(models.Profile)
 
 
@@ -25,6 +24,9 @@ def customTitledFilter(title):
             return instance
     return Wrapper
 
+@admin.register(models.Dataset)
+class DatasetAdmin(admin.ModelAdmin):
+    readonly_fields = ("groups",)
 
 @admin.register(models.Geography)
 class GeographyAdmin(TreeAdmin):
@@ -48,7 +50,6 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         ('indicator__name', customTitledFilter('Indicator')),
         ('subcategory__category__name', customTitledFilter('Category')),
         "subcategory",
-        "universe",
     )
 
     list_display = (
@@ -58,13 +59,12 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         description("Indicator", lambda x: x.indicator.name), 
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
-        "universe",
         "key_metric",
     )
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'universe', 'name', 'indicator')
+            'fields': ('profile', 'indicator__universe', 'name', 'indicator')
         }),
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'key_metric', 'description')
@@ -78,10 +78,9 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         fields.ArrayField: {"widget": widgets.SortableWidget},
     }
 
-
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
-            return ("profile", "universe", "name") + self.readonly_fields
+            return ("profile", "indicator__universe", "name") + self.readonly_fields
         return self.readonly_fields
 
     def save_model(self, request, obj, form, change):
@@ -94,7 +93,6 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
     list_filter = (
         ("profile__name", customTitledFilter("Profile")),
         ("indicator__name", customTitledFilter("Indicator")),
-        "universe",
     )
 
     list_display = (
@@ -102,22 +100,20 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
         "name", 
         "label", 
         description("Indicator", lambda x: x.indicator.name), 
-        "universe",
     )
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            "fields": ("profile", "universe", "name", "indicator")
+            "fields": ("profile", "indicator__universe", "name", "indicator")
         }),
         ("Profile fields", {
           "fields": ("label", "value")
         })
     )
 
-
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
-            return ("profile", "universe", "name") + self.readonly_fields
+            return ("profile", "indicator__universe", "name") + self.readonly_fields
         return self.readonly_fields
 
 class IndicatorAdminForm(forms.ModelForm):
@@ -130,9 +126,11 @@ class IndicatorAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance.id:
             choices = [[group, group] for group in self.instance.dataset.groups]
-            self.fields['groups'].choices = choices
-            self.fields['groups'].initial = self.instance.groups
-            self.fields['universe'].queryset = models.Universe.objects.filter(dataset=self.instance.dataset)
+            if "groups" in self.fields:
+                self.fields['groups'].choices = choices
+                self.fields['groups'].initial = self.instance.groups
+            if "universe" in self.fields:
+                self.fields['universe'].queryset = models.Universe.objects.filter(dataset=self.instance.dataset)
 
 @admin.register(models.Indicator)
 class IndicatorAdmin(admin.ModelAdmin):
@@ -165,11 +163,15 @@ class IndicatorAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return self.readonly_fields + ('dataset',)
+            to_add = ('dataset',)
+            if obj.name:
+                to_add = to_add + ("groups", "universe", "label",)
+            return self.readonly_fields + to_add
         return self.readonly_fields
 
     def save_model(self, request, obj, form, change):
         run_task = False
+
         if change:
             db_obj = models.Indicator.objects.get(id=obj.id)
             if not db_obj.name:
@@ -190,6 +192,13 @@ class IndicatorAdmin(admin.ModelAdmin):
                     obj.name
                 )
             )
+
+        if not change:
+            hooks.custom_admin_notification(
+                request.session,
+                "warning",
+                "Please make sure you get data right before saving as fields : groups, dataset, label & universe will be set as non editable"
+            )
         return obj
 
 @admin.register(models.Universe)
@@ -198,14 +207,25 @@ class UniverseAdmin(admin.ModelAdmin):
     fields.JSONField: {"widget": JSONEditorWidget},
   }
 
-
 @admin.register(models.DatasetFile)
 class DatasetFileAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         is_created = obj.pk == None and change == False
         super().save_model(request, obj, form, change)
-        async_task("wazimap_ng.datasets.tasks.process_uploaded_file", obj, task_name=f"Uploading data: {obj.title}")
+        async_task(
+            "wazimap_ng.datasets.tasks.process_uploaded_file",
+            obj, task_name=f"Uploading data: {obj.title}",
+            hook="wazimap_ng.datasets.hooks.notify_user",
+            key=request.session.session_key
+        )
+        hooks.custom_admin_notification(
+            request.session,
+            "info",
+            "Data upload for %s started. We will let you know when process is done." % (
+                obj.title
+            )
+        )
         return obj
 
 @admin.register(models.IndicatorData)

@@ -48,7 +48,6 @@ class ProfileIndicator(models.Model):
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.")
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
     key_metric = models.BooleanField(default=False, help_text="Used as a headline metric in the profile.")
-    universe = models.ForeignKey(Universe, null=True, blank=True, on_delete=models.CASCADE, help_text="The subset of the population considered for this indicator.")
     name = models.CharField(max_length=60, null=False, blank=True, help_text="Name of the indicator in the database")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
     description = models.TextField(blank=True)
@@ -63,7 +62,6 @@ class ProfileIndicator(models.Model):
 class ProfileHighlight(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this highlight is based on.")
-    universe = models.ForeignKey(Universe, null=True, blank=True, on_delete=models.CASCADE, help_text="The subset of the population considered for this indicator.")
     name = models.CharField(max_length=60, null=False, blank=True, help_text="Name of the indicator in the database")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
     value = models.CharField(max_length=60, null=False, blank=True, help_text="The value used for the highlight. Should be one of the possible values for the given indicator.")
@@ -108,7 +106,7 @@ class ProfileDataQuerySet(models.QuerySet):
             self.add_indicator(profile, profile_indicator, data_extractor, "indicators")
 
     def add_indicator(self, profile, profile_indicator, data_extractor, namespace=None):
-        universe = profile_indicator.universe
+        universe = profile_indicator.indicator.universe
         indicator = profile_indicator.indicator
 
         counts = data_extractor.get_queryset(indicator, self.values("geography"), universe=universe)
