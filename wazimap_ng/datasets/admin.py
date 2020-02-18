@@ -64,7 +64,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'indicator__universe', 'name', 'indicator')
+            'fields': ('profile', 'name', 'indicator')
         }),
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'key_metric', 'description')
@@ -80,7 +80,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
-            return ("profile", "indicator__universe", "name") + self.readonly_fields
+            return ("profile", "name") + self.readonly_fields
         return self.readonly_fields
 
     def save_model(self, request, obj, form, change):
@@ -104,7 +104,7 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            "fields": ("profile", "indicator__universe", "name", "indicator")
+            "fields": ("profile", "name", "indicator")
         }),
         ("Profile fields", {
           "fields": ("label", "value")
@@ -113,7 +113,7 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
-            return ("profile", "indicator__universe", "name") + self.readonly_fields
+            return ("profile", "name") + self.readonly_fields
         return self.readonly_fields
 
 class IndicatorAdminForm(forms.ModelForm):
