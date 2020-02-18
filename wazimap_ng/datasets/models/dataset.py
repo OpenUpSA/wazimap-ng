@@ -93,6 +93,8 @@ class Indicator(models.Model):
 
     class Meta:
         ordering = ["id"]
+        verbose_name = "Variable"
+        verbose_name_plural = "Variables"
 
 class DataExtractor:
 

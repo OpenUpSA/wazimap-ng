@@ -135,6 +135,14 @@ class IndicatorAdminForm(forms.ModelForm):
 @admin.register(models.Indicator)
 class IndicatorAdmin(admin.ModelAdmin):
 
+    list_display = (
+        "label", "dataset", "universe"
+    )
+
+    list_filter = (
+        ("dataset", customTitledFilter("Dataset")),
+    )
+
     form = IndicatorAdminForm
     fieldsets_add_view = [
         (None, { 'fields': ('dataset', ) } ),
