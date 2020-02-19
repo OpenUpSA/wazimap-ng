@@ -1,7 +1,8 @@
 import operator
 from functools import reduce
 
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.contrib.admin import helpers
 from django.contrib.postgres import fields
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
@@ -9,6 +10,9 @@ from django_json_widget.widgets import JSONEditorWidget
 from django import forms
 from django.db.models import Q, CharField
 from django.db.models.functions import Cast
+from django.template.response import TemplateResponse
+from django.contrib.admin.utils import model_ngettext, unquote
+
 
 from django_q.tasks import async_task
 
@@ -20,6 +24,138 @@ admin.site.register(models.IndicatorCategory)
 admin.site.register(models.IndicatorSubcategory)
 admin.site.register(models.Profile)
 
+def delete_selected_data(modeladmin, request, queryset):
+    if not modeladmin.has_delete_permission(request):
+        raise PermissionDenied
+
+    opts = modeladmin.model._meta
+    app_label = opts.app_label
+    objects_name = model_ngettext(queryset)
+
+    if request.POST.get('post'):
+        if not modeladmin.has_delete_permission(request):
+            raise PermissionDenied
+        n = queryset.count()
+        if n:
+            for obj in queryset:
+                obj_display = str(obj)
+                modeladmin.log_deletion(request, obj, obj_display)
+
+            async_task(
+                'wazimap_ng.datasets.tasks.delete_data',
+                queryset, objects_name,
+                task_name=f"Deleting data: {objects_name}",
+                hook="wazimap_ng.datasets.hooks.notify_user",
+                key=request.session.session_key,
+                type="delete"
+            )
+            modeladmin.delete_queryset(request, queryset)
+            modeladmin.message_user(request, "Successfully deleted %(count)d %(items)s." % {
+                "count": n, "items": model_ngettext(modeladmin.opts, n)
+            }, messages.SUCCESS)
+        # Return None to display the change list page again.
+        return None
+
+    related_fileds_data = {}
+
+    context = {
+        **modeladmin.admin_site.each_context(request),
+        'title': "Are you sure?",
+        'objects_name': str(objects_name),
+        'deletable_objects': [],
+        'model_count': "",
+        'queryset': queryset,
+        'opts': opts,
+        'media': modeladmin.media,
+        'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
+    }
+    hooks.custom_admin_notification(
+        request.session,
+        "info",
+        "We run data deletion in background because of related data and caches. We will let you know when processing is done"
+    )
+    return TemplateResponse(
+        request,
+        "admin/datasets_delete_selected_confirmation.html",
+        context,
+    )
+
+
+delete_selected_data.short_description = "Delete selected objects"
+
+class BaseAdminModel(admin.ModelAdmin):
+
+    actions = [delete_selected_data]
+
+    def get_related_fields_data(self, obj):
+        return []
+
+    def delete_view(self, request, object_id, extra_context=None):
+        opts = self.model._meta
+        app_label = opts.app_label
+
+        to_field = request.POST.get("_to_field", request.GET.get("_to_field"))
+        if to_field and not self.to_field_allowed(request, to_field):
+            raise DisallowedModelAdminToField("The field %s cannot be referenced." % to_field)
+
+        obj = self.get_object(request, unquote(object_id), to_field)
+
+        if not self.has_delete_permission(request, obj):
+            raise PermissionDenied
+
+        if obj is None:
+            return self._get_obj_does_not_exist_redirect(request, opts, object_id)
+
+        object_name = str(opts.verbose_name)
+
+        if request.POST:  # The user has confirmed the deletion.
+            if not self.has_delete_permission(request, obj):
+                raise PermissionDenied
+            obj_display = str(obj)
+            attr = str(to_field) if to_field else opts.pk.attname
+            obj_id = obj.serializable_value(attr)
+            self.log_deletion(request, obj, obj_display)
+            async_task(
+                'wazimap_ng.datasets.tasks.delete_data',
+                obj, object_name,
+                task_name=f"Deleting data: {obj.name}",
+                hook="wazimap_ng.datasets.hooks.notify_user",
+                key=request.session.session_key,
+                type="delete"
+            )
+
+            return self.response_delete(request, obj_display, obj_id)
+
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': object_name,
+            'object': obj,
+            'opts': self.model._meta,
+            'app_label': self.model._meta.app_label,
+            'is_popup': False,
+            'title': "Are you sure?",
+            'related_fileds': self.get_related_fields_data(obj),
+            'is_popup': "_popup" in request.POST or "_popup" in request.GET,
+            'to_field': to_field,
+            **(extra_context or {}),
+        }
+
+        hooks.custom_admin_notification(
+            request.session,
+            "info",
+            "We run data deletion in background because of related data and caches. We will let you know when processing is done"
+        )
+        return TemplateResponse(
+            request,
+            "admin/datasets_delete_confirmation.html",
+            context,
+        )
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
 
 def customTitledFilter(title):
     class Wrapper(admin.FieldListFilter):
@@ -30,8 +166,18 @@ def customTitledFilter(title):
     return Wrapper
 
 @admin.register(models.Dataset)
-class DatasetAdmin(admin.ModelAdmin):
+class DatasetAdmin(BaseAdminModel):
     readonly_fields = ("groups",)
+
+    def get_related_fields_data(self, obj):
+
+        return [{
+                "name": "dataset data",
+                "count": obj.datasetdata_set.count()
+            }, {
+                "name": "indicator",
+                "count": obj.indicator_set.count()
+        }]
 
 @admin.register(models.Geography)
 class GeographyAdmin(TreeAdmin):
@@ -145,7 +291,7 @@ class IndicatorAdminForm(forms.ModelForm):
                 ).filter(condition)
 
 @admin.register(models.Indicator)
-class IndicatorAdmin(admin.ModelAdmin):
+class IndicatorAdmin(BaseAdminModel):
 
     list_display = (
         "label", "dataset", "universe"
@@ -166,6 +312,12 @@ class IndicatorAdmin(admin.ModelAdmin):
     formfield_overrides = {
         fields.ArrayField: {"widget": widgets.SortableWidget},
     }
+
+    def get_related_fields_data(self, obj):
+        return [{
+            "name": "indicator data",
+            "count": obj.indicatordata_set.count()
+        }]
 
     def add_view(self, request, form_url='', extra_context=None):
         if request.POST.get("_saveasnew"):

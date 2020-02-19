@@ -8,6 +8,7 @@ from django.db.models import Sum, FloatField
 from django.db.models.functions import Cast
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.db.models import Count
+from django.db.models.query import QuerySet
 
 from . import models
 from .dataloader import loaddata
@@ -114,4 +115,19 @@ def indicator_data_extraction(indicator, **kwargs):
         "model": "indicator",
         "name": indicator.name,
         "id": indicator.id,
+    }
+
+@transaction.atomic
+def delete_data(data, object_name, **kwargs):
+    """
+    Delete data
+    """
+    data.delete()
+
+    is_queryset = isinstance(data, QuerySet)
+
+    return {
+        "is_queryset": is_queryset,
+        "data": data,
+        "object_name": object_name,
     }

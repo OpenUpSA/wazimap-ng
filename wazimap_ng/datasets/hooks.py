@@ -28,6 +28,23 @@ def get_notification_details(success, model, name, idx):
 
     return messages_according_to_model[model][success]
 
+def get_message_according_type(task, task_type, notification_type):
+    """
+    return message according to type of task.
+    Use for generic things like data created or deleted
+    """
+    messages = {
+            "delete" : {
+                "success": "Data deleted for %s"  % list(task.args)[1],
+                "error": "Error in deleting data for %s"  % list(task.args)[1],
+            },
+        }
+    message = ""
+
+    if task_type == "delete":
+        message = messages[task_type][notification_type]
+    return message
+
 def notify_user(task):
     """
     Call back function after the task has been executed.
@@ -36,23 +53,28 @@ def notify_user(task):
     We get session key from kwargs of the task object and data of created object
     is passes through results value in task object.
     """
-    # Task results
     success = task.success
-    if success:
-        result = task.result
-    else:
-        obj = next(iter(task.args))
-        result = {
-            "name": getattr(obj, name, False) or obj.title,
-            "id": obj.id,
-            "model": obj.__class__.__name__.lower()
-        }
-
     notification_type = "success" if success else "error"
 
-    message = get_notification_details(
-        notification_type, result["model"], result["name"], result["id"]
-    )
+    if "type" in task.kwargs:
+
+        message = get_message_according_type(task, task.kwargs["type"], notification_type)
+    else:
+        # Task results
+        if success:
+            result = task.result
+
+        else:
+            obj = next(iter(task.args))
+            result = {
+                "name": getattr(obj, name, False) or obj.title,
+                "id": obj.id,
+                "model": obj.__class__.__name__.lower()
+            }
+
+        message = get_notification_details(
+            notification_type, result["model"], result["name"], result["id"]
+        )
     # Session variables
     session_key = session_key=task.kwargs["key"]
     session = Session.objects.filter(session_key=session_key).first()
