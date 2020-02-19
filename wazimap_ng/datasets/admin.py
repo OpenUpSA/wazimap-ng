@@ -12,7 +12,7 @@ from django.db.models import Q, CharField
 from django.db.models.functions import Cast
 from django.template.response import TemplateResponse
 from django.contrib.admin.utils import model_ngettext, unquote
-
+from django.core.exceptions import PermissionDenied
 
 from django_q.tasks import async_task
 
