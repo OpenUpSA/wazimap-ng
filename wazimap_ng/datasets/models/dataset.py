@@ -69,7 +69,6 @@ class Universe(models.Model):
 
     name = models.CharField(max_length=50)
     label = models.CharField(max_length=100)
-    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return f"{self.label}"

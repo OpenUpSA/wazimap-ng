@@ -1,9 +1,14 @@
+import operator
+from functools import reduce
+
 from django.contrib import admin
 from django.contrib.postgres import fields
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 from django_json_widget.widgets import JSONEditorWidget
 from django import forms
+from django.db.models import Q, CharField
+from django.db.models.functions import Cast
 
 from django_q.tasks import async_task
 
@@ -126,11 +131,18 @@ class IndicatorAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance.id:
             choices = [[group, group] for group in self.instance.dataset.groups]
+
             if "groups" in self.fields:
                 self.fields['groups'].choices = choices
                 self.fields['groups'].initial = self.instance.groups
+
             if "universe" in self.fields:
-                self.fields['universe'].queryset = models.Universe.objects.filter(dataset=self.instance.dataset)
+                condition = reduce(
+                    operator.or_, [Q(as_string__icontains=group) for group in self.instance.dataset.groups]
+                )
+                self.fields['universe'].queryset = models.Universe.objects.annotate(
+                    as_string=Cast('filters', CharField())
+                ).filter(condition)
 
 @admin.register(models.Indicator)
 class IndicatorAdmin(admin.ModelAdmin):
