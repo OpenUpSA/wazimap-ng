@@ -35,7 +35,6 @@ class Common(Configuration):
         "django_q",
 
         # Your apps
-        "wazimap_ng.users",
         "wazimap_ng.datasets",
         "wazimap_ng.extensions",
         "wazimap_ng.points",
@@ -213,9 +212,6 @@ class Common(Configuration):
             },
         }
     }
-
-    # Custom user app
-    AUTH_USER_MODEL = "users.User"
 
     # Django Rest Framework
     REST_FRAMEWORK = {
