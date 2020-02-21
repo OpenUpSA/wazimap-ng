@@ -385,19 +385,20 @@ class DatasetFileAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         is_created = obj.pk == None and change == False
         super().save_model(request, obj, form, change)
-        async_task(
-            "wazimap_ng.datasets.tasks.process_uploaded_file",
-            obj, task_name=f"Uploading data: {obj.title}",
-            hook="wazimap_ng.datasets.hooks.notify_user",
-            key=request.session.session_key
-        )
-        hooks.custom_admin_notification(
-            request.session,
-            "info",
-            "Data upload for %s started. We will let you know when process is done." % (
-                obj.title
+        if is_created:
+            async_task(
+                "wazimap_ng.datasets.tasks.process_uploaded_file",
+                obj, task_name=f"Uploading data: {obj.title}",
+                hook="wazimap_ng.datasets.hooks.notify_user",
+                key=request.session.session_key
             )
-        )
+            hooks.custom_admin_notification(
+                request.session,
+                "info",
+                "Data upload for %s started. We will let you know when process is done." % (
+                    obj.title
+                )
+            )
         return obj
 
 @admin.register(models.IndicatorData)
