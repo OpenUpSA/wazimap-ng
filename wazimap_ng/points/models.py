@@ -1,5 +1,6 @@
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
+from django.core.validators import FileExtensionValidator
 
 class Theme(models.Model):
     name = models.CharField(max_length=30)
@@ -25,3 +26,13 @@ class Location(models.Model):
 
     def __str__(self):
         return "%s: %s" % (self.category, self.name)
+
+class CoordinateFile(models.Model):
+    title = models.CharField(max_length=255, blank=False)
+    document = models.FileField(
+        upload_to="points/",
+        validators=[FileExtensionValidator(allowed_extensions=["csv",])],
+    )
+
+    def __str__(self):
+        return self.title

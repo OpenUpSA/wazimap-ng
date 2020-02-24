@@ -38,12 +38,13 @@ def get_message_according_type(task, task_type, notification_type):
                 "success": "Data deleted for %s"  % list(task.args)[1],
                 "error": "Error in deleting data for %s"  % list(task.args)[1],
             },
+            "file_upload" : {
+                "success": "Imported File successfully for %s" % list(task.args)[1],
+                "error": "Error in uploading file for %s." % list(task.args)[1],
+            }
         }
-    message = ""
 
-    if task_type == "delete":
-        message = messages[task_type][notification_type]
-    return message
+    return messages[task_type][notification_type]
 
 def notify_user(task):
     """
