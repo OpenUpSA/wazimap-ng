@@ -34,7 +34,7 @@ def loaddata(name, iterable):
 
         dd = models.Location(
             name=location, category=category,
-            coordinates=Point(longitude, latitude) ,data=row
+            coordinates=Point(latitude, longitude) ,data=row
         )
 
         datarows.append(dd)
