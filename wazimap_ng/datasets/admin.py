@@ -283,12 +283,15 @@ class IndicatorAdminForm(forms.ModelForm):
                 self.fields['groups'].initial = self.instance.groups
 
             if "universe" in self.fields:
-                condition = reduce(
-                    operator.or_, [Q(as_string__icontains=group) for group in self.instance.dataset.groups]
-                )
-                self.fields['universe'].queryset = models.Universe.objects.annotate(
-                    as_string=Cast('filters', CharField())
-                ).filter(condition)
+                if not self.instance.dataset.groups:
+                    self.fields['universe'].queryset = models.Universe.objects.none()
+                else:
+                    condition = reduce(
+                        operator.or_, [Q(as_string__icontains=group) for group in self.instance.dataset.groups]
+                    )
+                    self.fields['universe'].queryset = models.Universe.objects.annotate(
+                        as_string=Cast('filters', CharField())
+                    ).filter(condition)
 
 @admin.register(models.Indicator)
 class IndicatorAdmin(BaseAdminModel):
