@@ -22,6 +22,7 @@ def process_uploaded_file(point_file, model, **kwargs):
     filename = point_file.document.name
 
     df = pd.read_csv(point_file.document, sep=",", encoding='utf8')
+    df.columns = map(str.lower, df.columns)
     datasource = (dict(d[1]) for d in df.iterrows())
     loaddata(point_file.title, datasource)
 

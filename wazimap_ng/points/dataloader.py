@@ -16,21 +16,21 @@ def loaddata(name, iterable):
     datarows = []
     for idx, row in enumerate(iterable):
 
-        if "Longitude" not in row:
+        if "longitude" not in row:
             print(f"Missing Longitude - skipping it.")
             continue
 
-        if "Longitude" not in row:
-            print(f"Missing Longitude - skipping it.")
+        if "latitude" not in row:
+            print(f"Missing Latitude - skipping it.")
             continue
 
-        if "Longitude" not in row:
-            print(f"Missing Longitude - skipping it.")
+        if "name" not in row:
+            print(f"Missing Name - skipping it.")
             continue
 
-        location = row.pop("Name")
-        latitude = row.pop("Latitude")
-        longitude = row.pop("Longitude")
+        location = row.pop("name")
+        latitude = row.pop("latitude")
+        longitude = row.pop("longitude")
 
         dd = models.Location(
             name=location, category=category,

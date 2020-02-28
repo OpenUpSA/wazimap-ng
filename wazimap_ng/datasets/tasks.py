@@ -33,7 +33,9 @@ def process_uploaded_file(dataset_file, **kwargs):
     else:
         df = pd.read_excel(dataset_file.document, engine="xlrd")
 
-    groups = [group for group in df.columns.values if group not in ["Geography", "Count"]]
+    df = df.applymap(lambda s:s.lower().strip() if type(s) == str else s)
+    df.columns = map(str.lower, df.columns)
+    groups = [group for group in df.columns.values if group not in ["geography", "count"]]
     datasource = (dict(d[1]) for d in df.iterrows())
     loaddata(dataset_file.title, datasource, groups)
 
@@ -69,7 +71,7 @@ def indicator_data_extraction(indicator, **kwargs):
 
     # Format groups & Count
     groups = ["data__" + i for i in indicator.groups]
-    c = Cast(KeyTextTransform("Count", "data"), FloatField())
+    c = Cast(KeyTextTransform("count", "data"), FloatField())
 
     filter_query = {
         "dataset": indicator.dataset,
@@ -79,7 +81,7 @@ def indicator_data_extraction(indicator, **kwargs):
     if filters:
         filter_query.update(filters)
 
-    qs = models.DatasetData.objects.filter(**filter_query).exclude(data__Count="").order_by("geography_id")
+    qs = models.DatasetData.objects.filter(**filter_query).exclude(data__count="").order_by("geography_id")
 
     if len(groups) > 1:
         subindicators = ["/".join(val) for val in list(set(list(qs.values_list(*groups).distinct())))]
@@ -88,8 +90,8 @@ def indicator_data_extraction(indicator, **kwargs):
     else:
         subindicators = []
 
-    # Group data according to geography_id and get sum of data__Count
-    data = groupby(qs.values(*groups, "geography_id").annotate(Count=Sum(c)), lambda x: x["geography_id"])
+    # Group data according to geography_id and get sum of data__count
+    data = groupby(qs.values(*groups, "geography_id").annotate(count=Sum(c)), lambda x: x["geography_id"])
 
     datarows = []
 
