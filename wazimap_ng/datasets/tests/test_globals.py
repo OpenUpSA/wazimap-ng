@@ -32,7 +32,6 @@ class GeneralReadOnlyTestCase(TestCase):
         data = {
             "groups": [],
             "name": "test",
-            "label": "test-label",
             "dataset": dataset_id,
         }
         response = self.client.post(url, data=data)
@@ -46,7 +45,7 @@ class GeneralReadOnlyTestCase(TestCase):
 
     def test_indicator_list_is_readonly(self):
         url = reverse("indicator-list")
-        data = {"groups": [], "name": "test", "label": "test-label", "dataset": 1}
+        data = {"groups": [], "name": "test", "dataset": 1}
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -117,7 +116,6 @@ class GeneralReadOnlyTestCase(TestCase):
             "subcategory": "Youth",
             "category": "Youth Demographics",
             "key_metric": False,
-            "name": "Youth population by gender",
             "label": "Youth population by gender",
             "indicator": {},
             "universe": {},
@@ -149,7 +147,6 @@ class GeneralPaginationTestCase(TestCase):
             Indicator.objects.create(
                 groups=[],
                 name=f"indicator-{i}",
-                label=f"test-label-{i}",
                 dataset=Dataset.objects.first(),
             )
             DatasetData.objects.create(
