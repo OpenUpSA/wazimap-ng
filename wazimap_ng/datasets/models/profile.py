@@ -48,7 +48,6 @@ class ProfileIndicator(models.Model):
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.")
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
     key_metric = models.BooleanField(default=False, help_text="Used as a headline metric in the profile.")
-    name = models.CharField(max_length=60, null=False, blank=True, help_text="Name of the indicator in the database")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
     description = models.TextField(blank=True)
     subindicators = ArrayField(models.CharField(max_length=50), blank=True, default=list)
@@ -102,7 +101,7 @@ class ProfileDataQuerySet(models.QuerySet):
     def add_all_indicators(self, profile, data_extractor):
         print("== Adding indicators ==")
         for profile_indicator in ProfileIndicator.objects.filter(profile=profile):
-            print(f"Loading {profile_indicator.indicator.name}")
+            print(f"Loading {profile_indicator.indicator.label}")
             self.add_indicator(profile, profile_indicator, data_extractor, "indicators")
 
     def add_indicator(self, profile, profile_indicator, data_extractor, namespace=None):

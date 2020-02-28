@@ -204,8 +204,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
     )
 
     list_display = (
-        "profile", 
-        "name", 
+        "profile",
         "label", 
         description("Indicator", lambda x: x.indicator.name), 
         description("Category", lambda x: x.subcategory.category.name),
@@ -215,7 +214,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'name', 'indicator')
+            'fields': ('profile', 'indicator')
         }),
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'key_metric', 'description')
@@ -231,7 +230,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
-            return ("profile", "name") + self.readonly_fields
+            return ("profile",) + self.readonly_fields
         return self.readonly_fields
 
     def save_model(self, request, obj, form, change):
@@ -297,7 +296,7 @@ class IndicatorAdminForm(forms.ModelForm):
 class IndicatorAdmin(BaseAdminModel):
 
     list_display = (
-        "label", "dataset", "universe"
+        "name", "dataset", "universe"
     )
 
     list_filter = (
@@ -309,7 +308,7 @@ class IndicatorAdmin(BaseAdminModel):
         (None, { 'fields': ('dataset', ) } ),
     ]
     fieldsets = [
-        (None, { 'fields': ('dataset','universe', 'groups', 'name', 'label', 'subindicators') } ),
+        (None, { 'fields': ('dataset','universe', 'groups', 'name', 'subindicators') } ),
     ]
 
     formfield_overrides = {
@@ -340,7 +339,7 @@ class IndicatorAdmin(BaseAdminModel):
         if obj:
             to_add = ('dataset',)
             if obj.name:
-                to_add = to_add + ("groups", "universe", "label",)
+                to_add = to_add + ("groups", "universe",)
             return self.readonly_fields + to_add
         return self.readonly_fields
 
@@ -372,7 +371,7 @@ class IndicatorAdmin(BaseAdminModel):
             hooks.custom_admin_notification(
                 request.session,
                 "warning",
-                "Please make sure you get data right before saving as fields : groups, dataset, label & universe will be set as non editable"
+                "Please make sure you get data right before saving as fields : groups, dataset & universe will be set as non editable"
             )
         return obj
 
@@ -407,8 +406,8 @@ class DatasetFileAdmin(admin.ModelAdmin):
 @admin.register(models.IndicatorData)
 class IndicatorDataAdmin(admin.ModelAdmin):
 
-    def indicator__label(self, obj):
-        return obj.indicator.label
+    def indicator__name(self, obj):
+        return obj.indicator.name
 
     def parent(self, obj):
         return obj.geography.get_parent()
@@ -427,10 +426,10 @@ class IndicatorDataAdmin(admin.ModelAdmin):
     )
 
     list_display = (
-        "indicator__label", "geography", "parent"
+        "indicator__name", "geography", "parent"
     )
 
-    list_filter = ("indicator__label",)
+    list_filter = ("indicator__name",)
 
     search_fields = ["geography__name"]
 
