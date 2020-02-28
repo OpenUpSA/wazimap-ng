@@ -129,7 +129,7 @@ def get_children_profile(profile_indicator_ids, geography):
             for group in groups:
                 key = subindicator.get(group, None)
                 subindicator_data = indicator_data.setdefault(key, {})
-                subindicator_data[child.get("geography__code")] = subindicator.get("Count")
+                subindicator_data[child.get("geography__code")] = subindicator.get("count")
 
     return profile
 
@@ -162,8 +162,8 @@ def profile_geography_data_helper(profile_id, geography_code):
 
         if pi.key_metric:
 
-            value = data.get(indicator.label, [{"Count": "-"}])[0]
-            key_metrics.append({"label": pi.label, "value": value["Count"]})
+            value = data.get(indicator.label, [{"count": "-"}])[0]
+            key_metrics.append({"label": pi.label, "value": value["count"]})
         else:
             subcategory = pi.subcategory
             category = subcategory.category
