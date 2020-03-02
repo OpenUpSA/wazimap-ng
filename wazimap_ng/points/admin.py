@@ -9,6 +9,7 @@ from wazimap_ng.datasets import hooks
 
 from . import models
 
+admin.site.register(models.Theme)
 
 def assign_to_category_action(category):
     def assign_to_category(modeladmin, request, queryset):
@@ -24,10 +25,6 @@ def assign_to_category_action(category):
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ("name", "theme",)
     list_filter = ("theme",)
-
-@admin.register(models.Theme)
-class ThemeAdmin(admin.ModelAdmin):
-    list_display = ("name",)
 
 @admin.register(models.Location)
 class LocationAdmin(admin.OSMGeoAdmin):
