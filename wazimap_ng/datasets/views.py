@@ -1,5 +1,6 @@
 from django.http import Http404
 from django.views.decorators.http import condition
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
@@ -120,11 +121,11 @@ def get_children_profile(profile_indicator_ids, geography):
     children_profiles = models.IndicatorData.objects.filter(
         indicator_id__in=profile_indicator_ids,
         geography_id__in=geography.get_children().values_list("id", flat=True)
-    ).values("indicator__label","data", "geography__code", "indicator__groups")
+    ).values("indicator__name","data", "geography__code", "indicator__groups")
 
     for child in children_profiles:
         groups = child.get("indicator__groups") or [None]
-        indicator_data = profile.setdefault(child.get("indicator__label"), {})
+        indicator_data = profile.setdefault(child.get("indicator__name"), {})
         for subindicator in child.get("data"):
             for group in groups:
                 key = subindicator.get(group, None)
@@ -140,8 +141,8 @@ def profile_geography_data(request, profile_id, geography_code):
     return Response(js)
 
 def profile_geography_data_helper(profile_id, geography_code):
-    profile = models.Profile.objects.get(pk=profile_id)
-    geography = models.Geography.objects.get(code=geography_code)
+    profile = get_object_or_404(models.Profile, pk=profile_id)
+    geography = get_object_or_404(models.Geography, code=geography_code)
     profile_indicator_ids = profile.indicators.values_list("id", flat=True)
 
     geo_js = AncestorGeographySerializer().to_representation(geography)
@@ -152,7 +153,7 @@ def profile_geography_data_helper(profile_id, geography_code):
     data = dict(models.IndicatorData.objects.filter(
         indicator_id__in=profile_indicator_ids,
         geography=geography
-    ).values_list("indicator__label","data"))
+    ).values_list("indicator__name","data"))
 
     children_profile = get_children_profile(profile_indicator_ids, geography)
 
@@ -174,7 +175,7 @@ def profile_geography_data_helper(profile_id, geography_code):
             subcat_js["description"] = subcategory.description
             indicators_js  = subcat_js.setdefault("indicators", {})
 
-            indicator_data = data.get(pi.indicator.label, [])
+            indicator_data = data.get(pi.indicator.name, [])
 
             if pi.subindicators and indicator_data and groups[0]:
                 order = {key: i for i, key in enumerate(pi.subindicators)}
@@ -188,11 +189,11 @@ def profile_geography_data_helper(profile_id, geography_code):
                 "subindicators": indicator_data
             }
             for subindicator in indicator_data:
-                if pi.indicator.label in children_profile:
+                if pi.indicator.name in children_profile:
                     # TODO change name from children to child_geographies - need to change the UI as well
                     for group in groups:
                         key = subindicator[group] if group else None
-                        subindicator["children"] = children_profile[pi.indicator.label].get(key, 0)
+                        subindicator["children"] = children_profile[pi.indicator.name].get(key, 0)
 
     highlights = {}
 
