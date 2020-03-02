@@ -3,8 +3,10 @@ from rest_framework_gis.fields import GeometrySerializerMethodField
 from rest_framework import serializers
 from . import models
 from ..datasets.models import Geography
+from ..points.models import Location
 
 from django.core.serializers import serialize
+from collections import Counter
 
 
 class GeographySerializer(GeoFeatureModelSerializer):
@@ -36,6 +38,7 @@ class GeographySerializer(GeoFeatureModelSerializer):
 
 class GeographyBoundarySerializer(GeographySerializer):
     level = serializers.SerializerMethodField()
+    themes = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, simplification=0.005, **kwargs)
@@ -43,8 +46,20 @@ class GeographyBoundarySerializer(GeographySerializer):
     def get_level(self, obj):
         return obj.geography.level
 
+    def get_themes(self, obj):
+        themes = {}
+        if obj.geom:
+            themes = dict(
+                Counter(
+                    Location.objects.filter(
+                        coordinates__intersects=obj.geom
+                    ).values_list("category__theme__name", flat=True)
+                )
+            )
+        return themes
+
     class Meta:
         model = models.GeographyBoundary
         geo_field = "geom_cache"
 
-        fields = ("code", "name", "area", "parent", "level")
+        fields = ("code", "name", "area", "parent", "level", "themes")
