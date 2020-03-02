@@ -162,9 +162,8 @@ def profile_geography_data_helper(profile_id, geography_code):
         groups = pi.indicator.groups or [None]
 
         if pi.key_metric:
-
-            value = data.get(indicator.name, [{"count": "-"}])[0]
-            key_metrics.append({"label": pi.label, "value": value["count"]})
+            value = data.get(indicator.label, [{"count": "-"}])[0]
+            key_metrics.append({"label": pi.label, "value": value.get("count", "-")})
         else:
             subcategory = pi.subcategory
             category = subcategory.category
