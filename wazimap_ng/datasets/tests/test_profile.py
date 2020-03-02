@@ -24,7 +24,6 @@ class ProfileTestCase(TestCase):
         indicator = Indicator.objects.create(
             name="first_indicator",
             groups=["first_group"],
-            label="first_label",
             dataset=self.first_dataset,
         )
         indicator_category = IndicatorCategory.objects.create(
@@ -121,7 +120,6 @@ class ProfileGeographyTestCase(TestCase):
         self.indicator = Indicator.objects.create(
             groups=["Language", "parent"],
             name="first_indicator",
-            label="first_label",
             dataset=self.first_dataset,
         )
         ProfileIndicator.objects.create(
@@ -129,7 +127,6 @@ class ProfileGeographyTestCase(TestCase):
             indicator=self.indicator,
             subcategory=indicator_subcategory,
             key_metric=True,
-            name="profile_indicator",
             label="profile_indicator_label",
         )
 
@@ -145,7 +142,7 @@ class ProfileGeographyTestCase(TestCase):
         self.assertEqual(results["geography"]["name"], "first_geog")
         self.assertEqual(results["geography"]["code"], "first_code")
         self.assertEqual(results["geography"]["level"], "first_level")
-        self.assertEqual(results["key_metrics"][0]["label"], "first_label")
+        self.assertEqual(results["key_metrics"][0]["label"], "profile_indicator_label")
         self.assertEqual(results["key_metrics"][0]["value"], "-")
 
     def test_incorrect_geography_throws_404(self):

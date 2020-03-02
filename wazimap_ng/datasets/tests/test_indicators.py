@@ -43,7 +43,6 @@ class IndicatorsDetailTestCase(TestCase):
         self.indicator = Indicator.objects.create(
             groups=["Language"],
             name="first_indicator",
-            label="first_label",
             dataset=self.first_dataset,
         )
 
@@ -116,7 +115,6 @@ class IndicatorsGeographyTestCase(TestCase):
         self.indicator = Indicator.objects.create(
             groups=["Language", "parent"],
             name="first_indicator",
-            label="first_label",
             dataset=self.first_dataset,
         )
 

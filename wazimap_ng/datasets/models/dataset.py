@@ -67,7 +67,7 @@ class DatasetData(models.Model):
 class Universe(models.Model):
     filters = JSONField()
 
-    name = models.CharField(max_length=50)
+    # name = models.CharField(max_length=50)
     label = models.CharField(max_length=100)
 
     def __str__(self):
@@ -84,11 +84,10 @@ class Indicator(models.Model):
     # Fields to group by
     groups = ArrayField(models.CharField(max_length=50), blank=True, default=list)
     name = models.CharField(max_length=50)
-    label = models.CharField(max_length=100)
     subindicators = ArrayField(models.CharField(max_length=50), blank=True, default=list)
 
     def __str__(self):
-        return f"{self.dataset.name} -> {self.label}"
+        return f"{self.dataset.name}"
 
     class Meta:
         ordering = ["id"]
@@ -166,7 +165,7 @@ class IndicatorData(models.Model):
     data = JSONField(default=dict, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.geography} - {self.indicator.label}"
+        return f"{self.geography} - {self.indicator.name}"
 
     class Meta:
         verbose_name_plural = "Indicator Data items"

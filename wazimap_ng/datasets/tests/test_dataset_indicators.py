@@ -15,13 +15,11 @@ class DatasetIndicatorsTestCase(TestCase):
         self.first_indicator = Indicator.objects.create(
             name="first_indicator",
             groups=["first_group"],
-            label="first_label",
             dataset=self.first_dataset,
         )
         self.second_indicator = Indicator.objects.create(
             name="second_indicator",
             groups=["second_group"],
-            label="second_label",
             dataset=self.second_dataset,
         )
 
@@ -54,7 +52,6 @@ class DatasetIndicatorsTestCase(TestCase):
         result = response.data[0]
         self.assertEqual(result["groups"], ["first_group"])
         self.assertEqual(result["name"], "first_indicator")
-        self.assertEqual(result["label"], "first_label")
 
     def test_incorrect_dataset_fails(self):
         dataset_id = 123456789
