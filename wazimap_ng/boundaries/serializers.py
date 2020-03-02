@@ -6,7 +6,8 @@ from ..datasets.models import Geography
 from ..points.models import Location
 
 from django.core.serializers import serialize
-from collections import Counter
+from itertools import groupby
+from django.db.models import Count
 
 
 class GeographySerializer(GeoFeatureModelSerializer):
@@ -36,6 +37,7 @@ class GeographySerializer(GeoFeatureModelSerializer):
             return parent.code
         return None
 
+
 class GeographyBoundarySerializer(GeographySerializer):
     level = serializers.SerializerMethodField()
     themes = serializers.SerializerMethodField()
@@ -47,15 +49,40 @@ class GeographyBoundarySerializer(GeographySerializer):
         return obj.geography.level
 
     def get_themes(self, obj):
-        themes = {}
+        themes = []
         if obj.geom:
-            themes = dict(
-                Counter(
-                    Location.objects.filter(
-                        coordinates__intersects=obj.geom
-                    ).values_list("category__theme__name", flat=True)
-                )
-            )
+            fields = ["category__name", "category__theme", "category__theme__name", "category__theme__icon"]
+
+            for theme_id, data in groupby(
+                Location.objects.filter(
+                    coordinates__intersects=obj.geom
+                ).values(*fields).annotate(count=Count("name")),
+                lambda x: x["category__theme"]
+            ):
+                data=list(data)
+                theme_count = 0
+                categories = []
+
+                for category in data:
+                    categories.append({
+                        "name": category["category__name"],
+                        "count": category["count"]
+                    })
+                    theme_count = theme_count + category["count"]
+
+                icon = data[0]["category__theme__icon"]
+                name = data[0]["category__theme__name"]
+                if not icon:
+                    icon = "icon--%s" % name.lower()
+
+                themes.append({
+                    "name": name,
+                    "count": theme_count,
+                    "icon": icon,
+                    "id": theme_id,
+                    "categories": categories,
+                })
+
         return themes
 
     class Meta:
