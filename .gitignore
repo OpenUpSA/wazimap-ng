@@ -118,3 +118,5 @@ wazimap-ng.sublime-workspace
 wazimap-ng/
 *.gz
 media/
+
+Dockerfile
