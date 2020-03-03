@@ -8,8 +8,9 @@ from . import models
 
 cache = {}
 def load_geography(geo_code):
+    geo_code = str(geo_code).upper()
     if geo_code not in cache:
-        geography = models.Geography.objects.get(code=geo_code.upper())
+        geography = models.Geography.objects.get(code=geo_code)
         cache[geo_code] = geography
     return cache[geo_code]
 
