@@ -1,0 +1,5 @@
+branch=$(git rev-parse --symbolic --abbrev-ref HEAD)
+version=$(grep $branch Dockerfile.tmpl | awk '{print $2}')
+dockerstring="FROM adieyal/wazimap-ng:${version}"
+
+echo $dockerstring > Dockerfile
