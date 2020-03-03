@@ -68,7 +68,7 @@ def notify_user(task):
         else:
             obj = next(iter(task.args))
             result = {
-                "name": getattr(obj, name, False) or obj.title,
+                "name": obj.title,
                 "id": obj.id,
                 "model": obj.__class__.__name__.lower()
             }
