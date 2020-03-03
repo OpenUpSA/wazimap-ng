@@ -4,6 +4,7 @@ from django.core.validators import FileExtensionValidator
 
 class Theme(models.Model):
     name = models.CharField(max_length=30)
+    icon = models.CharField(max_length=30, null=True, blank=True)
 
     def __str__(self):
         return self.name

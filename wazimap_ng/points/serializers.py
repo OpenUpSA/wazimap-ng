@@ -15,6 +15,13 @@ class ThemeSerializer(serializers.ModelSerializer):
         model = models.Theme
         fields = "__all__"
 
+    def to_representation(self, obj):
+        representation = super().to_representation(obj)
+
+        if not obj.icon:
+            representation["icon"] = "icon--%s" % obj.name.lower()
+        return representation
+
 class LocationSerializer(GeoFeatureModelSerializer):
     category = CategorySerializer()
 
