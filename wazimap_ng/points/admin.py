@@ -69,3 +69,8 @@ class CoordinateFileAdmin(admin.ModelAdmin):
                 )
             )
         return obj
+
+@admin.register(models.ProfileCategory)
+class ProfileCategoryAdmin(admin.ModelAdmin):
+    list_display = ("label", "category", "profile")
+    list_filter = ("category", "profile",)

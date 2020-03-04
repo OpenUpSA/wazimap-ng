@@ -1,7 +1,9 @@
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from rest_framework import serializers
+from django.core.serializers import serialize
 
 from . import models
+from wazimap_ng.boundaries.models import GeographyBoundary
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,3 +32,37 @@ class LocationSerializer(GeoFeatureModelSerializer):
         geo_field = "coordinates"
 
         fields = ('id', 'category', 'data', "category")
+
+class LocationInlineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Location
+        fields = ('id', 'coordinates', 'data', )
+
+class ProfileCategorySerializer(serializers.ModelSerializer):
+    locations = serializers.SerializerMethodField('get_locations')
+    sub_theme = serializers.ReadOnlyField(source='category.name')
+    theme = serializers.ReadOnlyField(source='category.theme.name')
+    theme_icon = serializers.ReadOnlyField(source='category.theme.icon')
+
+    def get_locations(self, obj):
+        locations = None
+        if "code" in self.context and self.context.get("code"):
+            geography = GeographyBoundary.objects.filter(code=self.context.get("code")).first()
+            if geography:
+                if geography.geom:
+                    locations = obj.category.locations.filter(
+                        coordinates__intersects=geography.geom
+                    )
+                else:
+                    locations = models.Location.objects.none()
+
+        if locations == None:
+            locations = obj.category.locations.all()
+
+        return LocationInlineSerializer(
+            locations, many=True, read_only=True
+        ).data
+
+    class Meta:
+        model = models.ProfileCategory
+        fields = ('id', 'label', 'description', 'theme', 'theme_icon', 'sub_theme', 'locations',)
