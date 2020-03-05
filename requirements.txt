@@ -49,6 +49,7 @@ django-cors-headers==3.2.0
 GDAL==3.0.2
 djangorestframework-gis==0.14
 Fiona==1.8.13.post1
+Shapely==1.6.4
 
 django-q==1.0.2
 
