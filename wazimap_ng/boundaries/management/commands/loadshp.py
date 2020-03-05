@@ -1,72 +1,72 @@
-from django.utils.module_loading import import_string
+import os
+
 from django.core.management.base import BaseCommand, CommandError
-from django.contrib.gis.utils import LayerMapping
+from django.db import transaction
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 
-app_label = "wazimap_ng.boundaries"
-"""
-Example process to load up shapefiles into the database
+from wazimap_ng.datasets.models import Geography
+from wazimap_ng.boundaries.models import GeographyBoundary
 
-1. ./manage.py ogrinspect ./DC_SA_2011.shp District --mapping --multi >> wazimap_ng/boundaries/models.py
-2. Edit the District model by moving the district_mapping into the model and changing the name to mapping. Change the field names as desired.
-class District(models.Model):
-    mapping = {
-        'category': 'CATEGORY',
-        'code': 'DC_MDB_C',
-        'name': 'DC_NAME',
-        'long_name': 'MAP_TITLE',
-        'province_code': 'PR_MDB_C',
-        'province_code': 'PR_CODE',
-        'province': 'PR_NAME',
-        'area': 'ALBERS_ARE',
-        'geom': 'MULTIPOLYGON',
-    }
-    category = models.CharField(max_length=5)
-    code = models.CharField(max_length=25)
-    name = models.CharField(max_length=100)
-    long_name = models.CharField(max_length=200)
-    province_code = models.CharField(max_length=50)
-    pr_code_st = models.CharField(max_length=1)
-    province = models.CharField(max_length=50)
-    area = models.FloatField()
-    geom = models.MultiPolygonField(srid=-1)
-
-You'll probably need to edit the SRID on the geom column - e.g.
-geom = models.MultiPolygonField(srid=4326)
-
-Make sure to have a unique 'code' field. All geographies must have a name field as well.
-
-Also add the following field:
-    geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=True)
-
-3. ./manage.py makemigrations
-4. ./manage.py migrate
-5. ./manage loadshp District ./DC_SA_2011.shp
-6. Link the new boundaries to datasets.models.Geography e.g.:
-    muni_map = {m.code : m for m in models.Geography.objects.filter(level='municipality')}
-    with transaction.atomic():
-        for ward in Ward.objects.all():
-            g = muni.add_child(name=ward.code, code=ward.code, level="ward")
-...         ward.geography=g
-...         ward.save()
-7. Add your new geography to datasets.views:search_geography to define the sort order
-8. Add your geography code to boundaries.models:get_boundary_model_class
-9. Create a serializer for your geography in boundaries.serializers
-10. Add your geography to boundaries.views.get_code and get_classes
-"""
-
+import fiona
+from shapely.geometry import shape as shapely_shape
 
 class Command(BaseCommand):
-    help = "Loads shapefiles into the database. Assume that the models already exist."
+    help = "Loads new geographies. Example class: python3 manage.py loadshp /tmp/gcro.shp Region_cod=code,Parent_g_3=parent_code,Region_nam=name,Shape_Area=area planning_region"
 
     def add_arguments(self, parser):
-        parser.add_argument('model', type=str)
-        parser.add_argument('shapefile', type=str)
+        parser.add_argument("shapefile", type=str, help="Shapefile containing boundaries to be loaded.")
+        parser.add_argument("field_map", type=str, help="Mapping of fields to extract from the shapefile. Should be formatted as follows: code_field=code,name_field=name,parent_code_field=parent_code,area_field=area....")
+        parser.add_argument("level", type=str, help="Geography level, e.g. province, municipality, ...")
 
+    def check_field_map(self, field_map):
+        fields = ["name", "code", "parent_code", "area"]
+        for f in fields:
+            if f not in field_map.values():
+                raise CommandError(f"Expected the following fields {fields}.")
+
+    def check_shapefile(self, shapefile_path):
+        if not os.path.exists(shapefile_path):
+            raise CommandError(f"Can't find shapefile: {shapefile_path}")
+
+    def process_shape(self, shape, field_map, level):
+        reverse_map = dict(zip(field_map.values(), field_map.keys()))
+        properties = shape["properties"]
+
+        code_field = reverse_map["code"]
+        name_field = reverse_map["name"]
+        parent_code_field = reverse_map["parent_code"]
+
+        code = properties[code_field]
+        parent_code = properties[parent_code_field]
+        name = properties[name_field]
+
+        sh = shapely_shape(shape["geometry"])
+        geo_shape = MultiPolygon([GEOSGeometry(sh.wkt)])
+
+        try:
+            parent_geography = Geography.objects.get(code__iexact=parent_code)
+        except Geography.DoesNotExist:
+            print(f"Can't find geography: {parent_code}")
+            raise Geography.DoesNotExist()
+
+        try:
+            geography = Geography.objects.get(code__iexact=code)
+        except Geography.DoesNotExist:
+            geography = parent_geography.add_child(code=code, level=level, name=name)
+            GeographyBoundary.objects.create(geography=geography, code=code, name=name, area=0, geom=geo_shape)
+
+    @transaction.atomic()
     def handle(self, *args, **options):
-        model_name = options["model"]
-        filename = options["shapefile"]
+        shapefile = options["shapefile"]
+        field_map = dict(pair.split("=") for pair in options["field_map"].split(","))
+        level = options["level"]
 
-        model = import_string(f"{app_label}.models.{model_name}")
+        self.check_shapefile(shapefile)
+        self.check_field_map(field_map)
 
-        lm = LayerMapping(model, filename, model.mapping, transform=False, source_srs=4326)
-        lm.save(strict=True, verbose=True)
+        shape = fiona.open(shapefile)
+        for idx, s in enumerate(shape):
+            self.process_shape(s, field_map, level)
+
+        print(f"{idx + 1} geographies successfully loaded")
+
