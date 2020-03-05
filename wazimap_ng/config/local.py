@@ -41,7 +41,3 @@ class Local(Common):
     }
 
     FILE_SIZE_LIMIT = 1000 * 1024 * 1024
-    Q_CLUSTER = {
-       "orm": 'default',
-       "retry": 2000,
-    }
