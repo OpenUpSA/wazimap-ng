@@ -48,6 +48,7 @@ django-cors-headers==3.2.0
 # GIS libraries
 GDAL==3.0.2
 djangorestframework-gis==0.14
+Fiona==1.8.13.post1
 
 django-q==1.0.2
 
