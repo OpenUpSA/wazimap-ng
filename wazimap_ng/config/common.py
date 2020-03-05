@@ -227,6 +227,11 @@ class Common(Configuration):
 
     CORS_ORIGIN_ALLOW_ALL = True
 
+    Q_CLUSTER = {
+       "orm": 'default',
+       "retry": 10000,
+    }
+
 FILE_SIZE_LIMIT = 1000 * 1024 * 1024
 ALLOWED_FILE_EXTENSIONS = ["csv", "xls", "xlsx"]
 
