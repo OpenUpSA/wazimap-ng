@@ -218,9 +218,9 @@ def profile_geography_data_helper(profile_id, geography_code):
                 for val in data:
                     for group in groups:
                         if val[group] == highlight_value:
-                            count = count + val["Count"]
+                            count = count + val["count"]
             else:
-                count = sum([val["Count"] for val in data])
+                count = sum([val["count"] for val in data])
 
             highlights[highlight.get("name")] = {
                 "label": highlight.get("label"),
