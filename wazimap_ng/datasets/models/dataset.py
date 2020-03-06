@@ -87,7 +87,7 @@ class Indicator(models.Model):
     subindicators = ArrayField(models.CharField(max_length=50), blank=True, default=list)
 
     def __str__(self):
-        return f"{self.dataset.name}"
+        return f"{self.dataset.name} -> {self.name}"
 
     class Meta:
         ordering = ["id"]
@@ -160,7 +160,7 @@ class IndicatorData(models.Model):
     Indicator Data for caching results of indicator group according to
     geography.
     """
-    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE)
+    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, verbose_name="variable")
     geography = models.ForeignKey(Geography, on_delete=models.CASCADE)
     data = JSONField(default=dict, null=True, blank=True)
 
