@@ -66,5 +66,5 @@ class DatasetFile(models.Model):
         for required_header in required_headers:
             if required_header not in headers:
                 raise ValidationError(
-                    "Invalid File passed. We were not able find Required header : %s " % required_header.capitalize()
+                    "Invalid File passed. We were not able to find Required header : %s " % required_header.capitalize()
                 )
