@@ -28,8 +28,12 @@ def loaddata(name, iterable, groups):
             continue
 
         count = row["count"]
-        if math.isnan(count):
-            print(f"Missing data for {geo_code} - skipping it.")
+        try:
+            if math.isnan(count):
+                print(f"Missing data for {geo_code} - skipping it.")
+                continue
+        except TypeError:
+            print(f"Expected a number in the 'count' column, received '{count}'")
             continue
 
 
