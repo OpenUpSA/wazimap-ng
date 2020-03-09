@@ -42,18 +42,29 @@ class DatasetFile(models.Model):
         """
         document_name = self.document.name
         headers = []
-
-        if "xls" in document_name or "xlsx" in document_name:
-            book = xlrd.open_workbook(file_contents=self.document.read())
-            df = pd.read_excel(book, engine="xlrd", header=None)
-        elif "csv" in document_name:
-            data = BytesIO(self.document.read())
-            df = pd.read_csv(data, sep=",", header=None)
+        try:
+            if "xls" in document_name or "xlsx" in document_name:
+                book = xlrd.open_workbook(file_contents=self.document.read())
+                df = pd.read_excel(book, engine="xlrd", header=None)
+            elif "csv" in document_name:
+                data = BytesIO(self.document.read())
+                df = pd.read_csv(data, sep=",", header=None)
+        except pd.errors.ParserError as e:
+            raise ValidationError(
+                "Not able to parse passed file. Error while reading file: %s" % str(e)
+            )
+        except pd.errors.EmptyDataError as e:
+            raise ValidationError(
+                "File seems to be empty. Error while reading file: %s" % str(e)
+            )
         
         data = df.values.tolist()
         headers = [str(h).lower() for h in data[0]]
 
-        if "geography" not in headers or "count" not in headers:
-            raise ValidationError(
-                "Invalid File passed. We were not able to find correct headers"
-            )
+        required_headers = ["geography", "count"]
+
+        for required_header in required_headers:
+            if required_header not in headers:
+                raise ValidationError(
+                    "Invalid File passed. We were not able to find Required header : %s " % required_header.capitalize()
+                )
