@@ -1,4 +1,5 @@
 import json
+import time
 import io
 import collections
 import pandas as pd
@@ -27,6 +28,7 @@ def process_uploaded_file(dataset_file, **kwargs):
 
     Get header index for geography & count and create Result objects.
     """
+    time.sleep(20)
     filename = dataset_file.document.name
     if ".csv" in filename:
         df = pd.read_csv(io.BytesIO(dataset_file.document.read()), sep=",")
