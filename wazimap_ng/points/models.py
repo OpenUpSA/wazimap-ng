@@ -82,3 +82,6 @@ class ProfileCategory(models.Model):
 
     def __str__(self):
         return self.label
+
+    class Meta:
+        verbose_name_plural = "Profile Categories"
