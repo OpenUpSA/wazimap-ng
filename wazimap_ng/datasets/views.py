@@ -159,10 +159,10 @@ def profile_geography_data_helper(profile_id, geography_code):
 
     for pi in profile.profileindicator_set.order_by("subcategory__category__name", "subcategory__name").select_related():
         indicator = pi.indicator
-        groups = pi.indicator.groups or [None]
+        groups = indicator.groups or [None]
 
         if pi.key_metric:
-            value = data.get(indicator.label, [{"count": "-"}])[0]
+            value = data.get(indicator.name, [{"count": "-"}])[0]
             key_metrics.append({"label": pi.label, "value": value.get("count", "-")})
         else:
             subcategory = pi.subcategory
@@ -175,7 +175,7 @@ def profile_geography_data_helper(profile_id, geography_code):
             subcat_js["description"] = subcategory.description
             indicators_js  = subcat_js.setdefault("indicators", {})
 
-            indicator_data = data.get(pi.indicator.name, [])
+            indicator_data = data.get(indicator.name, [])
 
             if pi.subindicators and indicator_data and groups[0]:
                 order = {key: i for i, key in enumerate(pi.subindicators)}
@@ -189,11 +189,11 @@ def profile_geography_data_helper(profile_id, geography_code):
                 "subindicators": indicator_data
             }
             for subindicator in indicator_data:
-                if pi.indicator.name in children_profile:
+                if indicator.name in children_profile:
                     # TODO change name from children to child_geographies - need to change the UI as well
                     for group in groups:
                         key = subindicator[group] if group else None
-                        subindicator["children"] = children_profile[pi.indicator.name].get(key, 0)
+                        subindicator["children"] = children_profile[indicator.name].get(key, 0)
 
     highlights = {}
 
@@ -218,9 +218,9 @@ def profile_geography_data_helper(profile_id, geography_code):
                 for val in data:
                     for group in groups:
                         if val[group] == highlight_value:
-                            count = count + val["Count"]
+                            count = count + val["count"]
             else:
-                count = sum([val["Count"] for val in data])
+                count = sum([val["count"] for val in data])
 
             highlights[highlight.get("name")] = {
                 "label": highlight.get("label"),

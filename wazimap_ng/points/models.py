@@ -1,6 +1,11 @@
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django.core.validators import FileExtensionValidator
+from django.core.exceptions import ValidationError
+
+import pandas as pd
+from io import BytesIO
+
 
 class Theme(models.Model):
     name = models.CharField(max_length=30)
@@ -33,7 +38,37 @@ class CoordinateFile(models.Model):
     document = models.FileField(
         upload_to="points/",
         validators=[FileExtensionValidator(allowed_extensions=["csv",])],
+        help_text="File Type required : CSV | Fields that are required: Name, Longitude, latitude"
     )
 
     def __str__(self):
         return self.title
+
+    def clean(self):
+        """
+        Clean points data
+        """
+        document_name = self.document.name
+        headers = []
+        try:
+            data = BytesIO(self.document.read())
+            df = pd.read_csv(data, sep=",", header=None)
+        except pd.errors.ParserError as e:
+            raise ValidationError(
+                "Not able to parse passed file. Error while reading file: %s" % str(e)
+            )
+        except pd.errors.EmptyDataError as e:
+            raise ValidationError(
+                "File seems to be empty. Error while reading file: %s" % str(e)
+            )
+        
+        data = df.values.tolist()
+        headers = [str(h).lower() for h in data[0]]
+
+        required_headers = ["longitude", "latitude", "name"]
+
+        for required_header in required_headers:
+            if required_header not in headers:
+                raise ValidationError(
+                    "Invalid File passed. We were not able to find Required header : %s " % required_header.capitalize()
+                )

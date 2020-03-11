@@ -8,7 +8,7 @@ from .geography import Geography
 
 class Profile(models.Model):
     name = models.CharField(max_length=50)
-    indicators = models.ManyToManyField(Indicator, through="ProfileIndicator")
+    indicators = models.ManyToManyField(Indicator, through="ProfileIndicator", verbose_name="variables")
 
     def __str__(self):
         return self.name
@@ -45,7 +45,7 @@ class IndicatorSubcategory(models.Model):
 
 class ProfileIndicator(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.")
+    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.", verbose_name="variable")
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
     key_metric = models.BooleanField(default=False, help_text="Used as a headline metric in the profile.")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
@@ -60,7 +60,7 @@ class ProfileIndicator(models.Model):
 
 class ProfileHighlight(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this highlight is based on.")
+    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this highlight is based on.", verbose_name="variable")
     name = models.CharField(max_length=60, null=False, blank=True, help_text="Name of the indicator in the database")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
     value = models.CharField(max_length=60, null=False, blank=True, help_text="The value used for the highlight. Should be one of the possible values for the given indicator.")

@@ -230,6 +230,7 @@ class Common(Configuration):
     Q_CLUSTER = {
        "orm": 'default',
        "retry": 10000,
+       "ack_failures": True,
     }
 
 FILE_SIZE_LIMIT = 1000 * 1024 * 1024

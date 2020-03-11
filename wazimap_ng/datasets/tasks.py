@@ -1,4 +1,6 @@
 import json
+import time
+import io
 import collections
 import pandas as pd
 from itertools import groupby
@@ -26,12 +28,12 @@ def process_uploaded_file(dataset_file, **kwargs):
 
     Get header index for geography & count and create Result objects.
     """
+    time.sleep(20)
     filename = dataset_file.document.name
-
     if ".csv" in filename:
-        df = pd.read_csv(dataset_file.document, sep=",")
+        df = pd.read_csv(io.BytesIO(dataset_file.document.read()), sep=",")
     else:
-        df = pd.read_excel(dataset_file.document, engine="xlrd")
+        df = pd.read_excel(dataset_file.document.read(), engine="xlrd")
 
     df = df.applymap(lambda s:s.lower().strip() if type(s) == str else s)
     df.columns = map(str.lower, df.columns)
