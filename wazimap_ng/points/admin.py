@@ -74,3 +74,17 @@ class CoordinateFileAdmin(admin.ModelAdmin):
 class ProfileCategoryAdmin(admin.ModelAdmin):
     list_display = ("label", "category", "profile")
     list_filter = ("category", "profile",)
+
+    fieldsets = (
+        ("Database fields (can't change after being created)", {
+            'fields': ('profile', 'category')
+        }),
+        ("Profile fields", {
+          'fields': ('label', 'description',)
+        }),
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj: # editing an existing object
+            return ("profile", "category",) + self.readonly_fields
+        return self.readonly_fields
