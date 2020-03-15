@@ -233,8 +233,10 @@ class Common(Configuration):
        "ack_failures": True,
     }
 
-FILE_SIZE_LIMIT = 1000 * 1024 * 1024
+FILE_SIZE_LIMIT = 3000 * 1024 * 1024
 ALLOWED_FILE_EXTENSIONS = ["csv", "xls", "xlsx"]
+
+CHUNK_SIZE_LIMIT = 1000000
 
 TESTING = "test" in sys.argv
 

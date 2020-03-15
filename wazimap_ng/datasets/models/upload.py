@@ -45,10 +45,9 @@ class DatasetFile(models.Model):
         try:
             if "xls" in document_name or "xlsx" in document_name:
                 book = xlrd.open_workbook(file_contents=self.document.read())
-                df = pd.read_excel(book, engine="xlrd", header=None)
+                headers = pd.read_excel(file_path, nrows=1, dtype=str).columns.str.lower()
             elif "csv" in document_name:
-                data = BytesIO(self.document.read())
-                df = pd.read_csv(data, sep=",", header=None)
+                headers = pd.read_csv(BytesIO(self.document.read()), nrows=1, dtype=str).columns.str.lower()
         except pd.errors.ParserError as e:
             raise ValidationError(
                 "Not able to parse passed file. Error while reading file: %s" % str(e)
@@ -57,9 +56,6 @@ class DatasetFile(models.Model):
             raise ValidationError(
                 "File seems to be empty. Error while reading file: %s" % str(e)
             )
-        
-        data = df.values.tolist()
-        headers = [str(h).lower() for h in data[0]]
 
         required_headers = ["geography", "count"]
 
