@@ -60,6 +60,17 @@ urlpatterns = [
     path("api/v1/points/themes/", cache(points_views.ThemeList.as_view())),
     path("api/v1/points/themes/<int:theme_id>/", cache(points_views.LocationList.as_view())),
     path("api/v1/points/categories/", cache(points_views.CategoryList.as_view())),
+    path(
+        "api/v1/points/profile/<int:profile_id>/",
+        cache(points_views.profile_points_data),
+        name="points-profile"
+    ),
+
+    path(
+        "api/v1/points/profile/<int:profile_id>/geographies/<str:geography_code>/",
+        cache(points_views.profile_points_data),
+        name="points-profile-geography"
+    ),
 
     path(
         "api/v1/points/categories/<int:category_id>/",
