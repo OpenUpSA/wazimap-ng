@@ -40,7 +40,7 @@ class GeographySerializer(GeoFeatureModelSerializer):
 
 class GeographyBoundarySerializer(GeographySerializer):
     level = serializers.SerializerMethodField()
-    themes = serializers.SerializerMethodField()
+    #themes = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, simplification=0.005, **kwargs)
