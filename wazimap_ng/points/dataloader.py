@@ -2,16 +2,25 @@ from django.contrib.gis.geos import Point
 from django.db import transaction
 
 from . import models
+from ..boundaries.models import GeographyBoundary
+
+
+def get_levels(coordinates):
+    levels = {}
+    geographies = GeographyBoundary.objects.filter(
+        geom__contains=coordinates
+    ).values("geography__level", "geography__id", "geography__name", "geography__code")
+
+    for geo in geographies:
+        levels[geo["geography__level"]] = {
+            "id": geo["geography__id"],
+            "name": geo["geography__name"],
+            "code": geo["geography__code"]
+        }
+    return levels
 
 @transaction.atomic
-def loaddata(name, iterable):
-
-    theme, created  = models.Theme.objects.get_or_create(
-        name="unspecified theme"
-    )
-    category, created  = models.Category.objects.get_or_create(
-        name="unspecified category", theme=theme
-    )
+def loaddata(name, category, iterable):
 
     datarows = []
     for idx, row in enumerate(iterable):
@@ -29,12 +38,12 @@ def loaddata(name, iterable):
             continue
 
         location = row.pop("name")
-        latitude = row.pop("latitude")
-        longitude = row.pop("longitude")
+        coordinates = Point(row.pop("longitude"), row.pop("latitude"))
 
+        row["levels"] = get_levels(coordinates)
         dd = models.Location(
             name=location, category=category,
-            coordinates=Point(longitude, latitude) ,data=row
+            coordinates=coordinates, data=row
         )
 
         datarows.append(dd)

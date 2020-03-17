@@ -236,6 +236,8 @@ class Common(Configuration):
 FILE_SIZE_LIMIT = 1000 * 1024 * 1024
 ALLOWED_FILE_EXTENSIONS = ["csv", "xls", "xlsx"]
 
+CHUNK_SIZE_LIMIT = 500000
+
 TESTING = "test" in sys.argv
 
 
