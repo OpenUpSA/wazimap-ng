@@ -1,4 +1,5 @@
 import json
+import time
 import pandas as pd
 
 from django.db import transaction
@@ -29,6 +30,7 @@ def process_uploaded_file(dataset_file, **kwargs):
         datasource = (dict(d[1]) for d in df.iterrows())
         loaddata(dataset, datasource)
 
+    time.sleep(20)
     filename = dataset_file.document.name
     file_path = dataset_file.document.path
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)

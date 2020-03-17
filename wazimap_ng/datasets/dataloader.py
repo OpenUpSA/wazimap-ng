@@ -23,16 +23,16 @@ def loaddata(dataset, iterable):
         try:
             geography = load_geography(geo_code)
         except models.Geography.DoesNotExist:
-            # print(f"Geography {geo_code} not found - skipping it.")
+            print(f"Geography {geo_code} not found - skipping it.")
             continue
 
         try:
             count = int(row["count"])
             if math.isnan(count):
-                # print(f"Missing data for {geo_code} - skipping it.")
+                print(f"Missing data for {geo_code} - skipping it.")
                 continue
         except (TypeError, ValueError):
-            # print(f"Expected a number in the 'count' column, received '{count}'")
+            print(f"Expected a number in the 'count' column, received '{count}'")
             continue
 
         del row["geography"]
