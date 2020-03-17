@@ -26,7 +26,9 @@ def process_uploaded_file(point_file, model, **kwargs):
     columns = None
 
     columns = pd.read_csv(file_path, nrows=1, dtype=str, sep=",").columns.str.lower()
-    for df in pd.read_csv(file_path, chunksize=chunksize, skiprows=1, sep=",", header=None):
+    for df in pd.read_csv(
+        file_path, chunksize=chunksize, skiprows=1, sep=",", header=None, keep_default_na=False
+    ):
         df.columns = columns
         datasource = (dict(d[1]) for d in df.iterrows())
         loaddata(point_file.title, point_file.category, datasource)
