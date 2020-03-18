@@ -37,7 +37,6 @@ class DatasetData(models.Model):
         batch_size = 10000
         geocodes = {obj.code: obj for obj in Geography.objects.all()}
         if filename.endswith(".gz"):
-            print(filename)
             fp = gzip.open(filename, "rt", encoding=encoding)
         else:
             fp = open(filename, encoding=encoding)

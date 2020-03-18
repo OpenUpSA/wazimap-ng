@@ -1,9 +1,6 @@
 import json
 import time
-import io
-import collections
 import pandas as pd
-from itertools import groupby
 
 from django.db import transaction
 from django.db.models import Sum, FloatField
@@ -11,11 +8,11 @@ from django.db.models.functions import Cast
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.db.models import Count
 from django.db.models.query import QuerySet
+from django.conf import settings
 
 from . import models
 from .dataloader import loaddata
 from itertools import groupby
-from operator import itemgetter
 
 
 @transaction.atomic
@@ -28,18 +25,44 @@ def process_uploaded_file(dataset_file, **kwargs):
 
     Get header index for geography & count and create Result objects.
     """
+    def process_file_data(df, dataset):
+        df = df.applymap(lambda s:s.lower().strip() if type(s) == str else s)
+        datasource = (dict(d[1]) for d in df.iterrows())
+        loaddata(dataset, datasource)
+
     time.sleep(20)
     filename = dataset_file.document.name
-    if ".csv" in filename:
-        df = pd.read_csv(io.BytesIO(dataset_file.document.read()), sep=",")
-    else:
-        df = pd.read_excel(dataset_file.document.read(), engine="xlrd")
+    file_path = dataset_file.document.path
+    chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
 
-    df = df.applymap(lambda s:s.lower().strip() if type(s) == str else s)
-    df.columns = map(str.lower, df.columns)
-    groups = [group for group in df.columns.values if group not in ["geography", "count"]]
-    datasource = (dict(d[1]) for d in df.iterrows())
-    loaddata(dataset_file.title, datasource, groups)
+    columns = None
+    dataset = models.Dataset.objects.create(name=dataset_file.title)
+
+    if ".csv" in filename:
+        columns = pd.read_csv(file_path, nrows=1, dtype=str, sep=",").columns.str.lower()
+        for df in pd.read_csv(file_path, chunksize=chunksize, dtype=str, sep=",", header=None):
+            df.columns = columns
+            process_file_data(df, dataset)
+    else:
+        skiprows = 1
+        i_chunk = 0
+        columns = pd.read_excel(file_path, nrows=1, dtype=str).columns.str.lower()
+        while True:
+            df = pd.read_excel(
+                file_path, nrows=chunksize, skiprows=skiprows, header=None
+            )
+            skiprows += chunksize
+            # When there is no data, we know we can break out of the loop.
+            if not df.shape[0]:
+                break
+            else:
+                df.columns = columns
+                process_file_data(df, dataset)
+            i_chunk += 1
+
+    groups = [group for group in columns.to_list() if group not in ["geography", "count"]]
+    dataset.groups = groups
+    dataset.save()
 
     return {
         "model": "datasetfile",
