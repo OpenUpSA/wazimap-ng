@@ -1,6 +1,7 @@
 from django.views.decorators.http import condition
 from django.utils.decorators import method_decorator
 from rest_framework.decorators import api_view
+from collections import defaultdict
 
 from rest_framework.response import Response
 from rest_framework_gis.pagination import GeoJsonPagination
@@ -14,9 +15,35 @@ class CategoryList(generics.ListAPIView):
     queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer
 
-class ThemeList(generics.ListAPIView):
-    queryset = models.Theme.objects.all()
-    serializer_class = serializers.ThemeSerializer
+@api_view()
+def theme_view(request, profile_id=None):
+    themes = defaultdict(list)
+    qs = models.ProfileCategory.objects.all()
+    if profile_id is not None:
+        qs = qs.filter(profile__id=profile_id)
+
+    for pc in qs:
+        theme = pc.category.theme
+        themes[theme].append(pc)
+
+    js = []
+    for theme in themes:
+        js_theme = {
+            "id": theme.id,
+            "name": theme.name,
+            "icon": theme.icon,
+            "categories": []
+        }
+
+        for pc in themes[theme]:
+            js_theme["categories"].append({
+                "id": pc.category.id,
+                "name": pc.label
+            })
+            
+        js.append(js_theme)
+
+    return Response(js)
 
 class LocationList(generics.ListAPIView):
     pagination_class = GeoJsonPagination
