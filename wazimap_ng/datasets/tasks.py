@@ -26,7 +26,7 @@ def process_uploaded_file(dataset_file, **kwargs):
     Get header index for geography & count and create Result objects.
     """
     def process_file_data(df, dataset):
-        df = df.applymap(lambda s:s.lower().strip() if type(s) == str else s)
+        df = df.applymap(lambda s:s.capitalize().strip() if type(s) == str else s)
         datasource = (dict(d[1]) for d in df.iterrows())
         loaddata(dataset, datasource)
 
