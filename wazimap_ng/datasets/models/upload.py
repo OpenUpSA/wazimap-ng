@@ -45,7 +45,7 @@ class DatasetFile(models.Model):
         try:
             if "xls" in document_name or "xlsx" in document_name:
                 book = xlrd.open_workbook(file_contents=self.document.read())
-                headers = pd.read_excel(file_path, nrows=1, dtype=str).columns.str.lower()
+                headers = pd.read_excel(book, nrows=1, dtype=str).columns.str.lower()
             elif "csv" in document_name:
                 headers = pd.read_csv(BytesIO(self.document.read()), nrows=1, dtype=str).columns.str.lower()
         except pd.errors.ParserError as e:
