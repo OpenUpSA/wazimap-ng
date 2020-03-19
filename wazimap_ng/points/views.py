@@ -1,5 +1,6 @@
 from django.views.decorators.http import condition
 from django.utils.decorators import method_decorator
+from rest_framework.decorators import api_view
 
 from rest_framework.response import Response
 from rest_framework_gis.pagination import GeoJsonPagination
@@ -37,3 +38,19 @@ class LocationList(generics.ListAPIView):
     @method_decorator(condition(etag_func=etag_point_updated, last_modified_func=last_modified_point_updated))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
+
+@api_view()
+def profile_points_data(request, profile_id, geography_code=None):
+    js = profile_data_helper(profile_id, geography_code)
+    return Response(js)
+
+def profile_data_helper(profile_id, geography_code):
+
+    profile_categories = models.ProfileCategory.objects.filter(
+        profile_id=profile_id
+    ).prefetch_related("category", "category__locations")
+
+    return serializers.ProfileCategorySerializer(
+        profile_categories, many=True,
+        context={'code': geography_code}
+    ).data

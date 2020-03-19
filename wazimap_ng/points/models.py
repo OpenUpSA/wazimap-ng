@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 
 import pandas as pd
 from io import BytesIO
-
+from wazimap_ng.datasets.models import Profile
 
 class Theme(models.Model):
     name = models.CharField(max_length=30)
@@ -19,14 +19,15 @@ class Category(models.Model):
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, related_name="categories")
 
     def __str__(self):
-        return self.name
+        return "%s -> %s" % (self.theme, self.name)
 
     class Meta:
-        verbose_name_plural = "Categories"
+        verbose_name = "Subtheme"
+        verbose_name_plural = "Subthemes"
 
 class Location(models.Model):
     name = models.CharField(max_length=255)
-    category = models.ForeignKey(Category, related_name="locations", on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, related_name="locations", on_delete=models.CASCADE, verbose_name="subtheme")
     coordinates = models.PointField()
     data = JSONField()
 
@@ -35,6 +36,7 @@ class Location(models.Model):
 
 class CoordinateFile(models.Model):
     title = models.CharField(max_length=255, blank=False)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="subtheme")
     document = models.FileField(
         upload_to="points/",
         validators=[FileExtensionValidator(allowed_extensions=["csv",])],
@@ -72,3 +74,16 @@ class CoordinateFile(models.Model):
                 raise ValidationError(
                     "Invalid File passed. We were not able to find Required header : %s " % required_header.capitalize()
                 )
+
+class ProfileCategory(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="subtheme")
+    label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.label
+
+    class Meta:
+        verbose_name = "Point Collection"
+        verbose_name_plural = "Point Collections"

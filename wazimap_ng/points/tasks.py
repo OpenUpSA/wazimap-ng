@@ -4,6 +4,7 @@ from django.db.models.functions import Cast
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.db.models import Count
 from django.db.models.query import QuerySet
+from django.conf import settings
 
 from . import models
 from .dataloader import loaddata
@@ -20,11 +21,17 @@ def process_uploaded_file(point_file, model, **kwargs):
     After reading data convert to list rather than using numpy array.
     """
     filename = point_file.document.name
+    file_path = point_file.document.path
+    chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
+    columns = None
 
-    df = pd.read_csv(point_file.document, sep=",", encoding='utf8')
-    df.columns = map(str.lower, df.columns)
-    datasource = (dict(d[1]) for d in df.iterrows())
-    loaddata(point_file.title, datasource)
+    columns = pd.read_csv(file_path, nrows=1, dtype=str, sep=",").columns.str.lower()
+    for df in pd.read_csv(
+        file_path, chunksize=chunksize, skiprows=1, sep=",", header=None, keep_default_na=False
+    ):
+        df.columns = columns
+        datasource = (dict(d[1]) for d in df.iterrows())
+        loaddata(point_file.title, point_file.category, datasource)
 
     return {
         "name": point_file.title,
