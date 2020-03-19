@@ -43,7 +43,9 @@ def theme_view(request, profile_id=None):
             
         js.append(js_theme)
 
-    return Response(js)
+    return Response({
+        "results" : js
+    })
 
 class LocationList(generics.ListAPIView):
     pagination_class = GeoJsonPagination
