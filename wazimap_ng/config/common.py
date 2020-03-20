@@ -39,6 +39,7 @@ class Common(Configuration):
         "wazimap_ng.extensions",
         "wazimap_ng.points",
         "wazimap_ng.boundaries",
+        "wazimap_ng.profile",
 
     ]
 
@@ -229,12 +230,14 @@ class Common(Configuration):
 
     Q_CLUSTER = {
        "orm": 'default',
-       "retry": 10000,
+       "retry": 100000,
        "ack_failures": True,
     }
 
-FILE_SIZE_LIMIT = 1000 * 1024 * 1024
+FILE_SIZE_LIMIT = 3000 * 1024 * 1024
 ALLOWED_FILE_EXTENSIONS = ["csv", "xls", "xlsx"]
+
+CHUNK_SIZE_LIMIT = 500000
 
 TESTING = "test" in sys.argv
 
