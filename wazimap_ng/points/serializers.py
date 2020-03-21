@@ -5,10 +5,17 @@ from django.core.serializers import serialize
 from . import models
 from wazimap_ng.boundaries.models import GeographyBoundary
 
+class SimpleThemeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Theme
+        fields = ["id", "name"]
+
 class CategorySerializer(serializers.ModelSerializer):
+    theme = SimpleThemeSerializer()
+
     class Meta:
         model = models.Category
-        fields = ("id", "name")
+        fields = ("id", "name", "theme")
 
 class ThemeSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True)
