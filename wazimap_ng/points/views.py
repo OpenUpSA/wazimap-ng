@@ -77,7 +77,7 @@ def profile_data_helper(profile_id, geography_code):
 
     profile_categories = models.ProfileCategory.objects.filter(
         profile_id=profile_id
-    ).prefetch_related("category", "category__locations")
+    ).prefetch_related("category")
 
     return serializers.ProfileCategorySerializer(
         profile_categories, many=True,

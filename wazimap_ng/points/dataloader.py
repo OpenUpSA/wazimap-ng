@@ -6,6 +6,7 @@ from ..boundaries.models import GeographyBoundary
 
 
 def get_levels(coordinates):
+    return {}
     levels = {}
     geographies = GeographyBoundary.objects.filter(
         geom__contains=coordinates

@@ -46,35 +46,13 @@ class LocationInlineSerializer(serializers.ModelSerializer):
         fields = ('id', 'coordinates', 'data', )
 
 class ProfileCategorySerializer(serializers.ModelSerializer):
-    locations = serializers.SerializerMethodField('get_locations')
     subtheme = serializers.ReadOnlyField(source='category.name')
     theme = serializers.ReadOnlyField(source='category.theme.name')
     theme_id = serializers.ReadOnlyField(source='category.theme_id')
     subtheme_id = serializers.ReadOnlyField(source='category_id')
     theme_icon = serializers.ReadOnlyField(source='category.theme.icon')
 
-    def get_locations(self, obj):
-        locations = None
-        if "code" in self.context and self.context.get("code"):
-            geography = GeographyBoundary.objects.filter(code=self.context.get("code")).first()
-            if geography:
-                if geography.geom:
-                    locations = obj.category.locations.filter(
-                        coordinates__intersects=geography.geom
-                    )
-                else:
-                    locations = models.Location.objects.none()
-
-        if locations == None:
-            locations = obj.category.locations.all()
-
-        return {
-            "count": locations.count(),
-            "list": LocationInlineSerializer(
-                locations, many=True, read_only=True
-            ).data
-        }
-
     class Meta:
         model = models.ProfileCategory
-        fields = ('id', 'label', 'description', 'theme', 'theme_id', 'theme_icon', 'subtheme', 'subtheme_id', 'locations', )
+        fields = ('id', 'label', 'description', 'theme', 'theme_id', 'theme_icon', 'subtheme', 'subtheme_id')
+        #fields = ('id', 'label', 'description', 'theme', 'theme_id', 'theme_icon', 'subtheme', 'subtheme_id', 'locations', )
