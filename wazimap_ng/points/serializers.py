@@ -38,7 +38,7 @@ class LocationSerializer(GeoFeatureModelSerializer):
         model = models.Location
         geo_field = "coordinates"
 
-        fields = ('id', 'category', 'data', "category", "name")
+        fields = ('id', 'data', "category", "name")
 
 class LocationInlineSerializer(serializers.ModelSerializer):
     class Meta:
