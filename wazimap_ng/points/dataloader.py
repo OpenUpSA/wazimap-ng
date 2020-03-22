@@ -5,21 +5,6 @@ from . import models
 from ..boundaries.models import GeographyBoundary
 
 
-def get_levels(coordinates):
-    return {}
-    levels = {}
-    geographies = GeographyBoundary.objects.filter(
-        geom__contains=coordinates
-    ).values("geography__level", "geography__id", "geography__name", "geography__code")
-
-    for geo in geographies:
-        levels[geo["geography__level"]] = {
-            "id": geo["geography__id"],
-            "name": geo["geography__name"],
-            "code": geo["geography__code"]
-        }
-    return levels
-
 @transaction.atomic
 def loaddata(name, category, iterable):
 
@@ -42,7 +27,6 @@ def loaddata(name, category, iterable):
             location = row.pop("name")
             coordinates = Point(row.pop("longitude"), row.pop("latitude"))
 
-            row["levels"] = get_levels(coordinates)
             dd = models.Location(
                 name=location, category=category,
                 coordinates=coordinates, data=row
