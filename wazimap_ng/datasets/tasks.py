@@ -39,7 +39,7 @@ def process_uploaded_file(dataset_file, **kwargs):
     dataset = models.Dataset.objects.create(name=dataset_file.title)
 
     for i in range(10):
-        if os.path.exists(filename)
+        if os.path.exists(filename):
             break
         time.sleep(20)
     else:
