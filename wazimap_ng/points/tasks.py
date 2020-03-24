@@ -1,3 +1,5 @@
+import os
+
 from django.db import transaction
 from django.db.models import Sum, FloatField
 from django.db.models.functions import Cast
@@ -11,9 +13,14 @@ from .dataloader import loaddata
 from itertools import groupby
 from operator import itemgetter
 import pandas as pd
+from django_q.models import Task
+
+
+class CustomDataParsingExecption(Exception):
+    pass
 
 @transaction.atomic
-def process_uploaded_file(point_file, model, **kwargs):
+def process_uploaded_file(point_file, **kwargs):
     """
     Run this Task after saving new document via admin panel.
 
@@ -24,6 +31,8 @@ def process_uploaded_file(point_file, model, **kwargs):
     file_path = point_file.document.path
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
     columns = None
+    row_number = 1
+    error_logs = []
 
     columns = pd.read_csv(file_path, nrows=1, dtype=str, sep=",").columns.str.lower()
     for df in pd.read_csv(
@@ -31,9 +40,16 @@ def process_uploaded_file(point_file, model, **kwargs):
     ):
         df.columns = columns
         datasource = (dict(d[1]) for d in df.iterrows())
-        loaddata(point_file.title, point_file.category, datasource)
+        logs = loaddata(point_file.title, point_file.category, datasource, row_number)
 
-    return {
-        "name": point_file.title,
-        "id": point_file.id
-    }
+        error_logs = error_logs + logs
+        row_number = row_number + chunksize
+
+    if error_logs:
+        logdir = settings.MEDIA_ROOT + "/logs/points/"
+        if not os.path.exists(logdir):
+            os.makedirs(logdir)
+        logfile = logdir + "%s_%d_log.csv" % (point_file.title.replace(" ", "_"), point_file.id)
+        df = pd.DataFrame(error_logs)
+        df.to_csv(logfile, header=["Line Number", "Field Name", "Error Details"], index=False)
+        raise CustomDataParsingExecption('Problem while parsing data.')
