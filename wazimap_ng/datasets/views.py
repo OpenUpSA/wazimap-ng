@@ -1,6 +1,8 @@
 from django.http import Http404
 from django.views.decorators.http import condition
 from django.shortcuts import get_object_or_404
+from django.conf.urls.static import static
+from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
@@ -11,6 +13,7 @@ from . import serializers
 from . import models
 from . import mixins
 from ..cache import etag_profile_updated, last_modified_profile_updated
+from ..profile.models import Logo
 
 class DatasetList(generics.ListAPIView):
     queryset = models.Dataset.objects.all()
@@ -143,6 +146,12 @@ def profile_geography_data(request, profile_id, geography_code):
 def profile_geography_data_helper(profile_id, geography_code):
     profile = get_object_or_404(models.Profile, pk=profile_id)
     geography = get_object_or_404(models.Geography, code=geography_code)
+    try:
+        logo = Logo.objects.get(profile_id=profile_id)
+        logo_url = f"{settings.MEDIA_URL}{logo.logo}"
+    except Logo.DoesNotExist:
+        logo_url = ""
+
     profile_indicator_ids = profile.indicators.values_list("id", flat=True)
 
     geo_js = AncestorGeographySerializer().to_representation(geography)
@@ -228,6 +237,7 @@ def profile_geography_data_helper(profile_id, geography_code):
             }
 
     js = {
+        "logo": logo_url,
         "geography": geo_js,
         "key_metrics": key_metrics,
         "profile_data": data_js,

@@ -39,6 +39,7 @@ class Common(Configuration):
         "wazimap_ng.extensions",
         "wazimap_ng.points",
         "wazimap_ng.boundaries",
+        "wazimap_ng.profile",
 
     ]
 

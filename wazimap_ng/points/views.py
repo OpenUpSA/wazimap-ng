@@ -1,6 +1,8 @@
 from django.views.decorators.http import condition
 from django.utils.decorators import method_decorator
 from rest_framework.decorators import api_view
+from collections import defaultdict
+from django.db.models import Count
 
 from rest_framework.response import Response
 from rest_framework_gis.pagination import GeoJsonPagination
@@ -9,14 +11,43 @@ from rest_framework import generics
 from . import models
 from . import serializers
 from ..cache import etag_point_updated, last_modified_point_updated
+from ..boundaries.models import GeographyBoundary
 
 class CategoryList(generics.ListAPIView):
     queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer
 
-class ThemeList(generics.ListAPIView):
-    queryset = models.Theme.objects.all()
-    serializer_class = serializers.ThemeSerializer
+@api_view()
+def theme_view(request, profile_id=None):
+    themes = defaultdict(list)
+    qs = models.ProfileCategory.objects.all()
+    if profile_id is not None:
+        qs = qs.filter(profile__id=profile_id)
+
+    for pc in qs:
+        theme = pc.category.theme
+        themes[theme].append(pc)
+
+    js = []
+    for theme in themes:
+        js_theme = {
+            "id": theme.id,
+            "name": theme.name,
+            "icon": theme.icon,
+            "categories": []
+        }
+
+        for pc in themes[theme]:
+            js_theme["categories"].append({
+                "id": pc.category.id,
+                "name": pc.label
+            })
+            
+        js.append(js_theme)
+
+    return Response({
+        "results" : js
+    })
 
 class LocationList(generics.ListAPIView):
     pagination_class = GeoJsonPagination
@@ -48,9 +79,47 @@ def profile_data_helper(profile_id, geography_code):
 
     profile_categories = models.ProfileCategory.objects.filter(
         profile_id=profile_id
-    ).prefetch_related("category", "category__locations")
+    ).prefetch_related("category")
 
     return serializers.ProfileCategorySerializer(
         profile_categories, many=True,
         context={'code': geography_code}
     ).data
+
+def boundary_point_count_helper(profile_id, geography_code):
+    boundary = GeographyBoundary.objects.get_unique_boundary(geography_code)
+    locations = models.Location.objects.filter(coordinates__contained=boundary.geom) 
+    location_count = (
+        locations
+            .filter(category__profilecategory__profile=profile_id)
+            .values(
+                "category__id", "category__profilecategory__label",
+                "category__theme__name", "category__theme__icon", "category__theme__id"
+            )
+            .annotate(count_category=Count("category"))
+    )
+
+    theme_dict = {}
+
+    res = []
+
+    for lc in location_count:
+        id = lc["category__theme__id"]
+        if id not in theme_dict:
+            theme = {
+                "name": lc["category__theme__name"],
+                "id": lc["category__theme__id"],
+                "icon": lc["category__theme__icon"],
+                "subthemes": []
+            }
+            theme_dict[id] = theme
+            res.append(theme)
+        theme = theme_dict[id]
+        theme["subthemes"].append({
+            "label": lc["category__profilecategory__label"],
+            "id": lc["category__id"],
+            "count": lc["count_category"]
+        })
+
+    return res
+

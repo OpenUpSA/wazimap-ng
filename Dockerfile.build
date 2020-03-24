@@ -12,6 +12,7 @@ RUN pip3 install -r ./requirements.txt
 
 ENV PYTHONUNBUFFERED 1
 
+COPY ./nginx.conf.d/ /app/nginx.conf.d
 COPY ./ /app
 WORKDIR /app
 RUN rm -rf .git

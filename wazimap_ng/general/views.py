@@ -9,12 +9,12 @@ from ..boundaries import models as boundaries_models
 from ..boundaries import views as boundaries_views
 from ..cache import etag_profile_updated, last_modified_profile_updated
 from ..points import views as point_views
+from ..points import models as point_models
 
 def consolidated_profile_helper(profile_id, geography_code):
     profile_js = dataset_views.profile_geography_data_helper(profile_id, geography_code)
     boundary_js = boundaries_views.geography_item_helper(geography_code)
     children_boundary_js = boundaries_views.geography_children_helper(geography_code)
-    profile_themes_js = point_views.profile_data_helper(profile_id, geography_code)
 
     parent_layers = []
     parents = profile_js["geography"]["parents"]
@@ -29,7 +29,7 @@ def consolidated_profile_helper(profile_id, geography_code):
         "boundary": boundary_js,
         "children": children_boundary_js,
         "parent_layers": parent_layers,
-        "themes": profile_themes_js,
+        "themes": point_views.boundary_point_count_helper(profile_id, geography_code)
     })
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)

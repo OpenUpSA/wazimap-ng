@@ -32,7 +32,7 @@ class GeographySwitchMixin(object):
 @cache_decorator("geography_item")
 def geography_item_helper(code):
     geography = Geography.objects.get(code=code)
-    obj = models.GeographyBoundary.objects.filter(geography=geography).first()
+    obj = models.GeographyBoundary.objects.get_unique_boundary(code)
     serializer = serializers.GeographyBoundarySerializer(obj)
     data = serializer.data
 
