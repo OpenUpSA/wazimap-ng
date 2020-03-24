@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.contrib.postgres.fields import JSONField
+from django_q.models import Task
 
 
 max_filesize = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
@@ -31,6 +32,7 @@ class DatasetFile(models.Model):
             file extensions should be one of {", ".join(allowed_file_extensions)}.
         """
     )
+    task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
 
     def __str__(self):
         return self.title

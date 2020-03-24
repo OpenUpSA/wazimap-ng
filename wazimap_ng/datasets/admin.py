@@ -14,7 +14,9 @@ from django.template.response import TemplateResponse
 from django.contrib.admin.utils import model_ngettext, unquote
 from django.core.exceptions import PermissionDenied
 
+from django.urls import reverse
 from django_q.tasks import async_task
+from django.utils.safestring import mark_safe
 
 from . import models
 from . import widgets
@@ -383,6 +385,38 @@ class UniverseAdmin(admin.ModelAdmin):
 
 @admin.register(models.DatasetFile)
 class DatasetFileAdmin(admin.ModelAdmin):
+    list_display = ("title", "get_status", )
+    exclude = ("task", )
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = self.readonly_fields
+        if obj:
+            if not obj.task:
+                readonly_fields =  readonly_fields + ("title", "get_status")
+            else:
+                readonly_fields =  readonly_fields + ("title", "get_status", "get_task_link",)
+        return readonly_fields
+
+    def get_status(self, obj):
+        if obj.task:
+            return "Processed" if obj.task.success else "Failed"
+        return "In Queue"
+
+    get_status.short_description = 'Task Status'
+
+    def get_task_link(self, obj):
+        if obj.task:
+            task_type = "success" if obj.task.success else "failure"
+            admin_url = reverse(
+                'admin:%s_%s_change' % (
+                    obj.task._meta.app_label, task_type
+                ),  args=[obj.task.id]
+            )
+
+            return mark_safe('<a href="%s">%s</a>' % (admin_url, obj.task.id))
+        return "-"
+
+    get_task_link.short_description = 'Task'
 
     def save_model(self, request, obj, form, change):
         is_created = obj.pk == None and change == False
@@ -391,8 +425,9 @@ class DatasetFileAdmin(admin.ModelAdmin):
             async_task(
                 "wazimap_ng.datasets.tasks.process_uploaded_file",
                 obj, task_name=f"Uploading data: {obj.title}",
-                hook="wazimap_ng.datasets.hooks.notify_user",
-                key=request.session.session_key
+                hook="wazimap_ng.datasets.hooks.process_task_info",
+                key=request.session.session_key,
+                type="upload", assign=True, notify=True
             )
             hooks.custom_admin_notification(
                 request.session,
@@ -402,6 +437,15 @@ class DatasetFileAdmin(admin.ModelAdmin):
                 )
             )
         return obj
+
+    def change_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = dict(show_save=False, show_save_and_continue=False)
+        has_add_permission = self.has_add_permission
+        self.has_add_permission = lambda __: False
+        template_response = super().change_view(request, object_id, form_url, extra_context)
+        self.has_add_permission = has_add_permission
+        return template_response
+
 
 @admin.register(models.IndicatorData)
 class IndicatorDataAdmin(admin.ModelAdmin):
