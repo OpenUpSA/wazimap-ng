@@ -38,13 +38,6 @@ def process_uploaded_file(dataset_file, **kwargs):
     columns = None
     dataset = models.Dataset.objects.create(name=dataset_file.title)
 
-    for i in range(10):
-        if os.path.exists(filename)
-            break
-        time.sleep(20)
-    else:
-        raise Exception(f"Could not find file: {filename}")
-
     if ".csv" in filename:
         columns = pd.read_csv(file_path, nrows=1, dtype=str, sep=",").columns.str.lower()
         for df in pd.read_csv(file_path, chunksize=chunksize, dtype=str, sep=",", header=None):
