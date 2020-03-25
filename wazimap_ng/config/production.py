@@ -44,3 +44,11 @@ class Production(Common):
             'LOCATION': '/var/tmp/django_cache',
         }
     }
+
+    AWS_ACCESS_KEY_ID = Common.get_env_value('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = Common.get_env_value('AWS_SECRET_ACCESS_KEY')
+
+    DEFAULT_FILE_STORAGE = Common.get_env_value('DEFAULT_FILE_STORAGE')
+    AWS_STORAGE_BUCKET_NAME = Common.get_env_value('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = Common.get_env_value('AWS_S3_REGION_NAME')
+    AWS_DEFAULT_ACL = None

@@ -21,7 +21,7 @@ def process_uploaded_file(point_file, model, **kwargs):
     After reading data convert to list rather than using numpy array.
     """
     filename = point_file.document.name
-    file_path = point_file.document.path
+    file_path = point_file.document.url
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
     columns = None
 
