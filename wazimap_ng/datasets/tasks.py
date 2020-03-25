@@ -32,7 +32,7 @@ def process_uploaded_file(dataset_file, **kwargs):
         loaddata(dataset, datasource)
 
     filename = dataset_file.document.name
-    file_path = dataset_file.document.path
+    file_path = dataset_file.document.url
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
 
     columns = None

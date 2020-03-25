@@ -4,6 +4,7 @@ from os.path import join
 from distutils.util import strtobool
 import dj_database_url
 from configurations import Configuration
+from django.core.exceptions import ImproperlyConfigured
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 os.environ["GDAL_DATA"] = "/usr/share/gdal/"
@@ -40,6 +41,7 @@ class Common(Configuration):
         "wazimap_ng.points",
         "wazimap_ng.boundaries",
         "wazimap_ng.profile",
+        "storages",
 
     ]
 
@@ -233,6 +235,13 @@ class Common(Configuration):
        "retry": 100000,
        "ack_failures": True,
     }
+
+    def get_env_value(env_variable):
+        try:
+            return os.environ[env_variable]
+        except KeyError:
+            error_msg = 'Set the {} environment variable'.format(env_variable)
+            raise ImproperlyConfigured(error_msg)
 
 FILE_SIZE_LIMIT = 3000 * 1024 * 1024
 ALLOWED_FILE_EXTENSIONS = ["csv", "xls", "xlsx"]
