@@ -1,0 +1,10 @@
+<div class="profile-data">
+  {% if objects %}
+    <ul style="margin-left: 0px;">
+      {% for obj in objects %}
+          <li><a href="{{ obj.link }}" target="_blank">{{ obj.name|title }}</a></li>
+        {% endfor %}
+    </ul>
+  {% endif %}
+    <p><a href="{{ create_new_link }}" class="add-icon" target="_blank">Add new {{ model|title }} for {{ variable|title }}</a></p>
+</div>

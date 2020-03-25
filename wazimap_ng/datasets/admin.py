@@ -17,6 +17,7 @@ from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 from django_q.tasks import async_task
 from django.utils.safestring import mark_safe
+from django.template.loader import render_to_string
 
 from . import models
 from . import widgets
@@ -25,6 +26,13 @@ from . import hooks
 admin.site.register(models.IndicatorCategory)
 admin.site.register(models.IndicatorSubcategory)
 admin.site.register(models.Profile)
+
+
+def get_edit_url(obj, app_label="datasets"):
+    return reverse('admin:%s_%s_change' % (
+            app_label, obj._meta.model_name
+        ), args=[obj.id]
+    )
 
 def delete_selected_data(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):
@@ -166,20 +174,6 @@ def customTitledFilter(title):
             instance.title = title
             return instance
     return Wrapper
-
-@admin.register(models.Dataset)
-class DatasetAdmin(BaseAdminModel):
-    readonly_fields = ("groups",)
-
-    def get_related_fields_data(self, obj):
-
-        return [{
-                "name": "dataset data",
-                "count": obj.datasetdata_set.count()
-            }, {
-                "name": "indicator",
-                "count": obj.indicator_set.count()
-        }]
 
 @admin.register(models.Geography)
 class GeographyAdmin(TreeAdmin):
@@ -383,26 +377,39 @@ class UniverseAdmin(admin.ModelAdmin):
     fields.JSONField: {"widget": JSONEditorWidget},
   }
 
-@admin.register(models.DatasetFile)
-class DatasetFileAdmin(admin.ModelAdmin):
-    list_display = ("title", "get_status", )
-    exclude = ("task", )
 
-    def get_readonly_fields(self, request, obj=None):
-        readonly_fields = self.readonly_fields
-        if obj:
-            if not obj.task:
-                readonly_fields =  readonly_fields + ("title", "get_status")
-            else:
-                readonly_fields =  readonly_fields + ("title", "get_status", "get_task_link",)
-        return readonly_fields
+class InitialDataUploadChangeView(admin.StackedInline):
+    model = models.DatasetFile
+    fk_name = "dataset"
+    exclude = ("task", )
+    can_delete = False
+    verbose_name = ""
+    verbose_name_plural = ""
+
+    fieldsets = (
+        ("Uploaded Dataset", {
+            "fields": ("document", )
+        }),
+        ("Task Details", {
+            "fields": ("get_status", "get_task_link",)
+        }),
+    )
+
+    error_and_warning_fildset = ("Error & Warnings while data extraction", {
+        "fields": ("get_warnings", "get_errors",)
+    })
+
+    readonly_fields = (
+        "document", "get_status", "get_task_link", "get_warnings", "get_errors",
+    )
 
     def get_status(self, obj):
-        if obj.task:
-            return "Processed" if obj.task.success else "Failed"
-        return "In Queue"
+        if obj.id:
+            if obj.task:
+                return "Processed" if obj.task.success else "Failed"
+            return "In Queue"
 
-    get_status.short_description = 'Task Status'
+    get_status.short_description = 'Status'
 
     def get_task_link(self, obj):
         if obj.task:
@@ -416,35 +423,277 @@ class DatasetFileAdmin(admin.ModelAdmin):
             return mark_safe('<a href="%s">%s</a>' % (admin_url, obj.task.id))
         return "-"
 
-    get_task_link.short_description = 'Task'
+    get_task_link.short_description = 'Task Link'
 
-    def save_model(self, request, obj, form, change):
-        is_created = obj.pk == None and change == False
-        super().save_model(request, obj, form, change)
-        if is_created:
-            async_task(
-                "wazimap_ng.datasets.tasks.process_uploaded_file",
-                obj, task_name=f"Uploading data: {obj.title}",
-                hook="wazimap_ng.datasets.hooks.process_task_info",
-                key=request.session.session_key,
-                type="upload", assign=True, notify=True
-            )
-            hooks.custom_admin_notification(
-                request.session,
-                "info",
-                "Data upload for %s started. We will let you know when process is done." % (
-                    obj.title
+    def get_warnings(self, obj):
+        if obj.task:
+            result = obj.task.result
+            if obj.task.success and result["warning_log"]:
+                download_url = result["warning_log"].replace("/app", "")
+                result = render_to_string(
+                    'custom/variable_task_warnings.html', {'download_url': download_url}
                 )
-            )
-        return obj
+                return mark_safe(result)
+        return "-"
 
-    def change_view(self, request, object_id=None, form_url='', extra_context=None):
-        extra_context = dict(show_save=False, show_save_and_continue=False)
-        has_add_permission = self.has_add_permission
-        self.has_add_permission = lambda __: False
-        template_response = super().change_view(request, object_id, form_url, extra_context)
-        self.has_add_permission = has_add_permission
-        return template_response
+    get_warnings.short_description = 'Warnings'
+
+    def get_errors(self, obj):
+        if obj.task:
+            result = obj.task.result
+            if not obj.task.success:
+                return obj.task.result
+            elif result["error_log"]:
+                download_url = result["error_log"].replace("/app", "")
+                df = pd.read_csv(result["error_log"], header=None, sep=",", nrows=10, skiprows=1)
+                error_list = df.values.tolist()
+                result = render_to_string(
+                    'custom/variable_task_errors.html', { 'errors': error_list,'download_url': download_url}
+                )
+                return mark_safe(result)
+        return "None"
+
+    get_errors.short_description = 'Errors'
+
+    def get_fieldsets(self, request, obj):
+        fields = super().get_fieldsets(request, obj)
+        if obj.datasetfile.task:
+            fields = fields + (self.error_and_warning_fildset, )
+
+        return fields
+
+class InitialDataUploadAddView(admin.StackedInline):
+    model = models.DatasetFile
+    fk_name = "dataset"
+    exclude = ("task", )
+    can_delete = False
+    verbose_name = ""
+    verbose_name_plural = ""
+
+    fieldsets = (
+        ("Initial Data Upload - Use this form to upload file that will allow us to create dataset.", {
+            "fields": ("document",)
+        }),
+    )
+
+class VariableInlinesAdminForm(forms.ModelForm):
+    groups = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple)
+    class Meta:
+        model = models.Indicator
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        dataset = self.fields["dataset"].queryset.first()
+        choices = [[group, group] for group in dataset.groups]
+        if "groups" in self.fields:
+            self.fields['groups'].choices = choices
+
+        if "universe" in self.fields:
+            if not dataset.groups:
+                self.fields['universe'].queryset = models.Universe.objects.none()
+            else:
+                condition = reduce(
+                    operator.or_, [Q(as_string__icontains=group) for group in dataset.groups]
+                )
+                self.fields['universe'].queryset = models.Universe.objects.annotate(
+                    as_string=Cast('filters', CharField())
+                ).filter(condition)
+
+
+class VariableInlinesAddView(admin.StackedInline):
+    model = models.Indicator
+    fk_name= "dataset"
+    form = VariableInlinesAdminForm
+    extra = 0
+    verbose_name_plural = "Add New Variable"
+    exclude = ("subindicators", )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        obj_id = request.META['PATH_INFO'].rstrip('/').split('/')[-2]
+        if db_field.name == 'dataset' and obj_id.isdigit():
+            if obj_id:
+                kwargs['queryset'] = models.Dataset.objects.filter(id=obj_id)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def has_view_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+class VariableInlinesChangeView(admin.StackedInline):
+    model = models.Indicator
+    fk_name= "dataset"
+    formfield_overrides = {
+        fields.ArrayField: {"widget": widgets.SortableWidget},
+    }
+
+    fieldsets = (
+        ("", {
+            "fields": (
+                "dataset", "universe", "groups", "name",
+                "subindicators", "get_profile_indicators", "get_profile_highlights"
+            )
+        }),
+    )
+
+    readonly_fields = (
+        "universe", "groups", "name", "get_profile_indicators", "get_profile_highlights",
+    )
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def get_profile_indicators(self, obj):
+        if obj.id:
+            objects = [{
+                "name": variable.name,
+                "link": get_edit_url(variable)
+            } for variable in obj.profileindicator_set.all()]
+
+            create_new_link = reverse(
+                'admin:datasets_profileindicator_add'
+            ) + "?indicator=%d" % obj.id
+
+            result = render_to_string(
+                'custom/render_profile_data.html', {
+                    'objects': objects,
+                    'model': "Profile indicator",
+                    'create_new_link': create_new_link,
+                    'variable': obj.name
+                }
+            )
+            return mark_safe(result)
+        return "-"
+
+    get_profile_indicators.short_description = 'Profile indicators'
+
+    def get_profile_highlights(self, obj):
+        if obj.id:
+            objects = [{
+                "name": variable.name,
+                "link": get_edit_url(variable)
+            } for variable in obj.profilehighlight_set.all()]
+
+            create_new_link = reverse(
+                'admin:datasets_profilehighlight_add'
+            ) + "?indicator=%d" % obj.id
+
+            result = render_to_string(
+                'custom/render_profile_data.html', {
+                    'objects': objects,
+                    'model': "Profile highlight",
+                    'create_new_link': create_new_link,
+                    'variable': obj.name
+                }
+            )
+            return mark_safe(result)
+        return "-"
+
+    get_profile_highlights.short_description = 'Profile highlights'
+
+
+@admin.register(models.Dataset)
+class DatasetAdmin(BaseAdminModel):
+
+    exclude = ("groups", )
+    inlines = ()
+
+    class Media:
+        css = {
+             'all': ('/static/css/admin-custom.css',)
+        }
+
+    def get_related_fields_data(self, obj):
+
+        return [{
+                "name": "dataset data",
+                "count": obj.datasetdata_set.count()
+            }, {
+                "name": "indicator",
+                "count": obj.indicator_set.count()
+        }]
+
+    def save_formset(self, request, form, formset, change):
+        """
+        Given an inline formset save it to the database.
+        """
+        if formset.model == models.DatasetFile:
+            instances = formset.save()
+            for instance in instances:
+                async_task(
+                    "wazimap_ng.datasets.tasks.process_uploaded_file",
+                    instance, task_name=f"Uploading data: {instance}",
+                    hook="wazimap_ng.datasets.hooks.process_task_info",
+                    key=request.session.session_key,
+                    type="upload", assign=True, notify=True
+                )
+                hooks.custom_admin_notification(
+                    request.session,
+                    "info",
+                    "Data upload for %s started. We will let you know when process is done." % (
+                        instance
+                    )
+                )
+
+        if formset.model == models.Indicator:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance_is_new = not bool(instance.id)
+                instance.save()
+                if instance_is_new:
+                    async_task(
+                        "wazimap_ng.datasets.tasks.indicator_data_extraction",
+                        instance,
+                        task_name=f"Data Extraction: {instance.name}",
+                        hook="wazimap_ng.datasets.hooks.process_task_info",
+                        key=request.session.session_key,
+                        type="data_extraction", notify=True
+                    )
+                    hooks.custom_admin_notification(
+                        request.session,
+                        "info",
+                        "Process of Data extraction started for %s. We will let you know when process is done." % (
+                            instance.name
+                        )
+                    )
+            if formset.deleted_objects:
+                variables_queryset = models.Indicator.objects.filter(id__in=[obj.id for obj in formset.deleted_objects])
+                variable_names = ", ".join(variables_queryset.values_list("name", flat=True))
+                async_task(
+                    'wazimap_ng.datasets.tasks.delete_data',
+                    variables_queryset, variable_names,
+                    task_name=f"Deleting data: {variable_names}",
+                    hook="wazimap_ng.datasets.hooks.process_task_info",
+                    key=request.session.session_key,
+                    type="delete", notify=True, message=f"Deleted data for variable: {variable_names}"
+                )
+                hooks.custom_admin_notification(
+                    request.session,
+                    "info",
+                    "Process of Data deletion started for %s. We will let you know when process is done." % (
+                        variable_names
+                    )
+                )
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        inlines = (InitialDataUploadChangeView, )
+
+        if object_id:
+            dataset_obj = models.Dataset.objects.get(id=object_id)
+            if dataset_obj and dataset_obj.datasetfile.task and dataset_obj.datasetfile.task.success:
+
+                if dataset_obj.indicator_set.count():
+                    inlines = inlines + (VariableInlinesChangeView,)
+                inlines = inlines + (VariableInlinesAddView, )
+
+        self.inlines = inlines
+        return super().change_view(request, object_id)
+
+    def add_view(self, request, form_url='', extra_context=None):
+        self.inlines = (InitialDataUploadAddView, )
+        return super().add_view(request)
 
 
 @admin.register(models.IndicatorData)

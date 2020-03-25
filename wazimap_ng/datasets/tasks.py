@@ -1,5 +1,6 @@
 import json
 import time
+import os
 import pandas as pd
 
 from django.db import transaction
@@ -25,24 +26,29 @@ def process_uploaded_file(dataset_file, **kwargs):
 
     Get header index for geography & count and create Result objects.
     """
-    def process_file_data(df, dataset):
+    def process_file_data(df, dataset, row_number):
         df = df.applymap(lambda s:s.capitalize().strip() if type(s) == str else s)
         datasource = (dict(d[1]) for d in df.iterrows())
-        loaddata(dataset, datasource)
+        return loaddata(dataset, datasource, row_number)
 
-    time.sleep(20)
     filename = dataset_file.document.name
     file_path = dataset_file.document.path
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
 
     columns = None
-    dataset = models.Dataset.objects.create(name=dataset_file.title)
+    dataset = dataset_file.dataset
+    error_logs = []
+    warning_logs = []
+    row_number = 1
 
     if ".csv" in filename:
         columns = pd.read_csv(file_path, nrows=1, dtype=str, sep=",").columns.str.lower()
         for df in pd.read_csv(file_path, chunksize=chunksize, dtype=str, sep=",", header=None):
             df.columns = columns
-            process_file_data(df, dataset)
+            errors, warnings = process_file_data(df, dataset, row_number)
+            error_logs = error_logs + errors
+            warning_logs = warning_logs + warnings
+            row_number = row_number + chunksize
     else:
         skiprows = 1
         i_chunk = 0
@@ -57,17 +63,40 @@ def process_uploaded_file(dataset_file, **kwargs):
                 break
             else:
                 df.columns = columns
-                process_file_data(df, dataset)
+                errors, warnings = process_file_data(df, dataset, row_number)
+                error_logs = error_logs + errors
+                warning_logs = warning_logs + warnings
+                row_number = row_number + chunksize
             i_chunk += 1
 
     groups = [group for group in columns.to_list() if group not in ["geography", "count"]]
     dataset.groups = groups
     dataset.save()
 
+    if error_logs:
+        logdir = settings.MEDIA_ROOT + "/logs/dataset/errors/"
+        if not os.path.exists(logdir):
+            os.makedirs(logdir)
+        logfile = logdir + "%s_%d_error_log.csv" % (point_file.title.replace(" ", "_"), point_file.id)
+        df = pd.DataFrame(error_logs[0])
+        df.to_csv(logfile_1, header=["Line Number", "Field Name", "Error Details"], index=False)
+        error_logs = logfile
+
+    if warning_logs:
+        logdir = settings.MEDIA_ROOT + "/logs/dataset/warnings/"
+        if not os.path.exists(logdir):
+            os.makedirs(logdir)
+        logfile = logdir + "%s_%d_warnings.csv" % (dataset.name.replace(" ", "_"), dataset.id)
+        df = pd.DataFrame(warning_logs)
+        df.to_csv(logfile, header=columns, index=False)
+        warning_logs = logfile
+
     return {
         "model": "datasetfile",
-        "name": dataset_file.title,
-        "id": dataset_file.id
+        "name": dataset_file.dataset.name,
+        "id": dataset_file.id,
+        "error_log": error_logs or None,
+        "warning_log": warning_logs or None
     }
 
 @transaction.atomic

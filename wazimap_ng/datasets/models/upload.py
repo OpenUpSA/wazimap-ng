@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.contrib.postgres.fields import JSONField
 from django_q.models import Task
+from .dataset import Dataset
 
 
 max_filesize = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
@@ -20,9 +21,8 @@ def file_size(value):
         raise ValidationError(f"File too large. Size should not exceed {max_filesize / (1024 * 1024)} MiB.")
 
 class DatasetFile(models.Model):
-    title = models.CharField(max_length=255, blank=False)
     document = models.FileField(
-        upload_to="datasets/",
+        upload_to="datasets/", verbose_name="Initial Data File",
         validators=[
             FileExtensionValidator(allowed_extensions=allowed_file_extensions),
             file_size
@@ -33,9 +33,10 @@ class DatasetFile(models.Model):
         """
     )
     task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
+    dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.title
+        return self.dataset.name
 
     def clean(self):
         """
