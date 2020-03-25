@@ -58,3 +58,7 @@ django-q==1.0.2
 pandas==1.0.0
 xlrd==1.2.0
 
+# amazon-s3
+django-storages==1.7.1
+boto3==1.9.93
+
