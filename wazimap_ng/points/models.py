@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 import pandas as pd
 from io import BytesIO
 from wazimap_ng.datasets.models import Profile
+from django_q.models import Task
 
 class Theme(models.Model):
     name = models.CharField(max_length=30)
@@ -42,6 +43,7 @@ class CoordinateFile(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=["csv",])],
         help_text="File Type required : CSV | Fields that are required: Name, Longitude, latitude"
     )
+    task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True )
 
     def __str__(self):
         return self.title
