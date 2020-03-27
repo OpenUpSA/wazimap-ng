@@ -15,7 +15,7 @@ services:
     stop_grace_period: 60s
     container_name: wazimap-ng_db_1
   web:
-    image: adieyal/wazimap-ng:latest
+    image: adieyal/wazimap-ng:staging
     depends_on:
      - db
     ports:
@@ -26,5 +26,13 @@ services:
       - ./:/app/
       - ./scripts:/scripts/
     container_name: wazimap-ng_web_1
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - DEFAULT_FILE_STORAGE
+      - AWS_STORAGE_BUCKET_NAME
+      - AWS_S3_REGION_NAME
+      - DATABASE_URL
+      - DJANGO_CONFIGURATION
 volumes:
   wazimap-data:
