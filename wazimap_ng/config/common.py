@@ -91,7 +91,7 @@ class Common(Configuration):
     }
 
     # General
-    APPEND_SLASH = False
+    APPEND_SLASH = True
     TIME_ZONE = "UTC"
     LANGUAGE_CODE = "en-us"
     # If you set this to False, Django will make some optimizations so as not
@@ -188,30 +188,37 @@ class Common(Configuration):
             "mail_admins": {
                 "level": "ERROR",
                 "class": "django.utils.log.AdminEmailHandler"
-            }
+            },
+            "file": {
+                "level": "DEBUG",
+                "class": "logging.FileHandler",
+                "filename": "/wazimap.log",
+            },
         },
         "loggers": {
             "wazimap_ng": {
-                "handlers": ["console"],
+                "handlers": ["console", "file"],
                 "propagate": True,
+                "level": "DEBUG",
             },
             "django": {
-                "handlers": ["console"],
+                "handlers": ["console", "file"],
                 "propagate": True,
+                "level": "ERROR",
             },
             "django.server": {
-                "handlers": ["django.server"],
-                "level": "INFO",
+                "handlers": ["django.server", "file"],
+                "level": "ERROR",
                 "propagate": False,
             },
             "django.request": {
-                "handlers": ["mail_admins", "console"],
+                "handlers": ["mail_admins", "console", "file"],
                 "level": "ERROR",
                 "propagate": False,
             },
             "django.db.backends": {
-                "handlers": ["console"],
-                "level": "INFO"
+                "handlers": ["console", "file"],
+                "level": "ERROR"
             },
         }
     }
