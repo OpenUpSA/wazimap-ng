@@ -1,4 +1,6 @@
 import csv
+import os
+import uuid
 from io import BytesIO
 
 import pandas as pd
@@ -18,10 +20,15 @@ def file_size(value):
     if value.size > max_filesize:
         raise ValidationError(f"File too large. Size should not exceed {max_filesize / (1024 * 1024)} MiB.")
 
+def get_file_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = "%s.%s" % (uuid.uuid4(), ext)
+    return os.path.join('datasets/', filename)
+
 class DatasetFile(models.Model):
     title = models.CharField(max_length=255, blank=False)
     document = models.FileField(
-        upload_to="datasets/",
+        upload_to=get_file_path,
         validators=[
             FileExtensionValidator(allowed_extensions=allowed_file_extensions),
             file_size

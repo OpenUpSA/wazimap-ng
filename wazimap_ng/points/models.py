@@ -1,3 +1,6 @@
+import os
+import uuid
+
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django.core.validators import FileExtensionValidator
@@ -6,6 +9,11 @@ from django.core.exceptions import ValidationError
 import pandas as pd
 from io import BytesIO
 from wazimap_ng.datasets.models import Profile
+
+def get_file_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = "%s.%s" % (uuid.uuid4(), ext)
+    return os.path.join('points/', filename)
 
 class Theme(models.Model):
     name = models.CharField(max_length=30)
@@ -38,7 +46,7 @@ class CoordinateFile(models.Model):
     title = models.CharField(max_length=255, blank=False)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="subtheme")
     document = models.FileField(
-        upload_to="points/",
+        upload_to=get_file_path,
         validators=[FileExtensionValidator(allowed_extensions=["csv",])],
         help_text="File Type required : CSV | Fields that are required: Name, Longitude, latitude"
     )
