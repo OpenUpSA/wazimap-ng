@@ -166,7 +166,7 @@ class Common(Configuration):
                 "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s"
             },
             "simple": {
-                "format": "%(levelname)s %(message)s"
+                "format": "%(levelname)s %(asctime)s %(message)s"
             },
         },
         "filters": {
@@ -193,6 +193,7 @@ class Common(Configuration):
                 "level": "DEBUG",
                 "class": "logging.FileHandler",
                 "filename": "/wazimap.log",
+                "formatter": "simple",
             },
         },
         "loggers": {
