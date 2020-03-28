@@ -2,6 +2,7 @@ import csv
 import os
 import uuid
 from io import BytesIO
+import pathlib
 
 import pandas as pd
 import xlrd
@@ -13,6 +14,8 @@ from django.core.validators import FileExtensionValidator
 from django.contrib.postgres.fields import JSONField
 from django_q.models import Task
 
+from wazimap_ng import utils
+
 
 max_filesize = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
 allowed_file_extensions = getattr(settings, "ALLOWED_FILE_EXTENSIONS", ["xls", "xlsx", "csv"])
@@ -22,9 +25,8 @@ def file_size(value):
         raise ValidationError(f"File too large. Size should not exceed {max_filesize / (1024 * 1024)} MiB.")
 
 def get_file_path(instance, filename):
-    ext = filename.split('.')[-1]
-    filename = "%s.%s" % (uuid.uuid4(), ext)
-    return os.path.join('datasets/', filename)
+    filename = utils.get_random_filename(filename)
+    return os.path.join('datasets', filename)
 
 class DatasetFile(models.Model):
     title = models.CharField(max_length=255, blank=False)

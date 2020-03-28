@@ -10,11 +10,11 @@ import pandas as pd
 from io import BytesIO
 from wazimap_ng.datasets.models import Profile
 from django_q.models import Task
+from wazimap_ng import utils
 
 def get_file_path(instance, filename):
-    ext = filename.split('.')[-1]
-    filename = "%s.%s" % (uuid.uuid4(), ext)
-    return os.path.join('points/', filename)
+    filename = utils.get_random_filename(filename)
+    return os.path.join('points', filename)
 
 class Theme(models.Model):
     name = models.CharField(max_length=30)
