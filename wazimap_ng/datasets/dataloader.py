@@ -15,24 +15,25 @@ def load_geography(geo_code):
     return cache[geo_code]
 
 @transaction.atomic
-def loaddata(dataset, iterable):  
+def loaddata(dataset, iterable, row_number):  
     datarows = []
-
+    errors = []
+    warnings = []
     for idx, row in enumerate(iterable):
         geo_code = row["geography"]
         try:
             geography = load_geography(geo_code)
         except models.Geography.DoesNotExist:
-            print(f"Geography {geo_code} not found - skipping it.")
+            warnings.append(list(row.values()))
             continue
 
         try:
             count = int(row["count"])
             if math.isnan(count):
-                print(f"Missing data for {geo_code} - skipping it.")
+                errors.append([row_number+idx, "count", "Missing data for count"])
                 continue
         except (TypeError, ValueError):
-            print(f"Expected a number in the 'count' column, received '{count}'")
+            errors.append([row_number+idx, "count", f"Expected a number in the 'count' column, received '{count}'"])
             continue
 
         del row["geography"]
@@ -44,3 +45,5 @@ def loaddata(dataset, iterable):
             models.DatasetData.objects.bulk_create(datarows, 1000)
             datarows = []
     models.DatasetData.objects.bulk_create(datarows, 1000)
+
+    return [errors, warnings]

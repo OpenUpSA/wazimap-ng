@@ -1,13 +1,18 @@
 django.jQuery(document).ready(function($) {
-    $( "#sortable" ).sortable();
-    $( "#sortable" ).disableSelection();
-
-    $(document).find("#sortable").on("DOMSubtreeModified", function(){
-    	var reorderedSubindicators = [];
-    	$(this).find("li").each(function(){
-    		reorderedSubindicators.push($(this).data('val'));
-    		$(document).find('input[name="subindicators"]').val(reorderedSubindicators.join(","));
-    	});
+    $(".sortable" ).sortable({
+    	out: function(event, ui) {
+    		$parent = ui.item.parent();
+            $input = ui.item.parents(".sortable_widget").find("input");
+            var reorderedSubindicators = [];
+	    	$parent.find("li").each(function(){
+	    		console.log($(this).data("val"));
+	    		reorderedSubindicators.push($(this).data('val'));
+	    		console.log(reorderedSubindicators.join(","));
+	    		$input.val(reorderedSubindicators.join(","));
+	    	});
+        },
     });
+
+    $(".sortable" ).disableSelection();
 
 } );

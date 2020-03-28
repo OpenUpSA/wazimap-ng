@@ -13,6 +13,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.contrib.postgres.fields import JSONField
 from django_q.models import Task
+from .dataset import Dataset
 
 from wazimap_ng import utils
 
@@ -29,7 +30,6 @@ def get_file_path(instance, filename):
     return os.path.join('datasets', filename)
 
 class DatasetFile(models.Model):
-    title = models.CharField(max_length=255, blank=False)
     document = models.FileField(
         upload_to=get_file_path,
         validators=[
@@ -42,9 +42,10 @@ class DatasetFile(models.Model):
         """
     )
     task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
+    dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.title
+        return self.dataset.name
 
     def clean(self):
         """

@@ -13,6 +13,11 @@ class Notify:
         "upload" : {
             "success": "Imported File successfully for %s",
             "error": "Error in uploading file for %s.",
+        },
+
+        "data_extraction" : {
+            "success": "Data extraction successful for %s",
+            "error": "Data extraction failed for %s.",
         }
     }
 
@@ -21,22 +26,30 @@ class Notify:
         "error": "Error in uploading file for model %s with name %s. For more details check : <a href='%s'>Click Here</a>",
     }
 
+
     @classmethod
     def get_nofitification_details(self, notification_type, obj, task_type):
 
         func_name = "get_%s_messages" % (task_type)
-        notification_message = getattr(self, func_name, "get_generic_message")
-        message = notification_message(notification_type, obj)
+        notification_message = getattr(self, func_name, self.get_generic_message)
+        message = notification_message(notification_type, obj, task_type)
         return message
 
     @classmethod
-    def get_upload_messages(self, notification_type, obj):
+    def get_upload_messages(self, notification_type, obj, task_type=None):
         """
         Get message for data upload.
         """
         model = obj.__class__.__name__.lower()
+        obj_id = obj.id
+        model_name = obj._meta.model_name
+
+        if obj._meta.model_name == "datasetfile":
+            model_name = "dataset"
+            obj_id = obj.dataset.id
+
         admin_url = reverse(
-            'admin:%s_%s_change' % (obj._meta.app_label,  obj._meta.model_name),  args=[obj.id]
+            'admin:%s_%s_change' % (obj._meta.app_label,  model_name),  args=[obj_id]
         )
         return self.upload_message[notification_type] % (model, obj, admin_url)
 
@@ -45,6 +58,7 @@ class Notify:
         """
         Get Generic message according to notification type.
         """
+        print("GEt generic messages")
         message = self.generic_messages[task_type][notification_type]
         return message % obj
 
@@ -65,10 +79,12 @@ def process_task_info(task):
 
         session_key = task.kwargs.get("key", False)
         task_type = task.kwargs.get("type", False)
+        message = task.kwargs.get("message", None)
 
         # Get message
         notify = Notify()
-        message = notify.get_nofitification_details(notification_type, obj, task_type)
+        if not message:
+            message = notify.get_nofitification_details(notification_type, obj, task_type)
 
         # Add message to user
         notify_user(notification_type, session_key, message)
