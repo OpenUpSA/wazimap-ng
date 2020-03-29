@@ -26,13 +26,3 @@ class GeographyBoundary(models.Model):
     class Meta:
         indexes = [models.Index(fields=["code"])]
 
-    def save(self, *args, **kwargs):
-        """
-        On save update Locations data
-        """
-        super().save(*args, **kwargs)
-        async_task(
-            "wazimap_ng.boundaries.tasks.update_location_geo_levels_data",
-            self,
-            task_name=f"Updating geo boundary data: {self.name}",
-        )
