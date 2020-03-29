@@ -15,7 +15,7 @@ class GeographyBoundaryManager(models.Manager):
         return obj
 
 class GeographyBoundary(models.Model):
-    geography = models.OneToOneField(Geography, on_delete=models.PROTECT, null=True)
+    geography = models.OneToOneField(Geography, on_delete=models.PROTECT, null=False)
 
     area = models.FloatField()
     geom = models.MultiPolygonField(srid=4326, null=True)
