@@ -28,7 +28,7 @@ class GeographySerializer(GeoFeatureModelSerializer):
         if self.parentCode is not None:
             return self.parentCode
 
-        code = obj.code
+        code = obj.geography.code
         # TODO how to handle no results
         # TODO this might get inefficient with many children
         geo = obj.geography
@@ -40,6 +40,8 @@ class GeographySerializer(GeoFeatureModelSerializer):
 
 class GeographyBoundarySerializer(GeographySerializer):
     level = serializers.SerializerMethodField()
+    code = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
     #themes = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
@@ -47,6 +49,12 @@ class GeographyBoundarySerializer(GeographySerializer):
 
     def get_level(self, obj):
         return obj.geography.level
+
+    def get_code(self, obj):
+        return obj.geography.code
+
+    def get_name(self, obj):
+        return obj.geography.name
 
     class Meta:
         model = models.GeographyBoundary

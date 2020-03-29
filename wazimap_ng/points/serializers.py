@@ -3,7 +3,6 @@ from rest_framework import serializers
 from django.core.serializers import serialize
 
 from . import models
-from wazimap_ng.boundaries.models import GeographyBoundary
 
 class SimpleThemeSerializer(serializers.ModelSerializer):
     class Meta:

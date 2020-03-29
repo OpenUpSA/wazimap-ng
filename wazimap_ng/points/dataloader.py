@@ -2,7 +2,6 @@ from django.contrib.gis.geos import Point
 from django.db import transaction
 
 from . import models
-from ..boundaries.models import GeographyBoundary
 
 
 @transaction.atomic

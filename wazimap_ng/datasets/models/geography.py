@@ -54,7 +54,7 @@ class Geography(MP_Node):
             for child_level in levels:
                 boundary_class = GeographyBoundary
                 if boundary_class is not None:
-                    child_types[child_level] = boundary_class.objects.filter(code__in=codes, geography__level=child_level).select_related("geography")
+                    child_types[child_level] = boundary_class.objects.filter(geography__code__in=codes, geography__level=child_level).select_related("geography")
         return child_types
 
 
