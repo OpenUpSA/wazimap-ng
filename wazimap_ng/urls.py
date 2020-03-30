@@ -16,7 +16,6 @@ from .cache import cache_headers as cache
 urlpatterns = [
 
     path("admin/", admin.site.urls),
-    re_path(r"admin$", RedirectView.as_view(url="admin/", permanent=True)),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view(), name="dataset"),
     path(
         "api/v1/datasets/<int:dataset_id>/indicators/",
@@ -27,16 +26,6 @@ urlpatterns = [
         "api/v1/indicators/",
         cache(dataset_views.IndicatorsList.as_view()),
         name="indicator-list",
-    ),
-    path(
-        "api/v1/indicators/<int:indicator_id>/",
-        cache(dataset_views.IndicatorDataView.as_view()),
-        name="indicator-data-view",
-    ),
-    path(
-        "api/v1/indicators/<int:indicator_id>/geographies/<str:geography_code>/",
-        cache(dataset_views.IndicatorDataView.as_view()),
-        name="indicator-data-view-geography",
     ),
     path("api/v1/profiles/", dataset_views.ProfileList.as_view(), name="profile-list"),
     path(

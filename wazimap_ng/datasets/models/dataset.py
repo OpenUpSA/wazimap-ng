@@ -93,30 +93,6 @@ class Indicator(models.Model):
         verbose_name = "Variable"
         verbose_name_plural = "Variables"
 
-class DataExtractor:
-
-    def get_queryset(self, indicator, geographies, universe=None):
-        groups = ["data__" + i for i in indicator.groups] + ["geography"]
-
-        c = Cast(KeyTextTransform("Count", "data"), models.FloatField())
-
-        qs = (
-            DatasetData.objects
-                .filter(dataset=indicator.dataset)
-                .filter(geography__in=geographies)
-                .exclude(data__Count="")
-        )
-
-        if universe is not None:
-            filters = {f"data__{k}": v for k, v in universe.filters.items()}
-            qs = qs.filter(**filters)
-
-        qs = (qs.values(*groups)
-                .annotate(count=Sum(c))
-                .order_by("geography"))
-
-        return qs
-
 class CountryDataExtractor:
     """
     This extractor is used to query the top-level geography - e.g. country, if this data isn't provided in the data
