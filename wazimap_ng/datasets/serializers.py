@@ -5,14 +5,14 @@ from . import models
 class GeographySerializer(serializers.ModelSerializer):
     class Meta:
         model = Geography
-        fields = ["name", "code", "level"]
+        fields = ["name", "code", "level", "version"]
 
 class AncestorGeographySerializer(serializers.ModelSerializer):
     parents = GeographySerializer(source="get_ancestors", many=True)
 
     class Meta:
         model = Geography
-        fields = ["name", "code", "level", "parents"]
+        fields = ["name", "code", "level", "version", "parents"]
 
 class IndicatorCategorySerializer(serializers.ModelSerializer):
 	class Meta:

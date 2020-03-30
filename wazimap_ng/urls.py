@@ -49,8 +49,8 @@ urlpatterns = [
         cache(dataset_views.profile_geography_data),
         name="profile-geography-data",
     ),
-    path("api/v1/geography/search/", cache(dataset_views.search_geography)),
-    path("api/v1/geography/ancestors/<str:geography_code>/", cache(dataset_views.geography_ancestors), name="geography-ancestors"),
+    path("api/v1/geography/search/<str:profile_id>/", cache(dataset_views.search_geography)),
+    path("api/v1/geography/ancestors/<str:geography_code>/<str:version>/", cache(dataset_views.geography_ancestors), name="geography-ancestors"),
     path(
         "api/v1/points/", 
         cache(points_views.LocationList.as_view()),
@@ -94,7 +94,13 @@ urlpatterns = [
     ),
 
     path(
-        "api/v1/boundaries/<str:code>/children/",
+        "api/v1/boundaries/<str:code>/<str:version>/",
+        cache(boundaries_views.GeographyItem.as_view()),
+        name="boundaries-code"
+    ),
+
+    path(
+        "api/v1/boundaries/<str:code>/<str:version>/children/",
         cache(boundaries_views.GeographyChildren.as_view()),
         name="boundaries-children"
     ),

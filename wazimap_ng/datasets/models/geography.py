@@ -28,9 +28,10 @@ class Geography(MP_Node):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=20)
     level = models.CharField(max_length=20)
+    version = models.CharField(max_length=20, blank=True)
 
     def __str__(self):
-        return "%s" % self.name
+        return f"{self.name} ({self.version})"
 
     objects = GeographyManager()
 
@@ -42,6 +43,10 @@ class Geography(MP_Node):
         ]
         ordering = ["id"]
 
+        constraints = [
+            models.UniqueConstraint(fields=["version", "code"], name="unique_geography_code_version")
+        ]
+
     def get_child_boundaries(self):
         from ...boundaries.models import GeographyBoundary
         children = self.get_children()
@@ -52,10 +57,21 @@ class Geography(MP_Node):
 
         if len(children) > 0:
             for child_level in levels:
-                boundary_class = GeographyBoundary
-                if boundary_class is not None:
-                    child_types[child_level] = boundary_class.objects.filter(geography__code__in=codes, geography__level=child_level).select_related("geography")
+                child_types[child_level] = (
+                    GeographyBoundary.objects
+                        .filter(geography__code__in=codes, geography__level=child_level, geography__version=self.version)
+                        .select_related("geography")
+                )
         return child_types
 
+class GeographyHierarchy(models.Model):
+    name = models.CharField(max_length=50)
+    root_geography = models.ForeignKey(Geography, null=False, on_delete=models.CASCADE)
 
+    @property
+    def version(self):
+        return self.root_geography.version
+    
 
+    def __str__(self):
+        return f"{self.name}"

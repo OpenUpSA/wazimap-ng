@@ -30,19 +30,18 @@ class GeographySwitchMixin(object):
         return geos[0]
 
 @cache_decorator("geography_item")
-def geography_item_helper(code):
-    geography = Geography.objects.get(code=code)
-    obj = models.GeographyBoundary.objects.get_unique_boundary(code)
-    serializer = serializers.GeographyBoundarySerializer(obj)
+def geography_item_helper(code, version):
+    geography = Geography.objects.get(code=code, version=version)
+    serializer = serializers.GeographyBoundarySerializer(geography.geographyboundary)
     data = serializer.data
 
     return data
 
 
 @cache_decorator("geography_children")
-def geography_children_helper(code):
+def geography_children_helper(code, version):
 
-    geography = Geography.objects.get(code=code)
+    geography = Geography.objects.get(code=code, version=version)
     child_boundaries = geography.get_child_boundaries()
     children = geography.get_children()
     data = {}
@@ -54,13 +53,13 @@ def geography_children_helper(code):
 
 
 class GeographyChildren(GeographySwitchMixin, generics.ListAPIView):
-    def get(self, request, code):
-        js = geography_children_helper(code)
+    def get(self, request, code, version):
+        js = geography_children_helper(code, version)
         return Response(js)
 
 class GeographyItem(GeographySwitchMixin, generics.RetrieveAPIView):
-    def get(self, request, code):
-        js = geography_item_helper(code)
+    def get(self, request, code, version=""):
+        js = geography_item_helper(code, version)
         return Response(js)
 
 class GeographyList(GeographySwitchMixin, generics.ListAPIView):

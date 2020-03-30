@@ -20,6 +20,7 @@ class Command(BaseCommand):
         parser.add_argument("shapefile", type=str, help="Shapefile containing boundaries to be loaded.")
         parser.add_argument("field_map", type=str, help="Mapping of fields to extract from the shapefile. Should be formatted as follows: code_field=code,name_field=name,parent_code_field=parent_code,area_field=area....")
         parser.add_argument("level", type=str, help="Geography level, e.g. province, municipality, ...")
+        parser.add_argument("version", type=str, help="Geography version, e.g. 'census 2016'...")
 
     def check_field_map(self, field_map):
         fields = ["name", "code", "parent_code", "area"]
@@ -40,17 +41,18 @@ class Command(BaseCommand):
     def process_node(self, fields, geo_shape):
         parent_code = fields.pop("parent_code")
         area = fields.pop("area")
+        version = fields.pop("version")
 
         try:
-            parent_geography = Geography.objects.get(code__iexact=parent_code)
+            parent_geography = Geography.objects.get(code__iexact=parent_code, version=version)
         except Geography.DoesNotExist:
-            print(f"Can't find parent geography: {parent_code}")
+            print(f"Can't find parent geography: {parent_code} ({version})")
             return
 
         try:
-            geography = Geography.objects.get(code__iexact=fields["code"])
+            geography = Geography.objects.get(code__iexact=fields["code"], version=version)
         except Geography.DoesNotExist:
-            geography = parent_geography.add_child(code=fields["code"], level=fields["level"], name=fields["name"])
+            geography = parent_geography.add_child(code=fields["code"], level=fields["level"], name=fields["name"], version=version)
             GeographyBoundary.objects.create(geography=geography, geom=geo_shape, area=area)
 
     def extract_fields(self, field_map, properties):
@@ -69,11 +71,12 @@ class Command(BaseCommand):
         }
 
 
-    def process_shape(self, shape, field_map, level):
+    def process_shape(self, shape, field_map, level, version):
         properties = shape["properties"]
 
         fields = self.extract_fields(field_map, properties)
         fields["level"] = level
+        fields["version"] = version
 
         if shape["geometry"] is None:
             print(f"No geometry present for {fields['code']}")
@@ -99,13 +102,14 @@ class Command(BaseCommand):
         shapefile = options["shapefile"]
         field_map = dict(pair.split("=") for pair in options["field_map"].split(","))
         level = options["level"]
+        version = options["version"]
 
         self.check_shapefile(shapefile)
         self.check_field_map(field_map)
 
         shape = fiona.open(shapefile)
         for idx, s in enumerate(shape):
-            self.process_shape(s, field_map, level)
+            self.process_shape(s, field_map, level, version)
 
         print(f"{idx + 1} geographies successfully loaded")
 
