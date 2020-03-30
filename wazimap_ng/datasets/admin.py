@@ -28,9 +28,6 @@ admin.site.register(models.IndicatorSubcategory)
 admin.site.register(models.Profile)
 
 
-def get_edit_url(obj, app_label="datasets"):
-    return reverse(f"admin:{app_label}_{obj._meta.model_name}_change", args=[obj.id])
-
 def delete_selected_data(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):
         raise PermissionDenied
