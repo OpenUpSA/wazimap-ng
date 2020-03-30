@@ -97,3 +97,13 @@ class ProfileCategory(models.Model):
     class Meta:
         verbose_name = "Point Collection"
         verbose_name_plural = "Point Collections"
+
+meta_data_license = (("creative commons", "Creative Commons"), ("other", "Other"))
+class MetaData(models.Model):
+    source = models.CharField(max_length=60, null=False, blank=True)
+    description = models.TextField(blank=True)
+    license = models.CharField(choices=meta_data_license, default="none", max_length=32)
+    profile_category = models.OneToOneField(ProfileCategory, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "Meta->Points : %s" % (self.profile_category.label)
