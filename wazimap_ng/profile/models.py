@@ -9,3 +9,9 @@ class Logo(models.Model):
     def __str__(self):
         return f"{self.logo}"
 
+class ChoroplethMethod(models.Model):
+    name = models.CharField(max_length=30, blank=False)
+    description = models.TextField(max_length=255)
+
+    def __str__(self):
+        return f"{self.name}"

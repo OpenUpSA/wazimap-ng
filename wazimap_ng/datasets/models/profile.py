@@ -5,7 +5,6 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from .dataset import Indicator, DatasetData, Universe, CountryDataExtractor
 from .geography import Geography, GeographyHierarchy
 
-
 class Profile(models.Model):
     name = models.CharField(max_length=50)
     indicators = models.ManyToManyField(Indicator, through="ProfileIndicator", verbose_name="variables")
@@ -52,6 +51,7 @@ class ProfileIndicator(models.Model):
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
     description = models.TextField(blank=True)
     subindicators = ArrayField(models.CharField(max_length=50), blank=True, default=list)
+    choropleth_method = models.ForeignKey("profile.ChoroplethMethod", null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.profile.name} -> {self.label}"

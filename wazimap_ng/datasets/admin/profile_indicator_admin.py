@@ -28,7 +28,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
             'fields': ('profile', 'indicator')
         }),
         ("Profile fields", {
-          'fields': ('label', 'subcategory', 'key_metric', 'description')
+          'fields': ('label', 'subcategory', 'key_metric', 'description', 'choropleth_method')
         }),
         ("Subindicators", {
           'fields': ('subindicators',)

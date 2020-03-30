@@ -125,7 +125,8 @@ def profile_geography_data_helper(profile_id, geography_code):
 
             indicators_js[pi.label] = {
                 "description": pi.description,
-                "subindicators": indicator_data
+                "subindicators": indicator_data,
+                "choropleth_method": pi.choropleth_method.name
             }
             for subindicator in indicator_data:
                 if indicator.name in children_profile:
