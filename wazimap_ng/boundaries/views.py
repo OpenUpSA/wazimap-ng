@@ -2,6 +2,8 @@ from django.http import Http404
 from django.shortcuts import render
 from django.core.serializers import serialize
 from django.views.decorators.http import condition
+from django.shortcuts import get_object_or_404
+
 
 from rest_framework import generics
 from rest_framework.decorators import api_view
@@ -31,7 +33,7 @@ class GeographySwitchMixin(object):
 
 @cache_decorator("geography_item")
 def geography_item_helper(code, version):
-    geography = Geography.objects.get(code=code, version=version)
+    geography = get_object_or_404(Geography, code=code, version=version)
     serializer = serializers.GeographyBoundarySerializer(geography.geographyboundary)
     data = serializer.data
 
