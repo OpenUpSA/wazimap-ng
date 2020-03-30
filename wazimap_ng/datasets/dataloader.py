@@ -28,7 +28,7 @@ def loaddata(dataset, iterable, row_number):
             continue
 
         try:
-            count = int(row["count"])
+            count = float(row["count"])
             if math.isnan(count):
                 errors.append([row_number+idx, "count", "Missing data for count"])
                 continue

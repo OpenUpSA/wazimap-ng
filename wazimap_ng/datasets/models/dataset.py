@@ -26,11 +26,13 @@ class DatasetData(models.Model):
     geography = models.ForeignKey(Geography, on_delete=models.CASCADE)
     data = JSONField()
 
+    # TODO I prefer serialisation-specific code to be separate from the model
+    # Move this out of the class
     @classmethod
     @transaction.atomic()
     def load_from_csv(cls, filename, dataset_name, encoding="utf8"):
         def ensure_integer_count(js):
-            js["Count"] = int(js["Count"])
+            js["Count"] = float(js["Count"])
             return js
 
         dataset, _ = Dataset.objects.get_or_create(name=dataset_name)
