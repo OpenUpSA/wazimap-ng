@@ -6,7 +6,7 @@ from ..boundaries.models import GeographyBoundary
 
 
 @transaction.atomic
-def loaddata(name, category, iterable, row_number):
+def loaddata(category, iterable, row_number):
 
     datarows = []
     logs = []
