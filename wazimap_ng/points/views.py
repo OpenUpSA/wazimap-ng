@@ -3,6 +3,7 @@ from django.utils.decorators import method_decorator
 from rest_framework.decorators import api_view
 from collections import defaultdict
 from django.db.models import Count
+from django.forms.models import model_to_dict
 
 from rest_framework.response import Response
 from rest_framework_gis.pagination import GeoJsonPagination
@@ -40,7 +41,8 @@ def theme_view(request, profile_id=None):
         for pc in themes[theme]:
             js_theme["categories"].append({
                 "id": pc.category.id,
-                "name": pc.label
+                "name": pc.label,
+                "metadata": model_to_dict(pc.metadata)
             })
             
         js.append(js_theme)

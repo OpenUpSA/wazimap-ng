@@ -22,6 +22,16 @@ class Dataset(models.Model):
     class Meta:
         ordering = ["id"]
 
+meta_data_license = (("creative commons", "Creative Commons"), ("other", "Other"))
+class MetaData(models.Model):
+    source = models.CharField(max_length=60, null=False, blank=True)
+    description = models.TextField(blank=True)
+    license = models.CharField(choices=meta_data_license, default="none", max_length=32)
+    datset = models.OneToOneField(Dataset, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "Meta->Dataset : %s" % (self.datset.name)
+
 
 class DatasetData(models.Model):
     dataset = models.ForeignKey(Dataset, null=True, on_delete=models.CASCADE)
