@@ -48,11 +48,14 @@ class DatasetData(models.Model):
         objs = (
             DatasetData(dataset=dataset, data=row, geography=geocodes[row["Geography"]])
             for row in rows
+            # TODO consider logging missing geographies 
             if row["Geography"] in geocodes
         )
         total = 0
 
         while True:
+            # TODO do we need to convert to a list
+            # can bulk_create receive an iterable
             batch = list(islice(objs, batch_size))
             if not batch:
                 break
