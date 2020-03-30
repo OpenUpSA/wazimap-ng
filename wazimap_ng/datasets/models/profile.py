@@ -51,7 +51,7 @@ class ProfileIndicator(models.Model):
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
     description = models.TextField(blank=True)
     subindicators = ArrayField(models.CharField(max_length=50), blank=True, default=list)
-    choropleth_method = models.ForeignKey("profile.ChoroplethMethod", null=True, on_delete=models.CASCADE)
+    choropleth_method = models.ForeignKey("profile.ChoroplethMethod", null=False, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.profile.name} -> {self.label}"
