@@ -141,6 +141,13 @@ class InitialDataUploadAddView(admin.StackedInline):
         }),
     )
 
+class MetaDataInline(admin.StackedInline):
+    model = models.MetaData
+    fk_name = "profile_category"
+
+    verbose_name = ""
+    verbose_name_plural = "Metadata"
+
 
 class PointsCollectionAdminForm(forms.ModelForm):
     theme = forms.ModelChoiceField(queryset=models.Theme.objects.all(), required=True)
@@ -193,12 +200,12 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
     def add_view(self, request, form_url='', extra_context=None):
-        self.inlines = (InitialDataUploadAddView, )
+        self.inlines = (InitialDataUploadAddView, MetaDataInline,)
         self.fieldsets = self.fieldsets_add_view
         return super().add_view(request)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
-        self.inlines = (InitialDataUploadChangeView, )
+        self.inlines = (InitialDataUploadChangeView, MetaDataInline,)
         self.fieldsets = self.fieldsets_change_view
         return super().change_view(request, object_id)
 
@@ -235,3 +242,4 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
                         instance
                     )
                 )
+        return super().save_formset(request, form, formset, change)

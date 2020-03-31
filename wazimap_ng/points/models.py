@@ -43,10 +43,11 @@ class Location(models.Model):
     def __str__(self):
         return "%s: %s" % (self.category, self.name)
 
+
 class ProfileCategory(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="subtheme")
-    label = models.CharField(max_length=60, help_text="Label for the category to be displayed on the front-end")
+    label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
     description = models.TextField(blank=True)
 
     def __str__(self):
@@ -96,19 +97,6 @@ class CoordinateFile(models.Model):
                 raise ValidationError(
                     "Invalid File passed. We were not able to find Required header : %s " % required_header.capitalize()
                 )
-
-class ProfileCategory(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="subtheme")
-    label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
-    description = models.TextField(blank=True)
-
-    def __str__(self):
-        return self.label
-
-    class Meta:
-        verbose_name = "Point Collection"
-        verbose_name_plural = "Point Collections"
 
 meta_data_license = (("creative commons", "Creative Commons"), ("other", "Other"))
 class MetaData(models.Model):
