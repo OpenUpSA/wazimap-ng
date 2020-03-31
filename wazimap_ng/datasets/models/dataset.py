@@ -10,7 +10,6 @@ from django.contrib.postgres.fields.jsonb import KeyTextTransform, KeyTransform
 from django.contrib.postgres.fields import JSONField, ArrayField
 
 from .geography import Geography, GeographyHierarchy
-from wazimap_ng.profile.models import Licence
 
 class Dataset(models.Model):
     name = models.CharField(max_length=60)
@@ -26,7 +25,7 @@ class Dataset(models.Model):
 class MetaData(models.Model):
     source = models.CharField(max_length=60, null=False, blank=True)
     description = models.TextField(blank=True)
-    license = models.ForeignKey(
+    licence = models.ForeignKey(
         "profile.Licence", null=True, blank=True, on_delete=models.SET_NULL,
         related_name="dataset_license"
     )

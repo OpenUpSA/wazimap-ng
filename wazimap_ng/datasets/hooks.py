@@ -62,7 +62,6 @@ class Notify:
         """
         Get Generic message according to notification type.
         """
-        print("GEt generic messages")
         message = self.generic_messages[task_type][notification_type]
         return message % obj
 

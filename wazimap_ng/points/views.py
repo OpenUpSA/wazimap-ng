@@ -42,7 +42,7 @@ def theme_view(request, profile_id=None):
             js_theme["categories"].append({
                 "id": pc.category.id,
                 "name": pc.label,
-                "metadata": model_to_dict(pc.metadata)
+                "metadata": serializers.MetaDataSerializer(pc.metadata).data
             })
             
         js.append(js_theme)
