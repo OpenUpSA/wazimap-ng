@@ -98,11 +98,12 @@ class CoordinateFile(models.Model):
                     "Invalid File passed. We were not able to find Required header : %s " % required_header.capitalize()
                 )
 
-meta_data_license = (("creative commons", "Creative Commons"), ("other", "Other"))
 class MetaData(models.Model):
     source = models.CharField(max_length=60, null=False, blank=True)
     description = models.TextField(blank=True)
-    license = models.CharField(choices=meta_data_license, default="none", max_length=32)
+    license = models.ForeignKey(
+        "profile.Licence", null=True, blank=True, on_delete=models.SET_NULL, related_name="points_license"
+    )
     profile_category = models.OneToOneField(ProfileCategory, on_delete=models.CASCADE)
 
     def __str__(self):
