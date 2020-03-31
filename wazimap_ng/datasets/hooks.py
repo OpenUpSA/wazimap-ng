@@ -48,6 +48,10 @@ class Notify:
             model_name = "dataset"
             obj_id = obj.dataset.id
 
+        if obj._meta.model_name == "coordinatefile":
+            model_name = "profilecategory"
+            obj_id = obj.profile_category.id
+
         admin_url = reverse(
             'admin:%s_%s_change' % (obj._meta.app_label,  model_name),  args=[obj_id]
         )
