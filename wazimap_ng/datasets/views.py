@@ -68,19 +68,25 @@ def profile_geography_data(request, profile_id, geography_code):
     js = profile_geography_data_helper(profile_id, geography_code)
     return Response(js)
 
-def get_profile_logo_url(profile_id):
+def get_profile_logo_json(profile_id):
     try:
         logo = Logo.objects.get(profile_id=profile_id)
-        logo_url = f"{settings.MEDIA_URL}{logo.logo}"
+        url = logo.url if logo.url.strip() != "" else "/"
+        return {
+            "image": f"{settings.MEDIA_URL}{logo.logo}",
+            "url": url
+        }
     except Logo.DoesNotExist:
-        logo_url = ""
-    return logo_url
+        return {
+            "image": "",
+            "url": "/"
+        }
 
 def profile_geography_data_helper(profile_id, geography_code):
     profile = get_object_or_404(models.Profile, pk=profile_id)
     version = profile.geography_hierarchy.root_geography.version
     geography = get_object_or_404(models.Geography, code=geography_code, version=version)
-    logo_url = get_profile_logo_url(profile_id)
+    logo_json = get_profile_logo_json(profile_id)
 
     profile_indicator_ids = profile.indicators.values_list("id", flat=True)
 
@@ -168,7 +174,7 @@ def profile_geography_data_helper(profile_id, geography_code):
             }
 
     js = {
-        "logo": logo_url,
+        "logo": logo_json,
         "geography": geo_js,
         "key_metrics": key_metrics,
         "profile_data": data_js,
