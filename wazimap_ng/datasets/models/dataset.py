@@ -10,6 +10,7 @@ from django.contrib.postgres.fields.jsonb import KeyTextTransform, KeyTransform
 from django.contrib.postgres.fields import JSONField, ArrayField
 
 from .geography import Geography, GeographyHierarchy
+from wazimap_ng.profile.models import Licence
 
 class Dataset(models.Model):
     name = models.CharField(max_length=60)
@@ -21,6 +22,15 @@ class Dataset(models.Model):
 
     class Meta:
         ordering = ["id"]
+
+class MetaData(models.Model):
+    source = models.CharField(max_length=60, null=False, blank=True)
+    description = models.TextField(blank=True)
+    license = models.ForeignKey(License, null=True, blank=True, on_delete=models.SET_NULL)
+    dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "Meta->Dataset : %s" % (self.dataset.name)
 
 
 class DatasetData(models.Model):

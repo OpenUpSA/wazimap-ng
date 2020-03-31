@@ -5,7 +5,7 @@ from . import models
 
 
 @transaction.atomic
-def loaddata(name, category, iterable, row_number):
+def loaddata(category, iterable, row_number):
 
     datarows = []
     logs = []

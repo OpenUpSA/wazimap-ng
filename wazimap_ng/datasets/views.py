@@ -2,6 +2,7 @@ from django.http import Http404
 from django.views.decorators.http import condition
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.forms.models import model_to_dict
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework_csv import renderers as r
@@ -132,7 +133,8 @@ def profile_geography_data_helper(profile_id, geography_code):
             indicators_js[pi.label] = {
                 "description": pi.description,
                 "subindicators": indicator_data,
-                "choropleth_method": pi.choropleth_method.name
+                "choropleth_method": pi.choropleth_method.name,
+                "metadata": model_to_dict(indicator.dataset.metadata)
             }
             for subindicator in indicator_data:
                 if indicator.name in children_profile:
