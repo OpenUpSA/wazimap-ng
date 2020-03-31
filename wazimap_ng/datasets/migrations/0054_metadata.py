@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('source', models.CharField(blank=True, max_length=60)),
                 ('description', models.TextField(blank=True)),
                 ('license', models.CharField(choices=[('creative commons', 'Creative Commons'), ('other', 'Other')], default='none', max_length=32)),
-                ('datset', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='datasets.Dataset')),
+                ('dataset', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='datasets.Dataset')),
             ],
         ),
     ]

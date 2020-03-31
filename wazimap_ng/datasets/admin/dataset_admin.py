@@ -5,7 +5,10 @@ from django_q.tasks import async_task
 from .base_admin_model import BaseAdminModel
 from .. import models
 from .. import hooks
-from .views import InitialDataUploadChangeView, VariableInlinesChangeView, VariableInlinesAddView, InitialDataUploadAddView
+from .views import (
+    InitialDataUploadChangeView, VariableInlinesChangeView, 
+    VariableInlinesAddView, InitialDataUploadAddView, MetaDataInline
+)
 
 @admin.register(models.Dataset)
 class DatasetAdmin(BaseAdminModel):
@@ -90,20 +93,22 @@ class DatasetAdmin(BaseAdminModel):
                     )
                 )
 
+        return super().save_formset(request, form, formset, change)
+
     def change_view(self, request, object_id, form_url='', extra_context=None):
-        inlines = (InitialDataUploadChangeView, )
+        inlines = (InitialDataUploadChangeView, MetaDataInline,)
 
         if object_id:
             dataset_obj = models.Dataset.objects.get(id=object_id)
             if dataset_obj and dataset_obj.datasetfile.task and dataset_obj.datasetfile.task.success:
 
                 if dataset_obj.indicator_set.count():
-                    inlines = inlines + (VariableInlinesChangeView,)
-                inlines = inlines + (VariableInlinesAddView, )
+                    inlines = inlines + (VariableInlinesChangeView, MetaDataInline,)
+                inlines = inlines + (VariableInlinesAddView, MetaDataInline,)
 
         self.inlines = inlines
         return super().change_view(request, object_id)
 
     def add_view(self, request, form_url='', extra_context=None):
-        self.inlines = (InitialDataUploadAddView, )
+        self.inlines = (InitialDataUploadAddView, MetaDataInline,)
         return super().add_view(request)
