@@ -20,7 +20,7 @@ def backwards(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('profile', '0006_licence'),
+        ('profile', '00065_logo_url'),
     ]
 
     operations = [

@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('profile', '0006_licence'),
+        ('profile', '00064_licence'),
         ('points', '0010_auto_20200328_1253'),
     ]
 

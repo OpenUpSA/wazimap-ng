@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('profile', '0006_licence'),
+        ('profile', '00064_licence'),
         ('datasets', '0054_profileindicator_choropleth_method'),
     ]
 
