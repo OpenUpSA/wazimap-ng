@@ -73,7 +73,7 @@ def get_profile_logo_json(profile_id):
         logo = Logo.objects.get(profile_id=profile_id)
         url = logo.url if logo.url.strip() != "" else "/"
         return {
-            "image": f"{settings.MEDIA_URL}{logo.logo}",
+            "image": f"{logo.logo.url}",
             "url": url
         }
     except Logo.DoesNotExist:
