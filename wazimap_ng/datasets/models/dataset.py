@@ -26,7 +26,10 @@ class Dataset(models.Model):
 class MetaData(models.Model):
     source = models.CharField(max_length=60, null=False, blank=True)
     description = models.TextField(blank=True)
-    license = models.ForeignKey(License, null=True, blank=True, on_delete=models.SET_NULL)
+    license = models.ForeignKey(
+        "profile.Licence", null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="dataset_license"
+    )
     dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE)
 
     def __str__(self):
