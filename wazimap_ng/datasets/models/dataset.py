@@ -10,6 +10,7 @@ from django.contrib.postgres.fields.jsonb import KeyTextTransform, KeyTransform
 from django.contrib.postgres.fields import JSONField, ArrayField
 
 from .geography import Geography, GeographyHierarchy
+from wazimap_ng.profile.models import Licence
 
 class Dataset(models.Model):
     name = models.CharField(max_length=60)
@@ -22,11 +23,10 @@ class Dataset(models.Model):
     class Meta:
         ordering = ["id"]
 
-meta_data_license = (("creative commons", "Creative Commons"), ("other", "Other"))
 class MetaData(models.Model):
     source = models.CharField(max_length=60, null=False, blank=True)
     description = models.TextField(blank=True)
-    license = models.CharField(choices=meta_data_license, default="none", max_length=32)
+    license = models.ForeignKey(License, null=True, blank=True, on_delete=models.SET_NULL)
     dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE)
 
     def __str__(self):
