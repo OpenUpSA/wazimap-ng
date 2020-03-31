@@ -134,7 +134,7 @@ def profile_geography_data_helper(profile_id, geography_code):
                 "description": pi.description,
                 "subindicators": indicator_data,
                 "choropleth_method": pi.choropleth_method.name,
-                "metadata": model_to_dict(indicator.dataset.metadata)
+                "metadata": serializers.MetaDataSerializer(indicator.dataset.metadata).data
             }
             for subindicator in indicator_data:
                 if indicator.name in children_profile:
