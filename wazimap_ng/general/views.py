@@ -26,7 +26,8 @@ def consolidated_profile_helper(profile_id, geography_code):
     pairs = zip(parents, children_levels)
     for parent, children_level in pairs:
         layer = boundaries_views.geography_children_helper(parent["code"], version)
-        parent_layers.append(layer[children_level])
+        if children_level in layer:
+            parent_layers.append(layer[children_level])
 
     return ({
         "profile": profile_js,
