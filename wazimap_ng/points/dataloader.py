@@ -2,43 +2,73 @@ from django.contrib.gis.geos import Point
 from django.db import transaction
 
 from . import models
-from ..boundaries.models import GeographyBoundary
 
 
 @transaction.atomic
-def loaddata(name, category, iterable):
+def loaddata(category, iterable, row_number):
 
     datarows = []
+    logs = []
     for idx, row in enumerate(iterable):
 
-        try:
-            if "longitude" not in row:
-                print(f"Missing Longitude - skipping it.")
-                continue
+        if "longitude" not in row:
+            logs.append([row_number+idx, "longitude", "Missing Header Longitude"])
 
-            if "latitude" not in row:
-                print(f"Missing Latitude - skipping it.")
-                continue
-
-            if "name" not in row:
-                print(f"Missing Name - skipping it.")
-                continue
-
-            location = row.pop("name")
-            coordinates = Point(row.pop("longitude"), row.pop("latitude"))
-
-            dd = models.Location(
-                name=location, category=category,
-                coordinates=coordinates, data=row
-            )
-
-            datarows.append(dd)
-
-            if len(datarows) >= 10000:
-                models.Location.objects.bulk_create(datarows, 1000)
-                datarows = []
-        except Exception:
-            # TODO Add log to help user identify the problem
+        if "latitude" not in row:
+            logs.append([row_number+idx, "latitude", "Missing Header Latitude"])
             continue
 
+        if "name" not in row:
+            logs.append([row_number+idx, "name", "Missing Header Name"])
+            continue
+
+        location = row.pop("name").strip()
+        longitude = row.pop("longitude")
+        latitude = row.pop("latitude")
+
+        if not location.strip():
+            logs.append([row_number+idx+1, "Name", "Empty value for Name"])
+            continue
+
+        try:
+            longitude = float(longitude)
+        except Exception as e:
+            if not longitude:
+                logs.append([row_number+idx, "longitude", "Empty value for longitude"])
+            elif isinstance(longitude, str) and not longitude.isdigit():
+                logs.append([row_number+idx, "longitude", "Invalid value passed for longitude %s" % longitude])
+            else:
+                logs.append([row_number+idx, "longitude", e])
+            continue
+
+        try:
+            latitude = float(latitude)
+        except Exception as e:
+            if not latitude:
+                logs.append([row_number+idx, "latitude", "Empty value for latitude"])
+            elif isinstance(latitude, str) and not latitude.isdigit():
+                logs.append([row_number+idx, "latitude", "Invalid value passed for latitude %s" % latitude])
+            else:
+                logs.append([row_number+idx, "latitude", e])
+            continue
+
+        try:
+            coordinates = Point(longitude, latitude)
+        except Exception as e:
+            logs.append([row_number+idx, "Coordinates", "Issue while creating coordinates %s " % e])
+            continue
+
+        dd = models.Location(
+            name=location, category=category,
+            coordinates=coordinates, data=row
+        )
+
+        datarows.append(dd)
+
+        if len(datarows) >= 10000:
+            models.Location.objects.bulk_create(datarows, 1000)
+            datarows = []
+       
+
     models.Location.objects.bulk_create(datarows, 1000)
+    return logs

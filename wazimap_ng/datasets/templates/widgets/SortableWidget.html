@@ -1,6 +1,6 @@
-<div id="sortable_widget">
-  <input type="hidden" name="{{ widget.name }}" value="{{ widget.values.text }}" />
-      <ul id="sortable">
+<div class="sortable_widget">
+  <input type="hidden" name="{{ widget.name }}" value="{{ widget.values.text }}" data-name="subindicators" />
+      <ul class="sortable">
         {% for value in widget.values.list %}
             <li class="ui-state-default" data-val="{{ value }}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>{{ value }}</li>
           {% empty %}

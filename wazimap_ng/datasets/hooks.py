@@ -3,50 +3,96 @@ from django.urls import reverse
 
 import json
 
-def get_notification_details(success, model, name, idx):
-    """
-    Notification details according to the model.
-    """
-    admin_url_base = "admin:datasets_%s_%s"
+class Notify:
 
-    messages_according_to_model = {
-        "indicator" : {
-            "success": "Data has been processed for %s named %s. Please check it out on <a href='%s'>this link</a>" %(
-                model, name, reverse(admin_url_base % (model, "change"), args=(idx,))
-            ),
-            "error": "Data processing failed for %s name %s. To restart process visit <a href='%s'>this link</a>" %(
-                model, name, reverse(admin_url_base % (model, "change"), args=(idx,))
-            ),
+    generic_messages = {
+        "delete" : {
+            "success": "Data deleted for %s",
+            "error": "Error in deleting data for %s",
         },
-        "datasetfile" : {
-            "success": "Dataset Imported successfully for %s" % name,
-            "error": "Error in uploading file %s. Re-upload file at <a href='%s'>this link</a>" % (
-                name, reverse(admin_url_base % (model, "add"))
-            ),
+        "upload" : {
+            "success": "Imported File successfully for %s",
+            "error": "Error in uploading file for %s.",
+        },
+
+        "data_extraction" : {
+            "success": "Data extraction successful for %s",
+            "error": "Data extraction failed for %s.",
         }
     }
 
-    return messages_according_to_model[model][success]
+    upload_message = {
+        "success": "Imported File successfully for model %s with name %s. For more details check : <a href='%s'>Click Here</a>",
+        "error": "Error in uploading file for model %s with name %s. For more details check : <a href='%s'>Click Here</a>",
+    }
 
-def get_message_according_type(task, task_type, notification_type):
+
+    @classmethod
+    def get_nofitification_details(self, notification_type, obj, task_type):
+
+        func_name = "get_%s_messages" % (task_type)
+        notification_message = getattr(self, func_name, self.get_generic_message)
+        message = notification_message(notification_type, obj, task_type)
+        return message
+
+    @classmethod
+    def get_upload_messages(self, notification_type, obj, task_type=None):
+        """
+        Get message for data upload.
+        """
+        model = obj.__class__.__name__.lower()
+        obj_id = obj.id
+        model_name = obj._meta.model_name
+
+        if obj._meta.model_name == "datasetfile":
+            model_name = "dataset"
+            obj_id = obj.dataset.id
+
+        if obj._meta.model_name == "coordinatefile":
+            model_name = "profilecategory"
+            obj_id = obj.profile_category.id
+
+        admin_url = reverse(
+            'admin:%s_%s_change' % (obj._meta.app_label,  model_name),  args=[obj_id]
+        )
+        return self.upload_message[notification_type] % (model, obj, admin_url)
+
+    @classmethod
+    def get_generic_message(self, notification_type, obj, task_type):
+        """
+        Get Generic message according to notification type.
+        """
+        message = self.generic_messages[task_type][notification_type]
+        return message % obj
+
+def process_task_info(task):
     """
-    return message according to type of task.
-    Use for generic things like data created or deleted
+    Process task
     """
-    messages = {
-            "delete" : {
-                "success": "Data deleted for %s"  % list(task.args)[1],
-                "error": "Error in deleting data for %s"  % list(task.args)[1],
-            },
-            "file_upload" : {
-                "success": "Imported File successfully for %s" % list(task.args)[1],
-                "error": "Error in uploading file for %s." % list(task.args)[1],
-            }
-        }
+    notify = task.kwargs.get("notify", False)
+    assign_task = task.kwargs.get("assign", False)
+    obj = next(iter(task.args))
 
-    return messages[task_type][notification_type]
+    if assign_task:
+        obj.task = task
+        obj.save()
 
-def notify_user(task):
+    if notify:
+        notification_type = "success" if task.success else "error"
+
+        session_key = task.kwargs.get("key", False)
+        task_type = task.kwargs.get("type", False)
+        message = task.kwargs.get("message", None)
+
+        # Get message
+        notify = Notify()
+        if not message:
+            message = notify.get_nofitification_details(notification_type, obj, task_type)
+
+        # Add message to user
+        notify_user(notification_type, session_key, message)
+
+def notify_user(notification_type, session_key, message):
     """
     Call back function after the task has been executed.
     This function gets passed the complete Task object as its argument.
@@ -54,30 +100,6 @@ def notify_user(task):
     We get session key from kwargs of the task object and data of created object
     is passes through results value in task object.
     """
-    success = task.success
-    notification_type = "success" if success else "error"
-
-    if "type" in task.kwargs:
-
-        message = get_message_according_type(task, task.kwargs["type"], notification_type)
-    else:
-        # Task results
-        if success:
-            result = task.result
-
-        else:
-            obj = next(iter(task.args))
-            result = {
-                "name": obj.title,
-                "id": obj.id,
-                "model": obj.__class__.__name__.lower()
-            }
-
-        message = get_notification_details(
-            notification_type, result["model"], result["name"], result["id"]
-        )
-    # Session variables
-    session_key = session_key=task.kwargs["key"]
     session = Session.objects.filter(session_key=session_key).first()
 
     if session:
@@ -86,7 +108,6 @@ def notify_user(task):
         )
         session.session_data = Session.objects.encode(decoded_session)
         session.save()
-
 
 def custom_admin_notification(session, notification_type, message):
     """

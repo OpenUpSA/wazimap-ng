@@ -1,5 +1,8 @@
 import csv
+import os
+import uuid
 from io import BytesIO
+import pathlib
 
 import pandas as pd
 import xlrd
@@ -9,6 +12,10 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.contrib.postgres.fields import JSONField
+from django_q.models import Task
+from .dataset import Dataset
+
+from wazimap_ng import utils
 
 
 max_filesize = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
@@ -18,10 +25,13 @@ def file_size(value):
     if value.size > max_filesize:
         raise ValidationError(f"File too large. Size should not exceed {max_filesize / (1024 * 1024)} MiB.")
 
+def get_file_path(instance, filename):
+    filename = utils.get_random_filename(filename)
+    return os.path.join('datasets', filename)
+
 class DatasetFile(models.Model):
-    title = models.CharField(max_length=255, blank=False)
     document = models.FileField(
-        upload_to="datasets/",
+        upload_to=get_file_path,
         validators=[
             FileExtensionValidator(allowed_extensions=allowed_file_extensions),
             file_size
@@ -31,9 +41,11 @@ class DatasetFile(models.Model):
             file extensions should be one of {", ".join(allowed_file_extensions)}.
         """
     )
+    task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
+    dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.title
+        return self.dataset.name
 
     def clean(self):
         """

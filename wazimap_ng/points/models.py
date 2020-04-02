@@ -1,3 +1,6 @@
+import os
+import uuid
+
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django.core.validators import FileExtensionValidator
@@ -6,6 +9,13 @@ from django.core.exceptions import ValidationError
 import pandas as pd
 from io import BytesIO
 from wazimap_ng.datasets.models import Profile
+from django_q.models import Task
+from wazimap_ng import utils
+from wazimap_ng.profile.models import Licence
+
+def get_file_path(instance, filename):
+    filename = utils.get_random_filename(filename)
+    return os.path.join('points', filename)
 
 class Theme(models.Model):
     name = models.CharField(max_length=30)
@@ -34,17 +44,31 @@ class Location(models.Model):
     def __str__(self):
         return "%s: %s" % (self.category, self.name)
 
-class CoordinateFile(models.Model):
-    title = models.CharField(max_length=255, blank=False)
+
+class ProfileCategory(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="subtheme")
+    label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.label
+
+    class Meta:
+        verbose_name = "Point Collection"
+        verbose_name_plural = "Point Collections"
+
+class CoordinateFile(models.Model):
     document = models.FileField(
-        upload_to="points/",
+        upload_to=get_file_path,
         validators=[FileExtensionValidator(allowed_extensions=["csv",])],
         help_text="File Type required : CSV | Fields that are required: Name, Longitude, latitude"
     )
+    task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
+    profile_category = models.OneToOneField(ProfileCategory, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.title
+        return self.profile_category.label
 
     def clean(self):
         """
@@ -75,15 +99,13 @@ class CoordinateFile(models.Model):
                     "Invalid File passed. We were not able to find Required header : %s " % required_header.capitalize()
                 )
 
-class ProfileCategory(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="subtheme")
-    label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
+class MetaData(models.Model):
+    source = models.CharField(max_length=60, null=False, blank=True)
     description = models.TextField(blank=True)
+    licence = models.ForeignKey(
+        "profile.Licence", null=True, blank=True, on_delete=models.SET_NULL, related_name="points_license"
+    )
+    profile_category = models.OneToOneField(ProfileCategory, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.label
-
-    class Meta:
-        verbose_name = "Point Collection"
-        verbose_name_plural = "Point Collections"
+        return "Meta->Points : %s" % (self.profile_category.label)

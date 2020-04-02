@@ -6,33 +6,38 @@ from django.db import transaction
 
 from . import models
 
+# TODO should add a memoize decorator here
 cache = {}
-def load_geography(geo_code):
+def load_geography(geo_code, version):
     geo_code = str(geo_code).upper()
     if geo_code not in cache:
-        geography = models.Geography.objects.get(code=geo_code)
+        geography = models.Geography.objects.get(code=geo_code, version=version)
         cache[geo_code] = geography
     return cache[geo_code]
 
 @transaction.atomic
-def loaddata(dataset, iterable):  
+def loaddata(dataset, iterable, row_number):  
     datarows = []
+    errors = []
+    warnings = []
+
+    version = dataset.geography_hierarchy.version
 
     for idx, row in enumerate(iterable):
         geo_code = row["geography"]
         try:
-            geography = load_geography(geo_code)
+            geography = load_geography(geo_code, version)
         except models.Geography.DoesNotExist:
-            print(f"Geography {geo_code} not found - skipping it.")
+            warnings.append(list(row.values()))
             continue
 
         try:
-            count = int(row["count"])
+            count = float(row["count"])
             if math.isnan(count):
-                print(f"Missing data for {geo_code} - skipping it.")
+                errors.append([row_number+idx, "count", "Missing data for count"])
                 continue
         except (TypeError, ValueError):
-            print(f"Expected a number in the 'count' column, received '{count}'")
+            errors.append([row_number+idx, "count", f"Expected a number in the 'count' column, received '{count}'"])
             continue
 
         del row["geography"]
@@ -44,3 +49,5 @@ def loaddata(dataset, iterable):
             models.DatasetData.objects.bulk_create(datarows, 1000)
             datarows = []
     models.DatasetData.objects.bulk_create(datarows, 1000)
+
+    return [errors, warnings]

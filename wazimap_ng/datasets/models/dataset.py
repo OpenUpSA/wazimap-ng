@@ -9,10 +9,12 @@ from django.db.models import Sum
 from django.contrib.postgres.fields.jsonb import KeyTextTransform, KeyTransform
 from django.contrib.postgres.fields import JSONField, ArrayField
 
-from .geography import Geography
+from .geography import Geography, GeographyHierarchy
+
 class Dataset(models.Model):
     name = models.CharField(max_length=60)
     groups = ArrayField(models.CharField(max_length=200), blank=True, default=list)
+    geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -20,17 +22,31 @@ class Dataset(models.Model):
     class Meta:
         ordering = ["id"]
 
+class MetaData(models.Model):
+    source = models.CharField(max_length=60, null=False, blank=True)
+    description = models.TextField(blank=True)
+    licence = models.ForeignKey(
+        "profile.Licence", null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="dataset_license"
+    )
+    dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "Meta->Dataset : %s" % (self.dataset.name)
+
 
 class DatasetData(models.Model):
     dataset = models.ForeignKey(Dataset, null=True, on_delete=models.CASCADE)
     geography = models.ForeignKey(Geography, on_delete=models.CASCADE)
     data = JSONField()
 
+    # TODO I prefer serialisation-specific code to be separate from the model
+    # Move this out of the class
     @classmethod
     @transaction.atomic()
     def load_from_csv(cls, filename, dataset_name, encoding="utf8"):
         def ensure_integer_count(js):
-            js["Count"] = int(js["Count"])
+            js["Count"] = float(js["Count"])
             return js
 
         dataset, _ = Dataset.objects.get_or_create(name=dataset_name)
@@ -46,11 +62,14 @@ class DatasetData(models.Model):
         objs = (
             DatasetData(dataset=dataset, data=row, geography=geocodes[row["Geography"]])
             for row in rows
+            # TODO consider logging missing geographies 
             if row["Geography"] in geocodes
         )
         total = 0
 
         while True:
+            # TODO do we need to convert to a list
+            # can bulk_create receive an iterable
             batch = list(islice(objs, batch_size))
             if not batch:
                 break
@@ -92,30 +111,6 @@ class Indicator(models.Model):
         ordering = ["id"]
         verbose_name = "Variable"
         verbose_name_plural = "Variables"
-
-class DataExtractor:
-
-    def get_queryset(self, indicator, geographies, universe=None):
-        groups = ["data__" + i for i in indicator.groups] + ["geography"]
-
-        c = Cast(KeyTextTransform("Count", "data"), models.FloatField())
-
-        qs = (
-            DatasetData.objects
-                .filter(dataset=indicator.dataset)
-                .filter(geography__in=geographies)
-                .exclude(data__Count="")
-        )
-
-        if universe is not None:
-            filters = {f"data__{k}": v for k, v in universe.filters.items()}
-            qs = qs.filter(**filters)
-
-        qs = (qs.values(*groups)
-                .annotate(count=Sum(c))
-                .order_by("geography"))
-
-        return qs
 
 class CountryDataExtractor:
     """

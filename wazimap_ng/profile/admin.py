@@ -6,3 +6,7 @@ from . import models
 class LogoAdmin(admin.ModelAdmin):
     list_display = ("profile",)
     list_filter = ("profile",)
+
+@admin.register(models.Licence)
+class LicenceAdmin(admin.ModelAdmin):
+    pass

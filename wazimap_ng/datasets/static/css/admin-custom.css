@@ -1,0 +1,5 @@
+#datasetfile-group>.module>h2, #coordinatefile-group>.module>h2 { display: none }
+#datasetfile-group>.module>#datasetfile-0>h3 { display: none }
+.add-icon {background: url(../admin/img/icon-addlink.svg) 0 1px no-repeat; padding-left: 16px; font-size: 12px;}
+#coordinatefile-group>.module>#coordinatefile-0>h3 { visibility: hidden; }
+#metadata-group>.module>#metadata-0>h3 { visibility: hidden; }

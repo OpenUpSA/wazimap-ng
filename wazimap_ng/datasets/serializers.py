@@ -1,18 +1,19 @@
 from rest_framework import serializers
 from .models.geography import Geography
 from . import models
+from wazimap_ng.profile.serializers import LicenceSerializer
 
 class GeographySerializer(serializers.ModelSerializer):
     class Meta:
         model = Geography
-        fields = ["name", "code", "level"]
+        fields = ["name", "code", "level", "version"]
 
 class AncestorGeographySerializer(serializers.ModelSerializer):
     parents = GeographySerializer(source="get_ancestors", many=True)
 
     class Meta:
         model = Geography
-        fields = ["name", "code", "level", "parents"]
+        fields = ["name", "code", "level", "version", "parents"]
 
 class IndicatorCategorySerializer(serializers.ModelSerializer):
 	class Meta:
@@ -80,3 +81,10 @@ class DataSerializer(serializers.Serializer):
 		output = {c: obj.data[c] for c in self.columns if c in obj.data}
 		output["geography"] = obj.geography.code
 		return output
+
+class MetaDataSerializer(serializers.ModelSerializer):
+    licence = LicenceSerializer(read_only=True)
+
+    class Meta:
+        model = models.MetaData
+        fields = ('source', 'description', 'licence',)

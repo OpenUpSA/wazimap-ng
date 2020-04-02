@@ -10,29 +10,15 @@ class GeographyBoundaryManager(models.Manager):
     # Deal with a situation where there are multiple geographies with the same code
     # TODO perhaps define a key to include level
     def get_unique_boundary(self, code):
+        #TODO might need to remove this now that code is not stored in the boundary
         obj = GeographyBoundary.objects.filter(geography__code=code).first()
         return obj
 
 class GeographyBoundary(models.Model):
-    geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=True)
-    code = models.CharField(max_length=10)
-    name = models.CharField(max_length=50)
+    geography = models.OneToOneField(Geography, on_delete=models.PROTECT, null=False)
 
     area = models.FloatField()
     geom = models.MultiPolygonField(srid=4326, null=True)
     geom_cache = CachedMultiPolygonField(field_name="geom")
     objects = GeographyBoundaryManager()
-    
-    class Meta:
-        indexes = [models.Index(fields=["code"])]
-
-    def save(self, *args, **kwargs):
-        """
-        On save update Locations data
-        """
-        super().save(*args, **kwargs)
-        async_task(
-            "wazimap_ng.boundaries.tasks.update_location_geo_levels_data",
-            self,
-            task_name=f"Updating geo boundary data: {self.name}",
-        )
+  

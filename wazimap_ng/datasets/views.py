@@ -1,19 +1,19 @@
 from django.http import Http404
 from django.views.decorators.http import condition
 from django.shortcuts import get_object_or_404
-from django.conf.urls.static import static
 from django.conf import settings
+from django.forms.models import model_to_dict
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.pagination import PageNumberPagination
 from rest_framework_csv import renderers as r
 from rest_framework import generics
-from .serializers import AncestorGeographySerializer, GeographySerializer
+from .serializers import AncestorGeographySerializer
 from . import serializers
 from . import models
 from . import mixins
 from ..cache import etag_profile_updated, last_modified_profile_updated
 from ..profile.models import Logo
+from ..utils import truthy
 
 class DatasetList(generics.ListAPIView):
     queryset = models.Dataset.objects.all()
@@ -36,87 +36,13 @@ class IndicatorsList(generics.ListAPIView):
     queryset = models.Indicator.objects.all()
     serializer_class = serializers.IndicatorSerializer
 
-class LargeResultsSetPagination(PageNumberPagination):
-    page_size = 20
-    page_size_query_param = "page_size"
-    max_page_size = 10000
-
-
-def truthy(s):
-    return str(s).lower() == "true" or str(s) == 1
-
-class IndicatorDataView(mixins.PaginatorMixin, generics.ListAPIView):
-    queryset = models.DatasetData.objects.all()
-    serializer_class = serializers.DataSerializer
-    pagination_class = LargeResultsSetPagination
-
-    def _filter_by_value(self, qs, indicator, values):
-        def split_values(s):
-            if ":" not in s:
-                return {}
-
-            return {
-                pair.split(":", 1)[0]: pair.split(":", 1)[1]
-                for pair in s.split(",")
-            }
-
-        values_dict = split_values(values)
-        new_dict = {"data__" + k: v for k, v in values_dict.items() if k in indicator.groups}
-        qs = qs.filter(**new_dict)
-
-        return qs
-
-    def _filter_by_geography(self, qs, geography_code, use_parent):
-        if geography_code != None:
-            if models.Geography.objects.filter(code=geography_code).count() == 0:
-                raise Http404
-
-            if use_parent:
-                geography = models.Geography.objects.filter(code=geography_code).first()
-                qs = qs.filter(geography__in=geography.get_children())
-            else:
-                qs = qs.filter(geography__code=geography_code)
-        return qs
-
-    def _paginate_response(self, qs, indicator):
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = self.get_serializer_class()(page, group=indicator.groups, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer_class()(qs, group=indicator.groups, many=True)
-        return Response(serializer.data)
-
-    def get(self, request, indicator_id, geography_code=None):
-        # TODO - this view is not yet finished - currently doesn't aggregate values - not sure if it should
-        # May want to look at the add_indicator method of Profile
-        use_parent = truthy(request.GET.get("parent", False))
-        values = request.GET.get("values", "")
-
-        indicator = models.Indicator.objects.get(id=indicator_id)
-        queryset = self.get_queryset().filter(dataset=indicator.dataset)
-
-        queryset = self._filter_by_geography(queryset, geography_code, use_parent)
-        queryset = self._filter_by_value(queryset, indicator, values)
-        return self._paginate_response(queryset, indicator)
-
 class ProfileList(generics.ListAPIView):
-    """
-    Return a list of profiles
-    """
     queryset = models.Profile.objects.all()
     serializer_class = serializers.ProfileSerializer
 
 class ProfileDetail(generics.RetrieveAPIView):
-    """
-    Returns meta data for the given profile id
-    """
-
     queryset = models.Profile
     serializer_class = serializers.FullProfileSerializer
-
-def get_children_data(children, indicator, subindicator):
-    return {}
 
 def get_children_profile(profile_indicator_ids, geography):
     profile = {}
@@ -143,14 +69,25 @@ def profile_geography_data(request, profile_id, geography_code):
     js = profile_geography_data_helper(profile_id, geography_code)
     return Response(js)
 
-def profile_geography_data_helper(profile_id, geography_code):
-    profile = get_object_or_404(models.Profile, pk=profile_id)
-    geography = get_object_or_404(models.Geography, code=geography_code)
+def get_profile_logo_json(profile_id):
     try:
         logo = Logo.objects.get(profile_id=profile_id)
-        logo_url = f"{settings.MEDIA_URL}{logo.logo}"
+        url = logo.url if logo.url.strip() != "" else "/"
+        return {
+            "image": f"{logo.logo.url}",
+            "url": url
+        }
     except Logo.DoesNotExist:
-        logo_url = ""
+        return {
+            "image": "",
+            "url": "/"
+        }
+
+def profile_geography_data_helper(profile_id, geography_code):
+    profile = get_object_or_404(models.Profile, pk=profile_id)
+    version = profile.geography_hierarchy.root_geography.version
+    geography = get_object_or_404(models.Geography, code=geography_code, version=version)
+    logo_json = get_profile_logo_json(profile_id)
 
     profile_indicator_ids = profile.indicators.values_list("id", flat=True)
 
@@ -195,7 +132,9 @@ def profile_geography_data_helper(profile_id, geography_code):
 
             indicators_js[pi.label] = {
                 "description": pi.description,
-                "subindicators": indicator_data
+                "subindicators": indicator_data,
+                "choropleth_method": pi.choropleth_method.name,
+                "metadata": serializers.MetaDataSerializer(indicator.dataset.metadata).data
             }
             for subindicator in indicator_data:
                 if indicator.name in children_profile:
@@ -237,7 +176,7 @@ def profile_geography_data_helper(profile_id, geography_code):
             }
 
     js = {
-        "logo": logo_url,
+        "logo": logo_json,
         "geography": geo_js,
         "key_metrics": key_metrics,
         "profile_data": data_js,
@@ -248,7 +187,7 @@ def profile_geography_data_helper(profile_id, geography_code):
 
 
 @api_view()
-def search_geography(request):
+def search_geography(request, profile_id):
     """
     Search autocompletion - provides recommendations from place names
     Prioritises higher-level geographies in the results, e.g. 
@@ -258,6 +197,8 @@ def search_geography(request):
     q - search string
     max-results number of results to be returned [default is 30] 
     """
+    profile = get_object_or_404(models.Profile, pk=profile_id)
+    version = profile.geography_hierarchy.root_geography.version
     
     default_results = 30
     max_results = request.GET.get("max_results", default_results)
@@ -270,7 +211,7 @@ def search_geography(request):
 
     q = request.GET.get("q", "")
 
-    geographies = models.Geography.objects.search(q)[0:max_results]
+    geographies = models.Geography.objects.filter(version=version).search(q)[0:max_results]
 
     def sort_key(x):
         exact_match = x.name.lower() == q.lower()
@@ -294,12 +235,12 @@ def search_geography(request):
     return Response(serializer.data)
 
 @api_view()
-def geography_ancestors(request, geography_code):
+def geography_ancestors(request, geography_code, version):
     """
     Returns parent geographies of the given geography code
     Return a 404 HTTP response if the is the code is not found
     """
-    geos = models.Geography.objects.filter(code=geography_code)
+    geos = models.Geography.objects.filter(code=geography_code, version=version)
     if geos.count() == 0:
         raise Http404 
 

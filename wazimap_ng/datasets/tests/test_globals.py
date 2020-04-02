@@ -55,34 +55,6 @@ class GeneralReadOnlyTestCase(TestCase):
         response = self.client.delete(url, data=data)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_indicator_data_view_is_readonly(self):
-        indicator_id = 2
-        url = reverse("indicator-data-view", kwargs={"indicator_id": indicator_id})
-        data = {"data": {"Language": "Unspecified", "Count": 0, "geography": "TEST123"}}
-        response = self.client.post(url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-        response = self.client.patch(url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-        response = self.client.delete(url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def test_indicator_data_view_geography_is_readonly(self):
-        url = reverse(
-            "indicator-data-view-geography",
-            kwargs={"indicator_id": 2, "geography_code": "Test"},
-        )
-        data = {"data": {"Language": "Unspecified", "Count": 0, "geography": "TEST123"}}
-        response = self.client.post(url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-        response = self.client.patch(url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-        response = self.client.delete(url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
     def test_profile_list_is_readonly(self):
         url = reverse("profile-list")
         data = {"name": "test"}
@@ -179,30 +151,6 @@ class GeneralPaginationTestCase(TestCase):
 
         number_of_results = len(response.data["results"])
         self.assertEqual(number_of_results, 10)
-
-    def test_indicator_data_view_is_paginated(self):
-        indicator_id = Indicator.objects.first().pk
-        url = reverse("indicator-data-view", kwargs={"indicator_id": indicator_id})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Note that pagination for indicator data view is 20 items per page
-        number_of_results = len(response.data["results"])
-        self.assertEqual(number_of_results, 20)
-
-    def test_indicator_data_view_geography_is_paginated(self):
-        indicator_id = Indicator.objects.first().pk
-        geography_code = Geography.objects.first().code
-        url = reverse(
-            "indicator-data-view-geography",
-            kwargs={"indicator_id": indicator_id, "geography_code": geography_code},
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Note that pagination for indicator data view is 20 items per page
-        number_of_results = len(response.data["results"])
-        self.assertEqual(number_of_results, 20)
 
     def test_profile_list_is_paginated(self):
         url = reverse("profile-list")

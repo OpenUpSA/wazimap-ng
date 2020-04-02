@@ -1,0 +1,12 @@
+<div id="task-widget">
+	<p>We will Not be able to upload data till all issue listed below are resolved in the uploaded file</p>
+	<p>Sample Error: </p>
+      <ul style="margin-left: 20px;">
+        {% for error in errors %}
+            <li>Error : {{error.2}} on line {{ error.0 }} </li>
+          {% empty %}
+            <p>Empty error log</p>
+          {% endfor %}
+      </ul>
+      <p>For more info Download csv : <a href="{{ download_url }}">Error Log File</a></p>
+</div>

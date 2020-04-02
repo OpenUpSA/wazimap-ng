@@ -16,7 +16,6 @@ from .cache import cache_headers as cache
 urlpatterns = [
 
     path("admin/", admin.site.urls),
-    re_path(r"admin$", RedirectView.as_view(url="admin/", permanent=True)),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view(), name="dataset"),
     path(
         "api/v1/datasets/<int:dataset_id>/indicators/",
@@ -27,16 +26,6 @@ urlpatterns = [
         "api/v1/indicators/",
         cache(dataset_views.IndicatorsList.as_view()),
         name="indicator-list",
-    ),
-    path(
-        "api/v1/indicators/<int:indicator_id>/",
-        cache(dataset_views.IndicatorDataView.as_view()),
-        name="indicator-data-view",
-    ),
-    path(
-        "api/v1/indicators/<int:indicator_id>/geographies/<str:geography_code>/",
-        cache(dataset_views.IndicatorDataView.as_view()),
-        name="indicator-data-view-geography",
     ),
     path("api/v1/profiles/", dataset_views.ProfileList.as_view(), name="profile-list"),
     path(
@@ -49,8 +38,8 @@ urlpatterns = [
         cache(dataset_views.profile_geography_data),
         name="profile-geography-data",
     ),
-    path("api/v1/geography/search/", cache(dataset_views.search_geography)),
-    path("api/v1/geography/ancestors/<str:geography_code>/", cache(dataset_views.geography_ancestors), name="geography-ancestors"),
+    path("api/v1/geography/search/<str:profile_id>/", cache(dataset_views.search_geography)),
+    path("api/v1/geography/ancestors/<str:geography_code>/<str:version>/", cache(dataset_views.geography_ancestors), name="geography-ancestors"),
     path(
         "api/v1/points/", 
         cache(points_views.LocationList.as_view()),
@@ -94,7 +83,13 @@ urlpatterns = [
     ),
 
     path(
-        "api/v1/boundaries/<str:code>/children/",
+        "api/v1/boundaries/<str:code>/<str:version>/",
+        cache(boundaries_views.GeographyItem.as_view()),
+        name="boundaries-code"
+    ),
+
+    path(
+        "api/v1/boundaries/<str:code>/<str:version>/children/",
         cache(boundaries_views.GeographyChildren.as_view()),
         name="boundaries-children"
     ),
