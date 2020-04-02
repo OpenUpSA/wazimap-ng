@@ -31,7 +31,7 @@ class IndicatorCategory(models.Model):
 
 
 class IndicatorSubcategory(models.Model):
-    name = models.CharField(max_length=25)
+    name = models.CharField(max_length=255)
     category = models.ForeignKey(IndicatorCategory, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
 
