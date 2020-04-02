@@ -7,8 +7,8 @@ django.jQuery(document).ready(function($) {
 	    	$parent.find("li").each(function(){
 	    		console.log($(this).data("val"));
 	    		reorderedSubindicators.push($(this).data('val'));
-	    		console.log(reorderedSubindicators.join("|"));
-	    		$input.val(reorderedSubindicators.join("|"));
+	    		console.log(reorderedSubindicators.join(","));
+	    		$input.val(reorderedSubindicators.join(","));
 	    	});
         },
     });
