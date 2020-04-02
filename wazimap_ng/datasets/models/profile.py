@@ -50,7 +50,7 @@ class ProfileIndicator(models.Model):
     key_metric = models.BooleanField(default=False, help_text="Used as a headline metric in the profile.")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
     description = models.TextField(blank=True)
-    subindicators = ArrayField(models.CharField(max_length=50), blank=True, default=list)
+    subindicators = ArrayField(models.CharField(max_length=255), blank=True, default=list)
     choropleth_method = models.ForeignKey("profile.ChoroplethMethod", null=False, on_delete=models.CASCADE)
 
     def __str__(self):
