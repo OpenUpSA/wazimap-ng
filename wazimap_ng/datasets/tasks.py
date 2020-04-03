@@ -33,7 +33,7 @@ def process_uploaded_file(dataset_file, **kwargs):
         return loaddata(dataset, datasource, row_number)
 
     filename = dataset_file.document.name
-    file_path = dataset_file.document.url
+    file_path = dataset_file.document.path
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
 
     columns = None
@@ -43,8 +43,12 @@ def process_uploaded_file(dataset_file, **kwargs):
     row_number = 1
 
     if ".csv" in filename:
-        columns = pd.read_csv(file_path, nrows=1, dtype=str, sep=",").columns.str.lower()
-        for df in pd.read_csv(file_path, chunksize=chunksize, dtype=str, sep=",", header=None):
+        df = pd.read_csv(file_path, nrows=1, dtype=str, sep=",")
+        df.dropna(how='all', axis='columns', inplace=True)
+        columns = df.columns.str.lower()
+
+        for df in pd.read_csv(file_path, chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1):
+            df.dropna(how='any', axis='columns', inplace=True)
             df.columns = columns
             errors, warnings = process_file_data(df, dataset, row_number)
             error_logs = error_logs + errors
@@ -53,7 +57,9 @@ def process_uploaded_file(dataset_file, **kwargs):
     else:
         skiprows = 1
         i_chunk = 0
-        columns = pd.read_excel(file_path, nrows=1, dtype=str).columns.str.lower()
+        df = pd.read_excel(file_path, nrows=1, dtype=str)
+        df.dropna(how='any', axis='columns', inplace=True)
+        columns = df.columns.str.lower()
         while True:
             df = pd.read_excel(
                 file_path, nrows=chunksize, skiprows=skiprows, header=None
@@ -63,6 +69,7 @@ def process_uploaded_file(dataset_file, **kwargs):
             if not df.shape[0]:
                 break
             else:
+                df.dropna(how='any', axis='columns', inplace=True)
                 df.columns = columns
                 errors, warnings = process_file_data(df, dataset, row_number)
                 error_logs = error_logs + errors
