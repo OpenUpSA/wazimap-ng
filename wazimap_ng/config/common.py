@@ -74,6 +74,11 @@ class Common(Configuration):
         ("Author", "adi@openup.org.za"),
     )
 
+    if os.path.exists("VERSION"):
+        VERSION = open("VERSION").read().strip()
+    else:
+        VERSION = "Missing version"
+
 
     # Postgres
     DATABASES = {
@@ -258,11 +263,6 @@ ALLOWED_FILE_EXTENSIONS = ["csv", "xls", "xlsx"]
 CHUNK_SIZE_LIMIT = 500000
 
 TESTING = "test" in sys.argv
-
-if os.path.exists("../../VERSION"):
-    VERSION = open("../../VERSION").read().strip()
-else:
-    VERSION = "Missing version"
 
 
 if TESTING:

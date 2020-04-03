@@ -39,4 +39,5 @@ class Local(Common):
             'LOCATION': '/var/tmp/django_cache',
         }
     }
+
     FILE_SIZE_LIMIT = 3000 * 1024 * 1024

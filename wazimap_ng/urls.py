@@ -5,6 +5,9 @@ from django.urls import path, re_path
 from django.conf.urls import include
 
 from django.views.generic.base import RedirectView
+from rest_framework.decorators import api_view
+
+from rest_framework.response import Response
 
 from .datasets import views as dataset_views
 from .points import views as points_views
@@ -12,6 +15,9 @@ from .boundaries import views as boundaries_views
 from .general import views as general_views
 from .cache import cache_headers as cache
 
+@api_view()
+def version(*args, **kwargs):
+    return Response(settings.VERSION)
 
 urlpatterns = [
 
@@ -108,8 +114,8 @@ urlpatterns = [
     ),
     path(
         "api/v1/version/",
-        name="version"
-        lambda request: settings.VERSION
+        version,
+        name="version",
     ),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
