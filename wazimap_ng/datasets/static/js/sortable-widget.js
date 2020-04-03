@@ -6,8 +6,7 @@ django.jQuery(document).ready(function($) {
             var reorderedSubindicators = [];
 	    	$parent.find("li").each(function(){
 	    		console.log($(this).data("val"));
-	    		reorderedSubindicators.push($(this).data('val'));
-	    		console.log(reorderedSubindicators.join(","));
+	    		reorderedSubindicators.push($(this).data('val').replace(",", "%2c"));
 	    		$input.val(reorderedSubindicators.join(","));
 	    	});
         },

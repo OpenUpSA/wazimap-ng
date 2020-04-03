@@ -74,6 +74,7 @@ class DatasetAdmin(BaseAdminModel):
                             instance.name
                         )
                     )
+
             if formset.deleted_objects:
                 variables_queryset = models.Indicator.objects.filter(id__in=[obj.id for obj in formset.deleted_objects])
                 variable_names = ", ".join(variables_queryset.values_list("name", flat=True))
@@ -103,8 +104,8 @@ class DatasetAdmin(BaseAdminModel):
             if dataset_obj and dataset_obj.datasetfile.task and dataset_obj.datasetfile.task.success:
 
                 if dataset_obj.indicator_set.count():
-                    inlines = inlines + (VariableInlinesChangeView, MetaDataInline,)
-                inlines = inlines + (VariableInlinesAddView, MetaDataInline,)
+                    inlines = inlines + (VariableInlinesChangeView,)
+                inlines = inlines + (VariableInlinesAddView,)
 
         self.inlines = inlines
         return super().change_view(request, object_id)
