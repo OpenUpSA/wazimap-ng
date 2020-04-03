@@ -1,9 +1,27 @@
 from django.contrib import admin
 from django.contrib.postgres import fields
+from django import forms
 
 from .. import models
 from .. import widgets
 from .utils import customTitledFilter, description
+from urllib.parse import unquote
+
+
+class ProfileIndicatorAdminForm(forms.ModelForm):
+    class Meta:
+        model = models.ProfileIndicator
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields["subindicators"].widget = widgets.SortableWidget()
+            self.fields["subindicators"].widget.attrs["subindicators"] = self.instance.subindicators
+
+    def clean_subindicators(self):
+        data = self.cleaned_data['subindicators']
+        return [unquote(x) for x in data]
 
 @admin.register(models.ProfileIndicator)
 class ProfileIndicatorAdmin(admin.ModelAdmin):
@@ -22,6 +40,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         "subcategory",
         "key_metric",
     )
+    form = ProfileIndicatorAdminForm
 
     fieldsets = (
         ("Database fields (can't change after being created)", {

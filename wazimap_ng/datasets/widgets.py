@@ -16,7 +16,11 @@ class SortableWidget(Widget):
         js = ("/static/js/jquery-ui.min.js", "/static/js/sortable-widget.js",)
 
     def get_context(self, name, value, attrs=None):
-        values_list = value.split(",") if value else []
+        values_list = []
+        if "subindicators" in self.attrs:
+            values_list = self.attrs["subindicators"]
+        else:
+            values_list = value.split(",") if value else []
         return {'widget': {
             'name': name,
             'values': {"list": values_list, "text": mark_safe(value)},

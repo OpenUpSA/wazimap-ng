@@ -3,20 +3,36 @@ from django.urls import reverse
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.contrib.postgres import fields
+from django import forms
+from urllib.parse import unquote
 
 
 from ... import models
 from ... import widgets
 
+
+class VariableInlinesAdminForm(forms.ModelForm):
+    class Meta:
+        model = models.Indicator
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # if self.instance.pk:
+        self.fields["subindicators"].widget = widgets.SortableWidget()
+        self.fields["subindicators"].widget.attrs["subindicators"] = self.instance.subindicators
+
+    def clean_subindicators(self):
+        data = self.cleaned_data['subindicators']
+        return [unquote(x) for x in data]
+
 def get_edit_url(obj, app_label="datasets"):
     return reverse(f"admin:{app_label}_{obj._meta.model_name}_change", args=[obj.id])
 
 class VariableInlinesChangeView(admin.StackedInline):
+    form = VariableInlinesAdminForm
     model = models.Indicator
     fk_name= "dataset"
-    formfield_overrides = {
-        fields.ArrayField: {"widget": widgets.SortableWidget},
-    }
 
     fieldsets = (
         ("", {
