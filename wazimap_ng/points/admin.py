@@ -14,6 +14,7 @@ from django import forms
 import pandas as pd
 from import_export import resources
 from import_export.admin import ExportMixin
+from import_export.fields import Field
 
 from . import models
 
@@ -35,9 +36,23 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ("theme",)
 
 class LocationResource(resources.ModelResource):
+    latitude = Field()
+    longitude = Field()
+    category = Field()
+
+    def dehydrate_latitude(self, location):
+        return location.coordinates.y
+
+    def dehydrate_longitude(self, location):
+        return location.coordinates.x
+
+    def dehydrate_category(self, location):
+        return location.category.name
+
     class Meta:
         model = models.Location
-        fields = ('name', 'category__name', 'coordinates', 'data',)
+        fields = ("name", "category", "latitude", "longitude", "data",)
+        export_order = ("name", "category", "latitude", "longitude", "data")
 
 @admin.register(models.Location)
 class LocationAdmin(ExportMixin, admin.OSMGeoAdmin):
