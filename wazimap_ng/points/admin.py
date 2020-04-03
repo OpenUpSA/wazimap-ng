@@ -12,6 +12,8 @@ from django.urls import reverse
 from django.conf import settings
 from django import forms
 import pandas as pd
+from import_export import resources
+from import_export.admin import ExportMixin
 
 from . import models
 
@@ -32,14 +34,20 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ("name", "theme",)
     list_filter = ("theme",)
 
+class LocationResource(resources.ModelResource):
+    class Meta:
+        model = models.Location
+        fields = ('name', 'category__name', 'coordinates', 'data',)
+
 @admin.register(models.Location)
-class LocationAdmin(admin.OSMGeoAdmin):
+class LocationAdmin(ExportMixin, admin.OSMGeoAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
       }
 
     list_display = ("name", "category",)
     list_filter = ("category",)
+    resource_class = LocationResource
 
     def get_actions(self, request):
         actions = super().get_actions(request)
@@ -243,3 +251,5 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
                     )
                 )
         return super().save_formset(request, form, formset, change)
+
+

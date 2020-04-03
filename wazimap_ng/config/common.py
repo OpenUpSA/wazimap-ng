@@ -42,6 +42,7 @@ class Common(Configuration):
         "wazimap_ng.boundaries",
         "wazimap_ng.profile",
         "storages",
+        "import_export"
 
     ]
 
