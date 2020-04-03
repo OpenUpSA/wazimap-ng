@@ -149,6 +149,7 @@ class CountryDataExtractor:
 
         return counts
 
+
 class IndicatorData(models.Model):
     """
     Indicator Data for caching results of indicator group according to
