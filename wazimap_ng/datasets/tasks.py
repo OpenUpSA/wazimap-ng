@@ -78,7 +78,7 @@ def process_uploaded_file(dataset_file, **kwargs):
         logdir = settings.MEDIA_ROOT + "/logs/dataset/errors/"
         if not os.path.exists(logdir):
             os.makedirs(logdir)
-        logfile = logdir + "%s_%d_error_log.csv" % (point_file.title.replace(" ", "_"), point_file.id)
+        logfile = logdir + "%s_%d_error_log.csv" % (datasetfile.title.replace(" ", "_"), datasetfile.id)
         df = pd.DataFrame(error_logs[0])
         df.to_csv(logfile_1, header=["Line Number", "Field Name", "Error Details"], index=False)
         error_logs = logfile
