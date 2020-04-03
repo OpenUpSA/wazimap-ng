@@ -77,8 +77,9 @@ class CoordinateFile(models.Model):
         document_name = self.document.name
         headers = []
         try:
-            data = BytesIO(self.document.read())
-            df = pd.read_csv(data, sep=",", header=None)
+            headers = pd.read_csv(
+                BytesIO(self.document.read()), nrows=1, dtype=str
+            ).columns.str.lower()
         except pd.errors.ParserError as e:
             raise ValidationError(
                 "Not able to parse passed file. Error while reading file: %s" % str(e)
@@ -87,9 +88,6 @@ class CoordinateFile(models.Model):
             raise ValidationError(
                 "File seems to be empty. Error while reading file: %s" % str(e)
             )
-        
-        data = df.values.tolist()
-        headers = [str(h).lower() for h in data[0]]
 
         required_headers = ["longitude", "latitude", "name"]
 
