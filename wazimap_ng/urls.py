@@ -106,6 +106,11 @@ urlpatterns = [
         cache(general_views.consolidated_profile_test),
         name="all-details-test"
     ),
+    path(
+        "api/v1/version/",
+        name="version"
+        lambda request: settings.VERSION
+    ),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
