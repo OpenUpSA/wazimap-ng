@@ -100,7 +100,7 @@ class Indicator(models.Model):
         Universe, on_delete=models.CASCADE, blank=True, null=True
     )
     # Fields to group by
-    groups = ArrayField(models.CharField(max_length=50), blank=True, default=list)
+    groups = ArrayField(models.CharField(max_length=150), blank=True, default=list)
     name = models.CharField(max_length=50)
     subindicators = ArrayField(models.CharField(max_length=255), blank=True, default=list)
 
