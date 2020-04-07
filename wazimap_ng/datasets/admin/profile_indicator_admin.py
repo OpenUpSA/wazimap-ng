@@ -38,7 +38,6 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         description("Indicator", lambda x: x.indicator.name), 
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
-        "key_metric",
     )
     form = ProfileIndicatorAdminForm
 
@@ -47,7 +46,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
             'fields': ('profile', 'indicator')
         }),
         ("Profile fields", {
-          'fields': ('label', 'subcategory', 'key_metric', 'description', 'choropleth_method')
+          'fields': ('label', 'subcategory', 'description', 'choropleth_method')
         }),
         ("Subindicators", {
           'fields': ('subindicators',)
