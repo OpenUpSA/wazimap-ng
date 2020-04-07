@@ -1,6 +1,8 @@
 from django.contrib.gis.db import models
+from django.conf import settings
+from wazimap_ng.datasets.models import Profile, Indicator, IndicatorSubcategory
+from wazimap_ng.config.common import DENOMINATOR_CHOICES
 
-from wazimap_ng.datasets.models import Profile
 
 class Logo(models.Model):
     profile = models.OneToOneField(Profile, null=False, on_delete=models.CASCADE)
@@ -23,3 +25,16 @@ class Licence(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+class ProfileKeyMetrics(models.Model):
+    variable = models.ForeignKey(Indicator, on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
+    subindicator = models.CharField(max_length=32)
+    denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32)
+    
+    def __str__(self):
+        return f"{self.variable.name}"
+
+    class Meta:
+        verbose_name_plural = "Profile key metrics"
+        ordering = ["id"]
