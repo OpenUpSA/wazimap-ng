@@ -121,19 +121,20 @@ def profile_geography_data_helper(profile_id, geography_code):
         metrics_js  = subcat_js.setdefault("key_metrics", [])
         indicators_js  = subcat_js.setdefault("indicators", {})
         indicator_data = data.get(indicator.name, [])
-        metrics_data = {}
 
         if pi.subindicators and indicator_data and len(groups):
-            order = {key: i for i, key in enumerate(pi.subindicators)}
-            if is_multigroup:
-                indicator_data = sorted(indicator_data, key=lambda d: order["/".join([d[group] for group in groups])])
-                metrics_data = {'/'.join([item[group] for group in groups]): item["count"] for item in indicator_data}
-            else:
-                indicator_data = sorted(indicator_data, key=lambda d: order[d[groups[0]]])
-                metrics_data = {item[groups[0]]: item["count"] for item in indicator_data}
+            def sortfn(subindicator_obj):
+                for idx, pi_subindicator in enumerate(pi.subindicators):
+                    if pi_subindicator["groups"].items() <= subindicator_obj.items():
+                        return idx
+
+            indicator_data = sorted(indicator_data, key=sortfn)
+            metrics_data = {
+                val["id"]:indicator_data[idx]["count"] for idx, val in enumerate(pi.subindicators)
+            }
 
             for metric in key_metrics:
-                if metric.subindicator:
+                if metric.subindicator is not None:
                     metric_val = metrics_data[metric.subindicator]
                     if metric.denominator == "subindicators":
                         metric_val = "{:.2%}".format(metric_val/sum(metrics_data.values()))
@@ -145,25 +146,19 @@ def profile_geography_data_helper(profile_id, geography_code):
                             indicator=indicator, geography_id__in=sibling_geographies
                         ).values_list("data", flat=True), [])
 
-                        if is_multigroup:
-                            sibling_geo_count = sum([
-                                c["count"] for c in list(
-                                    filter(
-                                        lambda d: set([d[group] for group in groups])==set(metric.subindicator.split("/")),
-                                        indicator_metric_data
-                                    )
-                                )
-                            ])
-                        else:
-                            group = groups[0]
-                            sibling_geo_count = sum([
-                                c["count"] for c in list(
-                                    filter(lambda d: d[group]==metric.subindicator, indicator_metric_data)
-                                )
-                            ])
+                        metric_subindicator = next(item for item in pi.subindicators if item["id"] == metric.subindicator)
+                        sibling_geo_count = sum([
+                            c["count"] for c in list(
+                                filter(lambda d: d.items()==metric_subindicator["groups"].items(), indicator_metric_data)
+                            )
+                        ])
                         metric_val = "{:.2%}".format(metric_val/(sibling_geo_count + metric_val))
 
-                    metrics_js.append({"label": pi.label, "value": metric_val})
+                    metrics_js.append({
+                        "label": pi.label,
+                        "value": metric_val,
+                        "denominator": metric.denominator,
+                    })
 
         indicators_js[pi.label] = {
             "description": pi.description,
@@ -181,7 +176,7 @@ def profile_geography_data_helper(profile_id, geography_code):
     highlights = {}
 
     profile_highlights = profile.profilehighlight_set.all().values(
-        "name", "label", "indicator_id", "subindicator", "indicator__groups"
+        "name", "label", "indicator_id", "subindicator", "indicator__groups", "indicator__subindicators"
     )
 
     indicators = dict(models.IndicatorData.objects.filter(
@@ -190,27 +185,20 @@ def profile_geography_data_helper(profile_id, geography_code):
 
     for highlight in profile_highlights:
         indicator_id = highlight.get("indicator_id", None)
-        highlight_value = highlight.get("subindicator")
+        subindicators = highlight.get("indicator__subindicators")
+        subindicator = next(
+            item for item in subindicators if item["id"] == int(highlight.get("subindicator"))
+        ) 
 
         if indicator_id in indicators:
-            # TODO: Multi group support for filtering for value in profile highlight
             data = indicators.get(indicator_id)
-            groups = highlight.get("indicator__groups", None)
             total_count = sum([val["count"] for val in data])
             count = 0
 
-            if highlight_value and len(groups):
-                
-                if len(groups) > 1:
-                    subindicators = highlight_value.split("/")
-                else:
-                    subindicators = [highlight_value]
-
+            if subindicator:
                 for indicator in indicators[indicator_id]:
-                    indicator_count = indicator.pop("count", 0)
-                    if(set(groups) == set(indicator.keys()) and 
-                        set(subindicators) == set(indicator.values())):
-                        count = count + indicator_count
+                    if subindicator["groups"].items() <= indicator.items():
+                        count = count + indicator["count"]
 
             highlights[highlight.get("name")] = {
                 "label": highlight.get("label"),
@@ -220,7 +208,6 @@ def profile_geography_data_helper(profile_id, geography_code):
     js = {
         "logo": logo_json,
         "geography": geo_js,
-        "key_metrics": key_metrics,
         "profile_data": data_js,
         "highlights": highlights,
     }

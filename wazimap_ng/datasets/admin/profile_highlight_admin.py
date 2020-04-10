@@ -18,13 +18,13 @@ class ProfileHighlightForm(forms.ModelForm):
             try:
                 variable_id = int(self.data.get('indicator'))
                 self.fields['subindicator'].choices = [
-                    [subindicator, subindicator] for subindicator in models.Indicator.objects.filter(id=variable_id).first().subindicators
+                    [subindicator["id"], subindicator["label"]] for subindicator in models.Indicator.objects.filter(id=variable_id).first().subindicators
                 ]
             except (ValueError, TypeError):
                 pass
-        elif self.instance.pk and self.instance.subindicator:
+        elif self.instance.pk:
             self.fields['subindicator'].choices = [
-                [subindicator, subindicator] for subindicator in models.Indicator.objects.filter(id=self.instance.indicator.pk).first().subindicators
+                [subindicator["id"], subindicator["label"]] for subindicator in models.Indicator.objects.filter(id=self.instance.indicator.pk).first().subindicators
             ]
 
 @admin.register(models.ProfileHighlight)

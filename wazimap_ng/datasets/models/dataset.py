@@ -102,7 +102,7 @@ class Indicator(models.Model):
     # Fields to group by
     groups = ArrayField(models.CharField(max_length=150), blank=True, default=list)
     name = models.CharField(max_length=50)
-    subindicators = ArrayField(models.CharField(max_length=255), blank=True, default=list)
+    subindicators = JSONField(default=list, blank=True, null=True)
 
     def __str__(self):
         return f"{self.dataset.name} -> {self.name}"

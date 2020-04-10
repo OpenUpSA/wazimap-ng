@@ -17,11 +17,9 @@ class SortableWidget(Widget):
 
     def get_context(self, name, value, attrs=None):
         values_list = []
-        if "subindicators" in self.attrs:
-            values_list = self.attrs["subindicators"]
-        else:
-            values_list = value.split(",") if value else []
+        values = json.loads(value)
+
         return {'widget': {
             'name': name,
-            'values': {"list": values_list, "text": mark_safe(value)},
+            'values': values
         }}

@@ -14,7 +14,7 @@ def forwards(apps, schema_editor):
     	ProfileKeyMetrics.objects.create(
     		variable=pi.indicator,
     		subcategory=pi.subcategory,
-                subindicator=pi.subindicators[0],
+                subindicator=0,
                 denominator='absolute_value'
     	)
 

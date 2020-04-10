@@ -28,13 +28,15 @@ class ProfileKeyMetricsForm(forms.ModelForm):
             try:
                 variable_id = int(self.data.get('variable'))
                 self.fields['subindicator'].choices = [
-                	[subindicator, subindicator] for subindicator in Indicator.objects.filter(id=variable_id).first().subindicators
+                	[subindicator['id'], subindicator['label']] for subindicator in list(Indicator.objects.filter(id=variable_id).first().subindicators)
                 ]
             except (ValueError, TypeError):
                 pass
-        elif self.instance.pk and self.instance.subindicator:
+        elif self.instance.pk:
+            print(self.instance.subindicator)
+            print(self.instance.pk)
             self.fields['subindicator'].choices = [
-            	[subindicator, subindicator] for subindicator in Indicator.objects.filter(id=self.instance.variable.pk).first().subindicators
+            	[subindicator['id'], subindicator['label']] for subindicator in Indicator.objects.filter(id=self.instance.variable.pk).first().subindicators
             ]
 
 @admin.register(models.ProfileKeyMetrics)

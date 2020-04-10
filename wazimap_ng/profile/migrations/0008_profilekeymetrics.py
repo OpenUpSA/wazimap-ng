@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0060_auto_20200406_1016'),
+        ('datasets', '0062_auto_20200407_0642'),
         ('profile', '0007_auto_20200331_1036'),
     ]
 
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='ProfileKeyMetrics',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('subindicator', models.CharField(max_length=32)),
+                ('subindicator', models.PositiveSmallIntegerField()),
                 ('denominator', models.CharField(choices=[('absolute_value', 'Absolute value'), ('subindicators', 'Sub-indicators'), ('sibling', 'Sibling')], max_length=32)),
                 ('subcategory', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='datasets.IndicatorSubcategory')),
                 ('variable', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='datasets.Indicator')),

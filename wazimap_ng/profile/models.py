@@ -29,7 +29,7 @@ class Licence(models.Model):
 class ProfileKeyMetrics(models.Model):
     variable = models.ForeignKey(Indicator, on_delete=models.CASCADE)
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
-    subindicator = models.CharField(max_length=32)
+    subindicator = models.PositiveSmallIntegerField()
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32)
     
     def __str__(self):
