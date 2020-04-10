@@ -8,18 +8,10 @@ import wazimap_ng.datasets.models.upload
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0060_auto_20200404_0550'),
+        ('datasets', '0060_profilehighlight_is_key_metric'),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='profilehighlight',
-            name='as_percentage',
-        ),
-        migrations.RemoveField(
-            model_name='profilehighlight',
-            name='denominator',
-        ),
         migrations.RemoveField(
             model_name='profilehighlight',
             name='is_key_metric',
