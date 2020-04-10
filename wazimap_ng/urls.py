@@ -33,6 +33,11 @@ urlpatterns = [
         cache(dataset_views.IndicatorsList.as_view()),
         name="indicator-list",
     ),
+    path(
+        "api/v1/indicators/<int:pk>/",
+        cache(dataset_views.IndicatorDetailView.as_view()),
+        name="indicator-detail",
+    ),
     path("api/v1/profiles/", dataset_views.ProfileList.as_view(), name="profile-list"),
     path(
         "api/v1/profiles/<int:pk>/",

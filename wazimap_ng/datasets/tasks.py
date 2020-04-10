@@ -33,7 +33,7 @@ def process_uploaded_file(dataset_file, **kwargs):
         return loaddata(dataset, datasource, row_number)
 
     filename = dataset_file.document.name
-    file_path = dataset_file.document.url
+    file_path = dataset_file.document.path
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
 
     columns = None
@@ -145,12 +145,26 @@ def indicator_data_extraction(indicator, **kwargs):
 
     qs = models.DatasetData.objects.filter(**filter_query).exclude(data__count="").order_by("geography_id")
 
-    if len(groups) > 1:
-        subindicators = ["/".join(val) for val in list(set(list(qs.values_list(*groups).distinct())))]
-    elif len(groups) == 1:
-        subindicators = [val[0] for val in list(set(list(qs.values_list(*groups).distinct())))]
+    if len(groups):
+        subindicators = json.loads(
+            json.dumps(
+                list(
+                    map(dict, set(
+                            tuple(sorted(d.items())) for d in qs.values(*groups)
+                        )
+                    )
+                )
+            ).replace("data__", "")
+        )
     else:
         subindicators = []
+
+    for idx, subindicator in enumerate(subindicators):
+
+        label_list =[f"{key}: {val}" for key, val in subindicator.items()] 
+        subindicators[idx] = {
+            "groups": subindicator, "id": idx, "label": " / ".join(label_list)
+        }
 
     # Group data according to geography_id and get sum of data__count
     data = groupby(qs.values(*groups, "geography_id").annotate(count=Sum(c)), lambda x: x["geography_id"])

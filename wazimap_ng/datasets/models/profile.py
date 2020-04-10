@@ -47,10 +47,9 @@ class ProfileIndicator(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.", verbose_name="variable")
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
-    key_metric = models.BooleanField(default=False, help_text="Used as a headline metric in the profile.")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
     description = models.TextField(blank=True)
-    subindicators = ArrayField(models.CharField(max_length=255), blank=True, default=list)
+    subindicators = JSONField(default=list, blank=True)
     choropleth_method = models.ForeignKey("profile.ChoroplethMethod", null=False, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -64,7 +63,7 @@ class ProfileHighlight(models.Model):
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this highlight is based on.", verbose_name="variable")
     name = models.CharField(max_length=60, null=False, blank=True, help_text="Name of the indicator in the database")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
-    value = models.CharField(max_length=60, null=False, blank=True, help_text="The value used for the highlight. Should be one of the possible values for the given indicator.")
+    subindicator = models.PositiveSmallIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"Highlight: {self.label}"

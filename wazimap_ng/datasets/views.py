@@ -36,6 +36,10 @@ class IndicatorsList(generics.ListAPIView):
     queryset = models.Indicator.objects.all()
     serializer_class = serializers.IndicatorSerializer
 
+class IndicatorDetailView(generics.RetrieveAPIView):
+    queryset = models.Indicator
+    serializer_class = serializers.IndicatorSerializer
+
 class ProfileList(generics.ListAPIView):
     queryset = models.Profile.objects.all()
     serializer_class = serializers.ProfileSerializer
@@ -93,7 +97,6 @@ def profile_geography_data_helper(profile_id, geography_code):
 
     geo_js = AncestorGeographySerializer().to_representation(geography)
     data_js = {}
-    key_metrics = []
     highlights = {}
 
     data = dict(models.IndicatorData.objects.filter(
@@ -105,48 +108,75 @@ def profile_geography_data_helper(profile_id, geography_code):
 
     for pi in profile.profileindicator_set.order_by("subcategory__category__name", "subcategory__name").select_related():
         indicator = pi.indicator
-        groups = indicator.groups or [None]
+        groups = indicator.groups
+        is_multigroup = True if len(groups) > 1 else False
+        subcategory = pi.subcategory
+        category = subcategory.category
+        key_metrics = indicator.profilekeymetrics_set.filter(subcategory_id=subcategory.id)
+        category_js = data_js.setdefault(category.name, {})
+        category_js["description"] = category.description
+        subcats_js = category_js.setdefault("subcategories", {})
+        subcat_js = subcats_js.setdefault(subcategory.name, {})
+        subcat_js["description"] = subcategory.description
+        metrics_js  = subcat_js.setdefault("key_metrics", [])
+        indicators_js  = subcat_js.setdefault("indicators", {})
+        indicator_data = data.get(indicator.name, [])
 
-        if pi.key_metric:
-            value = data.get(indicator.name, [{"count": "-"}])[0]
-            key_metrics.append({"label": pi.label, "value": value.get("count", "-")})
-        else:
-            subcategory = pi.subcategory
-            category = subcategory.category
+        if pi.subindicators and indicator_data and len(groups):
+            def sortfn(subindicator_obj):
+                for idx, pi_subindicator in enumerate(pi.subindicators):
+                    if pi_subindicator["groups"].items() <= subindicator_obj.items():
+                        return idx
 
-            category_js = data_js.setdefault(category.name, {})
-            category_js["description"] = category.description
-            subcats_js = category_js.setdefault("subcategories", {})
-            subcat_js = subcats_js.setdefault(subcategory.name, {})
-            subcat_js["description"] = subcategory.description
-            indicators_js  = subcat_js.setdefault("indicators", {})
-
-            indicator_data = data.get(indicator.name, [])
-
-            if pi.subindicators and indicator_data and groups[0]:
-                order = {key: i for i, key in enumerate(pi.subindicators)}
-                if len(groups) == 1:
-                    indicator_data = sorted(indicator_data, key=lambda d: order[d[groups[0]]])
-                else:
-                    indicator_data = sorted(indicator_data, key=lambda d: order["/".join([d[group] for group in groups])])
-
-            indicators_js[pi.label] = {
-                "description": pi.description,
-                "subindicators": indicator_data,
-                "choropleth_method": pi.choropleth_method.name,
-                "metadata": serializers.MetaDataSerializer(indicator.dataset.metadata).data
+            indicator_data = sorted(indicator_data, key=sortfn)
+            metrics_data = {
+                val["id"]:indicator_data[idx]["count"] for idx, val in enumerate(pi.subindicators)
             }
-            for subindicator in indicator_data:
-                if indicator.name in children_profile:
-                    # TODO change name from children to child_geographies - need to change the UI as well
-                    for group in groups:
-                        key = subindicator[group] if group else None
-                        subindicator["children"] = children_profile[indicator.name].get(key, 0)
+
+            for metric in key_metrics:
+                if metric.subindicator is not None:
+                    metric_val = metrics_data[metric.subindicator]
+                    if metric.denominator == "subindicators":
+                        metric_val = "{:.2%}".format(metric_val/sum(metrics_data.values()))
+                    elif metric.denominator == "sibling":
+                        # Get geo siblings
+                        sibling_geographies = geography.get_siblings().exclude(id=geography.id).values_list("id", flat=True)
+
+                        indicator_metric_data =  sum(models.IndicatorData.objects.filter(
+                            indicator=indicator, geography_id__in=sibling_geographies
+                        ).values_list("data", flat=True), [])
+
+                        metric_subindicator = next(item for item in pi.subindicators if item["id"] == metric.subindicator)
+                        sibling_geo_count = sum([
+                            c["count"] for c in list(
+                                filter(lambda d: d.items()==metric_subindicator["groups"].items(), indicator_metric_data)
+                            )
+                        ])
+                        metric_val = "{:.2%}".format(metric_val/(sibling_geo_count + metric_val))
+
+                    metrics_js.append({
+                        "label": pi.label,
+                        "value": metric_val,
+                        "denominator": metric.denominator,
+                    })
+
+        indicators_js[pi.label] = {
+            "description": pi.description,
+            "subindicators": indicator_data,
+            "choropleth_method": pi.choropleth_method.name,
+            "metadata": serializers.MetaDataSerializer(indicator.dataset.metadata).data
+        }
+        for subindicator in indicator_data:
+            if indicator.name in children_profile:
+                # TODO change name from children to child_geographies - need to change the UI as well
+                for group in groups:
+                    key = subindicator[group] if group else None
+                    subindicator["children"] = children_profile[indicator.name].get(key, 0)
 
     highlights = {}
 
     profile_highlights = profile.profilehighlight_set.all().values(
-        "name", "label", "indicator_id", "value", "indicator__groups"
+        "name", "label", "indicator_id", "subindicator", "indicator__groups", "indicator__subindicators"
     )
 
     indicators = dict(models.IndicatorData.objects.filter(
@@ -155,30 +185,29 @@ def profile_geography_data_helper(profile_id, geography_code):
 
     for highlight in profile_highlights:
         indicator_id = highlight.get("indicator_id", None)
-        highlight_value = highlight.get("value")
+        subindicators = highlight.get("indicator__subindicators")
+        subindicator = next(
+            item for item in subindicators if item["id"] == int(highlight.get("subindicator"))
+        ) 
 
         if indicator_id in indicators:
-            # TODO: Multi group support for filtering for value in profile highlight
             data = indicators.get(indicator_id)
-            if highlight_value:
-                groups = highlight.get("indicator__groups", None)
-                count = 0
-                for val in data:
-                    for group in groups:
-                        if val[group] == highlight_value:
-                            count = count + val["count"]
-            else:
-                count = sum([val["count"] for val in data])
+            total_count = sum([val["count"] for val in data])
+            count = 0
+
+            if subindicator:
+                for indicator in indicators[indicator_id]:
+                    if subindicator["groups"].items() <= indicator.items():
+                        count = count + indicator["count"]
 
             highlights[highlight.get("name")] = {
                 "label": highlight.get("label"),
-                "count": count
+                "value":  "{:.2%}".format(count/total_count)
             }
 
     js = {
         "logo": logo_json,
         "geography": geo_js,
-        "key_metrics": key_metrics,
         "profile_data": data_js,
         "highlights": highlights,
     }

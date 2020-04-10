@@ -13,15 +13,12 @@ class ProfileIndicatorAdminForm(forms.ModelForm):
         model = models.ProfileIndicator
         fields = '__all__'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance.pk:
-            self.fields["subindicators"].widget = widgets.SortableWidget()
-            self.fields["subindicators"].widget.attrs["subindicators"] = self.instance.subindicators
-
     def clean_subindicators(self):
-        data = self.cleaned_data['subindicators']
-        return [unquote(x) for x in data]
+        if self.instance.pk:
+            values = self.instance.indicator.subindicators
+            order = self.cleaned_data['subindicators']
+            return [values[i] for i in order] if order else values
+        return []
 
 @admin.register(models.ProfileIndicator)
 class ProfileIndicatorAdmin(admin.ModelAdmin):
@@ -38,24 +35,24 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         description("Indicator", lambda x: x.indicator.name), 
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
-        "key_metric",
     )
-    form = ProfileIndicatorAdminForm
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
             'fields': ('profile', 'indicator')
         }),
         ("Profile fields", {
-          'fields': ('label', 'subcategory', 'key_metric', 'description', 'choropleth_method')
+          'fields': ('label', 'subcategory', 'description', 'choropleth_method')
         }),
         ("Subindicators", {
           'fields': ('subindicators',)
         })
     )
 
+    form = ProfileIndicatorAdminForm
+
     formfield_overrides = {
-        fields.ArrayField: {"widget": widgets.SortableWidget},
+        fields.JSONField: {"widget": widgets.SortableWidget},
     }
 
     def get_readonly_fields(self, request, obj=None):

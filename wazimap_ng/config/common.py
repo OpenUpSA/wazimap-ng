@@ -264,6 +264,12 @@ CHUNK_SIZE_LIMIT = 500000
 
 TESTING = "test" in sys.argv
 
+DENOMINATOR_CHOICES = (
+    ('absolute_value', 'Absolute value'),
+    ('subindicators', 'Sub-indicators'),
+    ('sibling', 'Sibling'),
+)
+
 
 if TESTING:
     PASSWORD_HASHERS = [

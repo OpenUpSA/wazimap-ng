@@ -10,7 +10,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('datasets', '0059_auto_20200402_0808'),
-        ('datasets', '0062_auto_20200403_1110'),
     ]
 
     operations = [
