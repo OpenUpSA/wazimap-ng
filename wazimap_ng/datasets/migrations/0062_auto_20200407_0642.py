@@ -17,6 +17,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='profilehighlight',
             name='subindicator',
-            field=models.PositiveSmallIntegerField(blank=True, max_length=60),
+            field=models.PositiveSmallIntegerField(blank=True, max_length=60, null=True),
         ),
     ]

@@ -63,7 +63,7 @@ class ProfileHighlight(models.Model):
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this highlight is based on.", verbose_name="variable")
     name = models.CharField(max_length=60, null=False, blank=True, help_text="Name of the indicator in the database")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
-    subindicator = models.CharField(max_length=60, null=False, blank=True)
+    subindicator = models.PositiveSmallIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"Highlight: {self.label}"
