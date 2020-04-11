@@ -62,7 +62,7 @@ class IndicatorAdmin(BaseAdminModel):
     ]
 
     formfield_overrides = {
-        fields.ArrayField: {"widget": widgets.SortableWidget},
+        fields.JSONField: {"widget": widgets.SortableWidget},
     }
 
     def get_related_fields_data(self, obj):
