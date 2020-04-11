@@ -3,6 +3,7 @@ import os
 import time
 import os
 import pandas as pd
+import logging
 
 from django.db import transaction
 from django.db.models import Sum, FloatField
@@ -15,6 +16,8 @@ from django.conf import settings
 from . import models
 from .dataloader import loaddata
 from itertools import groupby
+
+logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
@@ -33,7 +36,6 @@ def process_uploaded_file(dataset_file, **kwargs):
         return loaddata(dataset, datasource, row_number)
 
     filename = dataset_file.document.name
-    file_path = dataset_file.document.path
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
 
     columns = None
@@ -43,11 +45,11 @@ def process_uploaded_file(dataset_file, **kwargs):
     row_number = 1
 
     if ".csv" in filename:
-        df = pd.read_csv(file_path, nrows=1, dtype=str, sep=",")
+        df = pd.read_csv(dataset_file.document.open(), nrows=1, dtype=str, sep=",")
         df.dropna(how='all', axis='columns', inplace=True)
         columns = df.columns.str.lower()
 
-        for df in pd.read_csv(file_path, chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1):
+        for df in pd.read_csv(dataset_file.document.open(), chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1):
             df.dropna(how='any', axis='columns', inplace=True)
             df.columns = columns
             errors, warnings = process_file_data(df, dataset, row_number)
@@ -57,12 +59,12 @@ def process_uploaded_file(dataset_file, **kwargs):
     else:
         skiprows = 1
         i_chunk = 0
-        df = pd.read_excel(file_path, nrows=1, dtype=str)
+        df = pd.read_excel(dataset_file.document.open(), nrows=1, dtype=str)
         df.dropna(how='any', axis='columns', inplace=True)
         columns = df.columns.str.lower()
         while True:
             df = pd.read_excel(
-                file_path, nrows=chunksize, skiprows=skiprows, header=None
+                dataset_file.document.open(), nrows=chunksize, skiprows=skiprows, header=None
             )
             skiprows += chunksize
             # When there is no data, we know we can break out of the loop.
