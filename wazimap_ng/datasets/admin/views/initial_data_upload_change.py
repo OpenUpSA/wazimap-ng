@@ -86,7 +86,7 @@ class InitialDataUploadChangeView(admin.StackedInline):
 
     def get_fieldsets(self, request, obj):
         fields = super().get_fieldsets(request, obj)
-        if obj.datasetfile.task:
+        if hasattr(obj, "datasetfile") and obj.datasetfile.task:
             fields = fields + (self.error_and_warning_fieldset, )
 
         return fields
