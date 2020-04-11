@@ -8,7 +8,7 @@ from urllib.parse import unquote
 
 
 from ... import models
-from ... import widgets
+from ....admin_utils import SortableWidget
 
 
 class VariableInlinesAdminForm(forms.ModelForm):
@@ -44,7 +44,7 @@ class VariableInlinesChangeView(admin.StackedInline):
     )
 
     formfield_overrides = {
-        fields.JSONField: {"widget": widgets.SortableWidget},
+        fields.JSONField: {"widget": SortableWidget},
     }
 
     form = VariableInlinesAdminForm

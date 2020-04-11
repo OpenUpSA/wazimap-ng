@@ -12,9 +12,8 @@ from django_q.tasks import async_task
 
 from .. import models
 from .. import hooks
-from .. import widgets
 from .base_admin_model import BaseAdminModel
-from ...admin_utils import customTitledFilter
+from ...admin_utils import customTitledFilter, SortableWidget
 
 class IndicatorAdminForm(forms.ModelForm):
     groups = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple)
@@ -62,7 +61,7 @@ class IndicatorAdmin(BaseAdminModel):
     ]
 
     formfield_overrides = {
-        fields.JSONField: {"widget": widgets.SortableWidget},
+        fields.JSONField: {"widget": SortableWidget},
     }
 
     def get_related_fields_data(self, obj):

@@ -1,5 +1,7 @@
 from django.contrib.gis.db import models
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField, ArrayField
+
 from wazimap_ng.datasets.models import Profile, Indicator, IndicatorSubcategory
 from wazimap_ng.config.common import DENOMINATOR_CHOICES
 
@@ -48,3 +50,19 @@ class ProfileHighlight(models.Model):
 
     def __str__(self):
         return f"Highlight: {self.label}"
+
+
+class ProfileIndicator(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.", verbose_name="variable")
+    subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
+    label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
+    description = models.TextField(blank=True)
+    subindicators = JSONField(default=list, blank=True)
+    choropleth_method = models.ForeignKey(ChoroplethMethod, null=False, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.profile.name} -> {self.label}"
+
+    class Meta:
+        ordering = ["id"]

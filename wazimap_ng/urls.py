@@ -11,6 +11,7 @@ from rest_framework.response import Response
 
 from .datasets import views as dataset_views
 from .points import views as points_views
+from .profile import views as profile_views
 from .boundaries import views as boundaries_views
 from .general import views as general_views
 from .cache import cache_headers as cache
@@ -41,7 +42,7 @@ urlpatterns = [
     path("api/v1/profiles/", dataset_views.ProfileList.as_view(), name="profile-list"),
     path(
         "api/v1/profiles/<int:pk>/",
-        cache(dataset_views.ProfileDetail.as_view()),
+        cache(profile_views.ProfileDetail.as_view()),
         name="profile-detail",
     ),
     path(

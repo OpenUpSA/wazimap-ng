@@ -8,7 +8,6 @@ from treebeard.forms import movenodeform_factory
 from .indicator_data_admin import IndicatorDataAdmin
 from .dataset_admin import DatasetAdmin
 from .indicator_admin import IndicatorAdmin
-from .profile_indicator_admin import ProfileIndicatorAdmin
 from .. import models
 
 

@@ -41,6 +41,7 @@ class Common(Configuration):
         "wazimap_ng.points",
         "wazimap_ng.boundaries",
         "wazimap_ng.profile",
+        "wazimap_ng.general",
         "storages",
         "import_export"
 
@@ -125,7 +126,7 @@ class Common(Configuration):
     TEMPLATES = [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
-            "DIRS": [BASE_DIR + "/datasets/templates/",],
+            "DIRS": [],
             "APP_DIRS": True,
             "OPTIONS": {
                 "context_processors": [

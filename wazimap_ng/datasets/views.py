@@ -44,10 +44,6 @@ class ProfileList(generics.ListAPIView):
     queryset = models.Profile.objects.all()
     serializer_class = serializers.ProfileSerializer
 
-class ProfileDetail(generics.RetrieveAPIView):
-    queryset = models.Profile
-    serializer_class = serializers.FullProfileSerializer
-
 def get_children_profile(profile_indicator_ids, geography):
     profile = {}
     

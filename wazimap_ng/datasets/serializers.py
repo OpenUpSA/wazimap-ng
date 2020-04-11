@@ -27,33 +27,11 @@ class IndicatorSubcategorySerializer(serializers.ModelSerializer):
 		depth = 2
 		fields = ["name", "description"]
 
-class ProfileIndicatorSerializer(serializers.ModelSerializer):
-	subcategory = serializers.SerializerMethodField()
-	category = serializers.SerializerMethodField()
-
-	def get_category(self, obj):
-		return obj.subcategory.category.name
-
-	def get_subcategory(self, obj):
-		return obj.subcategory.name
-
-	class Meta:
-		model = models.ProfileIndicator
-		exclude = ["profile", "id"]
-		depth = 2
-
 class ProfileSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = models.Profile
 		exclude = ["indicators"]
 
-class FullProfileSerializer(serializers.ModelSerializer):
-	indicators = ProfileIndicatorSerializer(source="profileindicator_set", many=True)
-
-	class Meta:
-		model = models.Profile
-		depth = 2
-		fields = "__all__"
 
 class DatasetSerializer(serializers.ModelSerializer):
 	class Meta:

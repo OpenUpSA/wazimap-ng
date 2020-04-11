@@ -6,7 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.views.decorators.cache import cache_page, cache_control
 
-from .datasets.models import ProfileIndicator
+from .profile.models import ProfileIndicator
 from .points.models import Location, Category, Theme
 
 logger = logging.getLogger(__name__)
