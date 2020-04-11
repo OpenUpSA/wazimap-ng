@@ -4,7 +4,6 @@ from wazimap_ng.datasets.models import (
     Geography,
     Indicator,
     Profile,
-    ProfileData,
 )
 
 from rest_framework import status
@@ -102,60 +101,3 @@ class GeneralReadOnlyTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-class GeneralPaginationTestCase(TestCase):
-    def setUp(self):
-        cache.clear()
-        Geography.add_root(
-            name=f"geography-1", code=f"code-1", level=f"test-level-1",
-        )
-        for i in range(25):
-            Dataset.objects.create(name=f"dataset-{i}")
-            Profile.objects.create(name=f"profile-{i}")
-            ProfileData.objects.create(
-                profile=Profile.objects.first(),
-                geography=Geography.objects.first(),
-                data={"Count": i},
-            )
-            Indicator.objects.create(
-                groups=[],
-                name=f"indicator-{i}",
-                dataset=Dataset.objects.first(),
-            )
-            DatasetData.objects.create(
-                dataset=Dataset.objects.first(),
-                geography=Geography.objects.first(),
-                data={"Count": i},
-            )
-
-    def test_dataset_list_is_paginated(self):
-        url = reverse("dataset")
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        number_of_results = len(response.data["results"])
-        self.assertEqual(number_of_results, 10)
-
-    def test_dataset_indicator_list_is_paginated(self):
-        dataset_id = Dataset.objects.first().pk
-        url = reverse("dataset-indicator-list", kwargs={"dataset_id": dataset_id})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        number_of_results = len(response.data)
-        self.assertEqual(number_of_results, 10)
-
-    def test_indicator_list_is_paginated(self):
-        url = reverse("indicator-list")
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        number_of_results = len(response.data["results"])
-        self.assertEqual(number_of_results, 10)
-
-    def test_profile_list_is_paginated(self):
-        url = reverse("profile-list")
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        number_of_results = len(response.data["results"])
-        self.assertEqual(number_of_results, 10)
