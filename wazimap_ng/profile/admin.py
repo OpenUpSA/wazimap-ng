@@ -13,10 +13,6 @@ def customTitledFilter(title):
             return instance
     return Wrapper
     
-def description(description, func):
-    func.short_description = description
-    return func
-
 
 def description(description, func):
     func.short_description = description

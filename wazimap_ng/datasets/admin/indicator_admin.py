@@ -14,7 +14,7 @@ from .. import models
 from .. import hooks
 from .. import widgets
 from .base_admin_model import BaseAdminModel
-from .utils import customTitledFilter
+from ...admin_utils import customTitledFilter
 
 class IndicatorAdminForm(forms.ModelForm):
     groups = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple)

@@ -4,7 +4,7 @@ from django import forms
 
 from .. import models
 from .. import widgets
-from .utils import customTitledFilter, description
+from ...admin_utils import customTitledFilter, description
 from urllib.parse import unquote
 
 

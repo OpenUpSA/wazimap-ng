@@ -22,6 +22,7 @@ from django.template.loader import render_to_string
 from . import models
 from . import widgets
 from . import hooks
+from ..admin_utils import customTitledFilter
 
 admin.site.register(models.IndicatorCategory)
 admin.site.register(models.IndicatorSubcategory)
@@ -86,14 +87,6 @@ def delete_selected_data(modeladmin, request, queryset):
 
 
 delete_selected_data.short_description = "Delete selected objects"
-
-def customTitledFilter(title):
-    class Wrapper(admin.FieldListFilter):
-        def __new__(cls, *args, **kwargs):
-            instance = admin.FieldListFilter.create(*args, **kwargs)
-            instance.title = title
-            return instance
-    return Wrapper
 
 @admin.register(models.Geography)
 class GeographyAdmin(TreeAdmin):
