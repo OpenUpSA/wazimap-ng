@@ -17,6 +17,7 @@ class LicenceAdmin(admin.ModelAdmin):
     pass
 
 admin.site.register(models.IndicatorCategory)
+admin.site.register(models.IndicatorSubcategory)
 
 class ProfileKeyMetricsForm(forms.ModelForm):
     MY_CHOICES = (

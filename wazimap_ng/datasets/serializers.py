@@ -15,13 +15,6 @@ class AncestorGeographySerializer(serializers.ModelSerializer):
         model = Geography
         fields = ["name", "code", "level", "version", "parents"]
 
-class IndicatorSubcategorySerializer(serializers.ModelSerializer):
-
-	class Meta:
-		model = models.IndicatorSubcategory
-		depth = 2
-		fields = ["name", "description"]
-
 class ProfileSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = models.Profile

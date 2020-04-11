@@ -2,7 +2,7 @@ from django.contrib.gis.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
 
-from wazimap_ng.datasets.models import Profile, Indicator, IndicatorSubcategory
+from wazimap_ng.datasets.models import Profile, Indicator
 from wazimap_ng.config.common import DENOMINATOR_CHOICES
 
 
@@ -27,6 +27,32 @@ class Licence(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+
+class IndicatorCategory(models.Model):
+    name = models.CharField(max_length=25)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.profile.name} -> {self.name}"
+
+    class Meta:
+        verbose_name_plural = "Indicator Categories"
+        ordering = ["id"]
+
+
+class IndicatorSubcategory(models.Model):
+    name = models.CharField(max_length=255)
+    category = models.ForeignKey(IndicatorCategory, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.category.name} -> {self.name}"
+
+    class Meta:
+        verbose_name_plural = "Indicator Subcategories"
+        ordering = ["id"]
 
 class ProfileKeyMetrics(models.Model):
     variable = models.ForeignKey(Indicator, on_delete=models.CASCADE)
@@ -67,14 +93,3 @@ class ProfileIndicator(models.Model):
     class Meta:
         ordering = ["id"]
 
-class IndicatorCategory(models.Model):
-    name = models.CharField(max_length=25)
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    description = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"{self.profile.name} -> {self.name}"
-
-    class Meta:
-        verbose_name_plural = "Indicator Categories"
-        ordering = ["id"]

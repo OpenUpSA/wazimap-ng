@@ -37,3 +37,10 @@ class IndicatorCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.IndicatorCategory
         exclude = ["id", "profile"]
+
+class IndicatorSubcategorySerializer(serializers.ModelSerializer):
+
+  class Meta:
+    model = models.IndicatorSubcategory
+    depth = 2
+    fields = ["name", "description"]
