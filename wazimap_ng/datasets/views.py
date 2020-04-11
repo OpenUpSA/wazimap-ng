@@ -201,7 +201,7 @@ def profile_geography_data_helper(profile_id, geography_code):
                         count = count + indicator["count"]
 
             highlights[highlight.get("name")] = {
-                "label": highlight.get("label"),
+                "label": subindicator.get("label"),
                 "value":  "{:.2%}".format(count/total_count)
             }
 

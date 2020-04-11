@@ -8,7 +8,7 @@ import wazimap_ng.datasets.models.upload
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0060_profilehighlight_is_key_metric'),
+        ('datasets', '0061_auto_20200403_1108'),
     ]
 
     operations = [
