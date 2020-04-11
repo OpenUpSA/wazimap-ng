@@ -15,11 +15,6 @@ class AncestorGeographySerializer(serializers.ModelSerializer):
         model = Geography
         fields = ["name", "code", "level", "version", "parents"]
 
-class IndicatorCategorySerializer(serializers.ModelSerializer):
-	class Meta:
-		model = models.IndicatorCategory
-		exclude = ["id", "profile"]
-
 class IndicatorSubcategorySerializer(serializers.ModelSerializer):
 
 	class Meta:

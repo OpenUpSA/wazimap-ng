@@ -11,7 +11,6 @@ from .indicator_admin import IndicatorAdmin
 from .. import models
 
 
-admin.site.register(models.IndicatorCategory)
 admin.site.register(models.IndicatorSubcategory)
 admin.site.register(models.Profile)
 

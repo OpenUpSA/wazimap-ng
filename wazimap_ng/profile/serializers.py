@@ -32,3 +32,8 @@ class FullProfileSerializer(serializers.ModelSerializer):
         model = Profile
         depth = 2
         fields = "__all__"
+
+class IndicatorCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.IndicatorCategory
+        exclude = ["id", "profile"]

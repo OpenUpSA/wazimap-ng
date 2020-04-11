@@ -16,6 +16,7 @@ class LogoAdmin(admin.ModelAdmin):
 class LicenceAdmin(admin.ModelAdmin):
     pass
 
+admin.site.register(models.IndicatorCategory)
 
 class ProfileKeyMetricsForm(forms.ModelForm):
     MY_CHOICES = (

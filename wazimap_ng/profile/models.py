@@ -66,3 +66,15 @@ class ProfileIndicator(models.Model):
 
     class Meta:
         ordering = ["id"]
+
+class IndicatorCategory(models.Model):
+    name = models.CharField(max_length=25)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.profile.name} -> {self.name}"
+
+    class Meta:
+        verbose_name_plural = "Indicator Categories"
+        ordering = ["id"]
