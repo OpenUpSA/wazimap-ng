@@ -11,7 +11,7 @@ from io import BytesIO
 from wazimap_ng.profile.models import Profile
 from django_q.models import Task
 from wazimap_ng import utils
-from wazimap_ng.profile.models import Licence
+from wazimap_ng.datasets.models import Licence
 
 def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)
@@ -101,7 +101,7 @@ class MetaData(models.Model):
     source = models.CharField(max_length=60, null=False, blank=True)
     description = models.TextField(blank=True)
     licence = models.ForeignKey(
-        "profile.Licence", null=True, blank=True, on_delete=models.SET_NULL, related_name="points_license"
+        Licence, null=True, blank=True, on_delete=models.SET_NULL, related_name="points_licence"
     )
     profile_category = models.OneToOneField(ProfileCategory, on_delete=models.CASCADE)
 

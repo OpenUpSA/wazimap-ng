@@ -4,10 +4,6 @@ from django.core.serializers import serialize
 
 from . import models
 
-class LicenceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Licence
-        fields = ("name", "url",)
 
 class ProfileIndicatorSerializer(serializers.ModelSerializer):
   subcategory = serializers.SerializerMethodField()

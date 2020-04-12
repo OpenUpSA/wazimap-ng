@@ -12,6 +12,8 @@ from .. import models
 
 
 @admin.register(models.Geography)
+
+
 class GeographyAdmin(TreeAdmin):
     form = movenodeform_factory(models.Geography)
     list_display = (
@@ -26,3 +28,7 @@ class UniverseAdmin(admin.ModelAdmin):
   formfield_overrides = {
     fields.JSONField: {"widget": JSONEditorWidget},
   }
+  
+@admin.register(models.Licence)
+class LicenceAdmin(admin.ModelAdmin):
+    pass
