@@ -1,8 +1,11 @@
 from rest_framework import generics
-from ..datasets import models
+from . import models
 from . import serializers
-from wazimap_ng.datasets.models import Profile
 
 class ProfileDetail(generics.RetrieveAPIView):
-    queryset = Profile
+    queryset = models.Profile
     serializer_class = serializers.FullProfileSerializer
+
+class ProfileList(generics.ListAPIView):
+    queryset = models.Profile.objects.all()
+    serializer_class = serializers.ProfileSerializer

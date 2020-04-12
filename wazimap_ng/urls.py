@@ -39,7 +39,7 @@ urlpatterns = [
         cache(dataset_views.IndicatorDetailView.as_view()),
         name="indicator-detail",
     ),
-    path("api/v1/profiles/", dataset_views.ProfileList.as_view(), name="profile-list"),
+    path("api/v1/profiles/", profile_views.ProfileList.as_view(), name="profile-list"),
     path(
         "api/v1/profiles/<int:pk>/",
         cache(profile_views.ProfileDetail.as_view()),

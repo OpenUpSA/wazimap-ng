@@ -15,10 +15,6 @@ class AncestorGeographySerializer(serializers.ModelSerializer):
         model = Geography
         fields = ["name", "code", "level", "version", "parents"]
 
-class ProfileSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = models.Profile
-		exclude = ["indicators"]
 
 
 class DatasetSerializer(serializers.ModelSerializer):

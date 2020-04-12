@@ -18,6 +18,8 @@ class LicenceAdmin(admin.ModelAdmin):
 
 admin.site.register(models.IndicatorCategory)
 admin.site.register(models.IndicatorSubcategory)
+admin.site.register(models.Profile)
+
 
 class ProfileKeyMetricsForm(forms.ModelForm):
     MY_CHOICES = (

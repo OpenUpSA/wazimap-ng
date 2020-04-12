@@ -40,9 +40,6 @@ class IndicatorDetailView(generics.RetrieveAPIView):
     queryset = models.Indicator
     serializer_class = serializers.IndicatorSerializer
 
-class ProfileList(generics.ListAPIView):
-    queryset = models.Profile.objects.all()
-    serializer_class = serializers.ProfileSerializer
 
 def get_children_profile(profile_indicator_ids, geography):
     profile = {}

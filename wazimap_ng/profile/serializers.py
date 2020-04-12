@@ -3,7 +3,6 @@ from rest_framework import serializers
 from django.core.serializers import serialize
 
 from . import models
-from wazimap_ng.datasets.models import Profile
 
 class LicenceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,7 +28,7 @@ class FullProfileSerializer(serializers.ModelSerializer):
     indicators = ProfileIndicatorSerializer(source="profileindicator_set", many=True)
 
     class Meta:
-        model = Profile
+        model = models.Profile
         depth = 2
         fields = "__all__"
 
@@ -44,3 +43,9 @@ class IndicatorSubcategorySerializer(serializers.ModelSerializer):
     model = models.IndicatorSubcategory
     depth = 2
     fields = ["name", "description"]
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+      model = models.Profile
+      exclude = ["indicators"]

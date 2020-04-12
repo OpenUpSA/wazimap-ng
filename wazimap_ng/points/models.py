@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 
 import pandas as pd
 from io import BytesIO
-from wazimap_ng.datasets.models import Profile
+from wazimap_ng.profile.models import Profile
 from django_q.models import Task
 from wazimap_ng import utils
 from wazimap_ng.profile.models import Licence

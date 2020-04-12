@@ -11,8 +11,6 @@ from .indicator_admin import IndicatorAdmin
 from .. import models
 
 
-admin.site.register(models.Profile)
-
 @admin.register(models.Geography)
 class GeographyAdmin(TreeAdmin):
     form = movenodeform_factory(models.Geography)
