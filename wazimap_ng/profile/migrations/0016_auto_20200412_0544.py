@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('profile', '0015_auto_20200411_2129'),
+        ('points', '0013_auto_20200411_2129'),
     ]
 
     operations = [

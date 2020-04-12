@@ -47,7 +47,7 @@ urlpatterns = [
     ),
     path(
         "api/v1/profiles/<int:profile_id>/geographies/<str:geography_code>/",
-        cache(dataset_views.profile_geography_data),
+        cache(profile_views.profile_geography_data),
         name="profile-geography-data",
     ),
     path("api/v1/geography/search/<str:profile_id>/", cache(dataset_views.search_geography)),
