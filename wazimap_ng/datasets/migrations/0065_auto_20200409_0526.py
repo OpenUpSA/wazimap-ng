@@ -18,7 +18,7 @@ def copy_data_to_new_field(apps, schema_editor):
             data = []
             if groups and len(groups) > 1:
                 for idx, subindicator in enumerate(indicator.subindicators):
-                    sub_data = {}
+                    subdata = {}
                     text_list = ""
                     text_list = []
                 

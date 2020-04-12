@@ -18,7 +18,7 @@ def copy_data_to_new_field(apps, schema_editor):
             data = []
             if groups and len(groups) > 1:
                 for idx, subindicator in enumerate(pi.subindicators):
-                    sub_data = {}
+                    subdata = {}
                     subindicators = subindicator.split("/")
                     for idx, val in enumerate(groups):
                         subdata[val] = subindicators[idx]
