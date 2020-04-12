@@ -81,17 +81,12 @@ def profile_geography_data_helper(profile_id, geography_code):
         if pi.subindicators and indicator_data and len(groups):
             def sortfn(subindicator_obj):
                 for idx, pi_subindicator in enumerate(pi.subindicators):
-                    print(pi_subindicator["groups"].items())
-                    print(subindicator_obj.items())
-                    print("==" * 10)
-                    print("")
                     if pi_subindicator["groups"].items() <= subindicator_obj.items():
                         return idx
                 # TODO not sure what to do if this is reached
                 # -1 in here temporarily
                 return -1
 
-            print(indicator_data)
             indicator_data = sorted(indicator_data, key=sortfn)
             metrics_data = {
                 val["id"]:indicator_data[idx]["count"] for idx, val in enumerate(pi.subindicators)
