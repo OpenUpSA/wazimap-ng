@@ -20,8 +20,6 @@ class ProfileKeyMetricsForm(forms.ModelForm):
             except (ValueError, TypeError):
                 pass
         elif self.instance.pk:
-            print(self.instance.subindicator)
-            print(self.instance.pk)
             self.fields['subindicator'].choices = [
                 [subindicator['id'], subindicator['label']] for subindicator in Indicator.objects.filter(id=self.instance.variable.pk).first().subindicators
             ]

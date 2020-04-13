@@ -192,3 +192,26 @@ def get_profile_logo_json(profile_id):
             "image": "",
             "url": "/"
         }
+
+class ProfileCategoriesList(generics.ListAPIView):
+    queryset = models.IndicatorCategory.objects.all()
+    serializer_class = serializers.IndicatorCategorySerializer
+
+    def get(self, request, profile_id):
+        profile = get_object_or_404(models.Profile, pk=profile_id)
+        queryset = self.get_queryset().filter(profile=profile)
+
+        serializer = self.get_serializer_class()(queryset, many=True)
+        return Response(serializer.data)
+
+class ProfileSubcategoriesList(generics.ListAPIView):
+    queryset = models.IndicatorSubcategory.objects.all()
+    serializer_class = serializers.IndicatorSubcategorySerializer
+
+    def get(self, request, profile_id, category_id):
+        profile = get_object_or_404(models.Profile, pk=profile_id)
+        category = get_object_or_404(models.IndicatorCategory, pk=category_id)
+        queryset = self.get_queryset().filter(category__profile=profile, category=category)
+
+        serializer = self.get_serializer_class()(queryset, many=True)
+        return Response(serializer.data)

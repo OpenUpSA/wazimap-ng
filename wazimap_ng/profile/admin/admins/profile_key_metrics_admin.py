@@ -6,7 +6,7 @@ from wazimap_ng.admin_utils import customTitledFilter, description
 
 @admin.register(models.ProfileKeyMetrics)
 class ProfileKeyMetricsAdmin(admin.ModelAdmin):
-    fields = ('variable', 'subcategory', 'subindicator', 'denominator',)
+    fields = ('profile', 'variable', 'subcategory', 'subindicator', 'denominator',)
     list_display = ('variable',)
     form = ProfileKeyMetricsForm
 

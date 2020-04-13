@@ -59,6 +59,7 @@ class IndicatorSubcategory(models.Model):
         ordering = ["id"]
 
 class ProfileKeyMetrics(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     variable = models.ForeignKey(Indicator, on_delete=models.CASCADE)
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
     subindicator = models.PositiveSmallIntegerField()
