@@ -1,4 +1,5 @@
 from django import forms
+from wazimap_ng.datasets.models import Indicator
 
 class ProfileKeyMetricsForm(forms.ModelForm):
     MY_CHOICES = (
