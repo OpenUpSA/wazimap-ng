@@ -52,7 +52,7 @@ class IndicatorSubcategory(models.Model):
     description = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.category.name} -> {self.name}"
+        return f"{self.category.profile.name}: {self.category.name} -> {self.name}"
 
     class Meta:
         verbose_name_plural = "Indicator Subcategories"
