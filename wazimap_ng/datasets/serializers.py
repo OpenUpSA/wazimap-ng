@@ -26,6 +26,10 @@ class IndicatorSerializer(serializers.ModelSerializer):
 		model = models.Indicator
 		fields = "__all__"
 
+class IndicatorDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.IndicatorData
+        fields = "__all__"
 
 class DataSerializer(serializers.Serializer):
 	def __init__(self, queryset, *args, **kwargs):
