@@ -5,6 +5,7 @@ from distutils.util import strtobool
 import dj_database_url
 from configurations import Configuration
 from django.core.exceptions import ImproperlyConfigured
+from wazimap_ng.utils import truthy, int_or_none
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 os.environ["GDAL_DATA"] = "/usr/share/gdal/"
@@ -241,12 +242,11 @@ class Common(Configuration):
 
     Q_CLUSTER = {
        "orm": 'default',
-       "retry": os.environ.get("Q_CLUSTER_RETRY", 100000),
-       "workers": os.environ.get("Q_CLUSTER_WORKERS", 4),
-       "recycle": os.environ.get("Q_CLUSTER_RECYCLE", 500),
-       "timeout": os.environ.get("Q_CLUSTER_TIMEOUT", None),
-       "ack_failures": os.environ.get("Q_CLUSTER_ACK_FAILURES", True),
-       "retry": os.environ.get("Q_CLUSTER_RETRY", 60),
+       "retry": int(os.environ.get("Q_CLUSTER_RETRY", 100000)),
+       "workers": int(os.environ.get("Q_CLUSTER_WORKERS", 4)),
+       "recycle": int(os.environ.get("Q_CLUSTER_RECYCLE", 500)),
+       "timeout": int_or_none(os.environ.get("Q_CLUSTER_TIMEOUT", None)),
+       "ack_failures": truthy(os.environ.get("Q_CLUSTER_ACK_FAILURES", True)),
     }
 
     def get_env_value(env_variable):
