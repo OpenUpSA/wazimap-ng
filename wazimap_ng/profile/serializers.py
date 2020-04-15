@@ -2,8 +2,8 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from rest_framework import serializers
 from django.core.serializers import serialize
 
+from wazimap_ng.datasets.serializers import MetaDataSerializer
 from . import models
-
 
 class ProfileIndicatorSerializer(serializers.ModelSerializer):
   subcategory = serializers.SerializerMethodField()
