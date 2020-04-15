@@ -60,7 +60,7 @@ class VariableInlinesChangeView(admin.StackedInline):
             } for variable in obj.profileindicator_set.all()]
 
             create_new_link = reverse(
-                'admin:datasets_profileindicator_add'
+                'admin:profile_profileindicator_add'
             ) + "?indicator=%d" % obj.id
 
             result = render_to_string(
