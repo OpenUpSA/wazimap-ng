@@ -241,8 +241,12 @@ class Common(Configuration):
 
     Q_CLUSTER = {
        "orm": 'default',
-       "retry": 100000,
-       "ack_failures": True,
+       "retry": os.environ.get("Q_CLUSTER_RETRY", 100000),
+       "workers": os.environ.get("Q_CLUSTER_WORKERS", 4),
+       "recycle": os.environ.get("Q_CLUSTER_RECYCLE", 500),
+       "timeout": os.environ.get("Q_CLUSTER_TIMEOUT", None),
+       "ack_failures": os.environ.get("Q_CLUSTER_ACK_FAILURES", True),
+       "retry": os.environ.get("Q_CLUSTER_RETRY", 60),
     }
 
     def get_env_value(env_variable):
