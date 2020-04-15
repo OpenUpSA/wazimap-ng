@@ -36,4 +36,7 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
     class Media:
-        js = ("/static/js/variable_subindicators.js",)
+        js = (
+            "/static/js/jquery-ui.min.js",
+            "/static/js/variable_subindicators.js",
+        )
