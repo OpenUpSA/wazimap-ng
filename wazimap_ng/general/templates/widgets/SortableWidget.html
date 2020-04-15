@@ -1,0 +1,10 @@
+<div class="sortable_widget">
+  <input type="hidden" name="{{ widget.name }}" value="" data-name="subindicators" />
+      <ul class="sortable">
+        {% for value in widget.values %}
+            <li class="ui-state-default" data-val='{{ forloop.counter0 }}'><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>{{ value.label }}</li>
+          {% empty %}
+            <p>Sub-Indicators not preset for this Indicator.</p>
+          {% endfor %}
+      </ul>
+</div>
