@@ -217,7 +217,7 @@ def profile_geography_data_helper(profile_id, geography_code):
         "geography": geo_js,
         "profile_data": builder.toJson(),
         "highlights": highlights,
-        "key_metrics": highlights,
+        "key_metrics": [],
     }
 
     return js

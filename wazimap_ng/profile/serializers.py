@@ -59,7 +59,7 @@ class SubIndicatorSerializer(serializers.Serializer):
 
     def to_representation(self, data):
         new_data = data.copy()
-        count = new_data.pop("count")
+        value = new_data.pop("count")
         indicator = self.context["profile_indicator"].indicator
         children_profiles = self.context["children_profiles"]
 
@@ -68,7 +68,7 @@ class SubIndicatorSerializer(serializers.Serializer):
 
         js = {
           "key": subindicator_key,
-          "count": count,
+          "value": value,
           "children": children
         }
 
@@ -85,7 +85,7 @@ class SubIndicatorSerializer(serializers.Serializer):
         return {} # is this correct
 
     key = serializers.CharField(max_length=255)
-    count = serializers.FloatField()
+    value = serializers.FloatField()
     children = serializers.DictField(child=serializers.IntegerField())
 
 
