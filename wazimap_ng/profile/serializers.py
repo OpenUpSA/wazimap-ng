@@ -58,20 +58,21 @@ class SubIndicatorSerializer(serializers.Serializer):
       return "/".join(arr)
 
     def to_representation(self, data):
-        count = data.pop("count")
+        new_data = data.copy()
+        count = new_data.pop("count")
         indicator = self.context["profile_indicator"].indicator
         children_profiles = self.context["children_profiles"]
 
-        subindicator_key = SubIndicatorSerializer.to_key(data.values())
+        subindicator_key = SubIndicatorSerializer.to_key(new_data.values())
         children = self.get_children_subindicator(children_profiles, indicator, subindicator_key)
 
-        data = {
+        js = {
           "key": subindicator_key,
           "count": count,
           "children": children
         }
 
-        return super(SubIndicatorSerializer, self).to_representation(data)
+        return super(SubIndicatorSerializer, self).to_representation(js)
 
     def get_children_subindicator(self, child_profiles, indicator, subindicator_key):
         indicator_name = indicator.name
