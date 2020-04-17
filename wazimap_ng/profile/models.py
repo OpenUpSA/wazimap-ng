@@ -3,12 +3,13 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
 
 from wazimap_ng.datasets.models import Indicator, GeographyHierarchy
-from wazimap_ng.config.common import DENOMINATOR_CHOICES
+from wazimap_ng.config.common import DENOMINATOR_CHOICES, PRERMISSION_TYPES
 
 class Profile(models.Model):
     name = models.CharField(max_length=50)
     indicators = models.ManyToManyField(Indicator, through="profile.ProfileIndicator", verbose_name="variables")
     geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.PROTECT, null=False)
+    profile_type = models.CharField(choices=PRERMISSION_TYPES, max_length=32, default="public")
 
     def __str__(self):
         return self.name

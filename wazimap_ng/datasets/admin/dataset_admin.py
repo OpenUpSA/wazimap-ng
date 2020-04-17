@@ -1,6 +1,9 @@
 from django.contrib import admin
+from django import forms
 
 from django_q.tasks import async_task
+from guardian.admin import GuardedModelAdmin
+from guardian.shortcuts import get_objects_for_user, get_perms_for_model, assign_perm
 
 from .base_admin_model import BaseAdminModel
 from .. import models
@@ -10,16 +13,33 @@ from .views import (
     VariableInlinesAddView, InitialDataUploadAddView, MetaDataInline
 )
 
-@admin.register(models.Dataset)
-class DatasetAdmin(BaseAdminModel):
 
+class DatasetAdminForm(forms.ModelForm):
+    class Meta:
+        model = models.Dataset
+        widgets = {
+          'dataset_type': forms.RadioSelect,
+        }
+        fields = '__all__'
+
+@admin.register(models.Dataset)
+class DatasetAdmin(GuardedModelAdmin):
+
+    form = DatasetAdminForm
     exclude = ("groups", )
     inlines = ()
+
 
     class Media:
         css = {
              'all': ('/static/css/admin-custom.css',)
         }
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj: # editing an existing object
+            return ("dataset_type", ) + self.readonly_fields
+        return self.readonly_fields
+
 
     def get_related_fields_data(self, obj):
 
@@ -110,6 +130,38 @@ class DatasetAdmin(BaseAdminModel):
         self.inlines = inlines
         return super().change_view(request, object_id)
 
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+
+        if not change:
+            for perm in get_perms_for_model(models.Dataset):
+                assign_perm(perm, request.user, obj)
+        return obj
+
     def add_view(self, request, form_url='', extra_context=None):
         self.inlines = (InitialDataUploadAddView, MetaDataInline,)
         return super().add_view(request)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        datasets = qs.exclude(dataset_type="private")
+        datasets |= get_objects_for_user(request.user, 'datasets.view_dataset', accept_global_perms=False)
+        return datasets
+
+    def has_change_permission(self, request, obj=None):
+        if not obj:
+            return super().has_change_permission(request, obj)
+
+        if obj.dataset_type == "public":
+            return True
+        return request.user.has_perm("change_dataset", obj)
+
+    def has_delete_permission(self, request, obj=None):
+        if not obj:
+            return super().has_delete_permission(request, obj)
+        if obj.dataset_type == "public":
+            return True
+        return request.user.has_perm("delete_dataset", obj)

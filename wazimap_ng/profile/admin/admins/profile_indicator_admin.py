@@ -6,6 +6,7 @@ from ... import models
 from ..forms import ProfileIndicatorAdminForm
 
 from wazimap_ng.admin_utils import customTitledFilter, description, SortableWidget
+from guardian.shortcuts import get_objects_for_user
 
 @admin.register(models.ProfileIndicator)
 class ProfileIndicatorAdmin(SortableAdminMixin, admin.ModelAdmin):
@@ -51,3 +52,10 @@ class ProfileIndicatorAdmin(SortableAdminMixin, admin.ModelAdmin):
         if not change:
             obj.subindicators = obj.indicator.subindicators
         super().save_model(request, obj, form, change)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "profile":
+            profiles = models.Profile.objects.all().exclude(profile_type="private")
+            profiles |= get_objects_for_user(request.user, 'profile.view_profile', accept_global_perms=False)
+            kwargs["queryset"] = profiles
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)

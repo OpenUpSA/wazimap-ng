@@ -3,6 +3,7 @@ from adminsortable2.admin import SortableAdminMixin
 
 from ... import models
 from ..forms import ProfileHighlightForm
+from guardian.shortcuts import get_objects_for_user
 
 
 from wazimap_ng.admin_utils import customTitledFilter, description
@@ -41,3 +42,10 @@ class ProfileHighlightAdmin(SortableAdminMixin, admin.ModelAdmin):
             "/static/js/jquery-ui.min.js",
             "/static/js/variable_subindicators.js",
         )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "profile":
+            profiles = models.Profile.objects.all().exclude(profile_type="private")
+            profiles |= get_objects_for_user(request.user, 'profile.view_profile', accept_global_perms=False)
+            kwargs["queryset"] = profiles
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)

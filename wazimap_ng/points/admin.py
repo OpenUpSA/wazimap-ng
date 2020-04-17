@@ -18,6 +18,8 @@ import pandas as pd
 from import_export import resources
 from import_export.admin import ExportMixin
 from import_export.fields import Field
+from guardian.admin import GuardedModelAdmin
+from guardian.shortcuts import get_objects_for_user, get_perms_for_model, assign_perm
 
 from . import models
 
@@ -181,6 +183,9 @@ class PointsCollectionAdminForm(forms.ModelForm):
     subtheme = forms.CharField(required=True)
     class Meta:
         model = models.ProfileCategory
+        widgets = {
+          'collection_type': forms.RadioSelect,
+        }
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
@@ -192,14 +197,14 @@ class PointsCollectionAdminForm(forms.ModelForm):
 
 
 @admin.register(models.ProfileCategory)
-class ProfileCategoryAdmin(admin.ModelAdmin):
+class ProfileCategoryAdmin(GuardedModelAdmin):
     list_display = ("label", "category", "profile")
     list_filter = ("category", "profile",)
     form = PointsCollectionAdminForm
 
     fieldsets_add_view = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'theme', 'subtheme')
+            'fields': ('profile', 'theme', 'subtheme', 'collection_type', )
         }),
         ("Point Collection description fields", {
           'fields': ('label', 'description',)
@@ -208,7 +213,7 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
 
     fieldsets_change_view = (
         ("Database fields", {
-            'fields': ('profile', 'category')
+            'fields': ('profile', 'category', 'collection_type', )
         }),
         ("Point Collection description fields", {
           'fields': ('label', 'description',)
@@ -223,7 +228,7 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
-            return ("profile", "category", ) + self.readonly_fields
+            return ("profile", "category", "collection_type", ) + self.readonly_fields
         return self.readonly_fields
 
     def add_view(self, request, form_url='', extra_context=None):
@@ -237,14 +242,19 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
         return super().change_view(request, object_id)
 
     def save_model(self, request, obj, form, change):
-        if obj.pk == None and change == False:
+        is_new = obj.pk == None and change == False
+        if is_new:
             subtheme = models.Category.objects.create(
                 theme=form.cleaned_data["theme"],
                 name=form.cleaned_data["subtheme"]
             )
             obj.category = subtheme
+        super().save_model(request, obj, form, change)
 
-        return super().save_model(request, obj, form, change)
+        if is_new:
+            for perm in get_perms_for_model(models.ProfileCategory):
+                assign_perm(perm, request.user, obj)
+        return obj
 
     def save_formset(self, request, form, formset, change):
         """
@@ -270,5 +280,30 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
                     )
                 )
         return super().save_formset(request, form, formset, change)
+
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        categories = qs.exclude(collection_type="private")
+        categories |= get_objects_for_user(request.user, 'points.view_profilecategory', accept_global_perms=False)
+        return categories
+
+    def has_change_permission(self, request, obj=None):
+        if not obj:
+            return super().has_change_permission(request, obj)
+
+        if obj.collection_type == "public":
+            return True
+        return request.user.has_perm("change_profilecategory", obj)
+
+    def has_delete_permission(self, request, obj=None):
+        if not obj:
+            return super().has_delete_permission(request, obj)
+        if obj.collection_type == "public":
+            return True
+        return request.user.has_perm("delete_profilecategory", obj)
 
 

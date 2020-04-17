@@ -38,6 +38,7 @@ class Common(Configuration):
         "storages",
         "import_export",
         "mapwidgets",
+        "guardian",
 
         # Your apps
         "wazimap_ng.datasets",
@@ -162,6 +163,11 @@ class Common(Configuration):
         },
     ]
 
+    AUTHENTICATION_BACKENDS = (
+        'django.contrib.auth.backends.ModelBackend', # default
+        'guardian.backends.ObjectPermissionBackend',
+    )
+
     # Logging
     LOGGING = {
         "version": 1,
@@ -271,6 +277,12 @@ DENOMINATOR_CHOICES = (
     ('absolute_value', 'Absolute value'),
     ('subindicators', 'Sub-indicators'),
     ('sibling', 'Sibling'),
+)
+
+PRERMISSION_TYPES = (
+    ('private', 'Private'),
+    ('public', 'Public'),
+    ('non_editable', 'Public But Non Editable'),
 )
 
 

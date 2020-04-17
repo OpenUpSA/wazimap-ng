@@ -65,5 +65,6 @@ django-map-widgets==0.3.0
 django-storages==1.7.1
 boto3==1.9.93
 
-
+# object-permissions
+django-guardian==2.2.0
 
