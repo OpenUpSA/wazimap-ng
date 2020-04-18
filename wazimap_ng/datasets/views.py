@@ -42,9 +42,6 @@ class IndicatorDetailView(generics.RetrieveAPIView):
 
 
 
-
-
-
 @api_view()
 def search_geography(request, profile_id):
     """
