@@ -47,6 +47,10 @@ class Geography(MP_Node):
             models.UniqueConstraint(fields=["version", "code"], name="unique_geography_code_version")
         ]
 
+    def get_siblings(self):
+        siblings = super(Geography, self).get_siblings()
+        return siblings.filter(version=self.version)
+
     def get_child_boundaries(self):
         from ...boundaries.models import GeographyBoundary
         children = self.get_children()
