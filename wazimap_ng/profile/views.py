@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import condition
+from django.db.models import F
 
 
 from rest_framework import generics
@@ -13,6 +14,7 @@ from ..cache import etag_profile_updated, last_modified_profile_updated
 
 from wazimap_ng.datasets.serializers import AncestorGeographySerializer, MetaDataSerializer
 from wazimap_ng.datasets.models import IndicatorData, Geography
+from wazimap_ng.utils import qsdict, mergedict, expand_nested_list
 
 
 class ProfileDetail(generics.RetrieveAPIView):
@@ -87,126 +89,134 @@ def metrics_helper(key_metrics):
             })
     return metrics_js
 
-class DataStructureBuilder:
-    def __init__(self, data, child_profile_builder):
-        self.data = data
-        self.data_js = {}
-        self.child_profile_builder = child_profile_builder
-        self.children_profiles = self.child_profile_builder.get_children_profile()
+def get_indicator_data(profile, geography):
+    profile_indicator_ids = profile.indicators.values_list("id", flat=True)
 
-    def addIndicator(self, profile_indicator):
-        pi = profile_indicator
-        subcategory = pi.subcategory
-        category = subcategory.category
+    data = (IndicatorData.objects
+        .filter(indicator__in=profile_indicator_ids, geography=geography)
+        .values(
+            jsdata=F("data"),
+            description=F("indicator__profileindicator__description"),
+            indicator_name=F("indicator__name"),
+            profile_indicator_label=F("indicator__profileindicator__label"),
+            subcategory=F("indicator__profileindicator__subcategory__name"),
+            category=F("indicator__profileindicator__subcategory__category__name"),
+            choropleth_method=F("indicator__profileindicator__choropleth_method__name"),
+            metadata_source=F("indicator__dataset__metadata__source"),
+            metadata_description=F("indicator__dataset__metadata__description"),
+            licence_url=F("indicator__dataset__metadata__licence__url"),
+            licence_name=F("indicator__dataset__metadata__licence__name"),
+        ))
 
-        category_js = self.data_js.setdefault(category.name, {})
-        category_js["description"] = category.description
+    return data
 
-        subcats_js = category_js.setdefault("subcategories", {})
-        subcat_js = subcats_js.setdefault(subcategory.name, {})
-        subcat_js["description"] = subcategory.description
+def get_child_indicator_data(profile, geography):
+    profile_indicator_ids = profile.indicators.values_list("id", flat=True)
 
-        indicators_js  = subcat_js.setdefault("indicators", {})
-        metrics_js  = subcat_js.setdefault("key_metrics", [])
+    children_profiles = (IndicatorData.objects
+        .filter(
+            indicator__in=profile_indicator_ids,
+            geography_id__in=geography.get_children().values_list("id", flat=True)
+        )
+        .values(
+            indicator_name=F("indicator__name"),
+            profile_indicator_label=F("indicator__profileindicator__label"),
+            jsdata=F("data"),
+            geography_code=F("geography__code"),
+            indicator_groups=F("indicator__groups"),
+            subcategory=F("indicator__profileindicator__subcategory__name"),
+            category=F("indicator__profileindicator__subcategory__category__name"),
+        )
+    )
 
-        indicator = pi.indicator
-        indicator_data = self.data.get(indicator.name, [])
+    return children_profiles
 
-        indicators_js[pi.label] = self.add_indicator_data(pi, indicator_data) 
+def genkey(x):
+    x_copy = x.copy()
+    x_copy.pop("count")
+    return "/".join(x_copy.values())
 
-        # metric_js = self.addKeyMetrics(pi)
-        #indicators_js[pi.label]["key_metrics"] = metric_js
+def reshape(profile, geography):
+    indicator_data = get_indicator_data(profile, geography)
+    children_indicator_data = get_child_indicator_data(profile, geography)
+    indicator_data2 = list(expand_nested_list(indicator_data, "jsdata"))
+    child_profiles2 = list(expand_nested_list(children_indicator_data, "jsdata"))
 
-    def add_indicator_data(self, profile_indicator, data):
-        context = {
-            "children_profiles": self.children_profiles,
-            "data": data
-        }
+    subcategories = models.IndicatorSubcategory.objects.filter(category__profile=profile).select_related("category")
 
-        return serializers.IndicatorSerializer(profile_indicator, context=context).data
+    c = qsdict(subcategories,
+        lambda x: x.category.name,
+        lambda x: {"description": x.category.description}
+    )
 
+    s = qsdict(subcategories,
+        lambda x: x.category.name,
+        lambda x: "subcategories",
+        "name",
+        lambda x: {"description": x.description}
+    )
 
-    def addKeyMetrics(self, profile_indicator):
-        subcategory = profile_indicator.subcategory
-        indicator = profile_indicator.indicator
+    d1 = qsdict(indicator_data2,
+        "category",
+        lambda x: "subcategories",
+        "subcategory",
+        lambda x: "indicators",
+        "profile_indicator_label",
+        lambda x: "subindicators",
+        lambda x: genkey(x["jsdata"]),
+        lambda x: {"count": x["jsdata"]["count"]}
+    )
 
-        key_metrics = indicator.profilekeymetrics_set.filter(subcategory_id=subcategory.id)
-        metrics_js = metrics_helper(key_metrics)
-        return metrics_js
+    d2 = qsdict(child_profiles2,
+        "category",
+        lambda x: "subcategories",
+        "subcategory",
+        lambda x: "indicators",
+        "profile_indicator_label",
+        lambda x: "subindicators",
+        lambda x: genkey(x["jsdata"]),
+        lambda x: "children",
+        "geography_code",
+        lambda x: x["jsdata"]["count"]
+    )
 
-    def toJson(self):
-        return self.data_js
+    d3 = qsdict(indicator_data2,
+        "category",
+        lambda x: "subcategories",
+        "subcategory",
+        lambda x: "indicators",
+        "profile_indicator_label",
+        lambda x: {
+            "description": x["description"],
+            "choropleth_method": x["choropleth_method"],
+            "metadata": {
+                "source": x["metadata_source"],
+                "description": x["metadata_description"],
+                "licence": {
+                    "name": x["licence_name"],
+                    "url": x["licence_url"]
+                }
+            }
+        },
+    )
 
-class ChildProfileBuilder:
-    def __init__(self, profile_indicator_ids, geography):
-        self.profile_indicator_ids = profile_indicator_ids
-        self.geography = geography
+    new_dict = {}
+    mergedict(new_dict, c)
+    mergedict(new_dict, s)
+    mergedict(new_dict, d1)
+    mergedict(new_dict, d2)
+    mergedict(new_dict, d3)
 
-    def get_children_profile(self):
-        profile = {}
-        
-        children_profiles = IndicatorData.objects.filter(
-            indicator_id__in=self.profile_indicator_ids,
-            geography_id__in=self.geography.get_children().values_list("id", flat=True)
-        ).values("indicator__name","data", "geography__code", "indicator__groups")
-
-        for child in children_profiles:
-            indicator_data = profile.setdefault(child.get("indicator__name"), {})
-            for subindicator in child.get("data"):
-                count = subindicator.pop("count")
-                # TODO need to think of a better way to join these. Any explicit separator may appear in the text
-                key = "/".join(subindicator.values())
-                subindicator_data = indicator_data.setdefault(key, {})
-                subindicator_data[child.get("geography__code")] = count
-
-        return profile
-
+    return new_dict
 
 def profile_geography_data_helper(profile_id, geography_code):
-    def sortfn(subindicator_obj):
-        for idx, pi_subindicator in enumerate(pi.subindicators):
-            if pi_subindicator["groups"].items() <= subindicator_obj.items():
-                return idx
-        # TODO not sure what to do if this is reached
-        # -1 in here temporarily
-        return -1
-
     profile = get_object_or_404(models.Profile, pk=profile_id)
     version = profile.geography_hierarchy.root_geography.version
     geography = get_object_or_404(Geography, code=geography_code, version=version)
 
-    profile_indicator_ids = profile.indicators.values_list("id", flat=True)
     models.ProfileKeyMetrics.objects.filter(subcategory__category__profile=profile)
 
-    data = dict(IndicatorData.objects.filter(
-        indicator_id__in=profile_indicator_ids,
-        geography=geography
-    ).values_list("indicator__name", "data"))
-
-    child_profile_builder = ChildProfileBuilder(profile_indicator_ids, geography)
-    builder = DataStructureBuilder(data, child_profile_builder)
-
-    for pi in profile.profileindicator_set.order_by("subcategory__category__name", "subcategory__name").select_related():
-        builder.addIndicator(pi)
-
-        groups = pi.indicator.groups
-
-        # if pi.subindicators and indicator_data and len(groups):
-
-        #     indicator_data = sorted(indicator_data, key=sortfn)
-        #     metrics_data = {
-        #         val["id"]:indicator_data[idx]["count"] for idx, val in enumerate(pi.subindicators)
-        #     }
-
-        #     metrics_js = metrics_helper(key_metrics)
-
-        # indicators_js[pi.label] = get_indicator_data(pi, indicator_data)
-        # for subindicator in indicator_data:
-        #     if indicator.name in children_profile:
-        #         # TODO change name from children to child_geographies - need to change the UI as well
-        #         for group in groups:
-        #             key = subindicator[group] if group else None
-        #             subindicator["children"] = children_profile[indicator.name].get(key, 0)
+    profile_data = reshape(profile, geography)
 
     logo_json = get_profile_logo_json(profile_id)
     geo_js = AncestorGeographySerializer().to_representation(geography)
@@ -215,7 +225,7 @@ def profile_geography_data_helper(profile_id, geography_code):
     js = {
         "logo": logo_json,
         "geography": geo_js,
-        "profile_data": builder.toJson(),
+        "profile_data": profile_data,
         "highlights": highlights,
         "key_metrics": [],
     }
