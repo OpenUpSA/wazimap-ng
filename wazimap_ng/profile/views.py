@@ -238,16 +238,6 @@ def profile_geography_data(request, profile_id, geography_code):
     js = profile_geography_data_helper(profile_id, geography_code)
     return Response(js)
 
-@api_view()
-def profile_geography_data2(request, profile_id, geography_code):
-    profile = get_object_or_404(models.Profile, pk=profile_id)
-    version = profile.geography_hierarchy.root_geography.version
-    geography = get_object_or_404(Geography, code=geography_code, version=version)
-
-    profile_indicators = profile.profileindicator_set.filter(indicator__indicatordata__geography=geography)
-    js = serializers.ProfileIndicatorSerializer2(profile_indicators, many=True).data
-    return Response(js)
-
 def get_profile_logo_json(profile_id):
     try:
         logo = models.Logo.objects.get(profile_id=profile_id)
