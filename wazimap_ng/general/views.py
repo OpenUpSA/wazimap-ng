@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from ..profile import models as profile_models
-from ..profile import views as profile_views
+from ..profile import serializers as profile_serializers
 from ..datasets import models as dataset_models
 from ..datasets import views as dataset_views
 from ..boundaries import models as boundaries_models
