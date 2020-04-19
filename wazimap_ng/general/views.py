@@ -17,8 +17,9 @@ from ..points import models as point_models
 def consolidated_profile_helper(profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
     version = profile.geography_hierarchy.root_geography.version
+    geography = dataset_models.Geography.objects.get(code=geography_code, version=version)
 
-    profile_js = profile_views.profile_geography_data_helper(profile_id, geography_code)
+    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography)
     boundary_js = boundaries_views.geography_item_helper(geography_code, version)
     children_boundary_js = boundaries_views.geography_children_helper(geography_code, version)
 
