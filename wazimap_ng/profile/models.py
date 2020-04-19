@@ -63,7 +63,8 @@ class ProfileKeyMetrics(models.Model):
     variable = models.ForeignKey(Indicator, on_delete=models.CASCADE)
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
     subindicator = models.PositiveSmallIntegerField()
-    denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32)
+    denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32, help_text="Method for calculating the denominator that will normalise this value.")
+    label = models.CharField(max_length=100, help_text="Text used for display to users.")
     
     def __str__(self):
         return f"{self.variable.name}"
