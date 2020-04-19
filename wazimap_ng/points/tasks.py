@@ -35,10 +35,14 @@ def process_uploaded_file(point_file, **kwargs):
     error_logs = []
     subtheme = point_file.profile_category.category
 
-    columns = pd.read_csv(file_path, nrows=1, dtype=str, sep=",").columns.str.lower()
+    df = pd.read_csv(file_path, nrows=1, dtype=str, sep=",")
+    df.dropna(how='all', axis='columns', inplace=True)
+    columns = df.columns.str.lower()
+
     for df in pd.read_csv(
         file_path, chunksize=chunksize, skiprows=1, sep=",", header=None, keep_default_na=False
     ):
+        df.dropna(how='any', axis='columns', inplace=True)
         df.columns = columns
         datasource = (dict(d[1]) for d in df.iterrows())
         logs = loaddata(subtheme, datasource, row_number)

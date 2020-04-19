@@ -5,13 +5,20 @@ from django.urls import path, re_path
 from django.conf.urls import include
 
 from django.views.generic.base import RedirectView
+from rest_framework.decorators import api_view
+
+from rest_framework.response import Response
 
 from .datasets import views as dataset_views
 from .points import views as points_views
+from .profile import views as profile_views
 from .boundaries import views as boundaries_views
 from .general import views as general_views
 from .cache import cache_headers as cache
 
+@api_view()
+def version(*args, **kwargs):
+    return Response(settings.VERSION)
 
 urlpatterns = [
 
@@ -27,15 +34,35 @@ urlpatterns = [
         cache(dataset_views.IndicatorsList.as_view()),
         name="indicator-list",
     ),
-    path("api/v1/profiles/", dataset_views.ProfileList.as_view(), name="profile-list"),
+    path(
+        "api/v1/indicators/<int:pk>/",
+        cache(dataset_views.IndicatorDetailView.as_view()),
+        name="indicator-detail",
+    ),
+    path("api/v1/profiles/", profile_views.ProfileList.as_view(), name="profile-list"),
     path(
         "api/v1/profiles/<int:pk>/",
-        cache(dataset_views.ProfileDetail.as_view()),
+        cache(profile_views.ProfileDetail.as_view()),
         name="profile-detail",
     ),
     path(
+        "api/v1/profiles/<int:profile_id>/categories/",
+        cache(profile_views.ProfileCategoriesList.as_view()),
+        name="profile-categories",
+    ),
+    path(
+        "api/v1/profiles/<int:profile_id>/categories/<int:category_id>/",
+        cache(profile_views.ProfileSubcategoriesList.as_view()),
+        name="profile-subcategories",
+    ),
+    path(
         "api/v1/profiles/<int:profile_id>/geographies/<str:geography_code>/",
-        cache(dataset_views.profile_geography_data),
+        cache(profile_views.profile_geography_data),
+        name="profile-geography-data",
+    ),
+    path(
+        "api/v1/profile/<int:profile_id>/geography/<str:geography_code>/",
+        cache(profile_views.profile_geography_data),
         name="profile-geography-data",
     ),
     path("api/v1/geography/search/<str:profile_id>/", cache(dataset_views.search_geography)),
@@ -105,6 +132,11 @@ urlpatterns = [
         "api/v1/all_details/profile/<int:profile_id>/geography/<str:geography_code>/test/",
         cache(general_views.consolidated_profile_test),
         name="all-details-test"
+    ),
+    path(
+        "api/v1/version/",
+        version,
+        name="version",
     ),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

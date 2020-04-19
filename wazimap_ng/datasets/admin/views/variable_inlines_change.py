@@ -8,7 +8,7 @@ from urllib.parse import unquote
 
 
 from ... import models
-from ... import widgets
+from ....admin_utils import SortableWidget
 
 
 class VariableInlinesAdminForm(forms.ModelForm):
@@ -16,21 +16,17 @@ class VariableInlinesAdminForm(forms.ModelForm):
         model = models.Indicator
         fields = '__all__'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # if self.instance.pk:
-        self.fields["subindicators"].widget = widgets.SortableWidget()
-        self.fields["subindicators"].widget.attrs["subindicators"] = self.instance.subindicators
-
     def clean_subindicators(self):
-        data = self.cleaned_data['subindicators']
-        return [unquote(x) for x in data]
+        values = self.instance.subindicators
+        order = self.cleaned_data['subindicators']
+        return [values[i] for i in order] if order else values
+
 
 def get_edit_url(obj, app_label="datasets"):
     return reverse(f"admin:{app_label}_{obj._meta.model_name}_change", args=[obj.id])
 
+
 class VariableInlinesChangeView(admin.StackedInline):
-    form = VariableInlinesAdminForm
     model = models.Indicator
     fk_name= "dataset"
 
@@ -47,6 +43,12 @@ class VariableInlinesChangeView(admin.StackedInline):
         "universe", "groups", "name", "get_profile_indicators", "get_profile_highlights",
     )
 
+    formfield_overrides = {
+        fields.JSONField: {"widget": SortableWidget},
+    }
+
+    form = VariableInlinesAdminForm
+
     def has_add_permission(self, request, obj=None):
         return False
 
@@ -58,7 +60,7 @@ class VariableInlinesChangeView(admin.StackedInline):
             } for variable in obj.profileindicator_set.all()]
 
             create_new_link = reverse(
-                'admin:datasets_profileindicator_add'
+                'admin:profile_profileindicator_add'
             ) + "?indicator=%d" % obj.id
 
             result = render_to_string(
@@ -82,7 +84,7 @@ class VariableInlinesChangeView(admin.StackedInline):
             } for variable in obj.profilehighlight_set.all()]
 
             create_new_link = reverse(
-                'admin:datasets_profilehighlight_add'
+                'admin:profile_profilehighlight_add'
             ) + "?indicator=%d" % obj.id
 
             result = render_to_string(

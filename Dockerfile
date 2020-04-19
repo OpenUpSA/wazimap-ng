@@ -1,1 +1,1 @@
-FROM adieyal/wazimap-ng:production
+FROM adieyal/wazimap-ng:gcro

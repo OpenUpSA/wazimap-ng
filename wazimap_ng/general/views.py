@@ -4,6 +4,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
+from ..profile import models as profile_models
+from ..profile import serializers as profile_serializers
 from ..datasets import models as dataset_models
 from ..datasets import views as dataset_views
 from ..boundaries import models as boundaries_models
@@ -13,10 +15,11 @@ from ..points import views as point_views
 from ..points import models as point_models
 
 def consolidated_profile_helper(profile_id, geography_code):
-    profile = get_object_or_404(dataset_models.Profile, pk=profile_id)
+    profile = get_object_or_404(profile_models.Profile, pk=profile_id)
     version = profile.geography_hierarchy.root_geography.version
+    geography = dataset_models.Geography.objects.get(code=geography_code, version=version)
 
-    profile_js = dataset_views.profile_geography_data_helper(profile_id, geography_code)
+    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography)
     boundary_js = boundaries_views.geography_item_helper(geography_code, version)
     children_boundary_js = boundaries_views.geography_children_helper(geography_code, version)
 

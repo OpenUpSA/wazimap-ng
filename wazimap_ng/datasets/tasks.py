@@ -3,6 +3,7 @@ import os
 import time
 import os
 import pandas as pd
+import logging
 
 from django.db import transaction
 from django.db.models import Sum, FloatField
@@ -15,6 +16,8 @@ from django.conf import settings
 from . import models
 from .dataloader import loaddata
 from itertools import groupby
+
+logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
@@ -33,7 +36,6 @@ def process_uploaded_file(dataset_file, **kwargs):
         return loaddata(dataset, datasource, row_number)
 
     filename = dataset_file.document.name
-    file_path = dataset_file.document.url
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
 
     columns = None
@@ -43,8 +45,12 @@ def process_uploaded_file(dataset_file, **kwargs):
     row_number = 1
 
     if ".csv" in filename:
-        columns = pd.read_csv(file_path, nrows=1, dtype=str, sep=",").columns.str.lower()
-        for df in pd.read_csv(file_path, chunksize=chunksize, dtype=str, sep=",", header=None):
+        df = pd.read_csv(dataset_file.document.open(), nrows=1, dtype=str, sep=",")
+        df.dropna(how='all', axis='columns', inplace=True)
+        columns = df.columns.str.lower()
+
+        for df in pd.read_csv(dataset_file.document.open(), chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1):
+            df.dropna(how='any', axis='columns', inplace=True)
             df.columns = columns
             errors, warnings = process_file_data(df, dataset, row_number)
             error_logs = error_logs + errors
@@ -53,16 +59,19 @@ def process_uploaded_file(dataset_file, **kwargs):
     else:
         skiprows = 1
         i_chunk = 0
-        columns = pd.read_excel(file_path, nrows=1, dtype=str).columns.str.lower()
+        df = pd.read_excel(dataset_file.document.open(), nrows=1, dtype=str)
+        df.dropna(how='any', axis='columns', inplace=True)
+        columns = df.columns.str.lower()
         while True:
             df = pd.read_excel(
-                file_path, nrows=chunksize, skiprows=skiprows, header=None
+                dataset_file.document.open(), nrows=chunksize, skiprows=skiprows, header=None
             )
             skiprows += chunksize
             # When there is no data, we know we can break out of the loop.
             if not df.shape[0]:
                 break
             else:
+                df.dropna(how='any', axis='columns', inplace=True)
                 df.columns = columns
                 errors, warnings = process_file_data(df, dataset, row_number)
                 error_logs = error_logs + errors
@@ -138,12 +147,26 @@ def indicator_data_extraction(indicator, **kwargs):
 
     qs = models.DatasetData.objects.filter(**filter_query).exclude(data__count="").order_by("geography_id")
 
-    if len(groups) > 1:
-        subindicators = ["/".join(val) for val in list(set(list(qs.values_list(*groups).distinct())))]
-    elif len(groups) == 1:
-        subindicators = [val[0] for val in list(set(list(qs.values_list(*groups).distinct())))]
+    if len(groups):
+        subindicators = json.loads(
+            json.dumps(
+                list(
+                    map(dict, set(
+                            tuple(sorted(d.items())) for d in qs.values(*groups)
+                        )
+                    )
+                )
+            ).replace("data__", "")
+        )
     else:
         subindicators = []
+
+    for idx, subindicator in enumerate(subindicators):
+
+        label_list =[f"{key}: {val}" for key, val in subindicator.items()] 
+        subindicators[idx] = {
+            "groups": subindicator, "id": idx, "label": " / ".join(label_list)
+        }
 
     # Group data according to geography_id and get sum of data__count
     data = groupby(qs.values(*groups, "geography_id").annotate(count=Sum(c)), lambda x: x["geography_id"])

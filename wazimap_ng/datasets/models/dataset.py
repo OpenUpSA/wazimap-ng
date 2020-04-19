@@ -22,11 +22,19 @@ class Dataset(models.Model):
     class Meta:
         ordering = ["id"]
 
+
+class Licence(models.Model):
+    name = models.CharField(max_length=30, blank=False)
+    url = models.URLField(max_length=150, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name}"
+
 class MetaData(models.Model):
     source = models.CharField(max_length=60, null=False, blank=True)
     description = models.TextField(blank=True)
     licence = models.ForeignKey(
-        "profile.Licence", null=True, blank=True, on_delete=models.SET_NULL,
+        Licence, null=True, blank=True, on_delete=models.SET_NULL,
         related_name="dataset_license"
     )
     dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE)
@@ -100,9 +108,9 @@ class Indicator(models.Model):
         Universe, on_delete=models.CASCADE, blank=True, null=True
     )
     # Fields to group by
-    groups = ArrayField(models.CharField(max_length=50), blank=True, default=list)
+    groups = ArrayField(models.CharField(max_length=150), blank=True, default=list)
     name = models.CharField(max_length=50)
-    subindicators = ArrayField(models.CharField(max_length=255), blank=True, default=list)
+    subindicators = JSONField(default=list, blank=True, null=True)
 
     def __str__(self):
         return f"{self.dataset.name} -> {self.name}"
@@ -163,3 +171,5 @@ class IndicatorData(models.Model):
 
     class Meta:
         verbose_name_plural = "Indicator Data items"
+
+
