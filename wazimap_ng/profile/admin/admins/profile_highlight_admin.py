@@ -25,7 +25,7 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
             "fields": ("profile", "name", "indicator")
         }),
         ("Profile fields", {
-          "fields": ("label", "subindicator")
+          "fields": ("label", "subindicator", "denominator")
         })
     )
     form = ProfileHighlightForm

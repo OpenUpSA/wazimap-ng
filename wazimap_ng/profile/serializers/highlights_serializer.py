@@ -1,35 +1,63 @@
 from wazimap_ng.datasets.models import IndicatorData 
+from wazimap_ng.utils import mergedict, format_perc, format_float, format_int
+
+
+def get_subindicator(highlight):
+    return highlight.subindicator if highlight.subindicator is not None else 0
+
+def sibling(highlight, geography):
+    siblings = geography.get_siblings()
+    indicator_data = IndicatorData.objects.filter(indicator__profilehighlight=highlight, geography__in=siblings)
+    subindicator = get_subindicator(highlight)
+    numerator = None
+    denominator = 0
+    for datum in indicator_data:
+        if datum.geography == geography:
+            numerator = datum.data[subindicator]["count"]
+        s = datum.data[subindicator]
+        denominator += s["count"]
+
+    if denominator > 0 and numerator is not None:
+        return format_perc(numerator / denominator)
+    return None
+
+def absolute_value(highlight, geography):
+    indicator_data = IndicatorData.objects.filter(indicator__profilehighlight=highlight, geography=geography)
+    subindicator = get_subindicator(highlight)
+    if indicator_data.count() > 0:
+        data = indicator_data.first().data # TODO what to do with multiple results
+        return format_int(data[subindicator]["count"])
+    return None
+
+def subindicator(highlight, geography):
+    indicator_data = IndicatorData.objects.filter(indicator__profilehighlight=highlight, geography=geography)
+    indicator_data = indicator_data.first() # Fix this need to cater for multiple results
+    subindicator = get_subindicator(highlight)
+    numerator = indicator_data.data[subindicator]["count"]
+    denominator = 0
+    for datum in indicator_data.data:
+        denominator += datum["count"]
+
+    if denominator > 0 and numerator is not None:
+        return format_perc(numerator / denominator)
+    return None
+
+algorithms = {
+    "absolute_value": absolute_value,
+    "sibling": sibling,
+    "subindicators": subindicator
+}
 
 def HighlightsSerializer(profile, geography):
-    highlights = {}
+    highlights = []
 
-    profile_highlights = profile.profilehighlight_set.all().values(
-        "name", "label", "indicator_id", "subindicator", "indicator__groups", "indicator__subindicators"
-    )
-
-    indicators = dict(IndicatorData.objects.filter(
-        geography_id=geography.id, indicator_id__in=profile_highlights.values_list("indicator_id", flat=True)
-    ).values_list("indicator_id", "data"))
+    profile_highlights = profile.profilehighlight_set.all()
 
     for highlight in profile_highlights:
-        indicator_id = highlight.get("indicator_id", None)
-        subindicators = highlight.get("indicator__subindicators")
-        subindicator = next(
-            item for item in subindicators if item["id"] == int(highlight.get("subindicator"))
-        ) 
+        denominator = highlight.denominator
+        method = algorithms.get(denominator, absolute_value)
+        val = method(highlight, geography)
 
-        if indicator_id in indicators:
-            data = indicators.get(indicator_id)
-            total_count = sum([val["count"] for val in data])
-            count = 0
-
-            if subindicator:
-                for indicator in indicators[indicator_id]:
-                    if subindicator["groups"].items() <= indicator.items():
-                        count = count + indicator["count"]
-
-            highlights[highlight.get("name")] = {
-                "label": subindicator.get("label"),
-                "value": count / total_count
-            }
+        if val is not None:
+            highlights.append({"label": highlight.label, "value": val})
     return highlights
