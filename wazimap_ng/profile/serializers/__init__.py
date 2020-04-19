@@ -4,7 +4,6 @@ from django.core.serializers import serialize
 
 
 from .. import models
-from .indicator_serializer import IndicatorSerializer
 from .indicator_data_serializer import IndicatorDataSerializer
 from .metrics_serializer import MetricsSerializer
 from .profile_logo import ProfileLogoSerializer
