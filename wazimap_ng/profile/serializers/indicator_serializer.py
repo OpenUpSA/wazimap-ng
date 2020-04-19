@@ -1,55 +1,8 @@
-from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from rest_framework import serializers
-from django.core.serializers import serialize
 
 from wazimap_ng.datasets.serializers import MetaDataSerializer
-from . import models
 
-class ProfileIndicatorSerializer(serializers.ModelSerializer):
-  subcategory = serializers.SerializerMethodField()
-  category = serializers.SerializerMethodField()
-
-  def get_category(self, obj):
-      return obj.subcategory.category.name
-
-  def get_subcategory(self, obj):
-      return obj.subcategory.name
-
-  class Meta:
-      model = models.ProfileIndicator
-      exclude = ["profile", "id"]
-      depth = 2        
-
-class FullProfileSerializer(serializers.ModelSerializer):
-    indicators = ProfileIndicatorSerializer(source="profileindicator_set", many=True)
-
-    class Meta:
-        model = models.Profile
-        depth = 2
-        fields = "__all__"
-
-class IndicatorSubcategorySerializer(serializers.ModelSerializer):
-
-  class Meta:
-    model = models.IndicatorSubcategory
-    depth = 2
-    fields = ["id", "name", "description"]
-
-class IndicatorCategorySerializer(serializers.ModelSerializer):
-    subcategories = serializers.SerializerMethodField()
-
-    def get_subcategories(self, obj):
-        return IndicatorSubcategorySerializer(obj.indicatorsubcategory_set.all(), many=True).data
-
-    class Meta:
-        model = models.IndicatorCategory
-        exclude = ["profile"]
-
-
-class ProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-      model = models.Profile
-      exclude = ["indicators"]
+# TODO this needs to be moved to datasets
 
 class SubIndicatorSerializer(serializers.Serializer):
     @staticmethod
@@ -112,4 +65,3 @@ class IndicatorSerializer(serializers.Serializer):
         "profile_indicator": obj
       }
       return SubIndicatorSerializer(self.context["data"], many=True, context=context).data
-
