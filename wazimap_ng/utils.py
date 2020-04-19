@@ -3,6 +3,15 @@ import pathlib
 import os
 from collections import OrderedDict
 
+def format_perc(n):
+    return f"{n :.2%}"
+
+def format_float(n, decimals=2):
+    return f"{round(n, decimals) :,}"
+
+def format_int(n):
+    return f"{round(n):,}"
+
 def get_random_filename(filename):
     ext = pathlib.Path(filename).suffix
     filename = os.path.join(str(uuid.uuid4()), os.path.extsep, ext)
