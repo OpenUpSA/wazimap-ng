@@ -22,7 +22,6 @@ def truthy(s):
 
     return str(s).lower() == "true" or str(s) == 1
 
-<<<<<<< HEAD
 def noney(n):
     return n is None or str(n).lower() == "none"
 
@@ -31,7 +30,7 @@ def int_or_none(i):
         return None
 
     return int(i) 
-=======
+
 def mergedict(a, b, path=None, concatenate_arrays=True, update=True):
     """
     Derived from: http://stackoverflow.com/questions/7204805/python-dictionaries-of-dictionaries-merge
@@ -127,4 +126,3 @@ def expand_nested_list(lst, key):
             row_copy = row.copy()
             row_copy[key] = js
             yield row_copy
->>>>>>> staging
