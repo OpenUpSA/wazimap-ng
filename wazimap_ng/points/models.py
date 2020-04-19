@@ -8,10 +8,10 @@ from django.core.exceptions import ValidationError
 
 import pandas as pd
 from io import BytesIO
-from wazimap_ng.datasets.models import Profile
+from wazimap_ng.profile.models import Profile
 from django_q.models import Task
 from wazimap_ng import utils
-from wazimap_ng.profile.models import Licence
+from wazimap_ng.datasets.models import Licence
 
 def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)
@@ -77,8 +77,9 @@ class CoordinateFile(models.Model):
         document_name = self.document.name
         headers = []
         try:
-            data = BytesIO(self.document.read())
-            df = pd.read_csv(data, sep=",", header=None)
+            headers = pd.read_csv(
+                BytesIO(self.document.read()), nrows=1, dtype=str
+            ).columns.str.lower()
         except pd.errors.ParserError as e:
             raise ValidationError(
                 "Not able to parse passed file. Error while reading file: %s" % str(e)
@@ -87,9 +88,6 @@ class CoordinateFile(models.Model):
             raise ValidationError(
                 "File seems to be empty. Error while reading file: %s" % str(e)
             )
-        
-        data = df.values.tolist()
-        headers = [str(h).lower() for h in data[0]]
 
         required_headers = ["longitude", "latitude", "name"]
 
@@ -103,7 +101,7 @@ class MetaData(models.Model):
     source = models.CharField(max_length=60, null=False, blank=True)
     description = models.TextField(blank=True)
     licence = models.ForeignKey(
-        "profile.Licence", null=True, blank=True, on_delete=models.SET_NULL, related_name="points_license"
+        Licence, null=True, blank=True, on_delete=models.SET_NULL, related_name="points_licence"
     )
     profile_category = models.OneToOneField(ProfileCategory, on_delete=models.CASCADE)
 

@@ -42,6 +42,7 @@ class Common(Configuration):
         "wazimap_ng.points",
         "wazimap_ng.boundaries",
         "wazimap_ng.profile",
+        "wazimap_ng.general",
         "storages",
         "import_export"
 
@@ -74,6 +75,11 @@ class Common(Configuration):
     ADMINS = (
         ("Author", "adi@openup.org.za"),
     )
+
+    if os.path.exists("VERSION"):
+        VERSION = open("VERSION").read().strip()
+    else:
+        VERSION = "Missing version"
 
 
     # Postgres
@@ -121,7 +127,7 @@ class Common(Configuration):
     TEMPLATES = [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
-            "DIRS": [BASE_DIR + "/datasets/templates/",],
+            "DIRS": [],
             "APP_DIRS": True,
             "OPTIONS": {
                 "context_processors": [
@@ -262,6 +268,12 @@ ALLOWED_FILE_EXTENSIONS = ["csv", "xls", "xlsx"]
 CHUNK_SIZE_LIMIT = 500000
 
 TESTING = "test" in sys.argv
+
+DENOMINATOR_CHOICES = (
+    ('absolute_value', 'Absolute value'),
+    ('subindicators', 'Sub-indicators'),
+    ('sibling', 'Sibling'),
+)
 
 
 if TESTING:

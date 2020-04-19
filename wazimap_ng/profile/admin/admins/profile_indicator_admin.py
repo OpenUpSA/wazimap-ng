@@ -1,27 +1,10 @@
-from django.contrib import admin
+from django.contrib.gis import admin
 from django.contrib.postgres import fields
-from django import forms
 
-from .. import models
-from .. import widgets
-from .utils import customTitledFilter, description
-from urllib.parse import unquote
+from ... import models
+from ..forms import ProfileIndicatorAdminForm
 
-
-class ProfileIndicatorAdminForm(forms.ModelForm):
-    class Meta:
-        model = models.ProfileIndicator
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance.pk:
-            self.fields["subindicators"].widget = widgets.SortableWidget()
-            self.fields["subindicators"].widget.attrs["subindicators"] = self.instance.subindicators
-
-    def clean_subindicators(self):
-        data = self.cleaned_data['subindicators']
-        return [unquote(x) for x in data]
+from wazimap_ng.admin_utils import customTitledFilter, description, SortableWidget
 
 @admin.register(models.ProfileIndicator)
 class ProfileIndicatorAdmin(admin.ModelAdmin):
@@ -38,24 +21,24 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         description("Indicator", lambda x: x.indicator.name), 
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
-        "key_metric",
     )
-    form = ProfileIndicatorAdminForm
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
             'fields': ('profile', 'indicator')
         }),
         ("Profile fields", {
-          'fields': ('label', 'subcategory', 'key_metric', 'description', 'choropleth_method')
+          'fields': ('label', 'subcategory', 'description', 'choropleth_method')
         }),
         ("Subindicators", {
           'fields': ('subindicators',)
         })
     )
 
+    form = ProfileIndicatorAdminForm
+
     formfield_overrides = {
-        fields.ArrayField: {"widget": widgets.SortableWidget},
+        fields.JSONField: {"widget": SortableWidget},
     }
 
     def get_readonly_fields(self, request, obj=None):

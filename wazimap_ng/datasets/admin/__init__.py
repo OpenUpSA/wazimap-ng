@@ -8,16 +8,12 @@ from treebeard.forms import movenodeform_factory
 from .indicator_data_admin import IndicatorDataAdmin
 from .dataset_admin import DatasetAdmin
 from .indicator_admin import IndicatorAdmin
-from .profile_indicator_admin import ProfileIndicatorAdmin
-from .profile_highlight_admin import ProfileHighlightAdmin
 from .. import models
 
 
-admin.site.register(models.IndicatorCategory)
-admin.site.register(models.IndicatorSubcategory)
-admin.site.register(models.Profile)
-
 @admin.register(models.Geography)
+
+
 class GeographyAdmin(TreeAdmin):
     form = movenodeform_factory(models.Geography)
     list_display = (
@@ -32,3 +28,7 @@ class UniverseAdmin(admin.ModelAdmin):
   formfield_overrides = {
     fields.JSONField: {"widget": JSONEditorWidget},
   }
+  
+@admin.register(models.Licence)
+class LicenceAdmin(admin.ModelAdmin):
+    pass

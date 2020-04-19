@@ -1,7 +1,10 @@
-from django.contrib import admin
+from django.contrib.gis import admin
 
-from .. import models
-from .utils import customTitledFilter, description
+from ... import models
+from ..forms import ProfileHighlightForm
+
+
+from wazimap_ng.admin_utils import customTitledFilter, description
 
 @admin.register(models.ProfileHighlight)
 class ProfileHighlightAdmin(admin.ModelAdmin):
@@ -22,11 +25,18 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
             "fields": ("profile", "name", "indicator")
         }),
         ("Profile fields", {
-          "fields": ("label", "value")
+          "fields": ("label", "subindicator", "denominator")
         })
     )
+    form = ProfileHighlightForm
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
             return ("profile", "name") + self.readonly_fields
         return self.readonly_fields
+
+    class Media:
+        js = (
+            "/static/js/jquery-ui.min.js",
+            "/static/js/variable_subindicators.js",
+        )
