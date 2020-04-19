@@ -11,9 +11,14 @@ def get_random_filename(filename):
 def truthy(s):
     return str(s).lower() == "true" or str(s) == 1
 
-def mergedict(a, b, path=None, update=True):
-    "http://stackoverflow.com/questions/7204805/python-dictionaries-of-dictionaries-merge"
-    "merges b into a"
+def mergedict(a, b, path=None, concatenate_arrays=True, update=True):
+    """
+    Derived from: http://stackoverflow.com/questions/7204805/python-dictionaries-of-dictionaries-merge
+    merges b into a
+
+        concatenate_arrays - if True then arrays are concatenate, otherwise they are recursively traversed
+        update - if True then values in b clobber values in a
+    """
     if path is None: path = []
     for key in b:
         if key in a:
@@ -22,8 +27,11 @@ def mergedict(a, b, path=None, update=True):
             elif a[key] == b[key]:
                 pass # same leaf value
             elif isinstance(a[key], list) and isinstance(b[key], list):
-                for idx, val in enumerate(b[key]):
-                    a[key][idx] = mergedict(a[key][idx], b[key][idx], path + [str(key), str(idx)], update=update)
+                if concatenate_arrays:
+                    a[key].extend(b[key])
+                else:
+                    for idx, val in enumerate(b[key]):
+                        a[key][idx] = mergedict(a[key][idx], b[key][idx], path + [str(key), str(idx)], update=update)
             elif update:
                 a[key] = b[key]
             else:
