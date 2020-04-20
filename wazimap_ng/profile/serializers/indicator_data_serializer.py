@@ -60,7 +60,10 @@ def IndicatorDataSerializer(profile, geography):
     indicator_data2 = list(expand_nested_list(indicator_data, "jsdata"))
     child_profiles2 = list(expand_nested_list(children_indicator_data, "jsdata"))
 
-    subcategories = models.IndicatorSubcategory.objects.filter(category__profile=profile).select_related("category")
+    subcategories = (models.IndicatorSubcategory.objects.filter(category__profile=profile)
+        .order_by("category__order")
+        .select_related("category")
+    )
 
     c = qsdict(subcategories,
         lambda x: x.category.name,
