@@ -61,7 +61,7 @@ def IndicatorDataSerializer(profile, geography):
     child_profiles2 = list(expand_nested_list(children_indicator_data, "jsdata"))
 
     subcategories = (models.IndicatorSubcategory.objects.filter(category__profile=profile)
-        .order_by("category__order")
+        .order_by("category__order", "order")
         .select_related("category")
     )
 

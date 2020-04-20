@@ -51,13 +51,14 @@ class IndicatorSubcategory(models.Model):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(IndicatorCategory, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
+    order = models.PositiveIntegerField(default=0, blank=False, null=False)
 
     def __str__(self):
         return f"{self.category.profile.name}: {self.category.name} -> {self.name}"
 
     class Meta:
         verbose_name_plural = "Indicator Subcategories"
-        ordering = ["id"]
+        ordering = ["order"]
 
 class ProfileKeyMetrics(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
