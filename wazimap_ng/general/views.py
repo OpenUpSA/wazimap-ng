@@ -37,7 +37,7 @@ def consolidated_profile_helper(profile_id, geography_code):
         "boundary": boundary_js,
         "children": children_boundary_js,
         "parent_layers": parent_layers,
-        "themes": point_views.boundary_point_count_helper(profile_id, geography_code)
+        "themes": point_views.boundary_point_count_helper(profile, geography)
     })
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
