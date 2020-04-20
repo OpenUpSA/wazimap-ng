@@ -1,5 +1,6 @@
 from django.contrib.gis import admin
 from django.contrib.postgres import fields
+from adminsortable2.admin import SortableAdminMixin
 
 from ... import models
 from ..forms import ProfileIndicatorAdminForm
@@ -7,10 +8,9 @@ from ..forms import ProfileIndicatorAdminForm
 from wazimap_ng.admin_utils import customTitledFilter, description, SortableWidget
 
 @admin.register(models.ProfileIndicator)
-class ProfileIndicatorAdmin(admin.ModelAdmin):
+class ProfileIndicatorAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_filter = (
         ('profile__name', customTitledFilter('Profile')),
-        ('indicator__name', customTitledFilter('Indicator')),
         ('subcategory__category__name', customTitledFilter('Category')),
         "subcategory",
     )
@@ -21,6 +21,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         description("Indicator", lambda x: x.indicator.name), 
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
+        "order",
     )
 
     fieldsets = (
