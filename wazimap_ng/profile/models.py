@@ -83,9 +83,13 @@ class ProfileHighlight(models.Model):
     subindicator = models.PositiveSmallIntegerField(null=True, blank=True)
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32, help_text="Method for calculating the denominator that will normalise this value.")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
+    order = models.PositiveIntegerField(default=0, blank=False, null=False)
 
     def __str__(self):
         return f"Highlight: {self.label}"
+        
+    class Meta:
+        ordering = ["order"]
 
 
 class ProfileIndicator(models.Model):

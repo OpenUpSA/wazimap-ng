@@ -1,4 +1,5 @@
 from django.contrib.gis import admin
+from adminsortable2.admin import SortableAdminMixin
 
 from ... import models
 from ..forms import ProfileHighlightForm
@@ -7,10 +8,9 @@ from ..forms import ProfileHighlightForm
 from wazimap_ng.admin_utils import customTitledFilter, description
 
 @admin.register(models.ProfileHighlight)
-class ProfileHighlightAdmin(admin.ModelAdmin):
+class ProfileHighlightAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_filter = (
         ("profile__name", customTitledFilter("Profile")),
-        ("indicator__name", customTitledFilter("Indicator")),
     )
 
     list_display = (
@@ -18,6 +18,7 @@ class ProfileHighlightAdmin(admin.ModelAdmin):
         "name", 
         "label", 
         description("Indicator", lambda x: x.indicator.name), 
+        "order", 
     )
 
     fieldsets = (
