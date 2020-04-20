@@ -41,6 +41,11 @@ class IndicatorAdminForm(forms.ModelForm):
                         as_string=Cast('filters', CharField())
                     ).filter(condition)
 
+    def clean_subindicators(self):
+        values = self.instance.subindicators
+        order = self.cleaned_data['subindicators']
+        return [values[i] for i in order] if order else values
+
 @admin.register(models.Indicator)
 class IndicatorAdmin(BaseAdminModel):
 
@@ -91,6 +96,11 @@ class IndicatorAdmin(BaseAdminModel):
                 to_add = to_add + ("groups", "universe",)
             return self.readonly_fields + to_add
         return self.readonly_fields
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "dataset":
+            kwargs["queryset"] = models.Dataset.objects.filter(datasetfile__task__success=True)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_model(self, request, obj, form, change):
         run_task = False
