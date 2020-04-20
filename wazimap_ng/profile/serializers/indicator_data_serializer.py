@@ -8,7 +8,7 @@ from .. import models
 def genkey(x):
     x_copy = x.copy()
     x_copy.pop("count")
-    return "/".join(x_copy.values())
+    return "/".join(str(x) for x in x_copy.values())
 
 
 def get_indicator_data(profile, geography):
