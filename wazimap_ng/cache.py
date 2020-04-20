@@ -6,7 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.views.decorators.cache import cache_page, cache_control
 
-from .profile.models import ProfileIndicator
+from .profile.models import ProfileIndicator, ProfileHighlight
 from .points.models import Location, Category, Theme
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,13 @@ def last_modified_point_updated(request, category_id=None, theme_id=None):
 ########### Signals #################
 
 @receiver(post_save, sender=ProfileIndicator)
-def profile_updated(sender, instance, **kwargs):
+def profile_indicator_updated(sender, instance, **kwargs):
+    profile_id = instance.profile.id
+    key = profile_key % profile_id
+    cache.set(key, datetime.now())
+
+@receiver(post_save, sender=ProfileHighlight)
+def profile_highlight_updated(sender, instance, **kwargs):
     profile_id = instance.profile.id
     key = profile_key % profile_id
     cache.set(key, datetime.now())
