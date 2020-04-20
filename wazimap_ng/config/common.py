@@ -34,6 +34,9 @@ class Common(Configuration):
 
         "debug_toolbar",
         "django_q",
+        "adminsortable2",
+        "storages",
+        "import_export",
 
         # Your apps
         "wazimap_ng.datasets",
@@ -42,8 +45,6 @@ class Common(Configuration):
         "wazimap_ng.boundaries",
         "wazimap_ng.profile",
         "wazimap_ng.general",
-        "storages",
-        "import_export"
 
     ]
 
