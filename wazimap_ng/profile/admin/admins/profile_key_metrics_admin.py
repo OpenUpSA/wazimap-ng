@@ -1,17 +1,26 @@
 from django.contrib.gis import admin
+from adminsortable2.admin import SortableAdminMixin
 
 from ... import models
 from ..forms import ProfileKeyMetricsForm
 from wazimap_ng.admin_utils import customTitledFilter, description 
 
 @admin.register(models.ProfileKeyMetrics)
-class ProfileKeyMetricsAdmin(admin.ModelAdmin):
-    fields = ("profile", "variable", "subcategory", "subindicator", "denominator", "label")
-    list_display = ("variable",)
+class ProfileKeyMetricsAdmin(SortableAdminMixin, admin.ModelAdmin):
+    #fields = ("profile", "variable", "subcategory", "subindicator", "denominator", "label", "order")
+    list_display = (
+        description("Variable", lambda x: x.variable.name),
+        description("Profile", lambda x: x.subcategory.category.profile.name),
+        description("Subcategory", lambda x: x.subcategory.name),
+        description("Category", lambda x: x.subcategory.category.name),
+        "order"
+    )
     form = ProfileKeyMetricsForm
 
     list_filter = (
         ("subcategory__category__profile", customTitledFilter("Profile")),
+        ('subcategory__category__name', customTitledFilter('Category')),
+        ('subcategory__name', customTitledFilter('Subcategory')),
     )
 
 

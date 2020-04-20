@@ -67,13 +67,14 @@ class ProfileKeyMetrics(models.Model):
     subindicator = models.PositiveSmallIntegerField()
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32, help_text="Method for calculating the denominator that will normalise this value.")
     label = models.CharField(max_length=100, help_text="Text used for display to users.")
+    order = models.PositiveIntegerField(default=0, blank=False, null=False)
     
     def __str__(self):
         return f"{self.variable.name}"
 
     class Meta:
+        ordering = ["order"]
         verbose_name_plural = "Profile key metrics"
-        ordering = ["id"]
 
 class ProfileHighlight(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)

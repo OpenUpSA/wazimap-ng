@@ -55,6 +55,7 @@ def MetricsSerializer(profile, geography):
     out_js = {}
     profile_key_metrics = (models.ProfileKeyMetrics.objects
         .filter(profile=profile)
+        .order_by("order")
         .select_related("subcategory", "subcategory__category")
     )
 
