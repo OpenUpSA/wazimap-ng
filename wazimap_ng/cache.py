@@ -6,7 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.views.decorators.cache import cache_page, cache_control
 
-from .profile.models import ProfileIndicator, ProfileHighlight
+from .profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory
 from .points.models import Location, Category, Theme
 
 logger = logging.getLogger(__name__)
@@ -69,6 +69,14 @@ def profile_indicator_updated(sender, instance, **kwargs):
 @receiver(post_save, sender=ProfileHighlight)
 def profile_highlight_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
+
+@receiver(post_save, sender=IndicatorCategory)
+def profile_category_updated(sender, instance, **kwargs):
+    update_profile_cache(instance.profile)
+
+@receiver(post_save, sender=IndicatorSubcategory)
+def profile_subcategory_updated(sender, instance, **kwargs):
+    update_profile_cache(instance.category.profile)
 
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
