@@ -7,5 +7,5 @@ from ... import models
 @admin.register(models.IndicatorCategory)
 class IndicatorCategoryAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ("name", "profile", "order")
-    list_filter = ("profile")
+    list_filter = ("profile",)
 
