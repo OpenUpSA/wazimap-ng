@@ -43,3 +43,9 @@ class ProfileAdmin(GuardedModelAdmin):
     		for perm in get_perms_for_model(models.Profile):
     			assign_perm(perm, request.user, obj)
     	return obj
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.current_user = request.user
+        form.target = obj
+        return form

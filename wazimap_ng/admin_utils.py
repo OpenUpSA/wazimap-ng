@@ -32,3 +32,26 @@ class SortableWidget(Widget):
             'values': values
         }}
 
+
+class GroupPermissionWidget(Widget):
+    template_name = 'widgets/GroupPermissionWidget.html'
+
+    class Media:
+        css = {'all': ("/static/css/group-permission-widget.css",)}
+        js = ("/static/js/group-permission-widget.js",)
+
+    def get_context(self, name, value, attrs=None):
+
+        user = self.current_user
+        target = self.target
+        user_groups = user.groups.all()
+        other_groups = self.choices.queryset.exclude(
+            id__in=user_groups.values_list("id", flat=True)
+        )
+        return {'widget': {
+            'name': name,
+            'values': value,
+            "user_groups": user_groups,
+            "other_groups": other_groups,
+        }}
+

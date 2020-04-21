@@ -1,0 +1,40 @@
+<div class="permission_widget">
+
+	<div id="selected_groups">
+		<table>
+		  <tr>
+		    <th>Group Name</th>
+		    <th>View</th>
+		    <th>Edit</th>
+		    <th>Delete</th>
+		  </tr>
+		</table>
+
+		<div class="card">
+			<div class="widget_header">
+				<h4>Assign Permissions to Group</h4>
+			</div>
+			<div class="widget_body">
+				<div id="user_groups">
+				  	<ul aria-label="Groups assigned to you:"> 
+				  		{% for group in widget.user_groups %}
+							<li class="border">{{ group.name }} <span class="add"><img src="/static/admin/img/icon-addlink.svg" alt="Add"></span></li>
+				  		{% empty %}
+				  			<li>User does not belong to any group yet</li>
+				  		{% endfor %}
+				     </ul>
+			    </div>
+			    <div id="other_groups">
+				  	<ul aria-label="Other Groups:"> 
+				  		{% for group in widget.other_groups %}
+							<li class="border">{{ group.name }} <span class="add"><img src="/static/admin/img/icon-addlink.svg" alt="Add"></span></li>
+				  		{% empty %}
+				  			<li>There aren't any other groups</li>
+				  		{% endfor %}
+
+				     </ul>
+			    </div>
+			</div>
+		</div>
+	</div>
+</div>
