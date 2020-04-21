@@ -52,3 +52,14 @@ class Production(Common):
     AWS_STORAGE_BUCKET_NAME = Common.get_env_value('AWS_STORAGE_BUCKET_NAME')
     AWS_S3_REGION_NAME = Common.get_env_value('AWS_S3_REGION_NAME')
     AWS_DEFAULT_ACL = None
+
+    MAP_WIDGETS = {
+        "GooglePointFieldWidget": (
+            ("zoom", 15),
+            ("mapCenterLocationName", "south africa"),
+            ("GooglePlaceAutocompleteOptions", {'componentRestrictions': {'country': 'za'}}),
+            ("markerFitZoom", 12),
+        ),
+        "GOOGLE_MAP_API_KEY": os.environ.get("GOOGLE_MAP_API_KEY", "")
+    }
+    GOOGLE_MAP_API_KEY = os.environ.get("GOOGLE_MAP_API_KEY", "")

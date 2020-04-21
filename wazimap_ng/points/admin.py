@@ -4,6 +4,9 @@ from django.contrib.postgres import fields
 from django.contrib import  messages
 from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
+from django.contrib.gis.db.models import PointField
+
+from mapwidgets.widgets import GooglePointFieldWidget
 
 from django_q.tasks import async_task
 from django_q.models import Task
@@ -55,10 +58,11 @@ class LocationResource(resources.ModelResource):
         export_order = ("name", "category", "latitude", "longitude", "data")
 
 @admin.register(models.Location)
-class LocationAdmin(ExportMixin, admin.OSMGeoAdmin):
+class LocationAdmin(ExportMixin, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
-      }
+        PointField: {"widget": GooglePointFieldWidget},
+    }
 
     list_display = ("name", "category",)
     list_filter = ("category",)

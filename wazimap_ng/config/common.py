@@ -37,6 +37,7 @@ class Common(Configuration):
         "adminsortable2",
         "storages",
         "import_export",
+        "mapwidgets",
 
         # Your apps
         "wazimap_ng.datasets",
