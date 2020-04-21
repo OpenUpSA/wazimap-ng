@@ -3,7 +3,7 @@ from django import forms
 
 from django_q.tasks import async_task
 from guardian.admin import GuardedModelAdmin
-from guardian.shortcuts import get_objects_for_user, get_perms_for_model, assign_perm
+from guardian.shortcuts import get_perms_for_model, assign_perm
 
 from .base_admin_model import BaseAdminModel
 from .. import models
@@ -12,6 +12,7 @@ from .views import (
     InitialDataUploadChangeView, VariableInlinesChangeView, 
     VariableInlinesAddView, InitialDataUploadAddView, MetaDataInline
 )
+from wazimap_ng.utils import get_objects_for_user
 
 
 class DatasetAdminForm(forms.ModelForm):
@@ -146,10 +147,7 @@ class DatasetAdmin(GuardedModelAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-
-        datasets = qs.exclude(dataset_type="private")
-        datasets |= get_objects_for_user(request.user, 'datasets.view_dataset', accept_global_perms=False)
-        return datasets
+        return get_objects_for_user(request.user, 'view', models.Dataset, qs)
 
     def has_change_permission(self, request, obj=None):
         if not obj:

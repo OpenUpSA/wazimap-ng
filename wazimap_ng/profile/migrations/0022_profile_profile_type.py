@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('profile', '0018_profilekeymetrics_profile'),
+        ('profile', '0021_profilehighlight_denominator'),
     ]
 
     operations = [

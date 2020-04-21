@@ -2,9 +2,10 @@ from django.contrib.gis import admin
 
 from ... import models
 from ..forms import ProfileAdminForm
+from wazimap_ng.utils import get_objects_for_user
 
 from guardian.admin import GuardedModelAdmin
-from guardian.shortcuts import get_objects_for_user, get_perms_for_model, assign_perm
+from guardian.shortcuts import get_perms_for_model, assign_perm
 
 @admin.register(models.Profile)
 class ProfileAdmin(GuardedModelAdmin):
@@ -20,10 +21,7 @@ class ProfileAdmin(GuardedModelAdmin):
         if request.user.is_superuser:
             return qs
 
-        profiles = qs.exclude(profile_type="private")
-        profiles |= get_objects_for_user(request.user, 'profile.view_profile', accept_global_perms=False)
-
-        return profiles
+        return get_objects_for_user(request.user, "view", models.Profile, qs)
 
     def has_change_permission(self, request, obj=None):
     	if not obj:
@@ -36,14 +34,11 @@ class ProfileAdmin(GuardedModelAdmin):
     def has_delete_permission(self, request, obj=None):
     	if not obj:
     		return super().has_delete_permission(request, obj)
-    	if obj.profile_type == "public":
-    		return True
     	return request.user.has_perm("delete_profile", obj)
 
 
     def save_model(self, request, obj, form, change):
     	super().save_model(request, obj, form, change)
-
     	if not change:
     		for perm in get_perms_for_model(models.Profile):
     			assign_perm(perm, request.user, obj)

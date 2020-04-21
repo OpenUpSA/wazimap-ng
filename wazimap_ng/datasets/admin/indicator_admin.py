@@ -14,6 +14,7 @@ from .. import models
 from .. import hooks
 from .base_admin_model import BaseAdminModel
 from ...admin_utils import customTitledFilter, SortableWidget
+from wazimap_ng.utils import get_objects_for_user
 
 class IndicatorAdminForm(forms.ModelForm):
     groups = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple)
@@ -99,7 +100,8 @@ class IndicatorAdmin(BaseAdminModel):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "dataset":
-            kwargs["queryset"] = models.Dataset.objects.filter(datasetfile__task__success=True)
+            qs = get_objects_for_user(request.user, 'view', models.Dataset)
+            kwargs["queryset"] = qs.filter(datasetfile__task__success=True)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_model(self, request, obj, form, change):
@@ -133,3 +135,11 @@ class IndicatorAdmin(BaseAdminModel):
                 "Please make sure you get data right before saving as fields : groups, dataset & universe will be set as non editable"
             )
         return obj
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        datasets = get_objects_for_user(request.user, 'view', models.Dataset)
+        return qs.filter(dataset__in=datasets)
