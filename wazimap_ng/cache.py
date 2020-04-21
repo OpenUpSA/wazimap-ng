@@ -84,7 +84,7 @@ def profile_subcategory_updated(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
-    update_point_cache(instance)
+    update_point_cache(instance.category)
 
 @receiver(post_save, sender=Category)
 def point_updated_category(sender, instance, **kwargs):
