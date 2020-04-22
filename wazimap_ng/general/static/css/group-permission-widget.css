@@ -1,55 +1,10 @@
-.card{
-	width: 340px;
-    min-height: 200px;
-    border: 1px solid lightgrey;
-    margin: 20px;
-    padding: 0px;
-    border-radius: 5px;
-    margin-left: 200px;
+.permission_widget{
+	width: 500px;
+    max-height: 300px;
     overflow: scroll;
+    border: 1px solid lightgrey;
+    border-radius: 5px;
 }
-
-.widget_header{
-	background-color: lightgrey;
-    text-align: center;
-    padding: 10px;
-}
-
-.permission_widget h4{
-	margin: 0px;
-    height: 15px;
-    padding: 0px;
-}
-
-.permission_widget ul:before{
-    content:attr(aria-label);
-    font-size:100%;
-    font-weight:bold;
-    margin-left:-15px;
-}
-
-.permission_widget ul {
-	margin-left: 10px !important;
-	margin: 10px 0;
-}
-
-.permission_widget ul>li {
-	margin: 3px 0;
-	
-}
-
-.permission_widget ul>li.border {
-	border-bottom: 1px solid lightgrey; 
-}
-
-.permission_widget ul>li>.add:hover {
-	cursor: pointer;
-}
-
-.permission_widget ul>li>span {
-	float: right;
-}
-
 .permission_widget table {
 	width: 400px;
 	max-height: 200px;
@@ -59,4 +14,42 @@
 .permission_widget .widget_body{
 	max-height: 200px;
     overflow: scroll;
+}
+
+.hidden{
+	display: none;
+}
+
+.permission_widget .row{
+    display: flex;
+    text-align: center;
+}
+
+.permission_widget .header{
+    font-weight: 600;
+}
+
+.col-4{
+    width: 40% !important;
+}
+
+.col-2{
+    width: 20% !important;
+}
+
+.col-12{
+    width: 100% !important;
+}
+
+.separator{
+    min-height: 10px;
+    border-bottom: 1px solid lightgrey;
+    margin-bottom: 5px;
+}
+
+#permission-widget {
+    background-color: #eae9e9;
+    border-bottom: 1px solid #cecece;
+    padding: 10px 0;
+    margin-bottom: 10px;
 }

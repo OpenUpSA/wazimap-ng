@@ -23,3 +23,4 @@ class ProfileAdminForm(forms.ModelForm):
 		super().__init__(*args, **kwargs)
 		self.fields["groups"].widget.current_user = self.current_user
 		self.fields["groups"].widget.target = self.instance
+		self.fields["groups"].widget.permission_type = self.instance.profile_type

@@ -1,40 +1,38 @@
-<div class="permission_widget">
-
-	<div id="selected_groups">
-		<table>
-		  <tr>
-		    <th>Group Name</th>
-		    <th>View</th>
-		    <th>Edit</th>
-		    <th>Delete</th>
-		  </tr>
-		</table>
-
-		<div class="card">
-			<div class="widget_header">
-				<h4>Assign Permissions to Group</h4>
+<div class="permission_widget {% if widget.permission_type == 'public' %} hidden {% endif %}">
+	<div id="permission_widget_container">
+		<input type="hidden" name="permission_type_hidden" value="" id="permission_type_hidden">
+		<div id="permission-widget">
+			<div class="row header">
+				<div class="col-4">Group Name</div>
+				<div class="col-2">View</div>
+				<div class="col-2">Edit</div>
+				<div class="col-2">Delete</div>
 			</div>
-			<div class="widget_body">
-				<div id="user_groups">
-				  	<ul aria-label="Groups assigned to you:"> 
-				  		{% for group in widget.user_groups %}
-							<li class="border">{{ group.name }} <span class="add"><img src="/static/admin/img/icon-addlink.svg" alt="Add"></span></li>
-				  		{% empty %}
-				  			<li>User does not belong to any group yet</li>
-				  		{% endfor %}
-				     </ul>
-			    </div>
-			    <div id="other_groups">
-				  	<ul aria-label="Other Groups:"> 
-				  		{% for group in widget.other_groups %}
-							<li class="border">{{ group.name }} <span class="add"><img src="/static/admin/img/icon-addlink.svg" alt="Add"></span></li>
-				  		{% empty %}
-				  			<li>There aren't any other groups</li>
-				  		{% endfor %}
-
-				     </ul>
-			    </div>
 			</div>
+			{% for group in widget.groups %}
+				<div class="row">
+					<input type="hidden" name="group_id" value="{{ group.group.id }}">
+					<div class="col-4">{{ group.group.name }}</div>
+					<div class="col-2">
+						<input type="checkbox" class="view" name="{{ widget.permissions.view }}" {% if widget.permissions.view in group.perms %} data-initial=true checked {% endif %}>
+					</div>
+					<div class="col-2">
+						<input type="checkbox" class="edit" name="{{ widget.permissions.change }}" {% if widget.permissions.change in group.perms %} data-initial=true checked {% endif %}>
+					</div>
+					<div class="col-2">
+						<input type="checkbox" class="delete" name="{{ widget.permissions.delete }}" {% if widget.permissions.delete in group.perms %} data-initial=true checked {% endif %}>
+					</div>
+				</div>
+
+			<div class="row separator"></div>
+			{% empty %}
+			<div class="row">
+				<div class="col-12"><p>There aren't any groups available</p></div>
+			</div>
+			{% endfor %}
+
 		</div>
 	</div>
 </div>
+
+<p class="{% if widget.permission_type != 'public' %} hidden {% endif %}" id="public-permission">-</p>
