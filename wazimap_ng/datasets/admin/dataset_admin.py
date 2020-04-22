@@ -1,9 +1,11 @@
+import json
+
 from django.contrib import admin
 from django import forms
+from django.contrib.auth.models import Group
 
 from django_q.tasks import async_task
-from guardian.admin import GuardedModelAdmin
-from guardian.shortcuts import get_perms_for_model, assign_perm
+from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
 
 from .base_admin_model import BaseAdminModel
 from .. import models
@@ -13,9 +15,11 @@ from .views import (
     VariableInlinesAddView, InitialDataUploadAddView, MetaDataInline
 )
 from wazimap_ng.utils import get_objects_for_user
-
+from wazimap_ng.admin_utils import GroupPermissionWidget
 
 class DatasetAdminForm(forms.ModelForm):
+    permission_groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
+
     class Meta:
         model = models.Dataset
         widgets = {
@@ -23,8 +27,14 @@ class DatasetAdminForm(forms.ModelForm):
         }
         fields = '__all__'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["permission_groups"].widget.current_user = self.current_user
+        self.fields["permission_groups"].widget.target = self.instance
+        self.fields["permission_groups"].widget.permission_type = self.instance.dataset_type
+
 @admin.register(models.Dataset)
-class DatasetAdmin(GuardedModelAdmin):
+class DatasetAdmin(admin.ModelAdmin):
 
     form = DatasetAdminForm
     exclude = ("groups", )
@@ -35,12 +45,6 @@ class DatasetAdmin(GuardedModelAdmin):
         css = {
              'all': ('/static/css/admin-custom.css',)
         }
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj: # editing an existing object
-            return ("dataset_type", ) + self.readonly_fields
-        return self.readonly_fields
-
 
     def get_related_fields_data(self, obj):
 
@@ -134,6 +138,21 @@ class DatasetAdmin(GuardedModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
 
+        permissions_added = json.loads(request.POST.get("permissions_added", "{}"))
+        permissions_removed = json.loads(request.POST.get("permissions_removed", "{}"))
+
+        for group_id, perms in permissions_removed.items():
+            group = Group.objects.filter(id=group_id).first()
+            if group:
+                for perm in perms:
+                    remove_perm(perm, group, obj)
+
+        for group_id, perms in permissions_added.items():
+            group = Group.objects.filter(id=group_id).first()
+            if group:
+                for perm in perms:
+                    assign_perm(perm, group, obj)
+
         if not change:
             for perm in get_perms_for_model(models.Dataset):
                 assign_perm(perm, request.user, obj)
@@ -163,3 +182,9 @@ class DatasetAdmin(GuardedModelAdmin):
         if obj.dataset_type == "public":
             return True
         return request.user.has_perm("delete_dataset", obj)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.current_user = request.user
+        form.target = obj
+        return form

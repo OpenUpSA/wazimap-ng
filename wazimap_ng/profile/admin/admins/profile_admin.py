@@ -7,11 +7,10 @@ from ... import models
 from ..forms import ProfileAdminForm
 from wazimap_ng.utils import get_objects_for_user
 
-from guardian.admin import GuardedModelAdmin
 from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
 
 @admin.register(models.Profile)
-class ProfileAdmin(GuardedModelAdmin):
+class ProfileAdmin(admin.ModelAdmin):
     form = ProfileAdminForm
 
     def get_queryset(self, request):

@@ -3,13 +3,9 @@ from django.contrib.auth.models import Group
 
 from ... import models
 from wazimap_ng.admin_utils import GroupPermissionWidget
-from guardian.admin import GuardedModelAdmin
-
 
 class ProfileAdminForm(forms.ModelForm):
-	groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
-
-	
+	group_permissions = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
 
 	class Meta:
 		model = models.Profile
@@ -21,6 +17,6 @@ class ProfileAdminForm(forms.ModelForm):
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-		self.fields["groups"].widget.current_user = self.current_user
-		self.fields["groups"].widget.target = self.instance
-		self.fields["groups"].widget.permission_type = self.instance.profile_type
+		self.fields["group_permissions"].widget.current_user = self.current_user
+		self.fields["group_permissions"].widget.target = self.instance
+		self.fields["group_permissions"].widget.permission_type = self.instance.profile_type
