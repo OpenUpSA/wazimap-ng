@@ -53,3 +53,7 @@
     padding: 10px 0;
     margin-bottom: 10px;
 }
+
+.permission_widget .last {
+    margin-bottom: 15px;
+}

@@ -24,7 +24,8 @@
 					</div>
 				</div>
 
-			<div class="row separator"></div>
+
+			<div class="row {% if forloop.last %}last{% else %} separator{% endif %}"></div>
 			{% empty %}
 			<div class="row">
 				<div class="col-12"><p>There aren't any groups available</p></div>

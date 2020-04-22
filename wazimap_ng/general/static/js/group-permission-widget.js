@@ -1,18 +1,20 @@
 django.jQuery(document).ready(function($) {
     $(function () {
         var $orignal_permissions = $("#permission_widget_container").clone();
-        $("#id_profile_type>li>label" ).on('click', {orignal: $orignal_permissions}, hideShowContent);
+
+
+        if($("input[name='permission_type']:checked").val() == "non_editable"){
+            $("input[class='view']").attr("checked", false).attr("disabled", "disabled");
+        }
+
+        $("#id_permission_type>li>label").on('click', {orignal: $orignal_permissions}, hideShowContent);
         
         $( "form" ).submit(function( event ) {
-            // event.preventDefault();
             let added = getAddedPerms();
             let removed = getRemovedPerms();
 
             $(this).append("<input type='hidden' name='permissions_added' value='"+added+"'>");
             $(this).append("<input type='hidden' name='permissions_removed' value='"+removed+"'>");
-            
-
-            // $(this).submit();
         });
 
     });
@@ -23,7 +25,7 @@ django.jQuery(document).ready(function($) {
         $("#permission_type_hidden").val(permissionType);
 
         if(permissionType == "non_editable"){
-            $inner_element.find("input[class='view']").attr("checked", "checked");
+            $inner_element.find("input[class='view']").attr("checked", false);
             $inner_element.find("input[class='view']").attr("disabled", "disabled");
         }
         $(document).find(".permission_widget").html($inner_element.html());
@@ -38,7 +40,7 @@ django.jQuery(document).ready(function($) {
 
     function getAddedPerms(){
         var added = {};
-        $("#permission_widget_container input[type='checkbox']:checked").not("input[data-initial='true']").each(function(id, checkbox){
+        $(".permission_widget input[type='checkbox']:checked").not("input[data-initial='true']").each(function(id, checkbox){
             let group_id = $(checkbox).parents(".row").find("input[name='group_id']").val();
             if(group_id in added){
                 added[group_id].push(checkbox.name);
@@ -51,7 +53,7 @@ django.jQuery(document).ready(function($) {
 
     function getRemovedPerms(){
         var removed = {};
-        $("#permission_widget_container input[data-initial='true']").not("input[type='checkbox']:checked").each(function(id, checkbox){
+        $(".permission_widget input[data-initial='true']").not("input[type='checkbox']:checked").each(function(id, checkbox){
             let group_id = $(checkbox).parents(".row").find("input[name='group_id']").val();
             if(group_id in removed){
                 removed[group_id].push(checkbox.name);
