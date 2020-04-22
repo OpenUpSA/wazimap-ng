@@ -189,7 +189,7 @@ class PointsCollectionAdminForm(forms.ModelForm):
     class Meta:
         model = models.ProfileCategory
         widgets = {
-          'collection_type': forms.RadioSelect,
+          'permission_type': forms.RadioSelect,
         }
         fields = '__all__'
 
@@ -201,7 +201,7 @@ class PointsCollectionAdminForm(forms.ModelForm):
             self.fields['subtheme'].required = False
         self.fields["group_permissions"].widget.current_user = self.current_user
         self.fields["group_permissions"].widget.target = self.instance
-        self.fields["group_permissions"].widget.permission_type = self.instance.collection_type
+        self.fields["group_permissions"].widget.permission_type = self.instance.permission_type
 
 
 @admin.register(models.ProfileCategory)
@@ -215,7 +215,7 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
             'fields': ('profile', 'theme', 'subtheme',)
         }),
         ("Permissions", {
-            'fields': ('collection_type', 'group_permissions', )
+            'fields': ('permission_type', 'group_permissions', )
 
         }),
         ("Point Collection description fields", {
@@ -228,7 +228,7 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
             'fields': ('profile', 'category', )
         }),
         ("Group Permissions", {
-            'fields': ('collection_type', 'group_permissions', )
+            'fields': ('permission_type', 'group_permissions', )
 
         }),
         ("Point Collection description fields", {
@@ -323,14 +323,14 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
         if not obj:
             return super().has_change_permission(request, obj)
 
-        if obj.collection_type == "public":
+        if obj.permission_type == "public":
             return True
         return request.user.has_perm("change_profilecategory", obj)
 
     def has_delete_permission(self, request, obj=None):
         if not obj:
             return super().has_delete_permission(request, obj)
-        if obj.collection_type == "public":
+        if obj.permission_type == "public":
             return True
         return request.user.has_perm("delete_profilecategory", obj)
 

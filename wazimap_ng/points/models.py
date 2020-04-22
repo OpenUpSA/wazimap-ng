@@ -51,7 +51,7 @@ class ProfileCategory(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="subtheme")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
     description = models.TextField(blank=True)
-    collection_type = models.CharField(choices=PRERMISSION_TYPES, max_length=32, default="public")
+    permission_type = models.CharField(choices=PRERMISSION_TYPES, max_length=32, default="public")
 
     def __str__(self):
         return self.label

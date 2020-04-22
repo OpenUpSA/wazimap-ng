@@ -23,7 +23,7 @@ class DatasetAdminForm(forms.ModelForm):
     class Meta:
         model = models.Dataset
         widgets = {
-          'dataset_type': forms.RadioSelect,
+          'permission_type': forms.RadioSelect,
         }
         fields = '__all__'
 
@@ -31,7 +31,7 @@ class DatasetAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["permission_groups"].widget.current_user = self.current_user
         self.fields["permission_groups"].widget.target = self.instance
-        self.fields["permission_groups"].widget.permission_type = self.instance.dataset_type
+        self.fields["permission_groups"].widget.permission_type = self.instance.permission_type
 
 @admin.register(models.Dataset)
 class DatasetAdmin(admin.ModelAdmin):
@@ -172,14 +172,14 @@ class DatasetAdmin(admin.ModelAdmin):
         if not obj:
             return super().has_change_permission(request, obj)
 
-        if obj.dataset_type == "public":
+        if obj.permission_type == "public":
             return True
         return request.user.has_perm("change_dataset", obj)
 
     def has_delete_permission(self, request, obj=None):
         if not obj:
             return super().has_delete_permission(request, obj)
-        if obj.dataset_type == "public":
+        if obj.permission_type == "public":
             return True
         return request.user.has_perm("delete_dataset", obj)
 

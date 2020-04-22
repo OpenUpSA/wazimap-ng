@@ -24,7 +24,7 @@ class ProfileAdmin(admin.ModelAdmin):
     	if not obj:
     		return super().has_change_permission(request, obj)
 
-    	if obj.profile_type == "public":
+    	if obj.permission_type == "public":
     		return True
     	return request.user.has_perm("change_profile", obj)
 

@@ -16,7 +16,7 @@ class Dataset(models.Model):
     name = models.CharField(max_length=60)
     groups = ArrayField(models.CharField(max_length=200), blank=True, default=list)
     geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.CASCADE)
-    dataset_type = models.CharField(choices=PRERMISSION_TYPES, max_length=32, default="public")
+    permission_type = models.CharField(choices=PRERMISSION_TYPES, max_length=32, default="public")
 
     def __str__(self):
         return self.name

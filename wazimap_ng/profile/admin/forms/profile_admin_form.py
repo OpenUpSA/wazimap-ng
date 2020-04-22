@@ -10,7 +10,7 @@ class ProfileAdminForm(forms.ModelForm):
 	class Meta:
 		model = models.Profile
 		widgets = {
-			'profile_type': forms.RadioSelect,
+			'permission_type': forms.RadioSelect,
 		}
 		fields = '__all__'
 
@@ -19,4 +19,4 @@ class ProfileAdminForm(forms.ModelForm):
 		super().__init__(*args, **kwargs)
 		self.fields["group_permissions"].widget.current_user = self.current_user
 		self.fields["group_permissions"].widget.target = self.instance
-		self.fields["group_permissions"].widget.permission_type = self.instance.profile_type
+		self.fields["group_permissions"].widget.permission_type = self.instance.permission_type

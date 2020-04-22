@@ -133,14 +133,9 @@ def get_objects_for_user(user, perm, model, queryset=None):
     if not codename:
         return model.objects.none()
 
-
-    field_name = f"{model_name}_type"
-    if model_name == "profilecategory":
-        field_name = "collection_type"
-
     if not queryset:
         queryset = model.objects.all()
-    queryset = queryset.exclude(**{field_name: "private"})
+    queryset = queryset.exclude(**{"permission_type": "private"})
     queryset |= gaurdian_objects_for_user(
         user, f'{app_label}.{codename}', accept_global_perms=False
     )
