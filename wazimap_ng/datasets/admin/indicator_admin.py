@@ -47,6 +47,22 @@ class IndicatorAdminForm(forms.ModelForm):
         order = self.cleaned_data['subindicators']
         return [values[i] for i in order] if order else values
 
+class DatasetsWithPermissionFilter(admin.SimpleListFilter):
+    title = 'Datasets'
+
+    parameter_name = 'dataset_id'
+
+    def lookups(self, request, model_admin):
+        datasets = get_objects_for_user(request.user, 'view', models.Dataset)
+        return [(d.id, d.name) for d in datasets]
+
+    def queryset(self, request, queryset):
+        dataset_id = self.value()
+
+        if dataset_id is None:
+            return queryset
+        return queryset.filter(dataset__id=dataset_id)
+
 @admin.register(models.Indicator)
 class IndicatorAdmin(BaseAdminModel):
 
@@ -55,7 +71,7 @@ class IndicatorAdmin(BaseAdminModel):
     )
 
     list_filter = (
-        ("dataset", customTitledFilter("Dataset")),
+        DatasetsWithPermissionFilter,
     )
 
     form = IndicatorAdminForm
