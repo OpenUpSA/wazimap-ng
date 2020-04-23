@@ -17,4 +17,4 @@ class ProfileAdminForm(forms.ModelForm):
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-        self.fields["group_permissions"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)
+		self.fields["group_permissions"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)

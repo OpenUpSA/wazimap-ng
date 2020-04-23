@@ -39,7 +39,7 @@ class SortableWidget(Widget):
 class GroupPermissionWidget(Widget):
     template_name = 'widgets/GroupPermissionWidget.html'
 
-    def init_parameters(current_user, instance, permission_type):
+    def init_parameters(self, current_user, instance, permission_type):
         self.current_user = current_user
         self.target = instance
         self.permission_type = permission_type
