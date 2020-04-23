@@ -12,7 +12,7 @@ from wazimap_ng.profile.models import Profile
 from django_q.models import Task
 from wazimap_ng import utils
 from wazimap_ng.datasets.models import Licence
-from wazimap_ng.config.common import PRERMISSION_TYPES
+from wazimap_ng.config.common import PERMISSION_TYPES
 
 def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)
@@ -51,7 +51,7 @@ class ProfileCategory(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="subtheme")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
     description = models.TextField(blank=True)
-    permission_type = models.CharField(choices=PRERMISSION_TYPES, max_length=32, default="public")
+    permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="public")
 
     def __str__(self):
         return self.label
