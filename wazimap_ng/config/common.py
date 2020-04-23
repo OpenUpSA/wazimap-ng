@@ -279,7 +279,7 @@ DENOMINATOR_CHOICES = (
     ('sibling', 'Sibling'),
 )
 
-PRERMISSION_TYPES = (
+PERMISSION_TYPES = (
     ('private', 'Private'),
     ('public', 'Public'),
     ('non_editable', 'Public But Non Editable'),
