@@ -3,8 +3,6 @@
 from django.db import migrations
 
 def prepopulate_profile_keymetric_order(apps, schema_editor):
-    # We can't import the Person model directly as it may be a newer
-    # version than this migration expects. We use the historical version.
     ProfileKeyMetrics = apps.get_model("profile", "ProfileKeyMetrics")
     for idx, km in enumerate(ProfileKeyMetrics.objects.all()):
         km.order = idx

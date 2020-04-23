@@ -3,16 +3,12 @@
 from django.db import migrations
 
 def prepopulate_category_order(apps, schema_editor):
-    # We can't import the Person model directly as it may be a newer
-    # version than this migration expects. We use the historical version.
     IndicatorCategory = apps.get_model("profile", "IndicatorCategory")
     for idx, category in enumerate(IndicatorCategory.objects.all()):
         category.order = idx
         category.save()
 
 def prepopulate_subcategory_order(apps, schema_editor):
-    # We can't import the Person model directly as it may be a newer
-    # version than this migration expects. We use the historical version.
     IndicatorSubcategory = apps.get_model("profile", "IndicatorSubcategory")
     for idx, subcategory in enumerate(IndicatorSubcategory.objects.all()):
         subcategory.order = idx
