@@ -199,10 +199,7 @@ class PointsCollectionAdminForm(forms.ModelForm):
         if self.instance.id:
             self.fields['theme'].required = False
             self.fields['subtheme'].required = False
-        self.fields["group_permissions"].widget.current_user = self.current_user
-        self.fields["group_permissions"].widget.target = self.instance
-        self.fields["group_permissions"].widget.permission_type = self.instance.permission_type
-
+        self.fields["group_permissions"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)
 
 @admin.register(models.ProfileCategory)
 class ProfileCategoryAdmin(admin.ModelAdmin):

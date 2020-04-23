@@ -39,9 +39,10 @@ class SortableWidget(Widget):
 class GroupPermissionWidget(Widget):
     template_name = 'widgets/GroupPermissionWidget.html'
 
-    class Media:
-        css = {'all': ("/static/css/group-permission-widget.css",)}
-        js = ("/static/js/jquery-ui.min.js", "/static/js/group-permission-widget.js",)
+    def init_parameters(current_user, instance, permission_type):
+        self.current_user = current_user
+        self.target = instance
+        self.permission_type = permission_type
 
     def get_context(self, name, value, attrs=None):
 
@@ -68,7 +69,7 @@ class GroupPermissionWidget(Widget):
             {"group": group, "perms": []} for group in self.choices.queryset.exclude(id__in=selected_group_ids)
         ]
 
-        return {'widget': {
+        return {"widget": {
             'name': name,
             'values': value,
             "user_groups": user_groups,
@@ -76,4 +77,9 @@ class GroupPermissionWidget(Widget):
             "permissions": model_permissions,
             "groups": selected_group_list + other_group_list
         }}
+        
+    class Media:
+        css = {"all": ("/static/css/group-permission-widget.css",)}
+        js = ("/static/js/jquery-ui.min.js", "/static/js/group-permission-widget.js",)
+
 

@@ -29,9 +29,7 @@ class DatasetAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["permission_groups"].widget.current_user = self.current_user
-        self.fields["permission_groups"].widget.target = self.instance
-        self.fields["permission_groups"].widget.permission_type = self.instance.permission_type
+        self.fields["permission_groups"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)
 
 @admin.register(models.Dataset)
 class DatasetAdmin(admin.ModelAdmin):
