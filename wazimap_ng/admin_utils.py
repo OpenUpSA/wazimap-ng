@@ -6,6 +6,8 @@ from guardian.shortcuts import (
     get_group_perms, get_perms_for_model, get_groups_with_perms
 )
 
+from wazimap_ng.general.usecases import permissions
+
 def customTitledFilter(title):
     class Wrapper(admin.FieldListFilter):
         def __new__(cls, *args, **kwargs):
@@ -44,42 +46,38 @@ class GroupPermissionWidget(Widget):
         self.target = instance
         self.permission_type = permission_type
 
-    def get_context(self, name, value, attrs=None):
+    def get_groups(self, obj, user):
+        all_groups = []
+        if obj.id:
+            groups_with_permission = permissions.get_user_groups_with_permission_on_object(obj, user)
+            groups_without_permission = permissions.get_user_groups_without_permission_on_object(obj, user)
+            all_groups += groups_with_permission + groups_without_permission
+            all_permissions = [get_group_perms(g, obj) for g in all_groups]
+            groups_packed = [{"group": g, "perms": p} for (g, p) in zip(all_groups, all_permissions)]
 
-        user = self.current_user
-        user_groups = user.groups.all()
-        target = self.target
+        other_groups = [g for g in self.choices.queryset.exclude(id__in=[gr.id for gr in all_groups])]
+        other_packed = [{"group": g, "perms": []} for g in other_groups]
+
+        return groups_packed + other_packed
+
+    def get_context(self, name, value, attrs=None):
+        packed = self.get_groups(self.target, self.current_user)
+
         model_permissions = {
             c.split("_")[0] : c for c in get_perms_for_model(self.target).values_list("codename", flat=True)
         }
-        selected_groups = get_groups_with_perms(self.target)
-        selected_group_ids = selected_groups.values_list("id", flat=True)
 
-        selected_group_list = []
-        if self.target.id:
-            for group in selected_groups:
-                perms = get_group_perms(group, self.target)
-                data = {"group": group, "perms": perms}
-                if group in user_groups:
-                    selected_group_list.insert(0, data)
-                else:
-                    selected_group_list.append(data)
-
-        other_group_list = [
-            {"group": group, "perms": []} for group in self.choices.queryset.exclude(id__in=selected_group_ids)
-        ]
-
-        return {"widget": {
-            'name': name,
-            'values': value,
-            "user_groups": user_groups,
-            "permission_type": self.permission_type,
-            "permissions": model_permissions,
-            "groups": selected_group_list + other_group_list
-        }}
+        return {
+            "widget": {
+                "name": name,
+                "values": value,
+                "user_groups": self.current_user.groups.all(),
+                "permission_type": self.permission_type,
+                "permissions": model_permissions,
+                "groups": packed
+            }
+        }
         
     class Media:
         css = {"all": ("/static/css/group-permission-widget.css",)}
         js = ("/static/js/jquery-ui.min.js", "/static/js/group-permission-widget.js",)
-
-
