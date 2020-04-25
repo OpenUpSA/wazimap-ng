@@ -86,12 +86,6 @@ class IndicatorAdmin(BaseAdminModel):
         fields.JSONField: {"widget": SortableWidget},
     }
 
-    def get_related_fields_data(self, obj):
-        return [{
-            "name": "indicator data",
-            "count": obj.indicatordata_set.count()
-        }]
-
     def add_view(self, request, form_url='', extra_context=None):
         if request.POST.get("_saveasnew"):
             self.fieldsets = IndicatorAdmin.fieldsets

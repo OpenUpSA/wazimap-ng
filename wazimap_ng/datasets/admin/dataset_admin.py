@@ -44,16 +44,6 @@ class DatasetAdmin(admin.ModelAdmin):
              'all': ('/static/css/admin-custom.css',)
         }
 
-    def get_related_fields_data(self, obj):
-
-        return [{
-                "name": "dataset data",
-                "count": obj.datasetdata_set.count()
-            }, {
-                "name": "indicator",
-                "count": obj.indicator_set.count()
-        }]
-
     def save_formset(self, request, form, formset, change):
         """
         Given an inline formset save it to the database.

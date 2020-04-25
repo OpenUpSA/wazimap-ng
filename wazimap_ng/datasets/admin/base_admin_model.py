@@ -73,9 +73,6 @@ class BaseAdminModel(admin.ModelAdmin):
 
     actions = [delete_selected_data]
 
-    def get_related_fields_data(self, obj):
-        return []
-
     def delete_view(self, request, object_id, extra_context=None):
         opts = self.model._meta
         app_label = opts.app_label
