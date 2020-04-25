@@ -6,7 +6,7 @@ from guardian.shortcuts import (
     get_group_perms, get_perms_for_model, get_groups_with_perms
 )
 
-from wazimap_ng.general.usecases import permissions
+from wazimap_ng.general.services import permissions
 
 def customTitledFilter(title):
     class Wrapper(admin.FieldListFilter):
