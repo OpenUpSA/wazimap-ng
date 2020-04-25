@@ -15,3 +15,10 @@ def get_user_groups_without_permission_on_object(obj, user):
 
     return [g for g in user_groups if g not in user_groups_with_permission]
 
+def has_permission(user, obj, permission):
+    if obj.permission_type == "public":
+        return True
+    return user.has_perm(permission, obj)
+
+def has_owner_permission(user, obj, permission):
+    return user.has_perm(permission, obj)

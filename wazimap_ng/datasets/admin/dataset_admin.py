@@ -16,6 +16,7 @@ from .views import (
 )
 from wazimap_ng.utils import get_objects_for_user
 from wazimap_ng.admin_utils import GroupPermissionWidget
+from wazimap_ng.general.services import permissions
 
 class DatasetAdminForm(forms.ModelForm):
     permission_groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
@@ -160,16 +161,13 @@ class DatasetAdmin(admin.ModelAdmin):
         if not obj:
             return super().has_change_permission(request, obj)
 
-        if obj.permission_type == "public":
-            return True
-        return request.user.has_perm("change_dataset", obj)
+        return permissions.has_permission(request.user, obj, "change_dataset")
 
     def has_delete_permission(self, request, obj=None):
         if not obj:
             return super().has_delete_permission(request, obj)
-        if obj.permission_type == "public":
-            return True
-        return request.user.has_perm("delete_dataset", obj)
+
+        return permissions.has_owner_permission(request.user, obj, "delete_dataset")
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
