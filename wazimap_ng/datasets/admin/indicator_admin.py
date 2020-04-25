@@ -127,7 +127,7 @@ class IndicatorAdmin(BaseAdminModel):
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",
                 obj,
                 task_name=f"Data Extraction: {obj.name}",
-                hook="wazimap_ng.datasets.hooks.notify_user",
+                hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key
             )
             hooks.custom_admin_notification(

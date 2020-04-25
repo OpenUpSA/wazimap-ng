@@ -31,7 +31,7 @@ def delete_selected_data(modeladmin, request, queryset):
                 'wazimap_ng.datasets.tasks.delete_data',
                 queryset, objects_name,
                 task_name=f"Deleting data: {objects_name}",
-                hook="wazimap_ng.datasets.hooks.notify_user",
+                hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
                 type="delete"
             )
@@ -102,7 +102,7 @@ class BaseAdminModel(admin.ModelAdmin):
                 'wazimap_ng.datasets.tasks.delete_data',
                 obj, object_name,
                 task_name=f"Deleting data: {obj.name}",
-                hook="wazimap_ng.datasets.hooks.notify_user",
+                hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
                 type="delete"
             )
