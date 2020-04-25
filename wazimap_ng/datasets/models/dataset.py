@@ -122,43 +122,6 @@ class Indicator(models.Model):
         verbose_name = "Variable"
         verbose_name_plural = "Variables"
 
-class CountryDataExtractor:
-    """
-    This extractor is used to query the top-level geography - e.g. country, if this data isn't provided in the data
-    """
-    def __init__(self, geography, universe=None):
-        self.geography = geography
-        self.child_geographies = self.geography.get_children()
-
-    def get_queryset(self, indicator, geographies, universe=None):
-        groups = ["data__" + i for i in indicator.groups]
-
-        c = Cast(KeyTextTransform("Count", "data"), models.IntegerField())
-
-        qs = (
-            DatasetData.objects
-                .filter(dataset=indicator.dataset)
-                .filter(geography__in=self.child_geographies)
-        )
-
-        if universe is not None:
-            filters = {f"data__{k}": v for k, v in universe.filters.items()}
-            qs = qs.filter(**filters)
-
-        if len(groups) > 0:
-            qs = (qs.values(*groups)
-                    .annotate(count=Sum(c))
-                )
-        else:
-            qs = [qs.aggregate(count=Sum(c))]
-
-        counts = []
-        for el in qs:
-            el.update(geography=self.geography.pk)
-            counts.append(el)
-
-        return counts
-
 class IndicatorData(models.Model):
     """
     Indicator Data for caching results of indicator group according to
