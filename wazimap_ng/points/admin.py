@@ -24,6 +24,7 @@ from import_export.admin import ExportMixin
 from import_export.fields import Field
 from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
 from wazimap_ng.admin_utils import GroupPermissionWidget
+from wazimap_ng.points.models import Profile
 
 from . import models
 
@@ -39,55 +40,10 @@ def assign_to_category_action(category):
 
     return assign_to_category
 
-@admin.register(models.Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ("name", "theme",)
-    list_filter = ("theme",)
-
-class LocationResource(resources.ModelResource):
-    latitude = Field()
-    longitude = Field()
-    category = Field()
-
-    def dehydrate_latitude(self, location):
-        return location.coordinates.y
-
-    def dehydrate_longitude(self, location):
-        return location.coordinates.x
-
-    def dehydrate_category(self, location):
-        return location.category.name
-
-    class Meta:
-        model = models.Location
-        fields = ("name", "category", "latitude", "longitude", "data",)
-        export_order = ("name", "category", "latitude", "longitude", "data")
-
-@admin.register(models.Location)
-class LocationAdmin(ExportMixin, admin.ModelAdmin):
-    formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
-        PointField: {"widget": GooglePointFieldWidget},
-    }
-
-    list_display = ("name", "category",)
-    list_filter = ("category",)
-    resource_class = LocationResource
-
-    def get_actions(self, request):
-        actions = super().get_actions(request)
-
-        for category in models.Category.objects.all():
-            action = assign_to_category_action(category)
-            actions[action.__name__] = (
-                action, action.__name__, action.short_description
-            )
-
-        return actions
 
 class InitialDataUploadChangeView(admin.StackedInline):
     model = models.CoordinateFile
-    fk_name = "profile_category"
+    fk_name = "category"
     exclude = ("task", )
     can_delete = False
     verbose_name = ""
@@ -162,7 +118,7 @@ class InitialDataUploadChangeView(admin.StackedInline):
 
 class InitialDataUploadAddView(admin.StackedInline):
     model = models.CoordinateFile
-    fk_name = "profile_category"
+    fk_name = "category"
     exclude = ("task", )
     can_delete = False
     verbose_name = ""
@@ -176,113 +132,41 @@ class InitialDataUploadAddView(admin.StackedInline):
 
 class MetaDataInline(admin.StackedInline):
     model = models.MetaData
-    fk_name = "profile_category"
+    fk_name = "category"
 
     verbose_name = ""
     verbose_name_plural = "Metadata"
 
-
-class PointsCollectionAdminForm(forms.ModelForm):
-    theme = forms.ModelChoiceField(queryset=models.Theme.objects.all(), required=True)
-    subtheme = forms.CharField(required=True)
-    group_permissions = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
-    class Meta:
-        model = models.ProfileCategory
-        widgets = {
-          'permission_type': forms.RadioSelect,
-        }
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if self.instance.id:
-            self.fields['theme'].required = False
-            self.fields['subtheme'].required = False
-        self.fields["group_permissions"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)
-
-@admin.register(models.ProfileCategory)
-class ProfileCategoryAdmin(admin.ModelAdmin):
-    list_display = ("label", "category", "profile")
-    list_filter = ("category", "profile",)
-    form = PointsCollectionAdminForm
-
-    fieldsets_add_view = (
-        ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'theme', 'subtheme',)
-        }),
-        ("Permissions", {
-            'fields': ('permission_type', 'group_permissions', )
-
-        }),
-        ("Point Collection description fields", {
-          'fields': ('label', 'description',)
-        }),
-    )
-
-    fieldsets_change_view = (
-        ("Database fields", {
-            'fields': ('profile', 'category', )
-        }),
-        ("Group Permissions", {
-            'fields': ('permission_type', 'group_permissions', )
-
-        }),
-        ("Point Collection description fields", {
-          'fields': ('label', 'description',)
-        }),
-    )
-    inlines = ()
+@admin.register(models.Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ("name", "theme",)
+    list_filter = ("theme",)
 
     class Media:
         css = {
              'all': ('/static/css/admin-custom.css',)
         }
 
-    def get_readonly_fields(self, request, obj=None):
-        if obj: # editing an existing object
-            return ("profile", "category", ) + self.readonly_fields
-        return self.readonly_fields
-
     def add_view(self, request, form_url='', extra_context=None):
-        self.inlines = (InitialDataUploadAddView, MetaDataInline,)
-        self.fieldsets = self.fieldsets_add_view
+        self.inlines = [MetaDataInline, InitialDataUploadAddView,]
         return super().add_view(request)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
-        self.inlines = (InitialDataUploadChangeView, MetaDataInline,)
-        self.fieldsets = self.fieldsets_change_view
+        self.inlines = [MetaDataInline, InitialDataUploadChangeView,]
         return super().change_view(request, object_id)
 
-    def save_model(self, request, obj, form, change):
-        is_new = obj.pk == None and change == False
-        if is_new:
-            subtheme = models.Category.objects.create(
-                theme=form.cleaned_data["theme"],
-                name=form.cleaned_data["subtheme"]
-            )
-            obj.category = subtheme
-        super().save_model(request, obj, form, change)
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "theme":
+            profiles = get_objects_for_user(request.user, "view", Profile)
+            kwargs["queryset"] = models.Theme.objects.filter(profile__in=profiles)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-        permissions_added = json.loads(request.POST.get("permissions_added", "{}"))
-        permissions_removed = json.loads(request.POST.get("permissions_removed", "{}"))
-
-        for group_id, perms in permissions_removed.items():
-            group = Group.objects.filter(id=group_id).first()
-            if group:
-                for perm in perms:
-                    remove_perm(perm, group, obj)
-
-        for group_id, perms in permissions_added.items():
-            group = Group.objects.filter(id=group_id).first()
-            if group:
-                for perm in perms:
-                    assign_perm(perm, group, obj)
-
-        if is_new:
-            for perm in get_perms_for_model(models.ProfileCategory):
-                assign_perm(perm, request.user, obj)
-        return obj
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        profiles = get_objects_for_user(request.user, "view", Profile)
+        return qs.filter(theme__profile__in=profiles)
 
     def save_formset(self, request, form, formset, change):
         """
@@ -310,6 +194,110 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
         return super().save_formset(request, form, formset, change)
 
 
+class LocationResource(resources.ModelResource):
+    latitude = Field()
+    longitude = Field()
+    category = Field()
+
+    def dehydrate_latitude(self, location):
+        return location.coordinates.y
+
+    def dehydrate_longitude(self, location):
+        return location.coordinates.x
+
+    def dehydrate_category(self, location):
+        return location.category.name
+
+    class Meta:
+        model = models.Location
+        fields = ("name", "category", "latitude", "longitude", "data",)
+        export_order = ("name", "category", "latitude", "longitude", "data")
+
+@admin.register(models.Location)
+class LocationAdmin(ExportMixin, admin.ModelAdmin):
+    formfield_overrides = {
+        fields.JSONField: {"widget": JSONEditorWidget},
+        PointField: {"widget": GooglePointFieldWidget},
+    }
+
+    list_display = ("name", "category",)
+    list_filter = ("category",)
+    resource_class = LocationResource
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+
+        for category in models.Category.objects.all():
+            action = assign_to_category_action(category)
+            actions[action.__name__] = (
+                action, action.__name__, action.short_description
+            )
+
+        return actions
+
+
+class PointsCollectionAdminForm(forms.ModelForm):
+    group_permissions = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
+    class Meta:
+        model = models.ProfileCategory
+        widgets = {
+          'permission_type': forms.RadioSelect,
+        }
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["group_permissions"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)
+
+
+@admin.register(models.ProfileCategory)
+class ProfileCategoryAdmin(admin.ModelAdmin):
+    list_display = ("label", "category",)
+    list_filter = ("category",)
+    form = PointsCollectionAdminForm
+
+    fieldsets = (
+        ("Database fields (can't change after being created)", {
+            'fields': ('category',)
+        }),
+        ("Permissions", {
+            'fields': ('permission_type', 'group_permissions', )
+
+        }),
+        ("Point Collection description fields", {
+          'fields': ('label', 'description',)
+        }),
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj: # editing an existing object
+            return ("category", ) + self.readonly_fields
+        return self.readonly_fields
+
+    def save_model(self, request, obj, form, change):
+        is_new = obj.pk == None and change == False
+        super().save_model(request, obj, form, change)
+
+        permissions_added = json.loads(request.POST.get("permissions_added", "{}"))
+        permissions_removed = json.loads(request.POST.get("permissions_removed", "{}"))
+
+        for group_id, perms in permissions_removed.items():
+            group = Group.objects.filter(id=group_id).first()
+            if group:
+                for perm in perms:
+                    remove_perm(perm, group, obj)
+
+        for group_id, perms in permissions_added.items():
+            group = Group.objects.filter(id=group_id).first()
+            if group:
+                for perm in perms:
+                    assign_perm(perm, group, obj)
+
+        if is_new:
+            for perm in get_perms_for_model(models.ProfileCategory):
+                assign_perm(perm, request.user, obj)
+        return obj
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
@@ -336,5 +324,13 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
         form.current_user = request.user
         form.target = obj
         return form
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "category":
+            profiles = get_objects_for_user(request.user, "view", Profile)
+            kwargs["queryset"] = models.Category.objects.filter(
+                theme__profile__in=profiles, cooredinatefile__task__success=True
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 

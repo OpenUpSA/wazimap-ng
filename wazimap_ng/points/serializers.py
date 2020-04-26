@@ -8,7 +8,7 @@ from wazimap_ng.datasets.serializers import LicenceSerializer
 class SimpleThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Theme
-        fields = ["id", "name"]
+        fields = ["id", "name", "profile",]
 
 class CategorySerializer(serializers.ModelSerializer):
     theme = SimpleThemeSerializer()
@@ -46,16 +46,15 @@ class LocationInlineSerializer(serializers.ModelSerializer):
         fields = ('id', 'coordinates', 'data', )
 
 class ProfileCategorySerializer(serializers.ModelSerializer):
-    subtheme = serializers.ReadOnlyField(source='category.name')
+    collection = serializers.ReadOnlyField(source='category.name')
     theme = serializers.ReadOnlyField(source='category.theme.name')
     theme_id = serializers.ReadOnlyField(source='category.theme_id')
-    subtheme_id = serializers.ReadOnlyField(source='category_id')
+    collection_id = serializers.ReadOnlyField(source='category_id')
     theme_icon = serializers.ReadOnlyField(source='category.theme.icon')
 
     class Meta:
         model = models.ProfileCategory
-        fields = ('id', 'label', 'description', 'theme', 'theme_id', 'theme_icon', 'subtheme', 'subtheme_id')
-        #fields = ('id', 'label', 'description', 'theme', 'theme_id', 'theme_icon', 'subtheme', 'subtheme_id', 'locations', )
+        fields = ('id', 'label', 'description', 'theme', 'theme_id', 'theme_icon', 'collection', 'collection_id')
 
 class MetaDataSerializer(serializers.ModelSerializer):
     licence = LicenceSerializer(read_only=True)

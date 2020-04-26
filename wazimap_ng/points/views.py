@@ -23,7 +23,7 @@ def theme_view(request, profile_id=None):
     themes = defaultdict(list)
     qs = models.ProfileCategory.objects.all()
     if profile_id is not None:
-        qs = qs.filter(profile__id=profile_id)
+        qs = qs.filter(category__theme__profile_id=profile_id)
 
     for pc in qs:
         theme = pc.category.theme
@@ -39,10 +39,13 @@ def theme_view(request, profile_id=None):
         }
 
         for pc in themes[theme]:
+            metadata = {}
+            if pc.category.metadata:
+                metadata = serializers.MetaDataSerializer(pc.category.metadata).data
             js_theme["categories"].append({
                 "id": pc.category.id,
                 "name": pc.label,
-                "metadata": serializers.MetaDataSerializer(pc.metadata).data
+                "metadata": metadata
             })
             
         js.append(js_theme)
@@ -80,7 +83,7 @@ def profile_points_data(request, profile_id, geography_code=None):
 def profile_data_helper(profile_id, geography_code):
 
     profile_categories = models.ProfileCategory.objects.filter(
-        profile_id=profile_id
+        category__theme__profile_id=profile_id
     ).prefetch_related("category")
 
     return serializers.ProfileCategorySerializer(
@@ -112,12 +115,12 @@ def boundary_point_count_helper(profile, geography):
                 "name": lc["category__theme__name"],
                 "id": lc["category__theme__id"],
                 "icon": lc["category__theme__icon"],
-                "subthemes": []
+                "collections": []
             }
             theme_dict[id] = theme
             res.append(theme)
         theme = theme_dict[id]
-        theme["subthemes"].append({
+        theme["collections"].append({
             "label": lc["category__profilecategory__label"],
             "id": lc["category__id"],
             "count": lc["count_category"]
