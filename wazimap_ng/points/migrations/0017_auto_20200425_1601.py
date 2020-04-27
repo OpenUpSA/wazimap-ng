@@ -10,6 +10,7 @@ def set_profile_to_themes(apps, schema_editor):
     copy profile from profile category to theme profile
     """
     ProfileCategory = apps.get_model('points', 'ProfileCategory')
+    Theme = apps.get_model('points', 'Theme')
 
     for category in ProfileCategory.objects.all():
         profile = category.profile
@@ -28,12 +29,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='theme',
             name='profile',
-            field=models.ForeignKey(default='', on_delete=django.db.models.deletion.CASCADE, to='profile.Profile'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='profile.Profile'),
             preserve_default=False,
         ),
         migrations.RunPython(set_profile_to_themes),
         migrations.RemoveField(
             model_name='profilecategory',
             name='profile',
+        ),
+        migrations.AlterField(
+            model_name='theme',
+            name='profile',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='profile.Profile'),
         ),
     ]

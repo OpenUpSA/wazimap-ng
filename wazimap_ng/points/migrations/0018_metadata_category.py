@@ -25,12 +25,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='metadata',
             name='category',
-            field=models.OneToOneField(default='', on_delete=django.db.models.deletion.CASCADE, to='points.Category'),
+            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, to='points.Category'),
             preserve_default=False,
         ),
         migrations.RunPython(change_metadata_link),
         migrations.RemoveField(
             model_name='metadata',
             name='profile_category',
+        ),
+        migrations.AlterField(
+            model_name='metadata',
+            name='category',
+            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='points.Category')
         ),
     ]
