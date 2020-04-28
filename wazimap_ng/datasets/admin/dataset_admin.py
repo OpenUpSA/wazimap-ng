@@ -186,7 +186,7 @@ class DatasetAdmin(admin.ModelAdmin):
         if not obj:
             return super().has_delete_permission(request, obj)
 
-        return permissions.has_owner_permission(request.user, obj, "delete_dataset")
+        return permissions.has_permission(request.user, obj, "delete_dataset")
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)

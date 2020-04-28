@@ -5,8 +5,11 @@ from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
 from django.contrib.admin.utils import model_ngettext, unquote
 from django.contrib.admin import helpers
+from django.contrib.auth import get_permission_codename
 
 from django_q.tasks import async_task
+
+from wazimap_ng.general.services import permissions
 
 from .. import hooks
 
@@ -42,8 +45,6 @@ def delete_selected_data(modeladmin, request, queryset):
         # Return None to display the change list page again.
         return None
 
-    related_fileds_data = {}
-
     context = {
         **modeladmin.admin_site.each_context(request),
         'title': "Are you sure?",
@@ -75,6 +76,33 @@ class BaseAdminModel(admin.ModelAdmin):
 
     def get_related_fields_data(self, obj):
         return []
+
+    def _permission_name(self, name):
+        opts = self.opts
+        codename = get_permission_codename(name, opts)
+        permission = f"{opts.app_label}.{codename}"
+        return permission
+
+    def has_delete_permission(self, request, obj=None):
+        permission = self._permission_name("delete")
+        return permissions.has_permission(request.user, obj, permission)
+
+    def has_change_permission(self, request, obj=None):
+        permission = self._permission_name("change")
+        return permissions.has_permission(request.user, obj, permission)
+
+    def has_add_permission(self, request, obj=None):
+        permission = self._permission_name("add")
+        return permissions.has_permission(request.user, obj, permission)
+
+    def has_view_permission(self, request, obj=None):
+        print("Checking view permission")
+        if self.has_change_permission(request, obj):
+            return True
+
+        view_permission = self._permission_name("view")
+        print(view_permission)
+        return permissions.has_permission(request.user, obj, view_permission)
 
     def delete_view(self, request, object_id, extra_context=None):
         opts = self.model._meta
