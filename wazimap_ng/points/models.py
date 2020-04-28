@@ -28,6 +28,7 @@ class Theme(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=50)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, related_name="categories")
+    metadata = models.OneToOneField('general.MetaData', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return "%s -> %s" % (self.theme, self.name)
@@ -98,14 +99,3 @@ class CoordinateFile(models.Model):
                 raise ValidationError(
                     "Invalid File passed. We were not able to find Required header : %s " % required_header.capitalize()
                 )
-
-class MetaData(models.Model):
-    source = models.CharField(max_length=60, null=False, blank=True)
-    description = models.TextField(blank=True)
-    licence = models.ForeignKey(
-        Licence, null=True, blank=True, on_delete=models.SET_NULL, related_name="points_licence"
-    )
-    profile_category = models.OneToOneField(ProfileCategory, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return "Meta->Points : %s" % (self.profile_category.label)

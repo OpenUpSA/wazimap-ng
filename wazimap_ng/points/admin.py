@@ -10,6 +10,7 @@ from django.contrib.gis.db.models import PointField
 from django.contrib.auth.models import Group
 
 from mapwidgets.widgets import GooglePointFieldWidget
+from django_reverse_admin import ReverseModelAdmin
 
 from django_q.tasks import async_task
 from django_q.models import Task
@@ -40,9 +41,14 @@ def assign_to_category_action(category):
     return assign_to_category
 
 @admin.register(models.Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ReverseModelAdmin):
     list_display = ("name", "theme",)
     list_filter = ("theme",)
+
+    inline_type = 'stacked'
+    inline_reverse = ['metadata',]
+    exclude = None
+
 
 class LocationResource(resources.ModelResource):
     latitude = Field()
@@ -174,14 +180,6 @@ class InitialDataUploadAddView(admin.StackedInline):
         }),
     )
 
-class MetaDataInline(admin.StackedInline):
-    model = models.MetaData
-    fk_name = "profile_category"
-
-    verbose_name = ""
-    verbose_name_plural = "Metadata"
-
-
 class PointsCollectionAdminForm(forms.ModelForm):
     theme = forms.ModelChoiceField(queryset=models.Theme.objects.all(), required=True)
     subtheme = forms.CharField(required=True)
@@ -245,12 +243,12 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
     def add_view(self, request, form_url='', extra_context=None):
-        self.inlines = (InitialDataUploadAddView, MetaDataInline,)
+        self.inlines = (InitialDataUploadAddView,)
         self.fieldsets = self.fieldsets_add_view
         return super().add_view(request)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
-        self.inlines = (InitialDataUploadChangeView, MetaDataInline,)
+        self.inlines = (InitialDataUploadChangeView,)
         self.fieldsets = self.fieldsets_change_view
         return super().change_view(request, object_id)
 
