@@ -88,12 +88,12 @@ def profile_data_helper(profile_id, geography_code):
         context={'code': geography_code}
     ).data
 
-def boundary_point_count_helper(profile_id, geography_code):
-    boundary = GeographyBoundary.objects.get_unique_boundary(geography_code)
+def boundary_point_count_helper(profile, geography):
+    boundary = GeographyBoundary.objects.get_unique_boundary(geography)
     locations = models.Location.objects.filter(coordinates__contained=boundary.geom) 
     location_count = (
         locations
-            .filter(category__profilecategory__profile=profile_id)
+            .filter(category__profilecategory__profile=profile)
             .values(
                 "category__id", "category__profilecategory__label",
                 "category__theme__name", "category__theme__icon", "category__theme__id"

@@ -1,0 +1,39 @@
+<div class="permission_widget {% if widget.permission_type == 'public' %} hidden {% endif %}">
+	<div id="permission_widget_container">
+		<input type="hidden" name="permission_type_hidden" value="" id="permission_type_hidden">
+		<div id="permission-widget">
+			<div class="row header">
+				<div class="col-4">Group Name</div>
+				<div class="col-2">View</div>
+				<div class="col-2">Edit</div>
+				<div class="col-2">Delete</div>
+			</div>
+			</div>
+			{% for group in widget.groups %}
+				<div class="row">
+					<input type="hidden" name="group_id" value="{{ group.group.id }}">
+					<div class="col-4">{{ group.group.name }}</div>
+					<div class="col-2">
+						<input type="checkbox" class="view" name="{{ widget.permissions.view }}" {% if widget.permissions.view in group.perms %} data-initial=true checked {% endif %}>
+					</div>
+					<div class="col-2">
+						<input type="checkbox" class="edit" name="{{ widget.permissions.change }}" {% if widget.permissions.change in group.perms %} data-initial=true checked {% endif %}>
+					</div>
+					<div class="col-2">
+						<input type="checkbox" class="delete" name="{{ widget.permissions.delete }}" {% if widget.permissions.delete in group.perms %} data-initial=true checked {% endif %}>
+					</div>
+				</div>
+
+
+			<div class="row {% if forloop.last %}last{% else %} separator{% endif %}"></div>
+			{% empty %}
+			<div class="row">
+				<div class="col-12"><p>There aren't any groups available</p></div>
+			</div>
+			{% endfor %}
+
+		</div>
+	</div>
+</div>
+
+<p class="{% if widget.permission_type != 'public' %} hidden {% endif %}" id="public-permission">-</p>

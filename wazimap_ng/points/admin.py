@@ -1,13 +1,20 @@
+import json
+
 from django.contrib.gis import admin
 from django_json_widget.widgets import JSONEditorWidget
 from django.contrib.postgres import fields
 from django.contrib import  messages
 from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
+from django.contrib.gis.db.models import PointField
+from django.contrib.auth.models import Group
+
+from mapwidgets.widgets import GooglePointFieldWidget
 
 from django_q.tasks import async_task
 from django_q.models import Task
 from wazimap_ng.datasets import hooks
+from wazimap_ng.utils import get_objects_for_user
 from django.urls import reverse
 from django.conf import settings
 from django import forms
@@ -15,6 +22,8 @@ import pandas as pd
 from import_export import resources
 from import_export.admin import ExportMixin
 from import_export.fields import Field
+from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
+from wazimap_ng.admin_utils import GroupPermissionWidget
 
 from . import models
 
@@ -55,10 +64,11 @@ class LocationResource(resources.ModelResource):
         export_order = ("name", "category", "latitude", "longitude", "data")
 
 @admin.register(models.Location)
-class LocationAdmin(ExportMixin, admin.OSMGeoAdmin):
+class LocationAdmin(ExportMixin, admin.ModelAdmin):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
-      }
+        PointField: {"widget": GooglePointFieldWidget},
+    }
 
     list_display = ("name", "category",)
     list_filter = ("category",)
@@ -175,8 +185,12 @@ class MetaDataInline(admin.StackedInline):
 class PointsCollectionAdminForm(forms.ModelForm):
     theme = forms.ModelChoiceField(queryset=models.Theme.objects.all(), required=True)
     subtheme = forms.CharField(required=True)
+    group_permissions = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
     class Meta:
         model = models.ProfileCategory
+        widgets = {
+          'permission_type': forms.RadioSelect,
+        }
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
@@ -185,7 +199,7 @@ class PointsCollectionAdminForm(forms.ModelForm):
         if self.instance.id:
             self.fields['theme'].required = False
             self.fields['subtheme'].required = False
-
+        self.fields["group_permissions"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)
 
 @admin.register(models.ProfileCategory)
 class ProfileCategoryAdmin(admin.ModelAdmin):
@@ -195,7 +209,11 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
 
     fieldsets_add_view = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'theme', 'subtheme')
+            'fields': ('profile', 'theme', 'subtheme',)
+        }),
+        ("Permissions", {
+            'fields': ('permission_type', 'group_permissions', )
+
         }),
         ("Point Collection description fields", {
           'fields': ('label', 'description',)
@@ -204,7 +222,11 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
 
     fieldsets_change_view = (
         ("Database fields", {
-            'fields': ('profile', 'category')
+            'fields': ('profile', 'category', )
+        }),
+        ("Group Permissions", {
+            'fields': ('permission_type', 'group_permissions', )
+
         }),
         ("Point Collection description fields", {
           'fields': ('label', 'description',)
@@ -233,14 +255,34 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
         return super().change_view(request, object_id)
 
     def save_model(self, request, obj, form, change):
-        if obj.pk == None and change == False:
+        is_new = obj.pk == None and change == False
+        if is_new:
             subtheme = models.Category.objects.create(
                 theme=form.cleaned_data["theme"],
                 name=form.cleaned_data["subtheme"]
             )
             obj.category = subtheme
+        super().save_model(request, obj, form, change)
 
-        return super().save_model(request, obj, form, change)
+        permissions_added = json.loads(request.POST.get("permissions_added", "{}"))
+        permissions_removed = json.loads(request.POST.get("permissions_removed", "{}"))
+
+        for group_id, perms in permissions_removed.items():
+            group = Group.objects.filter(id=group_id).first()
+            if group:
+                for perm in perms:
+                    remove_perm(perm, group, obj)
+
+        for group_id, perms in permissions_added.items():
+            group = Group.objects.filter(id=group_id).first()
+            if group:
+                for perm in perms:
+                    assign_perm(perm, group, obj)
+
+        if is_new:
+            for perm in get_perms_for_model(models.ProfileCategory):
+                assign_perm(perm, request.user, obj)
+        return obj
 
     def save_formset(self, request, form, formset, change):
         """
@@ -266,5 +308,33 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
                     )
                 )
         return super().save_formset(request, form, formset, change)
+
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return get_objects_for_user(request.user, 'view', models.ProfileCategory, qs)
+
+    def has_change_permission(self, request, obj=None):
+        if not obj:
+            return super().has_change_permission(request, obj)
+
+        if obj.permission_type == "public":
+            return True
+        return request.user.has_perm("change_profilecategory", obj)
+
+    def has_delete_permission(self, request, obj=None):
+        if not obj:
+            return super().has_delete_permission(request, obj)
+        if obj.permission_type == "public":
+            return True
+        return request.user.has_perm("delete_profilecategory", obj)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.current_user = request.user
+        form.target = obj
+        return form
 
 

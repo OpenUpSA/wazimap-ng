@@ -10,11 +10,13 @@ from django.contrib.postgres.fields.jsonb import KeyTextTransform, KeyTransform
 from django.contrib.postgres.fields import JSONField, ArrayField
 
 from .geography import Geography, GeographyHierarchy
+from wazimap_ng.config.common import PRERMISSION_TYPES
 
 class Dataset(models.Model):
     name = models.CharField(max_length=60)
     groups = ArrayField(models.CharField(max_length=200), blank=True, default=list)
     geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.CASCADE)
+    permission_type = models.CharField(choices=PRERMISSION_TYPES, max_length=32, default="public")
 
     def __str__(self):
         return self.name
