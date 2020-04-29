@@ -1,3 +1,5 @@
+from rest_framework import serializers
+
 from . import models
 from wazimap_ng.datasets.serializers import LicenceSerializer
 
