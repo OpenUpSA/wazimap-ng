@@ -10,11 +10,11 @@ from django.contrib.gis.db.models import PointField
 from django.contrib.auth.models import Group
 
 from mapwidgets.widgets import GooglePointFieldWidget
-from django_reverse_admin import ReverseModelAdmin
 
 from django_q.tasks import async_task
 from django_q.models import Task
 from wazimap_ng.datasets import hooks
+from wazimap_ng.datasets.models import Licence
 from wazimap_ng.utils import get_objects_for_user
 from django.urls import reverse
 from django.conf import settings
@@ -25,6 +25,8 @@ from import_export.admin import ExportMixin
 from import_export.fields import Field
 from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
 from wazimap_ng.admin_utils import GroupPermissionWidget
+
+from wazimap_ng.general.models import MetaData
 
 from . import models
 
@@ -39,16 +41,6 @@ def assign_to_category_action(category):
     assign_to_category.__name__ = 'assign_to_category_{0}'.format(category.id)
 
     return assign_to_category
-
-@admin.register(models.Category)
-class CategoryAdmin(ReverseModelAdmin):
-    list_display = ("name", "theme",)
-    list_filter = ("theme",)
-
-    inline_type = 'stacked'
-    inline_reverse = ['metadata',]
-    exclude = None
-
 
 class LocationResource(resources.ModelResource):
     latitude = Field()
@@ -91,9 +83,10 @@ class LocationAdmin(ExportMixin, admin.ModelAdmin):
 
         return actions
 
+
 class InitialDataUploadChangeView(admin.StackedInline):
     model = models.CoordinateFile
-    fk_name = "profile_category"
+    fk_name = "category"
     exclude = ("task", )
     can_delete = False
     verbose_name = ""
@@ -168,7 +161,7 @@ class InitialDataUploadChangeView(admin.StackedInline):
 
 class InitialDataUploadAddView(admin.StackedInline):
     model = models.CoordinateFile
-    fk_name = "profile_category"
+    fk_name = "category"
     exclude = ("task", )
     can_delete = False
     verbose_name = ""
@@ -180,9 +173,97 @@ class InitialDataUploadAddView(admin.StackedInline):
         }),
     )
 
+class CategoryAdminForm(forms.ModelForm):
+    source = forms.CharField(widget=forms.TextInput(attrs={'class': 'vTextField'}), required=False)
+    description = forms.CharField(widget=forms.Textarea(attrs={'class': 'vLargeTextField'}), required=False)
+    licence = forms.ModelChoiceField(queryset=Licence.objects.all(), required=False)
+    class Meta:
+        model = models.Category
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance.id:
+            if self.instance.metadata:
+                metadata = self.instance.metadata
+                self.fields["source"].initial = metadata.source
+                self.fields["description"].initial = metadata.description
+                self.fields["licence"].initial = metadata.licence
+
+    def save(self, commit=True):
+
+        if self.has_changed():
+            metadata = {
+                key: self.cleaned_data.get(key) for key in [
+                    "source", "description", "licence"
+                ]
+            }
+            if not self.instance.id:
+                self.instance.metadata = MetaData.objects.create(**metadata)
+            else:
+                MetaData.objects.filter(id=self.instance.metadata.id).update(**metadata)
+        return super().save(commit=commit)
+
+@admin.register(models.Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ("name", "theme",)
+    list_filter = ("theme",)
+    form = CategoryAdminForm
+    exclude = ("metadata", )
+    inlines = (InitialDataUploadAddView,)
+
+    fieldsets = (
+        ("", {
+            'fields': ('theme', 'name', )
+        }),
+        ("MetaData", {
+          'fields': ('source', 'description', 'licence', )
+        }),
+    )
+
+    class Media:
+        css = {
+             'all': ('/static/css/admin-custom.css',)
+        }
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        try:
+            obj = models.Category.objects.get(id=object_id)
+            if obj.coordinatefile:
+                self.inlines = (InitialDataUploadChangeView, )
+        except models.CoordinateFile.DoesNotExist:
+            pass
+        return super().change_view(request, object_id, form_url, extra_context)
+
+
+    def save_formset(self, request, form, formset, change):
+        """
+        Given an inline formset save it to the database.
+        """
+        if formset.model == models.CoordinateFile:
+            instances = formset.save()
+            for instance in instances:
+                async_task(
+                    "wazimap_ng.points.tasks.process_uploaded_file",
+                    instance, 
+                    task_name=f"Uploading data: {instance}",
+                    hook="wazimap_ng.datasets.hooks.process_task_info",
+                    key=request.session.session_key,
+                    type="upload", assign=True, notify=True
+                )
+
+                hooks.custom_admin_notification(
+                    request.session,
+                    "info",
+                    "Data upload for %s started. We will let you know when process is done." % (
+                        instance
+                    )
+                )
+        return super().save_formset(request, form, formset, change)
+
+
 class PointsCollectionAdminForm(forms.ModelForm):
-    theme = forms.ModelChoiceField(queryset=models.Theme.objects.all(), required=True)
-    subtheme = forms.CharField(required=True)
     group_permissions = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
     class Meta:
         model = models.ProfileCategory
