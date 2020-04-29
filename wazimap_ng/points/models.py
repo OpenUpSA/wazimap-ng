@@ -29,6 +29,7 @@ class Category(models.Model):
     name = models.CharField(max_length=50)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, related_name="categories")
     metadata = models.OneToOneField('general.MetaData', on_delete=models.CASCADE, null=True, blank=True)
+    permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="public")
 
     def __str__(self):
         return "%s -> %s" % (self.theme, self.name)
