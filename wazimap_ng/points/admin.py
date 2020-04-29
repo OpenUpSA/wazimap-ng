@@ -31,7 +31,27 @@ from wazimap_ng.profile.models import Profile
 
 from . import models
 
-admin.site.register(models.Theme)
+
+admin.register(models.Theme)
+class ThemeAdmin(admin.ModelAdmin):
+    list_display = ("name", "profile",)
+    list_filter = ("profile",)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "profile":
+            kwargs["queryset"] = get_objects_for_user(request.user, "view", Profile)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        profile_ids = get_objects_for_user(
+            request.user, 'view', Profile
+        ).values_list("id", flat=True)
+
+        return qs.filter(profile_id__in=profile_ids)
 
 def assign_to_category_action(category):
     def assign_to_category(modeladmin, request, queryset):
