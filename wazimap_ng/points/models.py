@@ -19,6 +19,7 @@ def get_file_path(instance, filename):
     return os.path.join('points', filename)
 
 class Theme(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=30)
     icon = models.CharField(max_length=30, null=True, blank=True)
 

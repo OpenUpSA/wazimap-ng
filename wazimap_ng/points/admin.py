@@ -301,7 +301,12 @@ class CategoryAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return get_objects_for_user(request.user, 'view', models.Category, qs)
+
+        profile_ids = get_objects_for_user(
+            request.user, 'view', Profile
+        ).values_list("id", flat=True)
+        qs = get_objects_for_user(request.user, 'view', models.Category, qs)
+        return qs.filter(theme__profile_id__in=profile_ids)
 
     def has_change_permission(self, request, obj=None):
         if not obj:
@@ -321,6 +326,15 @@ class CategoryAdmin(admin.ModelAdmin):
         form.current_user = request.user
         form.target = obj
         return form
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "theme":
+            profile_ids = get_objects_for_user(
+                request.user, "view", Profile
+            ).values_list("id", flat=True)
+            kwargs["queryset"] = models.Theme.objects.filter(profile_id__in=profile_ids)
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class PointsCollectionAdminForm(forms.ModelForm):
@@ -384,12 +398,16 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
                 assign_perm(perm, request.user, obj)
         return obj
 
-
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return get_objects_for_user(request.user, 'view', models.ProfileCategory, qs)
+        profile_ids = get_objects_for_user(
+            request.user, 'view', Profile
+        ).values_list("id", flat=True)
+
+        qs = get_objects_for_user(request.user, 'view', models.ProfileCategory, qs)
+        return qs.filter(profile_id__in=profile_ids)
 
     def has_change_permission(self, request, obj=None):
         if not obj:
