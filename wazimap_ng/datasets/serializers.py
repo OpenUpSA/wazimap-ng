@@ -15,7 +15,6 @@ class AncestorGeographySerializer(serializers.ModelSerializer):
         fields = ["name", "code", "level", "version", "parents"]
 
 
-
 class DatasetSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = models.Dataset
@@ -52,10 +51,3 @@ class LicenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Licence
         fields = ("name", "url",)
-
-class MetaDataSerializer(serializers.ModelSerializer):
-    licence = LicenceSerializer(read_only=True)
-
-    class Meta:
-        model = models.MetaData
-        fields = ('source', 'description', 'licence',)

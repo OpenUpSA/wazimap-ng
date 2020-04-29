@@ -16,7 +16,7 @@ class Dataset(models.Model):
     groups = ArrayField(models.CharField(max_length=200), blank=True, default=list)
     geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.CASCADE)
     permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="public")
-
+    metadata = models.OneToOneField('general.MetaData', on_delete=models.CASCADE, null=True, blank=True)
     objects = DatasetQuerySet.as_manager()
 
     def __str__(self):

@@ -12,10 +12,11 @@ from .. import models
 from .. import hooks
 from .views import (
     InitialDataUploadChangeView, VariableInlinesChangeView, 
-    VariableInlinesAddView, InitialDataUploadAddView, MetaDataInline
+    VariableInlinesAddView, InitialDataUploadAddView
 )
 from wazimap_ng.admin_utils import GroupPermissionWidget
 from wazimap_ng.general.services import permissions
+from wazimap_ng.general.models import MetaData
 
 def set_to_public(modeladmin, request, queryset):
     queryset.make_public()
@@ -25,7 +26,10 @@ def set_to_private(modeladmin, request, queryset):
 
 
 class DatasetAdminForm(forms.ModelForm):
-    permission_groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
+    source = forms.CharField(widget=forms.TextInput(attrs={'class': 'vTextField'}), required=False)
+    description = forms.CharField(widget=forms.Textarea(attrs={'class': 'vLargeTextField'}), required=False)
+    licence = forms.ModelChoiceField(queryset=models.Licence.objects.all(), required=False)
+    group_permissions = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
 
     class Meta:
         model = models.Dataset
@@ -36,18 +40,50 @@ class DatasetAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["permission_groups"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)
+
+        if self.instance.id:
+            if self.instance.metadata:
+                metadata = self.instance.metadata
+                self.fields["source"].initial = metadata.source
+                self.fields["description"].initial = metadata.description
+                self.fields["licence"].initial = metadata.licence
+
+        self.fields["group_permissions"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)
+
+    def save(self, commit=True):
+        if self.has_changed():
+            metadata = {
+                key: self.cleaned_data.get(key) for key in [
+                    "source", "description", "licence"
+                ]
+            }
+            if not self.instance.id:
+                self.instance.metadata = MetaData.objects.create(**metadata)
+            else:
+                MetaData.objects.filter(id=self.instance.metadata.id).update(**metadata)
+        return super().save(commit=commit)
 
 @admin.register(models.Dataset)
 class DatasetAdmin(admin.ModelAdmin):
 
     form = DatasetAdminForm
     exclude = ("groups", )
+    fieldsets = (
+        ("", {
+            'fields': ('name', )
+        }),
+        ("Permissions", {
+            'fields': ('permission_type', 'group_permissions', )
+
+        }),
+        ("MetaData", {
+          'fields': ('source', 'description', 'licence', )
+        }),
+    )
     inlines = ()
     actions = (set_to_public, set_to_private)
     list_display = ("name", "permission_type")
     list_filter = ("permission_type",)
-
 
     class Media:
         css = {
@@ -130,7 +166,7 @@ class DatasetAdmin(admin.ModelAdmin):
         return super().save_formset(request, form, formset, change)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
-        inlines = (InitialDataUploadChangeView, MetaDataInline,)
+        inlines = (InitialDataUploadChangeView,)
 
         if object_id:
             dataset_obj = models.Dataset.objects.get(id=object_id)
@@ -167,7 +203,7 @@ class DatasetAdmin(admin.ModelAdmin):
         return obj
 
     def add_view(self, request, form_url='', extra_context=None):
-        self.inlines = (InitialDataUploadAddView, MetaDataInline,)
+        self.inlines = (InitialDataUploadAddView,)
         return super().add_view(request)
 
     def get_queryset(self, request):
