@@ -36,12 +36,12 @@ class Category(models.Model):
         return "%s -> %s" % (self.theme, self.name)
 
     class Meta:
-        verbose_name = "Subtheme"
-        verbose_name_plural = "Subthemes"
+        verbose_name = "Collection"
+        verbose_name_plural = "Collections"
 
 class Location(models.Model):
     name = models.CharField(max_length=255)
-    category = models.ForeignKey(Category, related_name="locations", on_delete=models.CASCADE, verbose_name="subtheme")
+    category = models.ForeignKey(Category, related_name="locations", on_delete=models.CASCADE, verbose_name="collection")
     coordinates = models.PointField()
     data = JSONField()
 
@@ -51,7 +51,7 @@ class Location(models.Model):
 
 class ProfileCategory(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="subtheme")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="collection")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
     description = models.TextField(blank=True)
     permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="public")
@@ -60,8 +60,8 @@ class ProfileCategory(models.Model):
         return self.label
 
     class Meta:
-        verbose_name = "Point Collection"
-        verbose_name_plural = "Point Collections"
+        verbose_name = "Profile Collection"
+        verbose_name_plural = "Profile Collections"
 
 class CoordinateFile(models.Model):
     document = models.FileField(
