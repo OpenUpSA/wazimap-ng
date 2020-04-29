@@ -1,16 +1,18 @@
 from django.contrib.gis import admin
 from django.contrib.postgres import fields
+from adminsortable2.admin import SortableAdminMixin
 
 from ... import models
 from ..forms import ProfileIndicatorAdminForm
 
 from wazimap_ng.admin_utils import customTitledFilter, description, SortableWidget
+from wazimap_ng.datasets.models import Indicator, Dataset
+from wazimap_ng.utils import get_objects_for_user
 
 @admin.register(models.ProfileIndicator)
-class ProfileIndicatorAdmin(admin.ModelAdmin):
+class ProfileIndicatorAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_filter = (
         ('profile__name', customTitledFilter('Profile')),
-        ('indicator__name', customTitledFilter('Indicator')),
         ('subcategory__category__name', customTitledFilter('Category')),
         "subcategory",
     )
@@ -21,6 +23,7 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         description("Indicator", lambda x: x.indicator.name), 
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
+        "order",
     )
 
     fieldsets = (
@@ -50,3 +53,24 @@ class ProfileIndicatorAdmin(admin.ModelAdmin):
         if not change:
             obj.subindicators = obj.indicator.subindicators
         super().save_model(request, obj, form, change)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "profile":
+            kwargs["queryset"] = get_objects_for_user(request.user, "view", models.Profile)
+
+        if db_field.name == "indicator":
+            profiles = get_objects_for_user(request.user, "view", models.Profile)
+            herarchies = profiles.values_list("geography_hierarchy")
+            datasets = get_objects_for_user(request.user, "view", Dataset)
+            kwargs["queryset"] = Indicator.objects.filter(
+                dataset__in=datasets.filter(geography_hierarchy__in=herarchies)
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        profiles = get_objects_for_user(request.user, "view", models.Profile)
+        return qs.filter(profile__in=profiles)

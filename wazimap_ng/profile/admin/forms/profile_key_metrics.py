@@ -23,3 +23,5 @@ class ProfileKeyMetricsForm(forms.ModelForm):
             self.fields['subindicator'].choices = [
                 [subindicator['id'], subindicator['label']] for subindicator in Indicator.objects.filter(id=self.instance.variable.pk).first().subindicators
             ]
+
+            

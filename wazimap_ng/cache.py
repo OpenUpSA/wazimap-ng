@@ -6,7 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.views.decorators.cache import cache_page, cache_control
 
-from .profile.models import ProfileIndicator
+from .profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, ProfileKeyMetrics
 from .points.models import Location, Category, Theme
 
 logger = logging.getLogger(__name__)
@@ -47,29 +47,48 @@ def last_modified_point_updated(request, category_id=None, theme_id=None):
     return last_modified(request, key)
 
 ########### Signals #################
-
-@receiver(post_save, sender=ProfileIndicator)
-def profile_updated(sender, instance, **kwargs):
-    profile_id = instance.profile.id
-    key = profile_key % profile_id
+def update_profile_cache(profile):
+    key = profile_key % profile.id
     cache.set(key, datetime.now())
 
-@receiver(post_save, sender=Location)
-def point_updated_location(sender, instance, **kwargs):
-    point_updated_category(sender, instance.category, **kwargs)
-
-@receiver(post_save, sender=Category)
-def point_updated_category(sender, instance, **kwargs):
-    category_id = instance.id
-    theme_id = instance.theme.id
-    key1 = location_key % category_id
-    key2 = theme_key % theme_id
+def update_point_cache(category):
+    theme = category.theme
+    key1 = location_key % category.id
+    key2 = theme_key % theme.id
 
     logger.debug(f"Set cache key (category): {key1}")
     logger.debug(f"Set cache key (theme): {key2}")
 
     cache.set(key1, datetime.now())
     cache.set(key2, datetime.now())
+
+@receiver(post_save, sender=ProfileIndicator)
+def profile_indicator_updated(sender, instance, **kwargs):
+    update_profile_cache(instance.profile)
+
+@receiver(post_save, sender=ProfileHighlight)
+def profile_highlight_updated(sender, instance, **kwargs):
+    update_profile_cache(instance.profile)
+
+@receiver(post_save, sender=IndicatorCategory)
+def profile_category_updated(sender, instance, **kwargs):
+    update_profile_cache(instance.profile)
+
+@receiver(post_save, sender=IndicatorSubcategory)
+def profile_subcategory_updated(sender, instance, **kwargs):
+    update_profile_cache(instance.category.profile)
+
+@receiver(post_save, sender=ProfileKeyMetrics)
+def profile_subcategory_updated(sender, instance, **kwargs):
+    update_profile_cache(instance.subcategory.category.profile)
+
+@receiver(post_save, sender=Location)
+def point_updated_location(sender, instance, **kwargs):
+    update_point_cache(instance.category)
+
+@receiver(post_save, sender=Category)
+def point_updated_category(sender, instance, **kwargs):
+    update_point_cache(instance)
 
 def cache_headers(func):
     return cache_control(max_age=0, public=True, must_revalidate=True)(func)
@@ -96,6 +115,3 @@ def cache_decorator(key, expiry=60*60*24*365):
             return obj
         return wrapper
     return _cache_decorator
-
-
-

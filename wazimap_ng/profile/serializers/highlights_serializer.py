@@ -51,7 +51,7 @@ algorithms = {
 def HighlightsSerializer(profile, geography):
     highlights = []
 
-    profile_highlights = profile.profilehighlight_set.all()
+    profile_highlights = profile.profilehighlight_set.all().order_by("order")
 
     for highlight in profile_highlights:
         denominator = highlight.denominator

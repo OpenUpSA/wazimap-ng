@@ -14,6 +14,7 @@ from .. import models
 from .. import hooks
 from .base_admin_model import BaseAdminModel
 from ...admin_utils import customTitledFilter, SortableWidget
+from wazimap_ng.utils import get_objects_for_user
 
 class IndicatorAdminForm(forms.ModelForm):
     groups = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple)
@@ -41,6 +42,27 @@ class IndicatorAdminForm(forms.ModelForm):
                         as_string=Cast('filters', CharField())
                     ).filter(condition)
 
+    def clean_subindicators(self):
+        values = self.instance.subindicators
+        order = self.cleaned_data['subindicators']
+        return [values[i] for i in order] if order else values
+
+class DatasetsWithPermissionFilter(admin.SimpleListFilter):
+    title = 'Datasets'
+
+    parameter_name = 'dataset_id'
+
+    def lookups(self, request, model_admin):
+        datasets = get_objects_for_user(request.user, 'view', models.Dataset)
+        return [(d.id, d.name) for d in datasets]
+
+    def queryset(self, request, queryset):
+        dataset_id = self.value()
+
+        if dataset_id is None:
+            return queryset
+        return queryset.filter(dataset__id=dataset_id)
+
 @admin.register(models.Indicator)
 class IndicatorAdmin(BaseAdminModel):
 
@@ -49,7 +71,7 @@ class IndicatorAdmin(BaseAdminModel):
     )
 
     list_filter = (
-        ("dataset", customTitledFilter("Dataset")),
+        DatasetsWithPermissionFilter,
     )
 
     form = IndicatorAdminForm
@@ -63,12 +85,6 @@ class IndicatorAdmin(BaseAdminModel):
     formfield_overrides = {
         fields.JSONField: {"widget": SortableWidget},
     }
-
-    def get_related_fields_data(self, obj):
-        return [{
-            "name": "indicator data",
-            "count": obj.indicatordata_set.count()
-        }]
 
     def add_view(self, request, form_url='', extra_context=None):
         if request.POST.get("_saveasnew"):
@@ -92,6 +108,12 @@ class IndicatorAdmin(BaseAdminModel):
             return self.readonly_fields + to_add
         return self.readonly_fields
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "dataset":
+            qs = get_objects_for_user(request.user, 'view', models.Dataset)
+            kwargs["queryset"] = qs.filter(datasetfile__task__success=True)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     def save_model(self, request, obj, form, change):
         run_task = False
 
@@ -105,7 +127,7 @@ class IndicatorAdmin(BaseAdminModel):
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",
                 obj,
                 task_name=f"Data Extraction: {obj.name}",
-                hook="wazimap_ng.datasets.hooks.notify_user",
+                hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key
             )
             hooks.custom_admin_notification(
@@ -123,3 +145,11 @@ class IndicatorAdmin(BaseAdminModel):
                 "Please make sure you get data right before saving as fields : groups, dataset & universe will be set as non editable"
             )
         return obj
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+
+        datasets = get_objects_for_user(request.user, 'view', models.Dataset)
+        return qs.filter(dataset__in=datasets)

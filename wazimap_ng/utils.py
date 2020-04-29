@@ -2,6 +2,7 @@ import uuid
 import pathlib
 import os
 from collections import OrderedDict
+from guardian.shortcuts import get_perms_for_model, get_objects_for_user as gaurdian_objects_for_user
 
 def format_perc(n):
     return f"{n :.2%}"
@@ -126,3 +127,28 @@ def expand_nested_list(lst, key):
             row_copy = row.copy()
             row_copy[key] = js
             yield row_copy
+
+def get_objects_for_user(user, perm, model, queryset=None):
+    """
+    Get Objects for a user according access type of object
+    """
+    model_name = model._meta.model_name
+    if model_name not in ["profile", "dataset", "profilecategory"]:
+        return model.objects.none()
+
+    app_label = model._meta.app_label
+    codename = get_perms_for_model(model).filter(
+        codename__contains=perm
+    ).first().codename
+
+    if not codename:
+        return model.objects.none()
+
+    if not queryset:
+        queryset = model.objects.all()
+    queryset = queryset.exclude(**{"permission_type": "private"})
+    queryset |= gaurdian_objects_for_user(
+        user, f'{app_label}.{codename}', accept_global_perms=False
+    )
+
+    return queryset
