@@ -14,7 +14,7 @@ from .. import models
 from .. import hooks
 from .base_admin_model import BaseAdminModel
 from ...admin_utils import customTitledFilter, SortableWidget
-from wazimap_ng.utils import get_objects_for_user
+from wazimap_ng.general.services import permissions
 
 class IndicatorAdminForm(forms.ModelForm):
     groups = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple)
@@ -53,7 +53,7 @@ class DatasetsWithPermissionFilter(admin.SimpleListFilter):
     parameter_name = 'dataset_id'
 
     def lookups(self, request, model_admin):
-        datasets = get_objects_for_user(request.user, 'view', models.Dataset)
+        datasets = permissions.get_objects_for_user(request.user, 'view', models.Dataset)
         return [(d.id, d.name) for d in datasets]
 
     def queryset(self, request, queryset):
@@ -110,7 +110,7 @@ class IndicatorAdmin(BaseAdminModel):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "dataset":
-            qs = get_objects_for_user(request.user, 'view', models.Dataset)
+            qs = permissions.get_objects_for_user(request.user, 'view', models.Dataset)
             kwargs["queryset"] = qs.filter(datasetfile__task__success=True)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -151,5 +151,5 @@ class IndicatorAdmin(BaseAdminModel):
         if request.user.is_superuser:
             return qs
 
-        datasets = get_objects_for_user(request.user, 'view', models.Dataset)
+        datasets = permissions.get_objects_for_user(request.user, 'view', models.Dataset)
         return qs.filter(dataset__in=datasets)
