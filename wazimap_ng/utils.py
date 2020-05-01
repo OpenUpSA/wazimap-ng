@@ -115,4 +115,3 @@ def expand_nested_list(lst, key):
             row_copy = row.copy()
             row_copy[key] = js
             yield row_copy
-
