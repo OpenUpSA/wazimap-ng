@@ -1,4 +1,5 @@
 import json
+import pandas as pd
 
 from django.contrib.gis import admin
 from django_json_widget.widgets import JSONEditorWidget
@@ -8,22 +9,22 @@ from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
 from django.contrib.gis.db.models import PointField
 from django.contrib.auth.models import Group
-
-from mapwidgets.widgets import GooglePointFieldWidget
-
-from django_q.tasks import async_task
-from django_q.models import Task
-from wazimap_ng.datasets import hooks
-from wazimap_ng.utils import get_objects_for_user
 from django.urls import reverse
 from django.conf import settings
 from django import forms
-import pandas as pd
+
+
+from django_q.tasks import async_task
+from django_q.models import Task
 from import_export import resources
 from import_export.admin import ExportMixin
 from import_export.fields import Field
 from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
+from mapwidgets.widgets import GooglePointFieldWidget
+
+from wazimap_ng.datasets import hooks
 from wazimap_ng.admin_utils import GroupPermissionWidget
+from wazimap_ng.general.services import permissions
 
 from . import models
 
@@ -314,7 +315,7 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return get_objects_for_user(request.user, 'view', models.ProfileCategory, qs)
+        return permissions.get_objects_for_user(request.user, 'view', models.ProfileCategory, qs)
 
     def has_change_permission(self, request, obj=None):
         if not obj:

@@ -5,9 +5,9 @@ from django.contrib.auth.models import Group
 
 from ... import models
 from ..forms import ProfileAdminForm
-from wazimap_ng.utils import get_objects_for_user
 
 from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
+from wazimap_ng.general.services import permissions
 
 @admin.register(models.Profile)
 class ProfileAdmin(admin.ModelAdmin):
@@ -18,7 +18,7 @@ class ProfileAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
 
-        return get_objects_for_user(request.user, "view", models.Profile, qs)
+        return permissions.get_objects_for_user(request.user, "view", models.Profile, qs)
 
     def has_change_permission(self, request, obj=None):
     	if not obj:

@@ -14,7 +14,6 @@ from .views import (
     InitialDataUploadChangeView, VariableInlinesChangeView, 
     VariableInlinesAddView, InitialDataUploadAddView, MetaDataInline
 )
-from wazimap_ng.utils import get_objects_for_user
 from wazimap_ng.admin_utils import GroupPermissionWidget
 from wazimap_ng.general.services import permissions
 
@@ -155,7 +154,7 @@ class DatasetAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return get_objects_for_user(request.user, 'view', models.Dataset, qs)
+        return permissions.get_objects_for_user(request.user, 'view', models.Dataset, qs)
 
     def has_change_permission(self, request, obj=None):
         if not obj:
