@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('points', '0017_category_metadata'),
+        ('points', '0017_category_metadata_2'),
     ]
 
     operations = [

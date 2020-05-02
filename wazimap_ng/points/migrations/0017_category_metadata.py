@@ -3,26 +3,6 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
-def copy_metadata_to_general_metadata(apps, schema_editor):
-    """
-    copy metadata from points.MetaData to general.MetaData
-    """
-    points_MD = apps.get_model('points', 'MetaData')
-    general_MD = apps.get_model('general', 'MetaData')
-
-    for metadata in points_MD.objects.all():
-
-        category = metadata.profile_category.category
-        new_metadata = general_MD.objects.create(
-            source=metadata.source,
-            description=metadata.description,
-            licence=metadata.licence
-        )
-
-        category.metadata = new_metadata
-        category.save()
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -36,5 +16,4 @@ class Migration(migrations.Migration):
             name='metadata',
             field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='general.MetaData'),
         ),
-        migrations.RunPython(copy_metadata_to_general_metadata),
     ]
