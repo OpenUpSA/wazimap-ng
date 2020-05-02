@@ -70,7 +70,7 @@ class CoordinateFile(models.Model):
         help_text="File Type required : CSV | Fields that are required: Name, Longitude, latitude"
     )
     task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
-    category = models.OneToOneField(Category, on_delete=models.CASCADE, null=True, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.category.name
