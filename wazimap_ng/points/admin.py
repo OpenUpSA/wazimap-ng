@@ -49,7 +49,7 @@ class ThemeAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
 
-        profile_ids = get_objects_for_user(
+        profile_ids = permissions.get_objects_for_user(
             request.user, 'view', Profile
         ).values_list("id", flat=True)
 
@@ -323,10 +323,10 @@ class CategoryAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
 
-        profile_ids = get_objects_for_user(
+        profile_ids = permissions.get_objects_for_user(
             request.user, 'view', Profile
         ).values_list("id", flat=True)
-        qs = get_objects_for_user(request.user, 'view', models.Category, qs)
+        qs = permissions.get_objects_for_user(request.user, 'view', models.Category, qs)
         return qs.filter(theme__profile_id__in=profile_ids)
 
     def has_change_permission(self, request, obj=None):
@@ -350,7 +350,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "theme":
-            profile_ids = get_objects_for_user(
+            profile_ids = permissions.get_objects_for_user(
                 request.user, "view", Profile
             ).values_list("id", flat=True)
             kwargs["queryset"] = models.Theme.objects.filter(profile_id__in=profile_ids)
@@ -377,7 +377,7 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
     list_filter = ("category", "profile",)
     form = PointsCollectionAdminForm
 
-    fieldsets= (
+    fieldsets = (
         ("Database fields (can't change after being created)", {
             'fields': ('profile', 'category',)
         }),
@@ -423,7 +423,7 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        profile_ids = get_objects_for_user(
+        profile_ids = permissions.get_objects_for_user(
             request.user, 'view', Profile
         ).values_list("id", flat=True)
 
@@ -451,8 +451,8 @@ class ProfileCategoryAdmin(admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "profile":
-            kwargs["queryset"] = get_objects_for_user(request.user, "view", Profile)
+            kwargs["queryset"] = permissions.get_objects_for_user(request.user, "view", Profile)
 
         if db_field.name == "category":
-            kwargs["queryset"] = get_objects_for_user(request.user, "view", models.Category)
+            kwargs["queryset"] = permissions.get_objects_for_user(request.user, "view", models.Category)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
