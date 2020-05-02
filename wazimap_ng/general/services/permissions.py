@@ -30,7 +30,7 @@ def get_objects_for_user(user, perm, model, queryset=None):
     Get Objects for a user according access type of object
     """
     model_name = model._meta.model_name
-    if model_name not in ["profile", "dataset", "profilecategory"]:
+    if model_name not in ["profile", "dataset", "profilecategory", "category"]:
         return model.objects.none()
 
     app_label = model._meta.app_label
