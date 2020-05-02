@@ -26,6 +26,11 @@ def has_owner_permission(user, obj, permission):
     return user.has_perm(permission, obj)
 
 def get_objects_for_user(user, perm, model, queryset=None):
+    queryset = queryset or model.objects.all()
+
+    if (user.is_superuser):
+        return queryset
+
     """
     Get Objects for a user according access type of object
     """
@@ -41,8 +46,6 @@ def get_objects_for_user(user, perm, model, queryset=None):
     if not codename:
         return model.objects.none()
 
-    if not queryset:
-        queryset = model.objects.all()
     queryset = queryset.exclude(**{"permission_type": "private"})
     queryset |= guardian_objects_for_user(
         user, f'{app_label}.{codename}', accept_global_perms=False
@@ -50,3 +53,34 @@ def get_objects_for_user(user, perm, model, queryset=None):
 
     return queryset
 
+# TODO Perhaps this function should move to the profile app instead
+def get_user_profiles(user, permission="view", qs=None):
+    from wazimap_ng.profile.models import Profile
+
+    qs = qs or Profile.objects.all()
+
+    return get_objects_for_user(user, permission, Profile, queryset=qs)
+
+# TODO Perhaps this function should move to the points app instead
+def get_user_categories(user, permission="view", qs=None):
+    from wazimap_ng.points.models import Category
+
+    qs = qs or Category.objects.all()
+    if user.is_superuser:
+        return qs
+
+    profiles = get_user_profiles(user, permission)
+    profile_ids = profiles.values_list("id", flat=True)
+        
+    qs = permissions.get_objects_for_user(user, permission, Category, qs)
+    return qs.filter(theme__profile_id__in=profile_ids)
+
+# TODO Perhaps this function should move to the points app instead
+def get_user_themes(user, permission="view", qs=None):
+    from wazimap_ng.points.models import Theme
+
+    profiles = get_user_profiles(user)
+    print(profiles)
+    profile_ids = profiles.values_list("id", flat=True)
+
+    return Theme.objects.filter(profile_id__in=profile_ids)
