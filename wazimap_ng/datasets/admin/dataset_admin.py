@@ -124,8 +124,8 @@ class DatasetAdmin(admin.ModelAdmin):
 
         if object_id:
             dataset_obj = models.Dataset.objects.get(id=object_id)
-            if dataset_obj and hasattr(dataset_obj, "datasetfile") and dataset_obj.datasetfile.task and dataset_obj.datasetfile.task.success:
-
+            is_loaded = hasattr(dataset_obj, "datasetfile") and dataset_obj.datasetfile.task and dataset_obj.datasetfile.task.success
+            if is_loaded:
                 if dataset_obj.indicator_set.count():
                     inlines = inlines + (VariableInlinesChangeView,)
                 inlines = inlines + (VariableInlinesAddView,)
