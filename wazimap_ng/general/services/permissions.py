@@ -72,7 +72,7 @@ def get_user_categories(user, permission="view", qs=None):
     profiles = get_user_profiles(user, permission)
     profile_ids = profiles.values_list("id", flat=True)
         
-    qs = permissions.get_objects_for_user(user, permission, Category, qs)
+    qs = get_objects_for_user(user, permission, Category, qs)
     return qs.filter(theme__profile_id__in=profile_ids)
 
 # TODO Perhaps this function should move to the points app instead
