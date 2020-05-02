@@ -17,6 +17,13 @@ from .views import (
 from wazimap_ng.admin_utils import GroupPermissionWidget
 from wazimap_ng.general.services import permissions
 
+def set_to_public(modeladmin, request, queryset):
+    queryset.make_public()
+
+def set_to_private(modeladmin, request, queryset):
+    queryset.make_private()
+
+
 class DatasetAdminForm(forms.ModelForm):
     permission_groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
 
@@ -37,6 +44,9 @@ class DatasetAdmin(admin.ModelAdmin):
     form = DatasetAdminForm
     exclude = ("groups", )
     inlines = ()
+    actions = (set_to_public, set_to_private)
+    list_display = ("name", "permission_type")
+    list_filter = ("permission_type",)
 
 
     class Media:
