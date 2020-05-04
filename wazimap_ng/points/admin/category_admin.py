@@ -180,7 +180,7 @@ class CategoryAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         try:
             obj = models.Category.objects.get(id=object_id)
-            if obj and obj.coordinatefile:
+            if obj and hasattr(obj, "coordinatefile") and obj.coordinatefile:
                 self.inlines = (InitialDataUploadChangeView, )
         except models.CoordinateFile.DoesNotExist:
             pass
