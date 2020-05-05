@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField
 
 from .dataset import Dataset
+from .datasetdata import DatasetData
 from .universe import Universe
 
 class Indicator(models.Model):
