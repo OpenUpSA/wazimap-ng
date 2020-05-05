@@ -1,5 +1,6 @@
 import json
 import logging
+from collections import defaultdict
 
 from django.db import transaction
 from django.db.models import Sum, FloatField
@@ -11,8 +12,90 @@ from itertools import groupby
 
 logger = logging.getLogger(__name__)
 
+class DataAccumulator:
+    def __init__(self, geography_id):
+        self.geography_id = geography_id
+        self.data = {
+            "groups": defaultdict(dict),
+            "subindicators": {}
+        }
+
+    def add_data(self, group, subindicator, data_blob):
+        self.data["groups"][group][subindicator] = data_blob["data"]
+
+    def add_subindicator(self, data_blob):
+        self.data["subindicators"] = data_blob
+
+class Sorter:
+    def __init__(self):
+        self.accumulators = {}
+
+    def get_accumulator(self, geography_id):
+        if geography_id not in self.accumulators:
+            self.accumulators[geography_id] = DataAccumulator(geography_id)
+
+        accumulator = self.accumulators[geography_id]
+        return accumulator
+
+    def add_data(self, group, subindicator, data_blob):
+        for datum in data_blob:
+            geography_id = datum["geography_id"]
+            accumulator = self.get_accumulator(geography_id)
+
+            accumulator.add_data(group, subindicator, datum)
+
+    def add_subindicator(self, data_blob):
+        for datum in data_blob:
+            geography_id = datum["geography_id"]
+            accumulator = self.get_accumulator(geography_id)
+            accumulator.add_subindicator(datum["data"])
+
+
+def add_prefix(g):
+    return "data__" + g
+
+
 @transaction.atomic
 def indicator_data_extraction(indicator, **kwargs):
+    sorter = Sorter()
+    primary_group = indicator.groups[0] # TODO ensure that we only ever have one primary group. Probably need to change the model
+
+    models.IndicatorData.objects.filter(indicator=indicator).delete()
+    groups = ["data__" + i for i in indicator.dataset.groups]
+
+    for group in indicator.dataset.groups:
+        qs = models.DatasetData.objects.filter(dataset=indicator.dataset, data__has_keys=[group])
+        if group != primary_group:
+            subindicators = qs.get_unique_subindicators([add_prefix(group)])
+
+            for subindicator in subindicators:
+                qs_subindicator = qs.filter(**subindicator)
+
+                counts = extract_counts(indicator, qs_subindicator)
+
+                subindicator_value = list(subindicator.values())[0]
+                sorter.add_data(group, subindicator_value, counts)
+        else:
+            counts = extract_counts(indicator, qs)
+            sorter.add_subindicator(counts)
+
+
+    datarows = []
+    for geography_id, accumulator in sorter.accumulators.items():
+        datarows.append(models.IndicatorData(
+            indicator=indicator, geography_id=geography_id, data=accumulator.data
+        )
+    )
+
+    models.IndicatorData.objects.bulk_create(datarows, 1000)
+
+    return {
+        "model": "indicator",
+        "name": indicator.name,
+        "id": indicator.id,
+    }           
+
+def extract_counts(indicator, qs):
     """
     Data extraction for indicator data object.
 
@@ -25,76 +108,51 @@ def indicator_data_extraction(indicator, **kwargs):
 
     So for Gender group object should look like : {"Gender": "Male", "count": 123, ...}
     """
-    # Delete already existing Indicator Data objects for specific indicator
-    models.IndicatorData.objects.filter(indicator=indicator).delete()
 
-    # Fetch filters for universe
-    filters = {}
     if indicator.universe is not None:
-        filters = indicator.universe.filters
-        if filters and isinstance(filters, dict):
-            filters = {f"data__{k}": v for k, v in filters.items()}
+        qs = qs.filter_by_universe(indicator.universe)
 
-    # Format groups & Count
     groups = ["data__" + i for i in indicator.groups]
     c = Cast(KeyTextTransform("count", "data"), FloatField())
 
-    filter_query = {
-        "dataset": indicator.dataset,
-        "data__has_keys": indicator.groups
-    }
+    qs = qs.exclude(data__count="")
 
-    if filters:
-        filter_query.update(filters)
+    # if len(groups):
+    #     subindicators = qs.get_unique_subindicators(groups)
+    # else:
+    #     subindicators = []
+    # qs = qs.order_by("geography_id")
 
-    qs = models.DatasetData.objects.filter(**filter_query).exclude(data__count="").order_by("geography_id")
+    
 
-    if len(groups):
-        subindicators = json.loads(
-            json.dumps(
-                list(
-                    map(dict, set(
-                            tuple(sorted(d.items())) for d in qs.values(*groups)
-                        )
-                    )
-                )
-            ).replace("data__", "")
-        )
-    else:
-        subindicators = []
+    
+    # subindicators = []
+    # for idx, subindicator in enumerate(subindicators):
 
-    for idx, subindicator in enumerate(subindicators):
+    #     label_list =[f"{key}: {val}" for key, val in subindicator.items()] 
+    #     subindicators.append({
+    #         "groups": subindicator,
+    #         "id": idx,
+    #         "label": " / ".join(label_list)
+    #     })
 
-        label_list =[f"{key}: {val}" for key, val in subindicator.items()] 
-        subindicators[idx] = {
-            "groups": subindicator, "id": idx, "label": " / ".join(label_list)
-        }
+    # indicator.subindicators = subindicators
+    # indicator.save()
 
-    # Group data according to geography_id and get sum of data__count
-    data = groupby(qs.values(*groups, "geography_id").annotate(count=Sum(c)), lambda x: x["geography_id"])
+    data = groupby(qs.grouped_totals_by_geography(groups), lambda x: x["geography_id"])
 
     datarows = []
-
-    # Create indicator data
-    for key, group in data:
+    for geography_id, group in data:
         data_dump = json.dumps(list(group))
         grouped = json.loads(data_dump.replace("data__", ""))
 
         for item in grouped:
             item.pop("geography_id")
 
-        datarows.append(models.IndicatorData(
-            indicator=indicator, geography_id=key, data=grouped
-        ))
+        datarows.append({"geography_id": geography_id, "data": grouped})
+    return datarows
 
-    if len(datarows) > 0:
-        models.IndicatorData.objects.bulk_create(datarows, 1000)
 
     indicator.subindicators = subindicators
     indicator.save()
 
-    return {
-        "model": "indicator",
-        "name": indicator.name,
-        "id": indicator.id,
-    }
