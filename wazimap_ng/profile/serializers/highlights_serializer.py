@@ -13,8 +13,8 @@ def sibling(highlight, geography):
     denominator = 0
     for datum in indicator_data:
         if datum.geography == geography:
-            numerator = datum.data[subindicator]["count"]
-        s = datum.data[subindicator]
+            numerator = datum.data["subindicators"][subindicator]["count"]
+        s = datum.data["subindicators"][subindicator]
         denominator += s["count"]
 
     if denominator > 0 and numerator is not None:
@@ -26,16 +26,16 @@ def absolute_value(highlight, geography):
     subindicator = get_subindicator(highlight)
     if indicator_data.count() > 0:
         data = indicator_data.first().data # TODO what to do with multiple results
-        return format_int(data[subindicator]["count"])
+        return format_int(data["subindicators"][subindicator]["count"])
     return None
 
 def subindicator(highlight, geography):
     indicator_data = IndicatorData.objects.filter(indicator__profilehighlight=highlight, geography=geography)
     indicator_data = indicator_data.first() # Fix this need to cater for multiple results
     subindicator = get_subindicator(highlight)
-    numerator = indicator_data.data[subindicator]["count"]
+    numerator = indicator_data.data["subindicators"][subindicator]["count"]
     denominator = 0
-    for datum in indicator_data.data:
+    for datum in indicator_data.data["subindicators"]:
         denominator += datum["count"]
 
     if denominator > 0 and numerator is not None:

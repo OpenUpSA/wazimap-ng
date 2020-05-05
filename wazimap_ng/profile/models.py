@@ -81,6 +81,7 @@ class ProfileHighlight(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this highlight is based on.", verbose_name="variable")
     name = models.CharField(max_length=60, null=False, blank=True, help_text="Name of the indicator in the database")
+    # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.
     subindicator = models.PositiveSmallIntegerField(null=True, blank=True)
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32, help_text="Method for calculating the denominator that will normalise this value.")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
