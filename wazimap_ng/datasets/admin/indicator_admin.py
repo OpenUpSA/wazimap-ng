@@ -133,12 +133,13 @@ class IndicatorAdmin(BaseAdminModel):
 
         if change:
             db_obj = models.Indicator.objects.get(id=obj.id)
-            is_first_save = not db_obj.name
-            
-            if is_first_save:
+            is_running_step2 = not db_obj.name
+
+            if is_running_step2:
                 run_task = True
 
         super().save_model(request, obj, form, change)
+        
         if run_task:
             async_task(
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",
