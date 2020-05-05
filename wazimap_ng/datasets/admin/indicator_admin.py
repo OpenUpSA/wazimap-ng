@@ -102,10 +102,13 @@ class IndicatorAdmin(BaseAdminModel):
 
         extra_context = extra_context or {}
         extra_context['show_save'] = False
+
+        # TODO why is this not using super()?
         return admin.ModelAdmin.add_view(self, request, form_url, extra_context)
 
     def change_view(self, request, *args, **kwargs):
         self.fieldsets = IndicatorAdmin.step2_fieldsets
+        # TODO why is this not using super()?
         return admin.ModelAdmin.change_view(self, request, *args, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
@@ -123,12 +126,18 @@ class IndicatorAdmin(BaseAdminModel):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_model(self, request, obj, form, change):
+        """
+        During Step 1, no background tasks are run because only the Dataset is available.
+        """
         run_task = False
 
         if change:
             db_obj = models.Indicator.objects.get(id=obj.id)
-            if not db_obj.name:
+            is_first_save = not db_obj.name
+            
+            if is_first_save:
                 run_task = True
+
         super().save_model(request, obj, form, change)
         if run_task:
             async_task(
