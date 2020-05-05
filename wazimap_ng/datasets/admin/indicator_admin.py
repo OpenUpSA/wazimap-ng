@@ -65,6 +65,13 @@ class DatasetsWithPermissionFilter(admin.SimpleListFilter):
 
 @admin.register(models.Indicator)
 class IndicatorAdmin(BaseAdminModel):
+    """
+    This Admin creates an Indicator in two steps.
+    Step 1: Select the Dataset
+    Step 2: Complete the indicator by selecting groups, providing a label, etc.
+
+    TODO may want to rather do this with javascript
+    """
 
     list_display = (
         "name", "dataset", "universe"
@@ -75,10 +82,11 @@ class IndicatorAdmin(BaseAdminModel):
     )
 
     form = IndicatorAdminForm
-    fieldsets_add_view = [
+    step1_fieldsets = [
         (None, { 'fields': ('dataset', ) } ),
     ]
-    fieldsets = [
+
+    step2_fieldsets = [
         (None, { 'fields': ('dataset','universe', 'groups', 'name', 'subindicators') } ),
     ]
 
@@ -88,16 +96,16 @@ class IndicatorAdmin(BaseAdminModel):
 
     def add_view(self, request, form_url='', extra_context=None):
         if request.POST.get("_saveasnew"):
-            self.fieldsets = IndicatorAdmin.fieldsets
+            self.fieldsets = IndicatorAdmin.step2_fieldsets
         else:
-            self.fieldsets = IndicatorAdmin.fieldsets_add_view
+            self.fieldsets = IndicatorAdmin.step1_fieldsets
 
         extra_context = extra_context or {}
         extra_context['show_save'] = False
         return admin.ModelAdmin.add_view(self, request, form_url, extra_context)
 
     def change_view(self, request, *args, **kwargs):
-        self.fieldsets = IndicatorAdmin.fieldsets
+        self.fieldsets = IndicatorAdmin.step2_fieldsets
         return admin.ModelAdmin.change_view(self, request, *args, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
