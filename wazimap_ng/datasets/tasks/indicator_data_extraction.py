@@ -51,10 +51,6 @@ class Sorter:
             accumulator.add_subindicator(datum["data"])
 
 
-def add_prefix(g):
-    return "data__" + g
-
-
 @transaction.atomic
 def indicator_data_extraction(indicator, **kwargs):
     sorter = Sorter()
@@ -66,15 +62,13 @@ def indicator_data_extraction(indicator, **kwargs):
     for group in indicator.dataset.groups:
         qs = models.DatasetData.objects.filter(dataset=indicator.dataset, data__has_keys=[group])
         if group != primary_group:
-            subindicators = qs.get_unique_subindicators([add_prefix(group)])
+            subindicators = qs.get_unique_subindicators(group)
 
             for subindicator in subindicators:
-                qs_subindicator = qs.filter(**subindicator)
+                qs_subindicator = qs.filter(**{f"data__{group}": subindicator})
 
                 counts = extract_counts(indicator, qs_subindicator)
-
-                subindicator_value = list(subindicator.values())[0]
-                sorter.add_data(group, subindicator_value, counts)
+                sorter.add_data(group, subindicator, counts)
         else:
             counts = extract_counts(indicator, qs)
             sorter.add_subindicator(counts)

@@ -18,15 +18,14 @@ class DatasetDataQuerySet(models.QuerySet):
         else:
             return self
 
-    def get_unique_subindicators(self, groups):
-        """
-        groups need to be a list of fields to group by. They must be prefixed by data__
-        for example ['data__sex', 'data__age']
-        """
+    def get_unique_subindicators(self, group):
 
         # The empty order_by is necessary as Django added any field in order_by to the select clause as well.
         # https://docs.djangoproject.com/en/2.2/ref/models/querysets/#django.db.models.query.QuerySet.distinct
-        return self.order_by().values(*groups).distinct()
+
+        group = f"data__{group}" if "data__" not in group else group
+
+        return self.order_by().values_list(group, flat=True).distinct()
 
 
     def grouped_totals_by_geography(self, groups):
