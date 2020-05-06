@@ -24,9 +24,9 @@ class Indicator(models.Model):
 
         return []
 
-    def save(self, *args, **kwargs):
+    def save(self, force_subindicator_update=False, *args, **kwargs):
         first_save = self.subindicators is None
-        if first_save:
+        if force_subindicator_update or first_save:
             self.subindicators = self.get_unique_subindicators()
         super().save(*args, **kwargs)
         
