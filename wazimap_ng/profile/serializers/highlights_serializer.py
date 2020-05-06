@@ -23,8 +23,8 @@ def sibling(highlight, geography):
 
 def absolute_value(highlight, geography):
     indicator_data = IndicatorData.objects.filter(indicator__profilehighlight=highlight, geography=geography)
-    subindicator = get_subindicator(highlight)
     if indicator_data.count() > 0:
+        subindicator = get_subindicator(highlight)
         data = indicator_data.first().data # TODO what to do with multiple results
         return format_int(data["subindicators"][subindicator]["count"])
     return None
