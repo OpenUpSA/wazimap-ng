@@ -145,6 +145,7 @@ def extract_counts(indicator, qs):
     # indicator.subindicators = subindicators
     # indicator.save()
 
+    qs = qs.order_by("geography_id")
     data = groupby(qs.grouped_totals_by_geography(groups), lambda x: x["geography_id"])
 
     datarows = []
@@ -159,6 +160,12 @@ def extract_counts(indicator, qs):
     return datarows
 
 
-    indicator.subindicators = subindicators
-    indicator.save()
-
+# for indicator in models.Indicator.objects.filter(pk=55):
+#     try:
+#         if len(indicator.groups) == 0:
+#             print(f"Skipping {indicator.name}")
+#         else:
+#             print(indicator.name)
+#             indicator_data_extraction(indicator)
+#     except Exception as e:
+#         import traceback; traceback.print_exc(e)
