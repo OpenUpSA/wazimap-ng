@@ -119,6 +119,12 @@ class IndicatorAdmin(BaseAdminModel):
             return self.readonly_fields + to_add
         return self.readonly_fields
 
+    def get_related_fields_data(self, obj):
+        return [{
+            "name": "indicator data",
+            "count": obj.indicatordata_set.count()
+        }]
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "dataset":
             qs = permissions.get_objects_for_user(request.user, 'view', models.Dataset)
