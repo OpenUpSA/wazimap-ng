@@ -130,9 +130,6 @@ def extract_counts(indicator, qs):
     #     subindicators = qs.get_unique_subindicators(groups)
     # else:
     #     subindicators = []
-    # qs = qs.order_by("geography_id")
-
-    
 
     
     # subindicators = []
