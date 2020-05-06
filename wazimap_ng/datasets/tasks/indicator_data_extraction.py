@@ -24,7 +24,20 @@ class DataAccumulator:
         self.data["groups"][group][subindicator] = data_blob["data"]
 
     def add_subindicator(self, data_blob):
-        self.data["subindicators"] = data_blob
+        subindicators = {}
+        for datum in data_blob:
+            count = datum.pop("count")
+            values = list(datum.values())
+            if len(values) > 0:
+                if len(values) > 1:
+                    logger.warn(f"Expected a single group when creating a subindicator - found {len(values)}!")
+                    logger.debug(values)
+                subindicator = values[0]
+                subindicators[subindicator] = count
+            else: 
+                raise Exception("Missing subindicator in datablob")
+
+        self.data["subindicators"] = subindicators
 
 class Sorter:
     def __init__(self):
