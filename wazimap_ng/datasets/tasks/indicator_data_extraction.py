@@ -125,26 +125,6 @@ def extract_counts(indicator, qs):
     c = Cast(KeyTextTransform("count", "data"), FloatField())
 
     qs = qs.exclude(data__count="")
-
-    # if len(groups):
-    #     subindicators = qs.get_unique_subindicators(groups)
-    # else:
-    #     subindicators = []
-
-    
-    # subindicators = []
-    # for idx, subindicator in enumerate(subindicators):
-
-    #     label_list =[f"{key}: {val}" for key, val in subindicator.items()] 
-    #     subindicators.append({
-    #         "groups": subindicator,
-    #         "id": idx,
-    #         "label": " / ".join(label_list)
-    #     })
-
-    # indicator.subindicators = subindicators
-    # indicator.save()
-
     qs = qs.order_by("geography_id")
     data = groupby(qs.grouped_totals_by_geography(groups), lambda x: x["geography_id"])
 
@@ -158,14 +138,3 @@ def extract_counts(indicator, qs):
 
         datarows.append({"geography_id": geography_id, "data": grouped})
     return datarows
-
-
-# for indicator in models.Indicator.objects.filter(pk=55):
-#     try:
-#         if len(indicator.groups) == 0:
-#             print(f"Skipping {indicator.name}")
-#         else:
-#             print(indicator.name)
-#             indicator_data_extraction(indicator)
-#     except Exception as e:
-#         import traceback; traceback.print_exc(e)
