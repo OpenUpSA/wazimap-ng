@@ -1,9 +1,13 @@
+import logging
+
 from django.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField
 
 from .dataset import Dataset
 from .datasetdata import DatasetData
 from .universe import Universe
+
+logger = logging.getLogger(__name__)
 
 class Indicator(models.Model):
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
@@ -27,6 +31,7 @@ class Indicator(models.Model):
     def save(self, force_subindicator_update=False, *args, **kwargs):
         first_save = self.subindicators is None
         if force_subindicator_update or first_save:
+            logger.debug(f"Updating subindicators for indicator: {self.name (self.id)}")
             self.subindicators = self.get_unique_subindicators()
         super().save(*args, **kwargs)
         

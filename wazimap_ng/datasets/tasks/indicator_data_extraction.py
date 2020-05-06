@@ -73,11 +73,13 @@ def indicator_data_extraction(indicator, **kwargs):
     groups = ["data__" + i for i in indicator.dataset.groups]
 
     for group in indicator.dataset.groups:
+        logger.debug(f"Extracting subindicators for: {group}")
         qs = models.DatasetData.objects.filter(dataset=indicator.dataset, data__has_keys=[group])
         if group != primary_group:
             subindicators = qs.get_unique_subindicators(group)
 
             for subindicator in subindicators:
+                logger.debug(f"Extracting subindicators for: {group} -> {subindicator}")
                 qs_subindicator = qs.filter(**{f"data__{group}": subindicator})
 
                 counts = extract_counts(indicator, qs_subindicator)
