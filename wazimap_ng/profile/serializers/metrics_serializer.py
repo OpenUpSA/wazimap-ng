@@ -5,6 +5,9 @@ from wazimap_ng.datasets.models import IndicatorData
 from .. import models
 
 def get_subindicator(metric):
+    subindicators = metric.variable.subindicators
+    idx = metric.subindicator if metric.subindicator is not None else 0
+    return subindicators[idx]
 
 def sibling(profile_key_metric, geography):
     siblings = geography.get_siblings()
