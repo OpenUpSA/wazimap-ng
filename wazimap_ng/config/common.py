@@ -290,7 +290,6 @@ DENOMINATOR_CHOICES = (
 PERMISSION_TYPES = (
     ('private', 'Private'),
     ('public', 'Public'),
-    ('non_editable', 'Public But Non Editable'),
 )
 
 

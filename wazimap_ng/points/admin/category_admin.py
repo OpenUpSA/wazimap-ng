@@ -264,5 +264,3 @@ class CategoryAdmin(admin.ModelAdmin):
             kwargs["queryset"] = permissions.get_user_themes(request.user)
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-

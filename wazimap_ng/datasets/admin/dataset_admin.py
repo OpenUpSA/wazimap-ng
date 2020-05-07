@@ -23,25 +23,8 @@ def set_to_public(modeladmin, request, queryset):
 def set_to_private(modeladmin, request, queryset):
     queryset.make_private()
 
-
-class DatasetAdminForm(forms.ModelForm):
-    permission_groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
-
-    class Meta:
-        model = models.Dataset
-        widgets = {
-          'permission_type': forms.RadioSelect,
-        }
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["permission_groups"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)
-
 @admin.register(models.Dataset)
 class DatasetAdmin(admin.ModelAdmin):
-
-    form = DatasetAdminForm
     exclude = ("groups", )
     inlines = ()
     actions = (set_to_public, set_to_private)
@@ -146,21 +129,6 @@ class DatasetAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
 
-        permissions_added = json.loads(request.POST.get("permissions_added", "{}"))
-        permissions_removed = json.loads(request.POST.get("permissions_removed", "{}"))
-
-        for group_id, perms in permissions_removed.items():
-            group = Group.objects.filter(id=group_id).first()
-            if group:
-                for perm in perms:
-                    remove_perm(perm, group, obj)
-
-        for group_id, perms in permissions_added.items():
-            group = Group.objects.filter(id=group_id).first()
-            if group:
-                for perm in perms:
-                    assign_perm(perm, group, obj)
-
         if not change:
             for perm in get_perms_for_model(models.Dataset):
                 assign_perm(perm, request.user, obj)
@@ -187,9 +155,3 @@ class DatasetAdmin(admin.ModelAdmin):
             return super().has_delete_permission(request, obj)
 
         return permissions.has_permission(request.user, obj, "delete_dataset")
-
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        form.current_user = request.user
-        form.target = obj
-        return form
