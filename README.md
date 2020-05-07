@@ -64,3 +64,12 @@ On dokku you would run the following
 ```bash
 dokku config:set wazimap-ng --no-restart PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/app/.heroku-geo-buildpack/vendor/bin/
 dokku config:set wazimap-ng --no-restart GDALHOME=/app/.heroku-geo-buildpack/vendor/ -->
+
+
+
+
+Some notes for database migration - will turn this into proper documentation in the future
+
+SELECT 'ALTER TABLE '|| schemaname || '.' || tablename ||' OWNER TO wazimap_ng;'
+FROM pg_tables WHERE NOT schemaname IN ('pg_catalog', 'information_schema')
+ORDER BY schemaname, tablename;
