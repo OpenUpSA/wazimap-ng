@@ -31,7 +31,7 @@ class Indicator(models.Model):
     def save(self, force_subindicator_update=False, *args, **kwargs):
         first_save = self.subindicators is None
         if force_subindicator_update or first_save:
-            logger.debug(f"Updating subindicators for indicator: {self.name (self.id)}")
+            logger.debug(f"Updating subindicators for indicator: {self.name} ({self.id})")
             self.subindicators = self.get_unique_subindicators()
         super().save(*args, **kwargs)
         
