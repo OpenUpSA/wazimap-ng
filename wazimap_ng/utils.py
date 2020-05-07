@@ -118,7 +118,6 @@ def qsdict(qs, *args):
 
     return d
 
-
 def expand_nested_list(lst, key):
     """
     [{"a": "b", key: [1, 2, 3]}]

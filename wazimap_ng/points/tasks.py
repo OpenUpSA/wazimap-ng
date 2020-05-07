@@ -33,7 +33,7 @@ def process_uploaded_file(point_file, **kwargs):
     columns = None
     row_number = 1
     error_logs = []
-    subtheme = point_file.profile_category.category
+    subtheme = point_file.category
 
     df = pd.read_csv(file_path, nrows=1, dtype=str, sep=",")
     df.dropna(how='all', axis='columns', inplace=True)

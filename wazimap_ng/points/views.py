@@ -13,6 +13,7 @@ from . import models
 from . import serializers
 from ..cache import etag_point_updated, last_modified_point_updated
 from ..boundaries.models import GeographyBoundary
+from ..general.serializers import MetaDataSerializer
 
 class CategoryList(generics.ListAPIView):
     queryset = models.Category.objects.all()
@@ -42,7 +43,7 @@ def theme_view(request, profile_id=None):
             js_theme["categories"].append({
                 "id": pc.category.id,
                 "name": pc.label,
-                "metadata": serializers.MetaDataSerializer(pc.metadata).data
+                "metadata": MetaDataSerializer(pc.category.metadata).data
             })
             
         js.append(js_theme)

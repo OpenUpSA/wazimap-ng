@@ -45,7 +45,7 @@ django.jQuery(document).ready(function($) {
                     $el.empty();
                     $el.append($("<option></option>").attr("value", "").text("----------"));
                     $.each(subindicators, function(key, value) {
-                        $el.append($("<option></option>").attr("value", value.id).text(value.label));
+                        $el.append($("<option></option>").attr("value", key).text(value));
                     });
                     
                 }

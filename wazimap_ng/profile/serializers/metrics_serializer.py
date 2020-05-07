@@ -5,7 +5,6 @@ from wazimap_ng.datasets.models import IndicatorData
 from .. import models
 
 def get_subindicator(metric):
-    return metric.subindicator if metric.subindicator is not None else 0
 
 def sibling(profile_key_metric, geography):
     siblings = geography.get_siblings()
@@ -17,9 +16,9 @@ def sibling(profile_key_metric, geography):
         denominator = 0
         for datum in indicator_data:
             if datum.geography == geography:
-                numerator = datum.data[subindicator]["count"]
-            s = datum.data[subindicator]
-            denominator += s["count"]
+                numerator = datum.data["subindicators"][subindicator]
+            s = datum.data["subindicators"]
+            denominator += s[subindicator]
 
         if denominator > 0 and numerator is not None:
             return format_perc(numerator / denominator)
@@ -30,19 +29,16 @@ def absolute_value(profile_key_metric, geography):
     if indicator_data.count() > 0:
         subindicator = get_subindicator(profile_key_metric)
         data = indicator_data.first().data # TODO what to do with multiple results
-        return format_int(data[subindicator]["count"])
+        return format_int(data["subindicators"][subindicator])
     return None
-
 
 def subindicator(profile_key_metric, geography):
     indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography=geography)
     if indicator_data.count() > 0:
         indicator_data = indicator_data.first() # Fix this need to cater for multiple results
         subindicator = get_subindicator(profile_key_metric)
-        numerator = indicator_data.data[subindicator]["count"]
-        denominator = 0
-        for datum in indicator_data.data:
-            denominator += datum["count"]
+        numerator = indicator_data.data["subindicators"][subindicator]
+        denominator = sum(indicator_data.data["subindicators"].values())
 
         if denominator > 0 and numerator is not None:
             return format_perc(numerator / denominator)
@@ -61,7 +57,6 @@ def MetricsSerializer(profile, geography):
         .order_by("order")
         .select_related("subcategory", "subcategory__category")
     )
-
     for profile_key_metric in profile_key_metrics:
         denominator = profile_key_metric.denominator
         method = algorithms.get(denominator, absolute_value)

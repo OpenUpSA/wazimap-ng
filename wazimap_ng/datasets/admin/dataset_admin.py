@@ -17,6 +17,13 @@ from .views import (
 from wazimap_ng.admin_utils import GroupPermissionWidget
 from wazimap_ng.general.services import permissions
 
+def set_to_public(modeladmin, request, queryset):
+    queryset.make_public()
+
+def set_to_private(modeladmin, request, queryset):
+    queryset.make_private()
+
+
 class DatasetAdminForm(forms.ModelForm):
     permission_groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
 
@@ -37,12 +44,25 @@ class DatasetAdmin(admin.ModelAdmin):
     form = DatasetAdminForm
     exclude = ("groups", )
     inlines = ()
+    actions = (set_to_public, set_to_private)
+    list_display = ("name", "permission_type")
+    list_filter = ("permission_type",)
 
 
     class Media:
         css = {
              'all': ('/static/css/admin-custom.css',)
         }
+
+    def get_related_fields_data(self, obj):
+
+        return [{
+                "name": "dataset data",
+                "count": obj.datasetdata_set.count()
+            }, {
+                "name": "indicator",
+                "count": obj.indicator_set.count()
+        }]
 
     def save_formset(self, request, form, formset, change):
         """
@@ -114,8 +134,8 @@ class DatasetAdmin(admin.ModelAdmin):
 
         if object_id:
             dataset_obj = models.Dataset.objects.get(id=object_id)
-            if dataset_obj and hasattr(dataset_obj, "datasetfile") and dataset_obj.datasetfile.task and dataset_obj.datasetfile.task.success:
-
+            is_loaded = hasattr(dataset_obj, "datasetfile") and dataset_obj.datasetfile.task and dataset_obj.datasetfile.task.success
+            if is_loaded:
                 if dataset_obj.indicator_set.count():
                     inlines = inlines + (VariableInlinesChangeView,)
                 inlines = inlines + (VariableInlinesAddView,)
