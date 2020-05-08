@@ -11,7 +11,6 @@ from wazimap_ng.general.services import permissions
 @admin.register(models.Profile)
 class ProfileAdmin(admin.ModelAdmin):
 
-
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
@@ -34,9 +33,11 @@ class ProfileAdmin(admin.ModelAdmin):
 
 
     def save_model(self, request, obj, form, change):
+        old_permission = obj.permission_type
         super().save_model(request, obj, form, change)
-
-        if not change:
-            for perm in get_perms_for_model(models.Profile):
-                assign_perm(perm, request.user, obj)
+        if obj.permission_type == "private":
+            group, created = Group.objects.get_or_create(name=obj.name.lower())
+            if not change or old_permission != "private":
+                for perm in get_perms_for_model(models.Profile):
+                    assign_perm(perm, group, obj)
         return obj

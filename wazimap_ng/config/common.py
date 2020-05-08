@@ -292,6 +292,8 @@ PERMISSION_TYPES = (
     ('public', 'Public'),
 )
 
+STAFF_GROUPS = ["ProfileAdmin", "DataAdmin"]
+
 
 if TESTING:
     PASSWORD_HASHERS = [

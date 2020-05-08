@@ -3,6 +3,7 @@ import json
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.models import Group
+from wazimap_ng.config.common import STAFF_GROUPS
 
 from django_q.tasks import async_task
 from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
@@ -127,11 +128,14 @@ class DatasetAdmin(admin.ModelAdmin):
         return super().change_view(request, object_id)
 
     def save_model(self, request, obj, form, change):
+        old_permission = obj.permission_type
         super().save_model(request, obj, form, change)
 
-        if not change:
-            for perm in get_perms_for_model(models.Dataset):
-                assign_perm(perm, request.user, obj)
+        if obj.permission_type == "private" and not request.user.is_superuser:
+            group = request.user.groups.all().exclude(name__in=STAFF_GROUPS).first()
+            if group and (not change or old_permission != "private"):
+                for perm in get_perms_for_model(models.Dataset):
+                    assign_perm(perm, group, obj)
         return obj
 
     def add_view(self, request, form_url='', extra_context=None):

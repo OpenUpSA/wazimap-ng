@@ -186,7 +186,6 @@ class CategoryAdmin(admin.ModelAdmin):
             pass
         return super().change_view(request, object_id, form_url, extra_context)
 
-
     def save_formset(self, request, form, formset, change):
         """
         Given an inline formset save it to the database.
