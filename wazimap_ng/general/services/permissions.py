@@ -4,19 +4,6 @@ from guardian.shortcuts import (
 
 from guardian.shortcuts import get_objects_for_user as guardian_objects_for_user
 
-def get_user_groups_with_permission_on_object(obj, user):
-    user_groups = user.groups.all()
-    groups_with_permission = get_groups_with_perms(obj)
-
-    groups = [g for g in user_groups if g in groups_with_permission]
-    return groups
-
-def get_user_groups_without_permission_on_object(obj, user):
-    user_groups = user.groups.all()
-    user_groups_with_permission = get_user_groups_with_permission_on_object(obj, user)
-
-    return [g for g in user_groups if g not in user_groups_with_permission]
-
 def has_dataset_permissions(user, obj, permission):
     if not hasattr(obj, "dataset"):
         return None
