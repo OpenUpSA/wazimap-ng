@@ -16,6 +16,8 @@ from .boundaries import views as boundaries_views
 from .general import views as general_views
 from .cache import cache_headers as cache
 
+from wazimap_ng.general.views import logout_view
+
 @api_view()
 def version(*args, **kwargs):
     return Response(settings.VERSION)
@@ -23,6 +25,7 @@ def version(*args, **kwargs):
 urlpatterns = [
 
     path("admin/", admin.site.urls),
+    path("rest-auth/", include("rest_auth.urls")),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view(), name="dataset"),
     path(
         "api/v1/datasets/<int:dataset_id>/indicators/",

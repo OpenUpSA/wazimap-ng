@@ -26,6 +26,8 @@ class Common(Configuration):
         "rest_framework",            # utilities for rest apis
         "rest_framework_gis",        # GIS rest framework
         "rest_framework.authtoken",  # token authentication
+        "rest_auth",
+
         "django_filters",            # for filtering rest endpoints
         "corsheaders",               # enabled cross domain CORS requests
         "treebeard",                 # efficient tree representation
@@ -249,6 +251,12 @@ class Common(Configuration):
             "rest_framework.renderers.BrowsableAPIRenderer",
             "rest_framework_csv.renderers.PaginatedCSVRenderer",
         ),
+        'DEFAULT_AUTHENTICATION_CLASSES': [
+            "rest_framework.authentication.TokenAuthentication",
+        ],
+        'DEFAULT_PERMISSION_CLASSES': [
+            "wazimap_ng.profile.authentication.ProfileAuthentication",
+        ]
     }
 
     CORS_ORIGIN_ALLOW_ALL = True

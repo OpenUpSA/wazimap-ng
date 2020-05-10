@@ -10,6 +10,7 @@ class Profile(models.Model):
     indicators = models.ManyToManyField(Indicator, through="profile.ProfileIndicator", verbose_name="variables")
     geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.PROTECT, null=False)
     permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="public")
+    requires_authentication = models.BooleanField(default=False, null=False)
 
     def __str__(self):
         return self.name
