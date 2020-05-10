@@ -12,8 +12,8 @@ from .points.models import Location, Category, Theme
 logger = logging.getLogger(__name__)
 
 profile_key = "etag-Profile-%s"
-location_key = "etag-Location-%s"
-theme_key = "etag-Theme-%s"
+location_key = "etag-Location-profile-%s-%s"
+theme_key = "etag-Theme-profile-%s-%s"
 location_theme_key = "etag-Location-Theme-%s"
 
 def last_modified(request, key):
@@ -32,15 +32,15 @@ def last_modified_profile_updated(request, profile_id, geography_code):
     key = profile_key % profile_id
     return last_modified(request, key)
 
-def etag_point_updated(request, category_id=None, theme_id=None):
-    last_modified = last_modified_point_updated(request, category_id, theme_id)
+def etag_point_updated(request, profile_id, category_id=None, theme_id=None):
+    last_modified = last_modified_point_updated(request, profile_id, category_id, theme_id)
     return str(last_modified)
 
-def last_modified_point_updated(request, category_id=None, theme_id=None):
+def last_modified_point_updated(request, profile_id, category_id=None, theme_id=None):
     if category_id is not None:
-        key = location_key % category_id
+        key = location_key % (profile_id, category_id)
     elif theme_id is not None:
-        key = theme_key % theme_id
+        key = theme_key % (profile_id, theme_id)
     else:
         return None
 

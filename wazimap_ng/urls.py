@@ -70,33 +70,11 @@ urlpatterns = [
     ),
     path("api/v1/geography/search/<str:profile_id>/", cache(dataset_views.search_geography)),
     path("api/v1/geography/ancestors/<str:geography_code>/<str:version>/", cache(dataset_views.geography_ancestors), name="geography-ancestors"),
-    path(
-        "api/v1/points/", 
-        cache(points_views.LocationList.as_view()),
-        name="points"
-    ),
 
-    path("api/v1/points/themes/", cache(points_views.theme_view)),
-    path("api/v1/points/themes/<int:profile_id>/", cache(points_views.theme_view)),
-    path("api/v1/points/themes/<int:theme_id>/", cache(points_views.LocationList.as_view())),
-    path("api/v1/points/categories/", cache(points_views.CategoryList.as_view())),
-    path(
-        "api/v1/points/profile/<int:profile_id>/",
-        cache(points_views.profile_points_data),
-        name="points-profile"
-    ),
-
-    path(
-        "api/v1/points/profile/<int:profile_id>/geographies/<str:geography_code>/",
-        cache(points_views.profile_points_data),
-        name="points-profile-geography"
-    ),
-
-    path(
-        "api/v1/points/categories/<int:category_id>/",
-        cache(points_views.LocationList.as_view()),
-        name="point_categories"
-    ),
+    path("api/v1/points/profile/<int:profile_id>/themes/", cache(points_views.theme_view)),
+    path("api/v1/points/profile/<int:profile_id>/theme/<int:theme_id>/categories/", cache(points_views.CategoryList.as_view())),
+    path("api/v1/points/profile/<int:profile_id>/categories/", cache(points_views.CategoryList.as_view())),
+    path("api/v1/points/profile/<int:profile_id>/category/<int:category_id>/points/", cache(points_views.LocationList.as_view()), name="category-points"),
 
     re_path(r"^$", RedirectView.as_view(url="/api/v1/datasets/", permanent=False)),
 

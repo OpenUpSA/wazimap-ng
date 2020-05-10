@@ -14,17 +14,32 @@ from . import serializers
 from ..cache import etag_point_updated, last_modified_point_updated
 from ..boundaries.models import GeographyBoundary
 from ..general.serializers import MetaDataSerializer
+from wazimap_ng.profile.models import Profile
 
 class CategoryList(generics.ListAPIView):
     queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer
 
+    def list(self, request, profile_id, theme_id=None):
+        profile = Profile.objects.get(id=profile_id)
+
+        queryset = self.get_queryset()
+        queryset = queryset.filter(theme__profile=profile_id)
+
+        if theme_id is not None:
+            theme = models.Theme.objects.get(id=theme_id)
+            queryset = queryset.filter(theme=theme)
+
+        serializer = self.get_serializer_class()(queryset, many=True)
+        data = serializer.data
+
+        return Response(data)
+
 @api_view()
-def theme_view(request, profile_id=None):
+def theme_view(request, profile_id):
     themes = defaultdict(list)
-    qs = models.ProfileCategory.objects.all()
-    if profile_id is not None:
-        qs = qs.filter(profile__id=profile_id)
+    profile = Profile.objects.get(id=profile_id)
+    qs = models.ProfileCategory.objects.filter(profile=profile)
 
     for pc in qs:
         theme = pc.category.theme
@@ -57,7 +72,10 @@ class LocationList(generics.ListAPIView):
     serializer_class = serializers.LocationSerializer
     queryset = models.Location.objects.all().select_related("category")
 
-    def list(self, request, theme_id=None, category_id=None):
+    def list(self, request, profile_id, category_id=None):
+        profile = Profile.objects.get(pk=profile_id)
+        category = models.Category.objects.get(pk=category_id)
+
         queryset = self.get_queryset()
         if theme_id is not None:
             queryset = queryset.filter(category__theme__pk=theme_id)
@@ -72,22 +90,6 @@ class LocationList(generics.ListAPIView):
     @method_decorator(condition(etag_func=etag_point_updated, last_modified_func=last_modified_point_updated))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
-
-@api_view()
-def profile_points_data(request, profile_id, geography_code=None):
-    js = profile_data_helper(profile_id, geography_code)
-    return Response(js)
-
-def profile_data_helper(profile_id, geography_code):
-
-    profile_categories = models.ProfileCategory.objects.filter(
-        profile_id=profile_id
-    ).prefetch_related("category")
-
-    return serializers.ProfileCategorySerializer(
-        profile_categories, many=True,
-        context={'code': geography_code}
-    ).data
 
 def boundary_point_count_helper(profile, geography):
     boundary = GeographyBoundary.objects.get_unique_boundary(geography)
