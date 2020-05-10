@@ -1,6 +1,7 @@
 from django.contrib.postgres import fields
 from django.contrib.gis import admin
 from django.contrib.gis.db.models import PointField
+from django.contrib import messages
 
 from import_export.admin import ExportMixin
 from import_export import resources
