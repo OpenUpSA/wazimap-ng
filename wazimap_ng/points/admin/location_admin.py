@@ -53,6 +53,7 @@ class LocationAdmin(ExportMixin, admin.ModelAdmin):
 
     list_display = ("name", "category",)
     list_filter = ("category",)
+    search_fields = ("name",)
     resource_class = LocationResource
 
     def get_actions(self, request):
