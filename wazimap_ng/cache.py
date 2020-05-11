@@ -91,14 +91,17 @@ def point_updated_category(sender, instance, **kwargs):
     update_point_cache(instance)
 
 def cache_headers(func):
-    return cache_control(max_age=0, public=True, must_revalidate=True)(func)
+    return vary_on_headers("Authorization")(cache_control(max_age=0, public=True, must_revalidate=True)(func))
 
 def cache_decorator(key, expiry=60*60*24*365):
+    def clean(s):
+        return str(s).replace(" ", "-").lower().strip()
+
     def _cache_decorator(func):
         def wrapper(*args, **kwargs):
             cache_key = key
             if len(args) > 0:
-                cache_key += "-".join(str(el) for el in args)
+                cache_key += "-".join(clean(el) for el in args)
 
             if len(kwargs) > 0:
                 cache_key += "-".join(f"{k}-{v}" for k, v in kwargs.items())
