@@ -25,7 +25,7 @@ def version(*args, **kwargs):
 urlpatterns = [
 
     path("admin/", admin.site.urls),
-    path("rest-auth/", include("rest_auth.urls")),
+    path("api/v1/rest-auth/", include("rest_auth.urls")),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view(), name="dataset"),
     path(
         "api/v1/datasets/<int:dataset_id>/indicators/",
