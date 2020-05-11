@@ -14,7 +14,7 @@ from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
 
 from wazimap_ng.datasets import hooks
 from wazimap_ng.admin_utils import GroupPermissionWidget
-from wazimap_ng.general.services import permissions
+rom wazimap_ng.general.services import permissions
 
 from wazimap_ng.general.models import MetaData
 from wazimap_ng.profile.models import Profile
@@ -185,6 +185,7 @@ class CategoryAdmin(admin.ModelAdmin):
         except models.CoordinateFile.DoesNotExist:
             pass
         return super().change_view(request, object_id, form_url, extra_context)
+
 
     def save_formset(self, request, form, formset, change):
         """

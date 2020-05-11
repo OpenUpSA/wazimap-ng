@@ -6,38 +6,15 @@ from django.contrib.auth.models import Group
 from ... import models
 
 from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
-from wazimap_ng.general.services import permissions
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
 
 @admin.register(models.Profile)
-class ProfileAdmin(admin.ModelAdmin):
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-
-        return permissions.get_objects_for_user(request.user, "view", models.Profile, qs)
-
-    def has_change_permission(self, request, obj=None):
-    	if not obj:
-    		return super().has_change_permission(request, obj)
-
-    	if obj.permission_type == "public":
-    		return True
-    	return request.user.has_perm("change_profile", obj)
-
-    def has_delete_permission(self, request, obj=None):
-    	if not obj:
-    		return super().has_delete_permission(request, obj)
-    	return request.user.has_perm("delete_profile", obj)
-
+class ProfileAdmin(BaseAdminModel):
 
     def save_model(self, request, obj, form, change):
-        old_permission = obj.permission_type
         super().save_model(request, obj, form, change)
-        if obj.permission_type == "private":
+        if not change or (change and obj.permission_type == "private"):
             group, created = Group.objects.get_or_create(name=obj.name.lower())
-            if not change or old_permission != "private":
-                for perm in get_perms_for_model(models.Profile):
-                    assign_perm(perm, group, obj)
+            for perm in get_perms_for_model(models.Profile):
+                assign_perm(perm, group, obj)
         return obj
