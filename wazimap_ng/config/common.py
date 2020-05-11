@@ -255,7 +255,7 @@ class Common(Configuration):
             "rest_framework.authentication.TokenAuthentication",
         ],
         'DEFAULT_PERMISSION_CLASSES': [
-            "wazimap_ng.profile.authentication.ProfileAuthentication",
+            "wazimap_ng.profile.authentication.ProfilePermissions",
         ]
     }
 
