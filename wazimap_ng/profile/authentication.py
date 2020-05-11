@@ -25,7 +25,7 @@ class ProfilePermissions(BasePermission):
                 return has_permission
             else:
                 logger.info(f"{profile} does not need authentication")
-                return False
+                return True
 
         logger.info(f"Could not determine profile request")
-        return False
+        return True
