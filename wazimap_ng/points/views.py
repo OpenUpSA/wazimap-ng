@@ -77,9 +77,6 @@ class LocationList(generics.ListAPIView):
         category = models.Category.objects.get(pk=category_id)
 
         queryset = self.get_queryset()
-        if theme_id is not None:
-            queryset = queryset.filter(category__theme__pk=theme_id)
-
         if category_id is not None:
             queryset = queryset.filter(category__pk=category_id)
 
