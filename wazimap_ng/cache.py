@@ -7,7 +7,8 @@ from django.dispatch import receiver
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_headers
 
-from .profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, ProfileKeyMetrics
+from .profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, ProfileKeyMetrics, Profile
+from .profile.services import authentication
 from .points.models import Location, Category, Theme
 
 logger = logging.getLogger(__name__)
@@ -17,13 +18,23 @@ location_key = "etag-Location-profile-%s-%s"
 theme_key = "etag-Theme-profile-%s-%s"
 location_theme_key = "etag-Location-Theme-%s"
 
-def last_modified(request, key):
-    last_modified = datetime(year=1970, month=1, day=1)
-    c = cache.get(key)
+def check_has_permission(request, profile_id):
+    profile = Profile.objects.get(pk=profile_id)
+    has_permission = authentication.has_permission(request.user, profile)
+    if has_permission:
+        return True
+    return False
 
-    if c is not None:
-        return c
-    return last_modified
+def last_modified(request, profile_id, key):
+    if check_has_permission(request, profile_id):
+        _last_modified = datetime(year=1970, month=1, day=1)
+        c = cache.get(key)
+
+        if c is not None:
+            return c
+    else:
+        _last_modified = datetime.now()
+    return _last_modified
 
 def etag_profile_updated(request, profile_id, geography_code):
     last_modified = last_modified_profile_updated(request, profile_id, geography_code)
@@ -31,7 +42,7 @@ def etag_profile_updated(request, profile_id, geography_code):
 
 def last_modified_profile_updated(request, profile_id, geography_code):
     key = profile_key % profile_id
-    return last_modified(request, key)
+    return last_modified(request, profile_id, key)
 
 def etag_point_updated(request, profile_id, category_id=None, theme_id=None):
     last_modified = last_modified_point_updated(request, profile_id, category_id, theme_id)
@@ -45,7 +56,7 @@ def last_modified_point_updated(request, profile_id, category_id=None, theme_id=
     else:
         return None
 
-    return last_modified(request, key)
+    return last_modified(request, profile_id, key)
 
 ########### Signals #################
 def update_profile_cache(profile):
@@ -109,9 +120,7 @@ def cache_decorator(key, expiry=60*60*24*365):
 
             cached_obj = cache.get(cache_key)
             if cached_obj is not None:
-                print(f"Cache hit: {cache_key}")
                 return cached_obj
-            print(f"Cache miss: {cache_key}")
 
 
             obj = func(*args, **kwargs)
