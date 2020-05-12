@@ -6,12 +6,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('profile', '0033_auto_20200422_0901'),
+        ('points', '0023_auto_20200509_2036'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='profile',
+            model_name='profilecategory',
             name='permission_type',
             field=models.CharField(choices=[('private', 'Private'), ('public', 'Public')], default='public', max_length=32),
         ),

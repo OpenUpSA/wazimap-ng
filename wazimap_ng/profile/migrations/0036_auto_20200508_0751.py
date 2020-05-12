@@ -7,6 +7,7 @@ from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
 def create_groups_for_profiles(apps, schema_editor):
 
     Profile = apps.get_model("profile", "Profile")
+    Group = apps.get_model('auth', 'Group')
 
     for profile in Profile.objects.filter(permission_type="private"):
     	group, created = Group.objects.get_or_create(name=profile.name.lower())
@@ -19,7 +20,7 @@ def create_groups_for_profiles(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('profile', '0034_auto_20200507_0306'),
+        ('profile', '0035_auto_20200507_0306'),
     ]
 
     operations = [

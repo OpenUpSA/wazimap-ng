@@ -65,8 +65,8 @@ def update_profile_cache(profile):
 
 def update_point_cache(category):
     theme = category.theme
-    key1 = location_key % category.id
-    key2 = theme_key % theme.id
+    key1 = location_key % (theme.profile.id, category.id)
+    key2 = theme_key % (theme.profile.id, theme.id)
 
     logger.debug(f"Set cache key (category): {key1}")
     logger.debug(f"Set cache key (theme): {key2}")

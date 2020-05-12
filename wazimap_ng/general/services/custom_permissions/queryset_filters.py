@@ -40,3 +40,15 @@ def get_filters_for_dataset(user):
 		user, Profile
 	).values_list("geography_hierarchy")
 	return {"geography_hierarchy__in": herarchies}
+
+
+
+# Points
+def get_filters_for_category(user):
+	return {"theme__profile__in": permissions.get_custom_queryset(user, Profile)}
+
+def get_filters_for_theme(user):
+	return {"profile__in": permissions.get_custom_queryset(user, Profile)}
+
+def get_filter_for_profilecategroy(user):
+	return {"profile__in": permissions.get_custom_queryset(user, Profile)}
