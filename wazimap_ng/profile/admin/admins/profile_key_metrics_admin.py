@@ -11,6 +11,7 @@ from wazimap_ng.general.services import permissions
 class ProfileKeyMetricsAdmin(SortableAdminMixin, admin.ModelAdmin):
     #fields = ("profile", "variable", "subcategory", "subindicator", "denominator", "label", "order")
     list_display = (
+        "label",
         description("Variable", lambda x: x.variable.name),
         description("Profile", lambda x: x.subcategory.category.profile.name),
         description("Subcategory", lambda x: x.subcategory.name),
