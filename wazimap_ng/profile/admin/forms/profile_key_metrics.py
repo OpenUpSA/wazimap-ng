@@ -22,7 +22,7 @@ class ProfileKeyMetricsForm(forms.ModelForm):
                 variable_id = int(self.data.get('variable'))
                 indicator = Indicator.objects.get(pk=variable_id)
             elif is_editing_item:
-                indicator = Indicator.objects.get(pk=self.instance.indicator.pk)
+                indicator = Indicator.objects.get(pk=self.instance.variable.pk)
             else:
                 logger.warn("Unsure how to handle creating ProfileHighlightForm")
                 return

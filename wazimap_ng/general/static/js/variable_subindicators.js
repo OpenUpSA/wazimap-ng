@@ -38,7 +38,6 @@ django.jQuery(document).ready(function($) {
             $.ajax({
                 url: url,
                 success: function (data) {
-
                     let subindicators = data.subindicators;
 
                     var $el = $("#id_subindicator");
