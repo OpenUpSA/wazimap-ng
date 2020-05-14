@@ -35,5 +35,9 @@ services:
       - DATABASE_URL
       - DJANGO_CONFIGURATION
       - RUN_QCLUSTER
+      - RUN_GUNICORN
+      - RUN_MIGRATIONS
+      - RUN_COLLECTSTATIC
+      - RUN_TESTS
 volumes:
   wazimap-data:
