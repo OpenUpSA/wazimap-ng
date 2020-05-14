@@ -137,7 +137,7 @@ def expand_nested_list(lst, key):
 
 try:
     pytest_available = True
-    import pytest2
+    import pytest
 except ImportError as error:
     pytest_available = False
     logger.warning("pytest not installed - some tests cannot be run.")
