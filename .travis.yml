@@ -1,0 +1,12 @@
+language: python
+
+services:
+  - docker
+
+before_install:
+  - docker-compose build
+  - docker-compose up
+  - docker ps -a
+
+script:
+  - docker exec wazimap-ng_web_1 pytest /app/wazimap_ng/datasets/tests --nomigrations
