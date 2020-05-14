@@ -1,1 +1,1 @@
-FROM adieyal/wazimap-ng:
+FROM adieyal/wazimap-ng:staging
