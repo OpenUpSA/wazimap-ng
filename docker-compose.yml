@@ -12,7 +12,7 @@ services:
       - POSTGRES_USER=wazimap_ng
       - POSTGRES_PASS=wazimap_ng
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,pg_trgm
-    stop_grace_period: 60s
+    stop_grace_period: 10s
     container_name: wazimap-ng_db_1
   web:
     image: adieyal/wazimap-ng:staging
@@ -34,5 +34,6 @@ services:
       - AWS_S3_REGION_NAME
       - DATABASE_URL
       - DJANGO_CONFIGURATION
+      - RUN_QCLUSTER
 volumes:
   wazimap-data:

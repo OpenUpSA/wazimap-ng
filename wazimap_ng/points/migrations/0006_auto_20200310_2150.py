@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('label', models.CharField(blank=True, help_text='Label for the category to be displayed on the front-end', max_length=60)),
                 ('description', models.TextField(blank=True)),
                 ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='points.Category')),
-                ('profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='datasets.Profile')),
+                ('profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='profile.Profile')),
             ],
         ),
     ]
