@@ -4,11 +4,7 @@ services:
   - docker
 
 env:
-  - RUN_QCLUSTER=No
-  - RUN_GUNICORN=No
-  - RUN_MIGRATIONS=No
-  - RUN_COLLECTSTATIC=No
-  - RUN_TESTS=Yes
+  - RUN_QCLUSTER=No RUN_GUNICORN=No RUN_MIGRATIONS=No RUN_COLLECTSTATIC=No
 
 before_install:
   - docker-compose build
