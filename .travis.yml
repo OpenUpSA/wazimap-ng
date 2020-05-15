@@ -5,10 +5,12 @@ env:
   global:
   - RUN_QCLUSTER=No RUN_GUNICORN=No RUN_MIGRATIONS=No RUN_COLLECTSTATIC=No
   - REGISTRY_USER=adi@openup.org.za
+  - SKIP_CONTAINER_PUSH=True
   - secure: KOKF3PJQIiISSS27NeIPaoJ+eHowLZLmWo5vrx2EDJWAHm8nvdoxuSlyJJZLI+lrg38bO9exRJ6zkjXYNTUnhAwUHZlRlSce2z2Hn4xpsnQBXrOzcvBrvR/nms4LfShPyyWReMJ8ZgQq6J9DpdnAfSSS+PB615q8miaVtxO66MhWiSZKqNi4XRIYX5GeVL8/8i2lkrBayN+AsagcaTKsRIq2i5mtCLoDB/LKo1hOWvaoxecZv7pJBstmKEGDvA8yYSmEYcDRUyXNzEPqjJF+LJC9NeXsYVvoDvDyQdnY2pm4aWe+a8OrGX56IpiAB1YD20gdOdoOAcJUfrDTtga83xRa2OH0H8EFV/8eHFXFbCB5gj+M2qSEyfrAu23ChtzBfSvnqz4T2rAN4wa1k1j5SuR21rxT6PUyyQUq2euqtH/BbKOpK8Ay5P50/w/ZayBUCEmBWX7o97CR7tG8YqIWzt6Ku3xSLMJO/t84Qvg6FJIDs0lJOT3Ff44vPW3xtQfj6QPTr8cfQmeVM7PLJJuOnqAuf03nA7RCHSdy9uLbKYrIRSB0HUSme8HT5Gz7YkkgfInK9RsWFanvc9vLVUFQQQAbmmt16uUvU7ncMsh3UOEu+c5PulMnK8wrEI2l/MUP4N8sj3mt+O2YV+Q64NMTcxc2X10OD0dutvYIFQTmb0Y=
 
 before_script:
-- docker-compose up -d --build
+- scripts/docker_build.sh staging true
+- docker-compose up -d
 
 script:
 - docker exec wazimap-ng_web_1 pytest /app/wazimap_ng/datasets/tests
