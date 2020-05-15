@@ -37,7 +37,7 @@ def loaddata(dataset, iterable, row_number):
                 errors.append([row_number+idx, "count", "Missing data for count"])
                 continue
         except (TypeError, ValueError):
-            errors.append([row_number+idx, "count", f"Expected a number in the 'count' column, received '{count}'"])
+            errors.append([row_number+idx, "count", f"""Expected a number in the 'count' column, received '{row["count"]}'"""])
             continue
 
         del row["geography"]

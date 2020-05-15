@@ -10,7 +10,6 @@ from rest_framework import generics
 from .serializers import AncestorGeographySerializer
 from . import serializers
 from . import models
-from . import mixins
 from ..cache import etag_profile_updated, last_modified_profile_updated
 from ..profile.models import Logo
 from ..utils import truthy
