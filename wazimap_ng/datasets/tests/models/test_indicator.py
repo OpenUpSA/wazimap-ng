@@ -1,19 +1,33 @@
 from unittest.mock import patch
 from unittest.mock import Mock
 
-from wazimap_ng.datasets.models import Indicator
-# import pytest.mark.django_db
-import pytest
+from wazimap_ng.datasets.models import Indicator, Dataset, DatasetData
+
+class TestIndicatorGetUniqueSubindicators:
+    @patch("wazimap_ng.datasets.models.DatasetData.objects")
+    def test_get_subindicators(self, mock_datasetdata_objects):
+        indicator = Indicator()
+        indicator.groups = ["A", "B"]
+        indicator.dataset = Dataset()
+
+        mock_datasetdata_objects.filter.return_value.get_unique_subindicators.return_value = [1, 2, 3]
+        subindicators = indicator.get_unique_subindicators()
+
+        assert subindicators == [1, 2, 3]
+
+    @patch("wazimap_ng.datasets.models.DatasetData.objects")
+    def test_get_subindicators_no_groups(self, mock_datasetdata_objects):
+        indicator = Indicator()
+        indicator.groups = []
+        indicator.dataset = Dataset()
+        mock_datasetdata_objects.filter.return_value.get_unique_subindicators.return_value = [1, 2, 3]
+
+        subindicators = indicator.get_unique_subindicators()
+        assert subindicators == []
 
 
-class TestIndicator:
-    # def setup_method(self):
-    #     self.good_input = [
-    #         {"geography": "XXX", "count": 111},
-    #         {"geography": "YYY", "count": 222},
-    #     ]
+class TestIndicatorSave:
 
-    # @pytest.mark.django_db
     @patch("wazimap_ng.datasets.models.indicator.super")
     @patch("wazimap_ng.datasets.models.Indicator.get_unique_subindicators")
     def test_first_save(self, mock_get_unique_subindicators, mock_super):
