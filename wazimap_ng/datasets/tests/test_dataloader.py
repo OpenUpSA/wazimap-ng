@@ -18,6 +18,9 @@ def test_correct_geography_cache(mock_objects):
 
     p = ("X", "Z")
     assert  dataloader.load_geography(*p) == p
+    
+    q = ("Z", "Y")
+    assert  dataloader.load_geography(*q) == q
 
 
 class TestLoadData:
