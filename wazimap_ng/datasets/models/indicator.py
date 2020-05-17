@@ -1,4 +1,5 @@
 import logging
+import operator
 
 from django.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField
@@ -29,7 +30,7 @@ class Indicator(models.Model):
         return []
 
     def save(self, force_subindicator_update=False, *args, **kwargs):
-        first_save = self.subindicators is None
+        first_save = operator.not_(self.subindicators)
         if force_subindicator_update or first_save:
             logger.debug(f"Updating subindicators for indicator: {self.name} ({self.id})")
             self.subindicators = self.get_unique_subindicators()
