@@ -45,8 +45,8 @@ class DatasetAdmin(admin.ModelAdmin):
     exclude = ("groups", )
     inlines = ()
     actions = (set_to_public, set_to_private)
-    list_display = ("name", "permission_type")
-    list_filter = ("permission_type",)
+    list_display = ("name", "permission_type", "geography_hierarchy")
+    list_filter = ("permission_type", "geography_hierarchy")
 
 
     class Media:
