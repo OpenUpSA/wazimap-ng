@@ -1,28 +1,22 @@
 cd /app
 
-echo "Starting application"
-
 if [ "$RUN_COLLECTSTATIC" = "Yes" ]
 then
-    echo "Collecting static files"
     python3 manage.py collectstatic --noinput
 fi
 
 if [ "$RUN_MIGRATIONS" = "Yes" ]
 then
-    echo "Running migrations"
     python3 manage.py migrate 
 fi
 
 if [ "$RUN_QCLUSTER" = "Yes" ]
 then
-    echo "Starting qcluster"
     python3 manage.py qcluster& > /var/log/django-q.stdin.log 2> /var/log/django-q.stderr.log
 fi
 
 if [ "$RUN_GUNICORN" = "Yes" ]
 then
-    echo "Running gunicorn"
     /usr/local/bin/gunicorn wazimap_ng.wsgi --workers=2 -b 0.0.0.0:8000 --forwarded-allow-ips="*" --access-logfile /wazimap-ng.access.log --reload --error-logfile /wazimap-ng.error.log --timeout=300
 fi
 
