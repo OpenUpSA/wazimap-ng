@@ -8,6 +8,9 @@ from django.contrib.admin import helpers
 
 from django_q.tasks import async_task
 
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
+
+
 from .. import hooks
 
 def delete_selected_data(modeladmin, request, queryset):
@@ -42,8 +45,6 @@ def delete_selected_data(modeladmin, request, queryset):
         # Return None to display the change list page again.
         return None
 
-    related_fileds_data = {}
-
     context = {
         **modeladmin.admin_site.each_context(request),
         'title': "Are you sure?",
@@ -69,12 +70,9 @@ def delete_selected_data(modeladmin, request, queryset):
 
 delete_selected_data.short_description = "Delete selected objects"
 
-class BaseAdminModel(admin.ModelAdmin):
+class DatasetBaseAdminModel(BaseAdminModel):
 
     actions = [delete_selected_data]
-
-    def get_related_fields_data(self, obj):
-        return []
 
     def delete_view(self, request, object_id, extra_context=None):
         opts = self.model._meta

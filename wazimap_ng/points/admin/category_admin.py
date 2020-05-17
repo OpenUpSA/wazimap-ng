@@ -8,13 +8,13 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
 from django.conf import settings
+from django.urls import reverse
 
 from django_q.tasks import async_task
 from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
 
 from wazimap_ng.datasets import hooks
-from wazimap_ng.admin_utils import GroupPermissionWidget
-from wazimap_ng.general.services import permissions
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
 
 from wazimap_ng.general.models import MetaData
 from wazimap_ng.profile.models import Profile
@@ -29,6 +29,9 @@ class InitialDataUploadChangeView(admin.StackedInline):
     can_delete = False
     verbose_name = ""
     verbose_name_plural = ""
+    extra=0
+    max_num=1
+
 
     fieldsets = (
         ("Uploaded Collection Data", {
@@ -91,7 +94,7 @@ class InitialDataUploadChangeView(admin.StackedInline):
 
     def get_fieldsets(self, request, obj):
         fields = super().get_fieldsets(request, obj)
-        if obj.coordinatefile.task:
+        if obj.coordinatefile_set.exists() and obj.coordinatefile_set.first().task:
             fields = fields + (self.error_and_warning_fildset, )
 
         return fields
@@ -103,6 +106,8 @@ class InitialDataUploadAddView(admin.StackedInline):
     can_delete = False
     verbose_name = ""
     verbose_name_plural = ""
+    max_num=1
+    extra=1
 
     fieldsets = (
         ("Initial Data Upload - Use this form to upload file that will allow us to create points.", {
@@ -115,7 +120,6 @@ class CategoryAdminForm(forms.ModelForm):
     source = forms.CharField(widget=forms.TextInput(attrs={'class': 'vTextField'}), required=False)
     description = forms.CharField(widget=forms.Textarea(attrs={'class': 'vLargeTextField'}), required=False)
     licence = forms.ModelChoiceField(queryset=Licence.objects.all(), required=False)
-    group_permissions = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -126,9 +130,6 @@ class CategoryAdminForm(forms.ModelForm):
                 self.fields["source"].initial = metadata.source
                 self.fields["description"].initial = metadata.description
                 self.fields["licence"].initial = metadata.licence
-        self.fields["group_permissions"].widget.init_parameters(
-            self.current_user, self.instance, self.instance.permission_type
-        )
 
     def save(self, commit=True):
         if self.has_changed():
@@ -145,14 +146,11 @@ class CategoryAdminForm(forms.ModelForm):
 
     class Meta:
         model = models.Category
-        widgets = {
-          'permission_type': forms.RadioSelect,
-        }
         fields = "__all__"
 
 
 @admin.register(models.Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(BaseAdminModel):
     list_display = ("name", "theme",)
     list_filter = ("theme",)
     form = CategoryAdminForm
@@ -164,7 +162,7 @@ class CategoryAdmin(admin.ModelAdmin):
             'fields': ('theme', 'name', )
         }),
         ("Permissions", {
-            'fields': ('permission_type', 'group_permissions', )
+            'fields': ('permission_type', )
 
         }),
         ("MetaData", {
@@ -180,7 +178,7 @@ class CategoryAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         try:
             obj = models.Category.objects.get(id=object_id)
-            if obj and hasattr(obj, "coordinatefile") and obj.coordinatefile:
+            if obj and obj.coordinatefile_set.exists():
                 self.inlines = (InitialDataUploadChangeView, )
         except models.CoordinateFile.DoesNotExist:
             pass
@@ -216,53 +214,8 @@ class CategoryAdmin(admin.ModelAdmin):
         is_new = obj.pk == None and change == False
         super().save_model(request, obj, form, change)
 
-        permissions_added = json.loads(request.POST.get("permissions_added", "{}"))
-        permissions_removed = json.loads(request.POST.get("permissions_removed", "{}"))
-
-        for group_id, perms in permissions_removed.items():
-            group = Group.objects.filter(id=group_id).first()
-            if group:
-                for perm in perms:
-                    remove_perm(perm, group, obj)
-
-        for group_id, perms in permissions_added.items():
-            group = Group.objects.filter(id=group_id).first()
-            if group:
-                for perm in perms:
-                    assign_perm(perm, group, obj)
-
-        if is_new:
+        if is_new or (change and obj.permission_type == "private"):
+            group = Group.objects.filter(name=obj.theme.profile.name.lower()).first()
             for perm in get_perms_for_model(models.Category):
-                assign_perm(perm, request.user, obj)
+                assign_perm(perm, group, obj)
         return obj
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return permissions.get_user_categories(request.user, qs=qs)
-
-    def has_change_permission(self, request, obj=None):
-        if not obj:
-            return super().has_change_permission(request, obj)
-
-        if obj.permission_type == "public":
-            return True
-        return request.user.has_perm("change_category", obj)
-
-    def has_delete_permission(self, request, obj=None):
-        if not obj:
-            return super().has_delete_permission(request, obj)
-        return request.user.has_perm("delete_category", obj)
-
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        form.current_user = request.user
-        form.target = obj
-        return form
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "theme":
-            kwargs["queryset"] = permissions.get_user_themes(request.user)
-
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-

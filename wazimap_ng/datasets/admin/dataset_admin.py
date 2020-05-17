@@ -3,6 +3,7 @@ import json
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.models import Group
+from wazimap_ng.config.common import STAFF_GROUPS
 
 from django_q.tasks import async_task
 from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
@@ -14,8 +15,6 @@ from .views import (
     InitialDataUploadChangeView, VariableInlinesChangeView, 
     VariableInlinesAddView, InitialDataUploadAddView, MetaDataInline
 )
-from wazimap_ng.admin_utils import GroupPermissionWidget
-from wazimap_ng.general.services import permissions
 
 def set_to_public(modeladmin, request, queryset):
     queryset.make_public()
@@ -23,25 +22,8 @@ def set_to_public(modeladmin, request, queryset):
 def set_to_private(modeladmin, request, queryset):
     queryset.make_private()
 
-
-class DatasetAdminForm(forms.ModelForm):
-    permission_groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
-
-    class Meta:
-        model = models.Dataset
-        widgets = {
-          'permission_type': forms.RadioSelect,
-        }
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["permission_groups"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)
-
 @admin.register(models.Dataset)
-class DatasetAdmin(admin.ModelAdmin):
-
-    form = DatasetAdminForm
+class DatasetAdmin(BaseAdminModel):
     exclude = ("groups", )
     inlines = ()
     actions = (set_to_public, set_to_private)
@@ -146,50 +128,13 @@ class DatasetAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
 
-        permissions_added = json.loads(request.POST.get("permissions_added", "{}"))
-        permissions_removed = json.loads(request.POST.get("permissions_removed", "{}"))
-
-        for group_id, perms in permissions_removed.items():
-            group = Group.objects.filter(id=group_id).first()
+        if not change or (change and obj.permission_type == "private") and not request.user.is_superuser:
+            group = request.user.groups.all().exclude(name__in=STAFF_GROUPS).first()
             if group:
-                for perm in perms:
-                    remove_perm(perm, group, obj)
-
-        for group_id, perms in permissions_added.items():
-            group = Group.objects.filter(id=group_id).first()
-            if group:
-                for perm in perms:
+                for perm in get_perms_for_model(models.Dataset):
                     assign_perm(perm, group, obj)
-
-        if not change:
-            for perm in get_perms_for_model(models.Dataset):
-                assign_perm(perm, request.user, obj)
         return obj
 
     def add_view(self, request, form_url='', extra_context=None):
         self.inlines = (InitialDataUploadAddView, MetaDataInline,)
         return super().add_view(request)
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        return permissions.get_objects_for_user(request.user, 'view', models.Dataset, qs)
-
-    def has_change_permission(self, request, obj=None):
-        if not obj:
-            return super().has_change_permission(request, obj)
-
-        return permissions.has_permission(request.user, obj, "change_dataset")
-
-    def has_delete_permission(self, request, obj=None):
-        if not obj:
-            return super().has_delete_permission(request, obj)
-
-        return permissions.has_owner_permission(request.user, obj, "delete_dataset")
-
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        form.current_user = request.user
-        form.target = obj
-        return form

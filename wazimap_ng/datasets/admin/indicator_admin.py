@@ -12,7 +12,7 @@ from django_q.tasks import async_task
 
 from .. import models
 from .. import hooks
-from .base_admin_model import BaseAdminModel
+from .base_admin_model import DatasetBaseAdminModel
 from ...admin_utils import customTitledFilter, SortableWidget
 from wazimap_ng.general.services import permissions
 
@@ -64,7 +64,7 @@ class DatasetsWithPermissionFilter(admin.SimpleListFilter):
         return queryset.filter(dataset__id=dataset_id)
 
 @admin.register(models.Indicator)
-class IndicatorAdmin(BaseAdminModel):
+class IndicatorAdmin(DatasetBaseAdminModel):
     """
     This Admin creates an Indicator in two steps.
     Step 1: Select the Dataset
@@ -125,12 +125,6 @@ class IndicatorAdmin(BaseAdminModel):
             "count": obj.indicatordata_set.count()
         }]
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "dataset":
-            qs = permissions.get_objects_for_user(request.user, 'view', models.Dataset)
-            kwargs["queryset"] = qs.filter(datasetfile__task__success=True)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
     def save_model(self, request, obj, form, change):
         """
         During Step 1, no background tasks are run because only the Dataset is available.
@@ -169,11 +163,3 @@ class IndicatorAdmin(BaseAdminModel):
                 "Please make sure you get data right before saving as fields : groups, dataset & universe will be set as non editable"
             )
         return obj
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-
-        datasets = permissions.get_objects_for_user(request.user, 'view', models.Dataset)
-        return qs.filter(dataset__in=datasets)
