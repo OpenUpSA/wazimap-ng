@@ -11,6 +11,17 @@ def test_load_geography(mock_objects):
     o = ("X", "Y")
     assert  dataloader.load_geography(*o) == o
 
+@patch('wazimap_ng.datasets.models.Geography.objects.get', side_effect=lambda code, version: (code, version))
+def test_correct_geography_cache(mock_objects):
+    o = ("X", "Y")
+    assert  dataloader.load_geography(*o) == o
+
+    p = ("X", "Z")
+    assert  dataloader.load_geography(*p) == p
+    
+    q = ("Z", "Y")
+    assert  dataloader.load_geography(*q) == q
+
 
 class TestLoadData:
     def setup_method(self):

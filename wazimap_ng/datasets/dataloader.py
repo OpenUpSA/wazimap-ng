@@ -1,4 +1,5 @@
 import math
+import functools
 
 import numpy
 
@@ -7,13 +8,11 @@ from django.db import transaction
 from . import models
 
 # TODO should add a memoize decorator here
-cache = {}
+@functools.lru_cache()
 def load_geography(geo_code, version):
     geo_code = str(geo_code).upper()
-    if geo_code not in cache:
-        geography = models.Geography.objects.get(code=geo_code, version=version)
-        cache[geo_code] = geography
-    return cache[geo_code]
+    geography = models.Geography.objects.get(code=geo_code, version=version)
+    return geography
 
 @transaction.atomic
 def loaddata(dataset, iterable, row_number):  
