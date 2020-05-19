@@ -42,7 +42,11 @@ def etag_profile_updated(request, profile_id, geography_code):
 
 def last_modified_profile_updated(request, profile_id, geography_code):
     key = profile_key % profile_id
-    return last_modified(request, profile_id, key)
+    res = last_modified(request, profile_id, key)
+
+    if res is not None:
+        return str(res)
+    return res
 
 def etag_point_updated(request, profile_id, category_id=None, theme_id=None):
     last_modified = last_modified_point_updated(request, profile_id, category_id, theme_id)
@@ -56,7 +60,7 @@ def last_modified_point_updated(request, profile_id, category_id=None, theme_id=
     else:
         return None
 
-    return last_modified(request, profile_id, key)
+    return str(last_modified(request, profile_id, key))
 
 ########### Signals #################
 def update_profile_cache(profile):
@@ -65,8 +69,8 @@ def update_profile_cache(profile):
 
 def update_point_cache(category):
     theme = category.theme
-    key1 = location_key % category.id
-    key2 = theme_key % theme.id
+    key1 = location_key % (theme.profile.id, category.id)
+    key2 = theme_key % (theme.profile.id, theme.id)
 
     logger.debug(f"Set cache key (category): {key1}")
     logger.debug(f"Set cache key (theme): {key2}")
@@ -91,8 +95,8 @@ def profile_subcategory_updated(sender, instance, **kwargs):
     update_profile_cache(instance.category.profile)
 
 @receiver(post_save, sender=ProfileKeyMetrics)
-def profile_subcategory_updated(sender, instance, **kwargs):
-    update_profile_cache(instance.subcategory.category.profile)
+def profile_keymetrics_updated(sender, instance, **kwargs):
+    update_profile_cache(instance.profile)
 
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
