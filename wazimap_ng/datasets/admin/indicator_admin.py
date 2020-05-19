@@ -12,9 +12,9 @@ from django_q.tasks import async_task
 
 from .. import models
 from .. import hooks
-from .base_admin_model import BaseAdminModel
+from .base_admin_model import DatasetBaseAdminModel
 from ...admin_utils import customTitledFilter, SortableWidget
-from wazimap_ng.utils import get_objects_for_user
+from wazimap_ng.general.services import permissions
 
 class IndicatorAdminForm(forms.ModelForm):
     groups = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple)
@@ -53,7 +53,7 @@ class DatasetsWithPermissionFilter(admin.SimpleListFilter):
     parameter_name = 'dataset_id'
 
     def lookups(self, request, model_admin):
-        datasets = get_objects_for_user(request.user, 'view', models.Dataset)
+        datasets = permissions.get_objects_for_user(request.user, 'view', models.Dataset)
         return [(d.id, d.name) for d in datasets]
 
     def queryset(self, request, queryset):
@@ -64,7 +64,14 @@ class DatasetsWithPermissionFilter(admin.SimpleListFilter):
         return queryset.filter(dataset__id=dataset_id)
 
 @admin.register(models.Indicator)
-class IndicatorAdmin(BaseAdminModel):
+class IndicatorAdmin(DatasetBaseAdminModel):
+    """
+    This Admin creates an Indicator in two steps.
+    Step 1: Select the Dataset
+    Step 2: Complete the indicator by selecting groups, providing a label, etc.
+
+    TODO may want to rather do this with javascript
+    """
 
     list_display = (
         "name", "dataset", "universe"
@@ -75,10 +82,11 @@ class IndicatorAdmin(BaseAdminModel):
     )
 
     form = IndicatorAdminForm
-    fieldsets_add_view = [
+    step1_fieldsets = [
         (None, { 'fields': ('dataset', ) } ),
     ]
-    fieldsets = [
+
+    step2_fieldsets = [
         (None, { 'fields': ('dataset','universe', 'groups', 'name', 'subindicators') } ),
     ]
 
@@ -86,24 +94,21 @@ class IndicatorAdmin(BaseAdminModel):
         fields.JSONField: {"widget": SortableWidget},
     }
 
-    def get_related_fields_data(self, obj):
-        return [{
-            "name": "indicator data",
-            "count": obj.indicatordata_set.count()
-        }]
-
     def add_view(self, request, form_url='', extra_context=None):
         if request.POST.get("_saveasnew"):
-            self.fieldsets = IndicatorAdmin.fieldsets
+            self.fieldsets = IndicatorAdmin.step2_fieldsets
         else:
-            self.fieldsets = IndicatorAdmin.fieldsets_add_view
+            self.fieldsets = IndicatorAdmin.step1_fieldsets
 
         extra_context = extra_context or {}
         extra_context['show_save'] = False
+
+        # TODO why is this not using super()?
         return admin.ModelAdmin.add_view(self, request, form_url, extra_context)
 
     def change_view(self, request, *args, **kwargs):
-        self.fieldsets = IndicatorAdmin.fieldsets
+        self.fieldsets = IndicatorAdmin.step2_fieldsets
+        # TODO why is this not using super()?
         return admin.ModelAdmin.change_view(self, request, *args, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
@@ -114,26 +119,33 @@ class IndicatorAdmin(BaseAdminModel):
             return self.readonly_fields + to_add
         return self.readonly_fields
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "dataset":
-            qs = get_objects_for_user(request.user, 'view', models.Dataset)
-            kwargs["queryset"] = qs.filter(datasetfile__task__success=True)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    def get_related_fields_data(self, obj):
+        return [{
+            "name": "indicator data",
+            "count": obj.indicatordata_set.count()
+        }]
 
     def save_model(self, request, obj, form, change):
+        """
+        During Step 1, no background tasks are run because only the Dataset is available.
+        """
         run_task = False
 
         if change:
             db_obj = models.Indicator.objects.get(id=obj.id)
-            if not db_obj.name:
+            is_running_step2 = not db_obj.name
+
+            if is_running_step2:
                 run_task = True
+
         super().save_model(request, obj, form, change)
+        
         if run_task:
             async_task(
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",
                 obj,
                 task_name=f"Data Extraction: {obj.name}",
-                hook="wazimap_ng.datasets.hooks.notify_user",
+                hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key
             )
             hooks.custom_admin_notification(
@@ -151,11 +163,3 @@ class IndicatorAdmin(BaseAdminModel):
                 "Please make sure you get data right before saving as fields : groups, dataset & universe will be set as non editable"
             )
         return obj
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-
-        datasets = get_objects_for_user(request.user, 'view', models.Dataset)
-        return qs.filter(dataset__in=datasets)

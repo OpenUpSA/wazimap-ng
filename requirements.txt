@@ -6,7 +6,7 @@ gunicorn==19.9.0
 newrelic==4.12.0.113
 
 # For the persistence stores
-psycopg2-binary==2.7.7
+psycopg2-binary==2.8.5
 dj-database-url==0.5.0
 
 # Model Tools
@@ -20,6 +20,7 @@ django-admin-sortable2==0.7.6
 # Rest apis
 djangorestframework==3.11.0
 djangorestframework-csv==2.1.0
+django-rest-auth==0.9.5
 Markdown==3.0.1
 django-filter==2.1.0
 django-cors-headers==3.2.0
@@ -37,6 +38,8 @@ factory-boy==2.11.1
 django-nose==1.4.6
 nose-progressive==1.5.2
 coverage==4.5.2
+pytest==5.4.1
+pytest-django==3.9.0
 
 # Static and Media Storage
 django-storages==1.7.1

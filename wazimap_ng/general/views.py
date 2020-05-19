@@ -1,5 +1,5 @@
 from django.views.decorators.http import condition
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -51,3 +51,8 @@ def consolidated_profile(request, profile_id, geography_code):
 def consolidated_profile_test(request, profile_id, geography_code):
     js = consolidated_profile_helper(profile_id, geography_code)
     return Response("test2")
+
+from django.contrib.auth import logout
+def logout_view(request):
+    logout(request)
+    return redirect("version")

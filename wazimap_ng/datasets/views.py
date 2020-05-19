@@ -10,10 +10,11 @@ from rest_framework import generics
 from .serializers import AncestorGeographySerializer
 from . import serializers
 from . import models
-from . import mixins
 from ..cache import etag_profile_updated, last_modified_profile_updated
 from ..profile.models import Logo
 from ..utils import truthy
+
+from wazimap_ng.profile.models import Profile
 
 class DatasetList(generics.ListAPIView):
     queryset = models.Dataset.objects.all()
@@ -53,7 +54,7 @@ def search_geography(request, profile_id):
     q - search string
     max-results number of results to be returned [default is 30] 
     """
-    profile = get_object_or_404(models.Profile, pk=profile_id)
+    profile = get_object_or_404(Profile, pk=profile_id)
     version = profile.geography_hierarchy.root_geography.version
     
     default_results = 30

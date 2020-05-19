@@ -3,6 +3,7 @@ import json
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.models import Group
+from wazimap_ng.config.common import STAFF_GROUPS
 
 from django_q.tasks import async_task
 from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
@@ -14,29 +15,20 @@ from .views import (
     InitialDataUploadChangeView, VariableInlinesChangeView, 
     VariableInlinesAddView, InitialDataUploadAddView, MetaDataInline
 )
-from wazimap_ng.utils import get_objects_for_user
-from wazimap_ng.admin_utils import GroupPermissionWidget
 
-class DatasetAdminForm(forms.ModelForm):
-    permission_groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False, widget=GroupPermissionWidget)
+def set_to_public(modeladmin, request, queryset):
+    queryset.make_public()
 
-    class Meta:
-        model = models.Dataset
-        widgets = {
-          'permission_type': forms.RadioSelect,
-        }
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["permission_groups"].widget.init_parameters(self.current_user, self.instance, self.instance.permission_type)
+def set_to_private(modeladmin, request, queryset):
+    queryset.make_private()
 
 @admin.register(models.Dataset)
-class DatasetAdmin(admin.ModelAdmin):
-
-    form = DatasetAdminForm
+class DatasetAdmin(BaseAdminModel):
     exclude = ("groups", )
     inlines = ()
+    actions = (set_to_public, set_to_private)
+    list_display = ("name", "permission_type", "geography_hierarchy")
+    list_filter = ("permission_type", "geography_hierarchy")
 
 
     class Media:
@@ -124,8 +116,8 @@ class DatasetAdmin(admin.ModelAdmin):
 
         if object_id:
             dataset_obj = models.Dataset.objects.get(id=object_id)
-            if dataset_obj and hasattr(dataset_obj, "datasetfile") and dataset_obj.datasetfile.task and dataset_obj.datasetfile.task.success:
-
+            is_loaded = hasattr(dataset_obj, "datasetfile") and dataset_obj.datasetfile.task and dataset_obj.datasetfile.task.success
+            if is_loaded:
                 if dataset_obj.indicator_set.count():
                     inlines = inlines + (VariableInlinesChangeView,)
                 inlines = inlines + (VariableInlinesAddView,)
@@ -136,53 +128,13 @@ class DatasetAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
 
-        permissions_added = json.loads(request.POST.get("permissions_added", "{}"))
-        permissions_removed = json.loads(request.POST.get("permissions_removed", "{}"))
-
-        for group_id, perms in permissions_removed.items():
-            group = Group.objects.filter(id=group_id).first()
+        if not change or (change and obj.permission_type == "private") and not request.user.is_superuser:
+            group = request.user.groups.all().exclude(name__in=STAFF_GROUPS).first()
             if group:
-                for perm in perms:
-                    remove_perm(perm, group, obj)
-
-        for group_id, perms in permissions_added.items():
-            group = Group.objects.filter(id=group_id).first()
-            if group:
-                for perm in perms:
+                for perm in get_perms_for_model(models.Dataset):
                     assign_perm(perm, group, obj)
-
-        if not change:
-            for perm in get_perms_for_model(models.Dataset):
-                assign_perm(perm, request.user, obj)
         return obj
 
     def add_view(self, request, form_url='', extra_context=None):
         self.inlines = (InitialDataUploadAddView, MetaDataInline,)
         return super().add_view(request)
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        return get_objects_for_user(request.user, 'view', models.Dataset, qs)
-
-    def has_change_permission(self, request, obj=None):
-        if not obj:
-            return super().has_change_permission(request, obj)
-
-        if obj.permission_type == "public":
-            return True
-        return request.user.has_perm("change_dataset", obj)
-
-    def has_delete_permission(self, request, obj=None):
-        if not obj:
-            return super().has_delete_permission(request, obj)
-        if obj.permission_type == "public":
-            return True
-        return request.user.has_perm("delete_dataset", obj)
-
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        form.current_user = request.user
-        form.target = obj
-        return form

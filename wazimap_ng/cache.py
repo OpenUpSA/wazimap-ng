@@ -5,24 +5,36 @@ from django.core.cache import cache
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.views.decorators.cache import cache_page, cache_control
+from django.views.decorators.vary import vary_on_headers
 
-from .profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, ProfileKeyMetrics
+from .profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, ProfileKeyMetrics, Profile
+from .profile.services import authentication
 from .points.models import Location, Category, Theme
 
 logger = logging.getLogger(__name__)
 
 profile_key = "etag-Profile-%s"
-location_key = "etag-Location-%s"
-theme_key = "etag-Theme-%s"
+location_key = "etag-Location-profile-%s-%s"
+theme_key = "etag-Theme-profile-%s-%s"
 location_theme_key = "etag-Location-Theme-%s"
 
-def last_modified(request, key):
-    last_modified = datetime(year=1970, month=1, day=1)
-    c = cache.get(key)
+def check_has_permission(request, profile_id):
+    profile = Profile.objects.get(pk=profile_id)
+    has_permission = authentication.has_permission(request.user, profile)
+    if has_permission:
+        return True
+    return False
 
-    if c is not None:
-        return c
-    return last_modified
+def last_modified(request, profile_id, key):
+    if check_has_permission(request, profile_id):
+        _last_modified = datetime(year=1970, month=1, day=1)
+        c = cache.get(key)
+
+        if c is not None:
+            return c
+    else:
+        _last_modified = datetime.now()
+    return _last_modified
 
 def etag_profile_updated(request, profile_id, geography_code):
     last_modified = last_modified_profile_updated(request, profile_id, geography_code)
@@ -30,21 +42,21 @@ def etag_profile_updated(request, profile_id, geography_code):
 
 def last_modified_profile_updated(request, profile_id, geography_code):
     key = profile_key % profile_id
-    return last_modified(request, key)
+    return last_modified(request, profile_id, key)
 
-def etag_point_updated(request, category_id=None, theme_id=None):
-    last_modified = last_modified_point_updated(request, category_id, theme_id)
+def etag_point_updated(request, profile_id, category_id=None, theme_id=None):
+    last_modified = last_modified_point_updated(request, profile_id, category_id, theme_id)
     return str(last_modified)
 
-def last_modified_point_updated(request, category_id=None, theme_id=None):
+def last_modified_point_updated(request, profile_id, category_id=None, theme_id=None):
     if category_id is not None:
-        key = location_key % category_id
+        key = location_key % (profile_id, category_id)
     elif theme_id is not None:
-        key = theme_key % theme_id
+        key = theme_key % (profile_id, theme_id)
     else:
         return None
 
-    return last_modified(request, key)
+    return last_modified(request, profile_id, key)
 
 ########### Signals #################
 def update_profile_cache(profile):
@@ -53,8 +65,8 @@ def update_profile_cache(profile):
 
 def update_point_cache(category):
     theme = category.theme
-    key1 = location_key % category.id
-    key2 = theme_key % theme.id
+    key1 = location_key % (theme.profile.id, category.id)
+    key2 = theme_key % (theme.profile.id, theme.id)
 
     logger.debug(f"Set cache key (category): {key1}")
     logger.debug(f"Set cache key (theme): {key2}")
@@ -91,23 +103,24 @@ def point_updated_category(sender, instance, **kwargs):
     update_point_cache(instance)
 
 def cache_headers(func):
-    return cache_control(max_age=0, public=True, must_revalidate=True)(func)
+    return vary_on_headers("Authorization")(cache_control(max_age=0, public=True, must_revalidate=True)(func))
 
 def cache_decorator(key, expiry=60*60*24*365):
+    def clean(s):
+        return str(s).replace(" ", "-").lower().strip()
+
     def _cache_decorator(func):
         def wrapper(*args, **kwargs):
             cache_key = key
             if len(args) > 0:
-                cache_key += "-".join(str(el) for el in args)
+                cache_key += "-".join(clean(el) for el in args)
 
             if len(kwargs) > 0:
                 cache_key += "-".join(f"{k}-{v}" for k, v in kwargs.items())
 
             cached_obj = cache.get(cache_key)
             if cached_obj is not None:
-                print(f"Cache hit: {cache_key}")
                 return cached_obj
-            print(f"Cache miss: {cache_key}")
 
 
             obj = func(*args, **kwargs)

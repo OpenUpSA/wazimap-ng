@@ -1,4 +1,5 @@
 import os
+import logging
 
 from django.db import transaction
 from django.db.models import Sum, FloatField
@@ -15,8 +16,10 @@ from operator import itemgetter
 import pandas as pd
 from django_q.models import Task
 
+logger = logging.Logger(__name__)
 
-class CustomDataParsingExecption(Exception):
+
+class CustomDataParsingException(Exception):
     pass
 
 @transaction.atomic
@@ -33,7 +36,7 @@ def process_uploaded_file(point_file, **kwargs):
     columns = None
     row_number = 1
     error_logs = []
-    subtheme = point_file.profile_category.category
+    subtheme = point_file.category
 
     df = pd.read_csv(file_path, nrows=1, dtype=str, sep=",")
     df.dropna(how='all', axis='columns', inplace=True)
@@ -48,6 +51,7 @@ def process_uploaded_file(point_file, **kwargs):
         logs = loaddata(subtheme, datasource, row_number)
 
         error_logs = error_logs + logs
+        logger.info(logs)
         row_number = row_number + chunksize
 
     if error_logs:
@@ -57,4 +61,4 @@ def process_uploaded_file(point_file, **kwargs):
         logfile = logdir + "%s_%d_log.csv" % ("point_file", point_file.id)
         df = pd.DataFrame(error_logs)
         df.to_csv(logfile, header=["Line Number", "Field Name", "Error Details"], index=False)
-        raise CustomDataParsingExecption('Problem while parsing data.')
+        raise CustomDataParsingException('Problem while parsing data.')

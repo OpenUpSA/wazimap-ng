@@ -3,13 +3,14 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
 
 from wazimap_ng.datasets.models import Indicator, GeographyHierarchy
-from wazimap_ng.config.common import DENOMINATOR_CHOICES, PRERMISSION_TYPES
+from wazimap_ng.config.common import DENOMINATOR_CHOICES, PERMISSION_TYPES
 
 class Profile(models.Model):
     name = models.CharField(max_length=50)
     indicators = models.ManyToManyField(Indicator, through="profile.ProfileIndicator", verbose_name="variables")
     geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.PROTECT, null=False)
-    permission_type = models.CharField(choices=PRERMISSION_TYPES, max_length=32, default="public")
+    permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="public")
+    requires_authentication = models.BooleanField(default=False, null=False)
 
     def __str__(self):
         return self.name
@@ -65,13 +66,14 @@ class ProfileKeyMetrics(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     variable = models.ForeignKey(Indicator, on_delete=models.CASCADE)
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
+    # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.
     subindicator = models.PositiveSmallIntegerField()
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32, help_text="Method for calculating the denominator that will normalise this value.")
     label = models.CharField(max_length=100, help_text="Text used for display to users.")
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     
     def __str__(self):
-        return f"{self.variable.name}"
+        return f"{self.label}"
 
     class Meta:
         ordering = ["order"]
@@ -81,6 +83,7 @@ class ProfileHighlight(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this highlight is based on.", verbose_name="variable")
     name = models.CharField(max_length=60, null=False, blank=True, help_text="Name of the indicator in the database")
+    # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.
     subindicator = models.PositiveSmallIntegerField(null=True, blank=True)
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32, help_text="Method for calculating the denominator that will normalise this value.")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")

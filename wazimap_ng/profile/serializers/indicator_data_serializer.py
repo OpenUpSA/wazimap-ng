@@ -1,21 +1,16 @@
 from django.db.models import F
 
 from wazimap_ng.datasets.models import IndicatorData 
-from wazimap_ng.utils import qsdict, mergedict, expand_nested_list
+from wazimap_ng.utils import qsdict, mergedict, expand_nested_list, pivot
 
 from .. import models
 
-def genkey(x):
-    x_copy = x.copy()
-    x_copy.pop("count")
-    return "/".join(str(x) for x in x_copy.values())
-
-
 def get_indicator_data(profile, geography):
-    profile_indicator_ids = profile.indicators.values_list("id", flat=True)
-
     data = (IndicatorData.objects
-        .filter(indicator__in=profile_indicator_ids, geography=geography)
+        .filter(
+            indicator__in=profile.indicators.all(),
+            geography=geography
+        )
         .values(
             jsdata=F("data"),
             description=F("indicator__profileindicator__description"),
@@ -33,12 +28,10 @@ def get_indicator_data(profile, geography):
     return data
 
 def get_child_indicator_data(profile, geography):
-    profile_indicator_ids = profile.indicators.values_list("id", flat=True)
-
     children_profiles = (IndicatorData.objects
         .filter(
-            indicator__in=profile_indicator_ids,
-            geography_id__in=geography.get_children().values_list("id", flat=True)
+            indicator__in=profile.indicators.all(),
+            geography_id__in=geography.get_children()
         )
         .values(
             indicator_name=F("indicator__name"),
@@ -77,29 +70,43 @@ def IndicatorDataSerializer(profile, geography):
         lambda x: {"description": x.description}
     )
 
-    d1 = qsdict(indicator_data2,
+    d_groups = qsdict(indicator_data,
         "category",
         lambda x: "subcategories",
         "subcategory",
         lambda x: "indicators",
         "profile_indicator_label",
-        lambda x: "subindicators",
-        lambda x: genkey(x["jsdata"]),
-        lambda x: {"count": x["jsdata"]["count"]}
+        lambda x: "groups",
+        lambda x: x["jsdata"]["groups"],
     )
 
-    d2 = qsdict(child_profiles2,
+    d_subindicators = qsdict(indicator_data,
         "category",
         lambda x: "subcategories",
         "subcategory",
         lambda x: "indicators",
         "profile_indicator_label",
         lambda x: "subindicators",
-        lambda x: genkey(x["jsdata"]),
-        lambda x: "children",
-        "geography_code",
-        lambda x: x["jsdata"]["count"]
+        lambda x: "count",
+        lambda x: dict(x["jsdata"]["subindicators"]),
     )
+
+    d_subindicators = pivot(d_subindicators, [0, 1, 2, 3, 4, 5, 7, 6])
+
+    d_children = qsdict(children_indicator_data,
+        "category",
+        lambda x: "subcategories",
+        "subcategory",
+        lambda x: "indicators",
+        "profile_indicator_label",
+        lambda x: "subindicators",
+        "geography_code",
+        lambda x: "children",
+        lambda x: x["jsdata"]["subindicators"]
+    )
+
+    d_children = pivot(d_children, [0, 1, 2, 3, 4, 5, 8, 7, 6])
+
 
     d3 = qsdict(indicator_data2,
         "category",
@@ -121,11 +128,13 @@ def IndicatorDataSerializer(profile, geography):
         },
     )
 
+
     new_dict = {}
     mergedict(new_dict, c)
     mergedict(new_dict, s)
-    mergedict(new_dict, d1)
-    mergedict(new_dict, d2)
+    mergedict(new_dict, d_groups)
+    mergedict(new_dict, d_subindicators)
+    mergedict(new_dict, d_children)
     mergedict(new_dict, d3)
 
     return new_dict

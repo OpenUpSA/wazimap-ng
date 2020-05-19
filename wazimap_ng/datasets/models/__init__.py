@@ -1,3 +1,9 @@
 from .geography import Geography, GeographyHierarchy
-from .dataset import Dataset, DatasetData, Indicator, Universe, CountryDataExtractor, IndicatorData, MetaData, Licence
+from .dataset import Dataset
+from .indicatordata import IndicatorData
+from .datasetdata import DatasetData
+from .indicator import Indicator
+from .universe import Universe
+from .metadata import MetaData
+from .licence import Licence
 from .upload import DatasetFile

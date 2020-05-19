@@ -8,6 +8,9 @@ from django.contrib.admin import helpers
 
 from django_q.tasks import async_task
 
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
+
+
 from .. import hooks
 
 def delete_selected_data(modeladmin, request, queryset):
@@ -31,7 +34,7 @@ def delete_selected_data(modeladmin, request, queryset):
                 'wazimap_ng.datasets.tasks.delete_data',
                 queryset, objects_name,
                 task_name=f"Deleting data: {objects_name}",
-                hook="wazimap_ng.datasets.hooks.notify_user",
+                hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
                 type="delete"
             )
@@ -41,8 +44,6 @@ def delete_selected_data(modeladmin, request, queryset):
             }, messages.SUCCESS)
         # Return None to display the change list page again.
         return None
-
-    related_fileds_data = {}
 
     context = {
         **modeladmin.admin_site.each_context(request),
@@ -69,12 +70,9 @@ def delete_selected_data(modeladmin, request, queryset):
 
 delete_selected_data.short_description = "Delete selected objects"
 
-class BaseAdminModel(admin.ModelAdmin):
+class DatasetBaseAdminModel(BaseAdminModel):
 
     actions = [delete_selected_data]
-
-    def get_related_fields_data(self, obj):
-        return []
 
     def delete_view(self, request, object_id, extra_context=None):
         opts = self.model._meta
@@ -105,7 +103,7 @@ class BaseAdminModel(admin.ModelAdmin):
                 'wazimap_ng.datasets.tasks.delete_data',
                 obj, object_name,
                 task_name=f"Deleting data: {obj.name}",
-                hook="wazimap_ng.datasets.hooks.notify_user",
+                hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
                 type="delete"
             )

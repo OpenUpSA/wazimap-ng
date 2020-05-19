@@ -1,7 +1,0 @@
-{
-  "scripts": {
-    "dokku": {
-      "predeploy": "python3 manage.py migrate --noinput"
-    }
-  }
-}
