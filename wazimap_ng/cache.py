@@ -42,12 +42,8 @@ def etag_profile_updated(request, profile_id, geography_code):
 
 def last_modified_profile_updated(request, profile_id, geography_code):
     key = profile_key % profile_id
-    res = last_modified(request, profile_id, key)
-
-    if res is not None:
-        return str(res)
-    return res
-
+    return last_modified(request, profile_id, key)
+    
 def etag_point_updated(request, profile_id, category_id=None, theme_id=None):
     last_modified = last_modified_point_updated(request, profile_id, category_id, theme_id)
     return str(last_modified)
@@ -60,7 +56,7 @@ def last_modified_point_updated(request, profile_id, category_id=None, theme_id=
     else:
         return None
 
-    return str(last_modified(request, profile_id, key))
+    return last_modified(request, profile_id, key)
 
 ########### Signals #################
 def update_profile_cache(profile):

@@ -53,7 +53,7 @@ def test_etag_profile_updated(mock_last_modified, mock_request):
 def test_last_modified_profile_updated(mock_last_modified, mock_request):
     mock_last_modified.return_value = 9999
 
-    assert cache.last_modified_profile_updated(mock_request, 1, "ZA") == "9999"
+    assert cache.last_modified_profile_updated(mock_request, 1, "ZA") == 9999
 
     mock_last_modified.assert_called_with(mock_request, 1, "etag-Profile-1")
 
@@ -71,10 +71,10 @@ def test_last_modified_point_updated(mock_last_modified, mock_request):
     mock_last_modified.return_value = 9999
     profile_id = 1
 
-    assert cache.last_modified_point_updated(mock_request, profile_id, category_id=2) == "9999"
+    assert cache.last_modified_point_updated(mock_request, profile_id, category_id=2) == 9999
     mock_last_modified.assert_called_with(mock_request, profile_id, "etag-Location-profile-1-2")
 
-    assert cache.last_modified_point_updated(mock_request, profile_id, theme_id=3) == "9999"
+    assert cache.last_modified_point_updated(mock_request, profile_id, theme_id=3) == 9999
     mock_last_modified.assert_called_with(mock_request, profile_id, "etag-Theme-profile-1-3")
 
     assert cache.last_modified_point_updated(mock_request, profile_id) is None
