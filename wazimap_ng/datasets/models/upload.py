@@ -42,10 +42,11 @@ class DatasetFile(models.Model):
         """
     )
     task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
-    dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE, null=True, blank=True)
+    name = name = models.CharField(max_length=60)
+
 
     def __str__(self):
-        return self.dataset.name
+        return self.name
 
     def clean(self):
         """
