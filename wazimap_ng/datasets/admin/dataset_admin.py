@@ -8,7 +8,7 @@ from wazimap_ng.config.common import STAFF_GROUPS
 from django_q.tasks import async_task
 from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
 
-from .base_admin_model import BaseAdminModel
+from .base_admin_model import DatasetBaseAdminModel, delete_selected_data
 from .. import models
 from .. import hooks
 from .views import (
@@ -22,10 +22,10 @@ def set_to_private(modeladmin, request, queryset):
     queryset.make_private()
 
 @admin.register(models.Dataset)
-class DatasetAdmin(BaseAdminModel):
+class DatasetAdmin(DatasetBaseAdminModel):
     exclude = ("groups", )
     inlines = (MetaDataInline, VariableInlinesAddView,)
-    actions = (set_to_public, set_to_private)
+    actions = (set_to_public, set_to_private, delete_selected_data,)
     list_display = ("name", "permission_type", "geography_hierarchy")
     list_filter = ("permission_type", "geography_hierarchy")
 
