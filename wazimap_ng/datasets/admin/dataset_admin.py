@@ -12,8 +12,7 @@ from .base_admin_model import BaseAdminModel
 from .. import models
 from .. import hooks
 from .views import (
-    InitialDataUploadChangeView, VariableInlinesChangeView, 
-    VariableInlinesAddView, InitialDataUploadAddView, MetaDataInline
+    VariableInlinesChangeView,VariableInlinesAddView, MetaDataInline
 )
 
 def set_to_public(modeladmin, request, queryset):
@@ -25,16 +24,10 @@ def set_to_private(modeladmin, request, queryset):
 @admin.register(models.Dataset)
 class DatasetAdmin(BaseAdminModel):
     exclude = ("groups", )
-    inlines = ()
+    inlines = (MetaDataInline, VariableInlinesAddView,)
     actions = (set_to_public, set_to_private)
     list_display = ("name", "permission_type", "geography_hierarchy")
     list_filter = ("permission_type", "geography_hierarchy")
-
-
-    class Media:
-        css = {
-             'all': ('/static/css/admin-custom.css',)
-        }
 
     def get_related_fields_data(self, obj):
 
@@ -50,24 +43,6 @@ class DatasetAdmin(BaseAdminModel):
         """
         Given an inline formset save it to the database.
         """
-        if formset.model == models.DatasetFile:
-            instances = formset.save()
-            for instance in instances:
-                async_task(
-                    "wazimap_ng.datasets.tasks.process_uploaded_file",
-                    instance, task_name=f"Uploading data: {instance}",
-                    hook="wazimap_ng.datasets.hooks.process_task_info",
-                    key=request.session.session_key,
-                    type="upload", assign=True, notify=True
-                )
-                hooks.custom_admin_notification(
-                    request.session,
-                    "info",
-                    "Data upload for %s started. We will let you know when process is done." % (
-                        instance
-                    )
-                )
-
         if formset.model == models.Indicator:
             instances = formset.save(commit=False)
             for instance in instances:
@@ -112,17 +87,11 @@ class DatasetAdmin(BaseAdminModel):
         return super().save_formset(request, form, formset, change)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
-        inlines = (InitialDataUploadChangeView, MetaDataInline,)
 
         if object_id:
             dataset_obj = models.Dataset.objects.get(id=object_id)
-            is_loaded = hasattr(dataset_obj, "datasetfile") and dataset_obj.datasetfile.task and dataset_obj.datasetfile.task.success
-            if is_loaded:
-                if dataset_obj.indicator_set.count():
-                    inlines = inlines + (VariableInlinesChangeView,)
-                inlines = inlines + (VariableInlinesAddView,)
-
-        self.inlines = inlines
+            if dataset_obj.indicator_set.count():
+                self.inlines = (MetaDataInline, VariableInlinesChangeView, VariableInlinesAddView,)
         return super().change_view(request, object_id)
 
     def save_model(self, request, obj, form, change):
@@ -134,7 +103,3 @@ class DatasetAdmin(BaseAdminModel):
                 for perm in get_perms_for_model(models.Dataset):
                     assign_perm(perm, group, obj)
         return obj
-
-    def add_view(self, request, form_url='', extra_context=None):
-        self.inlines = (InitialDataUploadAddView, MetaDataInline,)
-        return super().add_view(request)

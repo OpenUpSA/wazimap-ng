@@ -11,17 +11,6 @@ from ... import models
 from ....admin_utils import SortableWidget
 
 
-class VariableInlinesAdminForm(forms.ModelForm):
-    class Meta:
-        model = models.Indicator
-        fields = '__all__'
-
-    def clean_subindicators(self):
-        values = self.instance.subindicators
-        order = self.cleaned_data['subindicators']
-        return [values[i] for i in order] if order else values
-
-
 def get_edit_url(obj, app_label="datasets"):
     return reverse(f"admin:{app_label}_{obj._meta.model_name}_change", args=[obj.id])
 
@@ -34,7 +23,7 @@ class VariableInlinesChangeView(admin.StackedInline):
         ("", {
             "fields": (
                 "dataset", "universe", "groups", "name",
-                "subindicators", "get_profile_indicators", "get_profile_highlights"
+                "get_profile_indicators", "get_profile_highlights"
             )
         }),
     )
@@ -43,12 +32,6 @@ class VariableInlinesChangeView(admin.StackedInline):
         "universe", "groups", "name", "get_profile_indicators", "get_profile_highlights",
     )
 
-    formfield_overrides = {
-        fields.JSONField: {"widget": SortableWidget},
-    }
-
-    form = VariableInlinesAdminForm
-
     def has_add_permission(self, request, obj=None):
         return False
 
@@ -56,7 +39,7 @@ class VariableInlinesChangeView(admin.StackedInline):
         if obj.id:
             objects = [{
                 "name": variable.name,
-                "link": get_edit_url(variable)
+                "link": get_edit_url(variable, "profile")
             } for variable in obj.profileindicator_set.all()]
 
             create_new_link = reverse(
@@ -80,7 +63,7 @@ class VariableInlinesChangeView(admin.StackedInline):
         if obj.id:
             objects = [{
                 "name": variable.name,
-                "link": get_edit_url(variable)
+                "link": get_edit_url(variable, "profile")
             } for variable in obj.profilehighlight_set.all()]
 
             create_new_link = reverse(

@@ -1,8 +1,13 @@
+import operator
+from functools import reduce
+
 from django.http import Http404
 from django.views.decorators.http import condition
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.forms.models import model_to_dict
+from django.db.models import Q, CharField
+from django.db.models.functions import Cast
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework_csv import renderers as r
@@ -19,6 +24,35 @@ from wazimap_ng.profile.models import Profile
 class DatasetList(generics.ListAPIView):
     queryset = models.Dataset.objects.all()
     serializer_class = serializers.DatasetSerializer
+
+class DatasetDetailView(generics.RetrieveAPIView):
+    queryset = models.Dataset
+    serializer_class = serializers.DatasetDetailViewSerializer
+
+class UniverseListView(generics.ListAPIView):
+    queryset = models.Universe.objects.all()
+    serializer_class = serializers.UniverseViewSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        dataset = self.request.query_params.get('dataset', None)
+        group = self.request.query_params.get('group', None)
+
+        dataset = models.Dataset.objects.filter(id=dataset).first()
+        if not dataset:
+            return queryset
+
+        groups = dataset.groups
+        if group:
+            groups = [group]
+
+        condition = reduce(
+            operator.or_, [Q(as_string__icontains=group) for group in groups]
+        )
+
+        return queryset.annotate(
+            as_string=Cast('filters', CharField())
+        ).filter(condition)
 
 class DatasetIndicatorsList(generics.ListAPIView):
     queryset = models.Indicator.objects.all()
@@ -40,7 +74,6 @@ class IndicatorsList(generics.ListAPIView):
 class IndicatorDetailView(generics.RetrieveAPIView):
     queryset = models.Indicator
     serializer_class = serializers.IndicatorSerializer
-
 
 
 @api_view()

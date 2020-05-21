@@ -28,6 +28,11 @@ urlpatterns = [
     path("api/v1/rest-auth/", include("rest_auth.urls")),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view(), name="dataset"),
     path(
+        "api/v1/datasets/<int:pk>/", dataset_views.DatasetDetailView.as_view(),
+        name="dataset-detail"
+    ),
+    path("api/v1/universe/", dataset_views.UniverseListView.as_view(), name="universe"),
+    path(
         "api/v1/datasets/<int:dataset_id>/indicators/",
         cache(dataset_views.DatasetIndicatorsList.as_view()),
         name="dataset-indicator-list",

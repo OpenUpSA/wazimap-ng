@@ -75,3 +75,8 @@ class BaseAdminModel(admin.ModelAdmin):
         if self.custom_queryset_func:
             return getattr(permissions, self.custom_queryset_func)(request.user, self.model, qs)
         return qs
+
+    def get_form(self, request, *args, **kwargs):
+         form = super().get_form(request, *args, **kwargs)
+         form.current_user = request.user
+         return form

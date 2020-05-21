@@ -13,39 +13,26 @@ from django_q.tasks import async_task
 from .. import models
 from .. import hooks
 from .base_admin_model import DatasetBaseAdminModel
-from ...admin_utils import customTitledFilter, SortableWidget
 from wazimap_ng.general.services import permissions
 
 class IndicatorAdminForm(forms.ModelForm):
-    groups = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple)
+    groups = forms.ChoiceField(required=True)
     class Meta:
         model = models.Indicator
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance.id:
-            choices = [[group, group] for group in self.instance.dataset.groups]
+        self.fields
+        if not self.instance.id:
+            self.fields['groups'].choices = self.group_choices
+            self.fields['universe'].queryset = self.universe_queryset
 
-            if "groups" in self.fields:
-                self.fields['groups'].choices = choices
-                self.fields['groups'].initial = self.instance.groups
+    def clean(self,*args,**kwargs):
+        cleaned_data = super().clean(*args,**kwargs)
+        cleaned_data['groups'] = [cleaned_data.get("groups")]
+        return cleaned_data
 
-            if "universe" in self.fields:
-                if not self.instance.dataset.groups:
-                    self.fields['universe'].queryset = models.Universe.objects.none()
-                else:
-                    condition = reduce(
-                        operator.or_, [Q(as_string__icontains=group) for group in self.instance.dataset.groups]
-                    )
-                    self.fields['universe'].queryset = models.Universe.objects.annotate(
-                        as_string=Cast('filters', CharField())
-                    ).filter(condition)
-
-    def clean_subindicators(self):
-        values = self.instance.subindicators
-        order = self.cleaned_data['subindicators']
-        return [values[i] for i in order] if order else values
 
 class DatasetsWithPermissionFilter(admin.SimpleListFilter):
     title = 'Datasets'
@@ -65,13 +52,6 @@ class DatasetsWithPermissionFilter(admin.SimpleListFilter):
 
 @admin.register(models.Indicator)
 class IndicatorAdmin(DatasetBaseAdminModel):
-    """
-    This Admin creates an Indicator in two steps.
-    Step 1: Select the Dataset
-    Step 2: Complete the indicator by selecting groups, providing a label, etc.
-
-    TODO may want to rather do this with javascript
-    """
 
     list_display = (
         "name", "dataset", "universe"
@@ -82,40 +62,16 @@ class IndicatorAdmin(DatasetBaseAdminModel):
     )
 
     form = IndicatorAdminForm
-    step1_fieldsets = [
-        (None, { 'fields': ('dataset', ) } ),
+    fieldsets = [
+        (None, { 'fields': ('dataset', 'groups','universe', 'name',) } ),
     ]
 
-    step2_fieldsets = [
-        (None, { 'fields': ('dataset','universe', 'groups', 'name', 'subindicators') } ),
-    ]
-
-    formfield_overrides = {
-        fields.JSONField: {"widget": SortableWidget},
-    }
-
-    def add_view(self, request, form_url='', extra_context=None):
-        if request.POST.get("_saveasnew"):
-            self.fieldsets = IndicatorAdmin.step2_fieldsets
-        else:
-            self.fieldsets = IndicatorAdmin.step1_fieldsets
-
-        extra_context = extra_context or {}
-        extra_context['show_save'] = False
-
-        # TODO why is this not using super()?
-        return admin.ModelAdmin.add_view(self, request, form_url, extra_context)
-
-    def change_view(self, request, *args, **kwargs):
-        self.fieldsets = IndicatorAdmin.step2_fieldsets
-        # TODO why is this not using super()?
-        return admin.ModelAdmin.change_view(self, request, *args, **kwargs)
+    class Media:
+        js = ("/static/js/jquery-ui.min.js", "/static/js/indicator-admin.js",)
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            to_add = ('dataset',)
-            if obj.name:
-                to_add = to_add + ("groups", "universe",)
+            to_add = ('dataset',"groups", "universe",)
             return self.readonly_fields + to_add
         return self.readonly_fields
 
@@ -129,14 +85,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
         """
         During Step 1, no background tasks are run because only the Dataset is available.
         """
-        run_task = False
-
-        if change:
-            db_obj = models.Indicator.objects.get(id=obj.id)
-            is_running_step2 = not db_obj.name
-
-            if is_running_step2:
-                run_task = True
+        run_task = False if change else True
 
         super().save_model(request, obj, form, change)
         
@@ -146,7 +95,8 @@ class IndicatorAdmin(DatasetBaseAdminModel):
                 obj,
                 task_name=f"Data Extraction: {obj.name}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
-                key=request.session.session_key
+                key=request.session.session_key,
+                type="data_extraction", assign=False, notify=True
             )
             hooks.custom_admin_notification(
                 request.session,
@@ -155,11 +105,25 @@ class IndicatorAdmin(DatasetBaseAdminModel):
                     obj.name
                 )
             )
-
-        if not change:
-            hooks.custom_admin_notification(
-                request.session,
-                "warning",
-                "Please make sure you get data right before saving as fields : groups, dataset & universe will be set as non editable"
-            )
         return obj
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        if request.method == "GET":
+            form.group_choices = [["", "-----------"]]
+            form.universe_queryset = models.Universe.objects.none()
+        else:
+            if not obj:
+                dataset_id = request.POST.get('dataset', "")
+                dataset = models.Dataset.objects.filter(id=dataset_id).first()
+                groups = dataset.groups
+
+                form.group_choices = [[group, group] for group in dataset.groups]
+                condition = reduce(
+                    operator.or_, [Q(as_string__icontains=group) for group in groups]
+                )
+                form.universe_queryset = models.Universe.objects.annotate(
+                    as_string=Cast('filters', CharField())
+                ).filter(condition)
+        return form

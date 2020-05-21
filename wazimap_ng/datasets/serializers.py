@@ -14,12 +14,20 @@ class AncestorGeographySerializer(serializers.ModelSerializer):
         model = Geography
         fields = ["name", "code", "level", "version", "parents"]
 
-
-
 class DatasetSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = models.Dataset
 		fields = "__all__"
+
+class DatasetDetailViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Dataset
+        fields = "__all__"
+
+class UniverseViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Universe
+        fields = "__all__"
 
 class IndicatorSerializer(serializers.ModelSerializer):
 	class Meta:

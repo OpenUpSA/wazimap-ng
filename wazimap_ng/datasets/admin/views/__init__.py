@@ -1,5 +1,3 @@
-from .initial_data_upload_add import InitialDataUploadAddView
-from .initial_data_upload_change import InitialDataUploadChangeView
 from .variable_inlines_add import VariableInlinesAddView
 from .variable_inlines_change import VariableInlinesChangeView
 from .metadata_inline_view import MetaDataInline
