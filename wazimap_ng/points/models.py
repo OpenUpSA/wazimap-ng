@@ -31,6 +31,7 @@ class Theme(models.Model):
 
 
 class Category(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=50)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, related_name="categories")
     metadata = models.OneToOneField('general.MetaData', on_delete=models.CASCADE, null=True, blank=True)
@@ -58,7 +59,7 @@ class ProfileCategory(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="collection")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
     description = models.TextField(blank=True)
-    permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="public")
+    permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="private")
 
     def __str__(self):
         return self.label
@@ -74,10 +75,10 @@ class CoordinateFile(models.Model):
         help_text="File Type required : CSV | Fields that are required: Name, Longitude, latitude"
     )
     task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=50)
 
     def __str__(self):
-        return self.category.name
+        return self.name
 
     def clean(self):
         """

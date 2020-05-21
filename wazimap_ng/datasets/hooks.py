@@ -44,13 +44,17 @@ class Notify:
         obj_id = obj.id
         model_name = obj._meta.model_name
 
-        if obj._meta.model_name == "datasetfile":
-            model_name = "dataset"
-            obj_id = results.get("dataset_id", None)
+        if notification_type == "success":
+            if obj._meta.model_name == "datasetfile":
+                model_name = "dataset"
+                obj_id = results.get("dataset_id", None)
 
-        if obj._meta.model_name == "coordinatefile":
-            model_name = "profilecategory"
-            obj_id = results.get("category_id", None)
+            if obj._meta.model_name == "coordinatefile":
+                model_name = "category"
+                obj_id = results.get("category_id", None)
+        else:
+            model_name = obj._meta.model_name
+            obj_id = obj.id
 
         admin_url = reverse(
             'admin:%s_%s_change' % (obj._meta.app_label,  model_name),  args=[obj_id]

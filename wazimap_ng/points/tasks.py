@@ -23,7 +23,7 @@ class CustomDataParsingException(Exception):
     pass
 
 @transaction.atomic
-def process_uploaded_file(point_file, **kwargs):
+def process_uploaded_file(point_file, profile, theme, **kwargs):
     """
     Run this Task after saving new document via admin panel.
 
@@ -31,12 +31,16 @@ def process_uploaded_file(point_file, **kwargs):
     After reading data convert to list rather than using numpy array.
     """
     filename = point_file.document.name
-    file_path = point_file.document.url
+    file_path = point_file.document.path
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
     columns = None
     row_number = 1
     error_logs = []
-    subtheme = point_file.category
+    subtheme = models.Category.objects.create(
+        name=point_file.name,
+        profile=profile,
+        theme=theme, permission_type="private"
+    )
 
     df = pd.read_csv(file_path, nrows=1, dtype=str, sep=",")
     df.dropna(how='all', axis='columns', inplace=True)
@@ -62,3 +66,7 @@ def process_uploaded_file(point_file, **kwargs):
         df = pd.DataFrame(error_logs)
         df.to_csv(logfile, header=["Line Number", "Field Name", "Error Details"], index=False)
         raise CustomDataParsingException('Problem while parsing data.')
+
+    return {
+        "category_id": subtheme.id
+    }

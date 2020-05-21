@@ -1,20 +1,21 @@
 import pandas as pd
 
 from .. import models
-from .base_admin_model import BaseAdminModel
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
 from django_q.tasks import async_task
-from .. import hooks
-from .forms import DatasetFileForm
 
-@admin.register(models.DatasetFile)
-class DatasetFileAdmin(BaseAdminModel):
-    form = DatasetFileForm
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.datasets import hooks
+from .forms import CoordinateFileForm
+
+@admin.register(models.CoordinateFile)
+class CoordinateFileAdmin(BaseAdminModel):
+    form = CoordinateFileForm
     fieldsets = [
-        (None, { 'fields': ("profile", "geography_hierarchy",'name', 'document') } ),
+        (None, { 'fields': ("profile", "theme",'name', 'document') } ),
     ]
 
     change_fieldsets = (
@@ -23,15 +24,14 @@ class DatasetFileAdmin(BaseAdminModel):
         }),
         ("Task Details", {
             "fields": (
-            	"get_status", "get_task_link",
-            	"get_warnings", "get_errors",
+            	"get_status", "get_task_link", "get_errors",
             )
         }),
     )
 
     change_view_readonly_fields = (
        "name", "document", "get_status", "get_task_link",
-       "get_warnings", "get_errors",
+       "get_errors",
     )
 
     def get_readonly_fields(self, request, obj=None):
@@ -58,35 +58,24 @@ class DatasetFileAdmin(BaseAdminModel):
 
             return mark_safe('<a href="%s">%s</a>' % (admin_url, obj.task.id))
         return "-"
-
     get_task_link.short_description = 'Task Link'
 
-    def get_warnings(self, obj):
-        if obj.task:
-            result = obj.task.result
-            if obj.task.success and result["warning_log"]:
-                download_url = result["warning_log"].replace("/app", "")
-                result = render_to_string(
-                    'custom/variable_task_warnings.html', {'download_url': download_url}
-                )
-                return mark_safe(result)
-        return "-"
-
-    get_warnings.short_description = 'Warnings'
-
     def get_errors(self, obj):
-        if obj.task:
+        if obj.task and not obj.task.success:
             result = obj.task.result
-            if not obj.task.success:
-                return obj.task.result
-            elif result["error_log"]:
-                download_url = result["error_log"].replace("/app", "")
-                df = pd.read_csv(result["error_log"], header=None, sep=",", nrows=10, skiprows=1)
+            if "CustomDataParsingExecption" in result:
+                logdir = settings.MEDIA_ROOT + "/logs/points/"
+                filename = "%s_%d_log.csv" % ("point_file", obj.id)
+                download_url = settings.MEDIA_URL + "logs/points/"
+
+                df = pd.read_csv(logdir+filename, header=None, sep=",", nrows=10, skiprows=1)
                 error_list = df.values.tolist()
+
                 result = render_to_string(
-                    'custom/variable_task_errors.html', { 'errors': error_list,'download_url': download_url}
+                    'custom/render_task_errors.html', { 'errors': error_list, 'download_url': download_url + filename}
                 )
-                return mark_safe(result)
+
+            return mark_safe(result)
         return "None"
 
     get_errors.short_description = 'Errors'
@@ -103,14 +92,16 @@ class DatasetFileAdmin(BaseAdminModel):
         super().save_model(request, obj, form, change)
         if is_created:
             profile = form.cleaned_data.get('profile')
-            geography_hierarchy = form.cleaned_data.get('geography_hierarchy')
+            theme = form.cleaned_data.get('theme')
             async_task(
-                "wazimap_ng.datasets.tasks.process_uploaded_file",
-                obj, profile, geography_hierarchy, task_name=f"Uploading data: {obj.name}",
+                "wazimap_ng.points.tasks.process_uploaded_file",
+                obj, profile, theme, 
+                task_name=f"Uploading data: {obj}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
                 type="upload", assign=True, notify=True
             )
+
             hooks.custom_admin_notification(
                 request.session,
                 "info",
