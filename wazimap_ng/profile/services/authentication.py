@@ -5,7 +5,7 @@ from django.contrib.auth.models import User, Group
 logger = logging.Logger(__name__)
 
 def requires_authentication(profile):
-    return profile.requires_authentication
+    return profile.permission_type == "private"
 
 def has_permission(user, profile):
     if user.is_superuser:
