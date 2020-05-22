@@ -67,7 +67,7 @@ class BaseAdminModel(admin.ModelAdmin):
         return has_perm
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name not in self.exclude_fk_filters and  self.custom_queryset_func:
+        if db_field.name not in self.exclude_fk_filters and not request.user.is_superuser:
             kwargs["queryset"] = getattr(
                 permissions, "get_custom_fk_queryset"
             )(request.user, db_field.related_model)
