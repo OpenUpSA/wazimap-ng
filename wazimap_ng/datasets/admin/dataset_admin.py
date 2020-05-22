@@ -2,11 +2,8 @@ import json
 
 from django.contrib import admin
 from django import forms
-from django.contrib.auth.models import Group
-from wazimap_ng.config.common import STAFF_GROUPS
 
 from django_q.tasks import async_task
-from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
 
 from .base_admin_model import DatasetBaseAdminModel, delete_selected_data
 from .. import models
@@ -14,6 +11,8 @@ from .. import hooks
 from .views import (
     VariableInlinesChangeView,VariableInlinesAddView, MetaDataInline
 )
+
+from wazimap_ng.general.services.permissions import assign_perms_to_group
 
 def set_to_public(modeladmin, request, queryset):
     queryset.make_public()
@@ -95,11 +94,8 @@ class DatasetAdmin(DatasetBaseAdminModel):
         return super().change_view(request, object_id)
 
     def save_model(self, request, obj, form, change):
+        is_new = obj.pk == None and change == False
         super().save_model(request, obj, form, change)
-
-        if not change or (change and obj.permission_type == "private") and not request.user.is_superuser:
-            group = request.user.groups.all().exclude(name__in=STAFF_GROUPS).first()
-            if group:
-                for perm in get_perms_for_model(models.Dataset):
-                    assign_perm(perm, group, obj)
+        if is_new or obj.permission_type == "private":
+            assign_perms_to_group(obj.profile.name, obj)
         return obj

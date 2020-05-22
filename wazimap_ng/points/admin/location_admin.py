@@ -9,6 +9,7 @@ from import_export.fields import Field
 
 from django_json_widget.widgets import JSONEditorWidget
 from mapwidgets.widgets import GooglePointFieldWidget
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
 
 from .. import models
 
@@ -45,7 +46,7 @@ class LocationResource(resources.ModelResource):
 
 
 @admin.register(models.Location)
-class LocationAdmin(ExportMixin, admin.ModelAdmin):
+class LocationAdmin(ExportMixin, BaseAdminModel):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
         PointField: {"widget": GooglePointFieldWidget},

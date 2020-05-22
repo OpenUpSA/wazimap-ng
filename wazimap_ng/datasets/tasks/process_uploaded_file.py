@@ -8,6 +8,8 @@ from django.conf import settings
 from ..dataloader import loaddata
 from .. import models
 
+from wazimap_ng.general.services.permissions import assign_perms_to_group
+
 logger = logging.getLogger(__name__)
 
 
@@ -35,6 +37,8 @@ def process_uploaded_file(dataset_file, profile, geography_hierarchy, **kwargs):
         profile=profile,
         geography_hierarchy=geography_hierarchy
     )
+    assign_perms_to_group(dataset.profile.name, dataset)
+
     error_logs = []
     warning_logs = []
     row_number = 1

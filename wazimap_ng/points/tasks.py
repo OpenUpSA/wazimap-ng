@@ -15,7 +15,7 @@ from itertools import groupby
 from operator import itemgetter
 import pandas as pd
 from django_q.models import Task
-
+from wazimap_ng.general.services.permissions import assign_perms_to_group
 logger = logging.Logger(__name__)
 
 
@@ -41,6 +41,7 @@ def process_uploaded_file(point_file, profile, theme, **kwargs):
         profile=profile,
         theme=theme, permission_type="private"
     )
+    assign_perms_to_group(subtheme.profile.name, subtheme)
 
     df = pd.read_csv(file_path, nrows=1, dtype=str, sep=",")
     df.dropna(how='all', axis='columns', inplace=True)

@@ -40,7 +40,7 @@ class DatasetsWithPermissionFilter(admin.SimpleListFilter):
     parameter_name = 'dataset_id'
 
     def lookups(self, request, model_admin):
-        datasets = permissions.get_objects_for_user(request.user, 'view', models.Dataset)
+        datasets = permissions.get_objects_for_user(request.user, models.Dataset)
         return [(d.id, d.name) for d in datasets]
 
     def queryset(self, request, queryset):

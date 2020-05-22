@@ -1,9 +1,10 @@
 from django.contrib.gis import admin
-from django.contrib.auth.models import Group
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.services.permissions import assign_perms_to_group
 
 from .. import models
 from .forms import CategoryAdminForm
+
 
 @admin.register(models.Category)
 class CategoryAdmin(BaseAdminModel):
@@ -33,9 +34,6 @@ class CategoryAdmin(BaseAdminModel):
     def save_model(self, request, obj, form, change):
         is_new = obj.pk == None and change == False
         super().save_model(request, obj, form, change)
-
-        if is_new or (change and obj.permission_type == "private"):
-            group = Group.objects.filter(name=obj.theme.profile.name.lower()).first()
-            for perm in get_perms_for_model(models.Category):
-                assign_perm(perm, group, obj)
+        if is_new or obj.permission_type == "private":
+            assign_perms_to_group(obj.profile.name, obj)
         return obj

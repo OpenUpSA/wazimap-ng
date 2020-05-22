@@ -1,13 +1,7 @@
-import json
-
 from django.contrib.gis import admin
-from django.contrib.auth.models import Group
-from django import forms
 
-from guardian.shortcuts import get_perms_for_model, assign_perm, remove_perm
-
-from wazimap_ng.profile.models import Profile
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.services.permissions import assign_perms_to_group
 
 from .. import models
 
@@ -38,9 +32,6 @@ class ProfileCategoryAdmin(BaseAdminModel):
     def save_model(self, request, obj, form, change):
         is_new = obj.pk == None and change == False
         super().save_model(request, obj, form, change)
-
-        if is_new or (change and obj.permission_type == "private"):
-            group = Group.objects.filter(name=profile.name.lower()).first()
-            for perm in get_perms_for_model(models.ProfileCategory):
-                assign_perm(perm, group, obj)
+        if is_new or obj.permission_type == "private":
+            assign_perms_to_group(obj.profile.name, obj)
         return obj

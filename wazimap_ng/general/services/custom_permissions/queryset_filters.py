@@ -1,54 +1,91 @@
+from django.db import models
 
 from .. import permissions
 from wazimap_ng.profile.models import Profile
 from wazimap_ng.datasets.models import Dataset, Indicator
+from wazimap_ng.points.models import Category, ProfileCategory
+
+class CustomQuerySet(models.QuerySet):
+
+	# Profile
+	def get_profile_profileindicator_queryset(self, user):
+		profiles = permissions.get_objects_for_user(
+			user, Profile, include_public=False
+		)
+		return self.filter(profile__in=profiles)
+
+	def get_profile_profilekeymetrics_queryset(self, user):
+		profiles = permissions.get_objects_for_user(
+			user, Profile, include_public=False
+		)
+		return self.filter(profile__in=profiles)
+
+	def get_profile_profilehighlight_queryset(self, user):
+		profiles = permissions.get_objects_for_user(
+			user, Profile, include_public=False
+		)
+		return self.filter(profile__in=profiles)
+
+	def get_profile_logo_queryset(self, user):
+		profiles = permissions.get_objects_for_user(
+			user, Profile, include_public=False
+		)
+		return self.filter(profile__in=profiles)
+
+	def get_profile_indicatorcategory_queryset(self, user):
+		profiles = permissions.get_objects_for_user(
+			user, Profile, include_public=False
+		)
+		return self.filter(profile__in=profiles)
+
+	def get_profile_indicatorsubcategory_queryset(self, user):
+		profiles = permissions.get_objects_for_user(
+			user, Profile, include_public=False
+		)
+		return self.filter(category__profile__in=profiles)
 
 
-# Profile
-def get_filters_for_profilehighlight(user):
-	profiles = permissions.get_custom_queryset(user, Profile)
-	indicators = Indicator.objects.filter(**get_filters_for_indicator(user))
-	return {"profile__in": profiles, "indicator__in": indicators}
+	# Dataset
+	def get_datasets_indicator_queryset(self, user):
+		datasets = permissions.get_custom_queryset(Dataset, user)
+		return self.filter(dataset__in=datasets)
 
-def get_filters_for_profileindicator(user):
-	profiles = permissions.get_custom_queryset(user, Profile)
-	indicators = Indicator.objects.filter(**get_filters_for_indicator(user))
-	return {"profile__in": profiles, "indicator__in": indicators}
+	def get_datasets_dataset_queryset(self, user):
+		profiles = permissions.get_objects_for_user(user, Profile)
+		return permissions.get_objects_for_user(
+			user, Dataset, queryset=Dataset.objects.filter(profile__in=profiles)
+		)
 
-def get_filters_for_profilekeymetrics(user):
-	profiles = permissions.get_custom_queryset(user, Profile)
-	indicators = Indicator.objects.filter(**get_filters_for_indicator(user))
-	return {"profile__in": profiles, "variable__in": indicators}
-
-def get_filters_for_logo(user):
-	return {"profile__in": permissions.get_custom_queryset(user, Profile)}
-
-def get_filters_for_indicatorcategory(user):
-	return {"profile__in": permissions.get_custom_queryset(user, Profile)}
-
-def get_filters_for_indicatorsubcategory(user):
-	return {"category__profile__in":permissions.get_custom_queryset(user, Profile)}
+	def get_datasets_indicatordata_queryset(self, user):
+		indicators = permissions.get_custom_queryset(Indicator, user)
+		return self.filter(indicator__in=indicators)
 
 
-# Dataset
-def get_filters_for_indicator(user):
-	datasets = permissions.get_custom_queryset(user, Dataset)
-	return {"dataset__in": datasets}
+	# Points
+	def get_points_category_queryset(self, user):
+		profiles = permissions.get_objects_for_user(user, Profile)
 
-def get_filters_for_dataset(user):
-	herarchies = permissions.get_custom_queryset(
-		user, Profile
-	).values_list("geography_hierarchy")
-	return {"geography_hierarchy__in": herarchies}
+		return permissions.get_objects_for_user(
+			user, Category, queryset=self.filter(profile__in=profiles)
+		)
 
+	def get_points_location_queryset(self, user):
+		profiles = permissions.get_objects_for_user(
+			user, Profile, include_public=False
+		)
+		collections = permissions.get_objects_for_user(
+			user, Category, include_public=False
+		).filter(profile__in=profiles)
+		return self.filter(category__in=collections)
 
+	def get_points_theme_queryset(self, user):
+		profiles = permissions.get_objects_for_user(
+			user, Profile, include_public=False
+		)
+		return self.filter(profile__in=profiles)
 
-# Points
-def get_filters_for_category(user):
-	return {"theme__profile__in": permissions.get_custom_queryset(user, Profile)}
+	def get_points_profilecategory_queryset(self, user):
 
-def get_filters_for_theme(user):
-	return {"profile__in": permissions.get_custom_queryset(user, Profile)}
-
-def get_filter_for_profilecategroy(user):
-	return {"profile__in": permissions.get_custom_queryset(user, Profile)}
+		return permissions.get_objects_for_user(
+			user, ProfileCategory, include_public=False
+		)
