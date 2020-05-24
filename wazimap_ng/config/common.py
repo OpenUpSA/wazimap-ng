@@ -42,6 +42,7 @@ class Common(Configuration):
         "import_export",
         "mapwidgets",
         "guardian",
+        "icon_picker_widget",
 
         # Your apps
         "wazimap_ng.datasets",
