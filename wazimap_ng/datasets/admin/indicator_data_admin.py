@@ -3,10 +3,11 @@ from django.contrib.postgres import fields
 
 from django_json_widget.widgets import JSONEditorWidget
 
+from .base_admin_model import DatasetBaseAdminModel
 from .. import models
 
 @admin.register(models.IndicatorData)
-class IndicatorDataAdmin(admin.ModelAdmin):
+class IndicatorDataAdmin(DatasetBaseAdminModel):
 
     def indicator__name(self, obj):
         return obj.indicator.name

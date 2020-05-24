@@ -55,13 +55,19 @@ class BaseAdminModel(admin.ModelAdmin):
     exclude_fk_filters = []
 
     def has_delete_permission(self, request, obj=None):
-        return permissions.has_permission(request.user, obj, "delete")
+        has_perm = super().has_delete_permission(request, obj)
+        if has_perm:
+            return permissions.has_permission(request.user, obj, "delete")
+        return has_perm
 
     def has_change_permission(self, request, obj=None):
-        return permissions.has_permission(request.user, obj, "change")
+        has_perm = super().has_change_permission(request, obj)
+        if has_perm:
+            return permissions.has_permission(request.user, obj, "change")
+        return has_perm
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name not in self.exclude_fk_filters and  self.custom_queryset_func:
+        if db_field.name not in self.exclude_fk_filters and not request.user.is_superuser:
             kwargs["queryset"] = getattr(
                 permissions, "get_custom_fk_queryset"
             )(request.user, db_field.related_model)
@@ -73,5 +79,10 @@ class BaseAdminModel(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         if self.custom_queryset_func:
-            return getattr(permissions, self.custom_queryset_func)(request.user, self.model, qs)
+            return getattr(permissions, self.custom_queryset_func)(self.model, request.user)
         return qs
+
+    def get_form(self, request, *args, **kwargs):
+         form = super().get_form(request, *args, **kwargs)
+         form.current_user = request.user
+         return form

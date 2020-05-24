@@ -1,42 +1,49 @@
-from django.contrib import admin
-from django.urls import reverse
-from django.template.loader import render_to_string
-from django.utils.safestring import mark_safe
-
 import pandas as pd
 
-from ... import models
+from .. import models
+from .base_admin_model import BaseAdminModel
+from django.contrib import admin
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+from django.template.loader import render_to_string
+from django_q.tasks import async_task
+from .. import hooks
+from .forms import DatasetFileForm
 
-class InitialDataUploadChangeView(admin.StackedInline):
-    model = models.DatasetFile
-    fk_name = "dataset"
-    exclude = ("task", )
-    can_delete = False
-    verbose_name = ""
-    verbose_name_plural = ""
+@admin.register(models.DatasetFile)
+class DatasetFileAdmin(BaseAdminModel):
+    form = DatasetFileForm
+    fieldsets = [
+        (None, { 'fields': ("profile", "geography_hierarchy",'name', 'document') } ),
+    ]
 
-    fieldsets = (
+    change_fieldsets = (
         ("Uploaded Dataset", {
-            "fields": ("document", )
+            "fields": ("name", "document",)
         }),
         ("Task Details", {
-            "fields": ("get_status", "get_task_link",)
+            "fields": (
+            	"get_status", "get_task_link",
+            	"get_warnings", "get_errors",
+            )
         }),
     )
 
-    error_and_warning_fieldset = ("Error & Warnings while data extraction", {
-        "fields": ("get_warnings", "get_errors",)
-    })
-
-    readonly_fields = (
-        "document", "get_status", "get_task_link", "get_warnings", "get_errors",
+    change_view_readonly_fields = (
+       "name", "document", "get_status", "get_task_link",
+       "get_warnings", "get_errors",
     )
 
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.change_view_readonly_fields
+        return self.readonly_fields
+
+
     def get_status(self, obj):
-        if obj.id:
-            if obj.task:
+        if obj.id and obj.task:
                 return "Processed" if obj.task.success else "Failed"
-            return "In Queue"
+        return "In Queue"
 
     get_status.short_description = 'Status'
 
@@ -84,9 +91,30 @@ class InitialDataUploadChangeView(admin.StackedInline):
 
     get_errors.short_description = 'Errors'
 
+
     def get_fieldsets(self, request, obj):
         fields = super().get_fieldsets(request, obj)
-        if hasattr(obj, "datasetfile") and obj.datasetfile.task:
-            fields = fields + (self.error_and_warning_fieldset, )
-
+        if obj:
+            fields = self.change_fieldsets
         return fields
+
+    def save_model(self, request, obj, form, change):
+        is_created = obj.pk == None and change == False
+        super().save_model(request, obj, form, change)
+        if is_created:
+            profile = form.cleaned_data.get('profile')
+            geography_hierarchy = form.cleaned_data.get('geography_hierarchy')
+            async_task(
+                "wazimap_ng.datasets.tasks.process_uploaded_file",
+                obj, profile, geography_hierarchy, task_name=f"Uploading data: {obj.name}",
+                hook="wazimap_ng.datasets.hooks.process_task_info",
+                key=request.session.session_key,
+                type="upload", assign=True, notify=True
+            )
+            hooks.custom_admin_notification(
+                request.session,
+                "info",
+                "Data upload for %s started. We will let you know when process is done." % (
+                    obj.name
+                )
+            )

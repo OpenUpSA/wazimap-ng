@@ -6,12 +6,15 @@ from django.db import transaction
 from django.conf import settings
 
 from ..dataloader import loaddata
+from .. import models
+
+from wazimap_ng.general.services.permissions import assign_perms_to_group
 
 logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def process_uploaded_file(dataset_file, **kwargs):
+def process_uploaded_file(dataset_file, profile, geography_hierarchy, **kwargs):
     """
     Run this Task after saving new document via admin panel.
 
@@ -29,7 +32,13 @@ def process_uploaded_file(dataset_file, **kwargs):
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
 
     columns = None
-    dataset = dataset_file.dataset
+    dataset = models.Dataset.objects.create(
+        name=dataset_file.name,
+        profile=profile,
+        geography_hierarchy=geography_hierarchy
+    )
+    assign_perms_to_group(dataset.profile.name, dataset)
+
     error_logs = []
     warning_logs = []
     row_number = 1
@@ -93,8 +102,9 @@ def process_uploaded_file(dataset_file, **kwargs):
 
     return {
         "model": "datasetfile",
-        "name": dataset_file.dataset.name,
+        "name": dataset.name,
         "id": dataset_file.id,
+        "dataset_id": dataset.id,
         "error_log": error_logs or None,
         "warning_log": warning_logs or None
     }

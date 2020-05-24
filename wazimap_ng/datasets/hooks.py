@@ -28,15 +28,15 @@ class Notify:
 
 
     @classmethod
-    def get_nofitification_details(self, notification_type, obj, task_type):
+    def get_nofitification_details(self, notification_type, obj, task_type, results=None):
 
         func_name = "get_%s_messages" % (task_type)
         notification_message = getattr(self, func_name, self.get_generic_message)
-        message = notification_message(notification_type, obj, task_type)
+        message = notification_message(notification_type, obj, task_type, results)
         return message
 
     @classmethod
-    def get_upload_messages(self, notification_type, obj, task_type=None):
+    def get_upload_messages(self, notification_type, obj, task_type=None, results=None):
         """
         Get message for data upload.
         """
@@ -44,13 +44,17 @@ class Notify:
         obj_id = obj.id
         model_name = obj._meta.model_name
 
-        if obj._meta.model_name == "datasetfile":
-            model_name = "dataset"
-            obj_id = obj.dataset.id
+        if notification_type == "success":
+            if obj._meta.model_name == "datasetfile":
+                model_name = "dataset"
+                obj_id = results.get("dataset_id", None)
 
-        if obj._meta.model_name == "coordinatefile":
-            model_name = "profilecategory"
-            obj_id = obj.category.id
+            if obj._meta.model_name == "coordinatefile":
+                model_name = "category"
+                obj_id = results.get("category_id", None)
+        else:
+            model_name = obj._meta.model_name
+            obj_id = obj.id
 
         admin_url = reverse(
             'admin:%s_%s_change' % (obj._meta.app_label,  model_name),  args=[obj_id]
@@ -58,7 +62,7 @@ class Notify:
         return self.upload_message[notification_type] % (model, obj, admin_url)
 
     @classmethod
-    def get_generic_message(self, notification_type, obj, task_type):
+    def get_generic_message(self, notification_type, obj, task_type, results):
         """
         Get Generic message according to notification type.
         """
@@ -83,11 +87,12 @@ def process_task_info(task):
         session_key = task.kwargs.get("key", False)
         task_type = task.kwargs.get("type", False)
         message = task.kwargs.get("message", None)
+        results = task.result or {}
 
         # Get message
         notify = Notify()
         if not message:
-            message = notify.get_nofitification_details(notification_type, obj, task_type)
+            message = notify.get_nofitification_details(notification_type, obj, task_type, results)
 
         # Add message to user
         notify_user(notification_type, session_key, message)

@@ -16,21 +16,22 @@ class VariableInlinesAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        dataset = self.fields["dataset"].queryset.first()
-        choices = [[group, group] for group in dataset.groups]
-        if "groups" in self.fields:
-            self.fields['groups'].choices = choices
+        if self.instance.pk:
+            dataset = self.fields["dataset"].queryset.first()
+            choices = [[group, group] for group in dataset.groups]
+            if "groups" in self.fields:
+                self.fields['groups'].choices = choices
 
-        if "universe" in self.fields:
-            if not dataset.groups:
-                self.fields['universe'].queryset = models.Universe.objects.none()
-            else:
-                condition = reduce(
-                    operator.or_, [Q(as_string__icontains=group) for group in dataset.groups]
-                )
-                self.fields['universe'].queryset = models.Universe.objects.annotate(
-                    as_string=Cast('filters', CharField())
-                ).filter(condition)
+            if "universe" in self.fields:
+                if not dataset.groups:
+                    self.fields['universe'].queryset = models.Universe.objects.none()
+                else:
+                    condition = reduce(
+                        operator.or_, [Q(as_string__icontains=group) for group in dataset.groups]
+                    )
+                    self.fields['universe'].queryset = models.Universe.objects.annotate(
+                        as_string=Cast('filters', CharField())
+                    ).filter(condition)
 
 
 class VariableInlinesAddView(admin.StackedInline):
