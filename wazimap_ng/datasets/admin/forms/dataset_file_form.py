@@ -13,17 +13,17 @@ class DatasetFileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         profiles =  get_custom_fk_queryset(self.current_user, Profile)
-        heirarchies = get_custom_fk_queryset(self.current_user, models.GeographyHierarchy)
+        hierarchies = get_custom_fk_queryset(self.current_user, models.GeographyHierarchy)
 
         self.fields["profile"].queryset = profiles
-        self.fields["geography_hierarchy"].queryset = heirarchies
+        self.fields["geography_hierarchy"].queryset = hierarchies
 
         if profiles.count() == 1:
             profile = profiles.first()
             self.fields["profile"].initial = profile
 
-            for heirarchy in heirarchies:
-                hp = heirarchy.profile_set.all()
+            for hierarchy in hierarchies:
+                hp = hierarchy.profile_set.all()
                 if hp.count() == 1 and hp.first() == profile:
-                    self.fields["geography_hierarchy"].initial = heirarchy
+                    self.fields["geography_hierarchy"].initial = hierarchy
                     self.fields["geography_hierarchy"].widget.attrs['disabled'] = True
