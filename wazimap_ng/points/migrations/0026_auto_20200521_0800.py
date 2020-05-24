@@ -10,9 +10,10 @@ def copy_name_of_coordinate_file(apps, schema_editor):
     CoordinateFile = apps.get_model('points', 'CoordinateFile')
 
     for file_obj in CoordinateFile.objects.all():
-        name = file_obj.category.name
-        file_obj.name = name
-        file_obj.save()
+        if file_obj.category is not None:
+            name = file_obj.category.name
+            file_obj.name = name
+            file_obj.save()
 
 class Migration(migrations.Migration):
 
