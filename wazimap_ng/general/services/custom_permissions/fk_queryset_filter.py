@@ -39,12 +39,7 @@ class CustomFKQuerySet(models.QuerySet):
 		return self.filter(category__profile__in=profiles)
 
 	def get_indicator_queryset(self, user):
-		profiles = permissions.get_objects_for_user(user, Profile)
-		datasets = permissions.get_objects_for_user(
-			user, Dataset, queryset=Dataset.objects.filter(
-				profile__in=profiles
-			)
-		)
+		datasets = permissions.get_objects_for_user(user, Dataset)
 		return self.filter(dataset__in=datasets)
 
 	def get_geographyhierarchy_queryset(self, user):
@@ -55,7 +50,4 @@ class CustomFKQuerySet(models.QuerySet):
 		return self.filter(id__in=ids)
 
 	def get_dataset_queryset(self, user):
-		profiles = permissions.get_objects_for_user(user, Profile)
-		return permissions.get_objects_for_user(
-			user, Dataset, queryset=Dataset.objects.filter(profile__in=profiles)
-		)
+		return permissions.get_objects_for_user(user, Dataset)
