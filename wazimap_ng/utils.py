@@ -21,7 +21,18 @@ def get_random_filename(filename):
     return filename
 
 def truthy(s):
+    if noney(s): return None
+
     return str(s).lower() == "true" or str(s) == 1
+
+def noney(n):
+    return n is None or str(n).lower() == "none"
+
+def int_or_none(i):
+    if noney(i):
+        return None
+
+    return int(i) 
 
 def mergedict(a, b, path=None, concatenate_arrays=True, update=True):
     """

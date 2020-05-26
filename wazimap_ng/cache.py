@@ -43,7 +43,7 @@ def etag_profile_updated(request, profile_id, geography_code):
 def last_modified_profile_updated(request, profile_id, geography_code):
     key = profile_key % profile_id
     return last_modified(request, profile_id, key)
-
+    
 def etag_point_updated(request, profile_id, category_id=None, theme_id=None):
     last_modified = last_modified_point_updated(request, profile_id, category_id, theme_id)
     return str(last_modified)
@@ -91,8 +91,8 @@ def profile_subcategory_updated(sender, instance, **kwargs):
     update_profile_cache(instance.category.profile)
 
 @receiver(post_save, sender=ProfileKeyMetrics)
-def profile_subcategory_updated(sender, instance, **kwargs):
-    update_profile_cache(instance.subcategory.category.profile)
+def profile_keymetrics_updated(sender, instance, **kwargs):
+    update_profile_cache(instance.profile)
 
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
