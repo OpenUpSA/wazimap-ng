@@ -1,0 +1,17 @@
+#variable-permission-filter ul>li{
+	position: relative;
+    display: inline-block;
+    padding-left: 20px;
+    margin-bottom: 0;
+    font-weight: 400;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+#variable-permission-filter ul>li input{
+	margin-right: 5px;
+}
+
+#variable-permission-filter ul>li:first-child{
+	padding-left: 2px;
+}

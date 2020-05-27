@@ -25,6 +25,8 @@ class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
         ('subcategory__name', customTitledFilter('Subcategory')),
     )
 
+    help_texts = ["denominator", ]
+
 
     class Media:
         js = (
