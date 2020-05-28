@@ -16,5 +16,3 @@ COPY ./nginx.conf.d/ /app/nginx.conf.d
 COPY ./ /app
 WORKDIR /app
 RUN rm -rf .git
-
-CMD /app/scripts/django/startup.sh
