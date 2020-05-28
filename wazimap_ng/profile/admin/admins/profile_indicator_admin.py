@@ -43,6 +43,7 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
     formfield_overrides = {
         fields.JSONField: {"widget": SortableWidget},
     }
+    help_texts = ["choropleth_method", ]
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object

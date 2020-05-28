@@ -6,6 +6,8 @@ from django.template.response import TemplateResponse
 from django.contrib.admin.utils import model_ngettext, unquote
 from django.contrib.admin import helpers
 from django.contrib.auth import get_permission_codename
+from django.utils.safestring import mark_safe
+from django.template.loader import render_to_string
 
 from django_q.tasks import async_task
 
@@ -53,6 +55,7 @@ class BaseAdminModel(admin.ModelAdmin):
 
     custom_queryset_func = 'get_custom_queryset'
     exclude_fk_filters = []
+    help_texts = []
 
     def has_delete_permission(self, request, obj=None):
         has_perm = super().has_delete_permission(request, obj)
@@ -82,7 +85,32 @@ class BaseAdminModel(admin.ModelAdmin):
             return getattr(permissions, self.custom_queryset_func)(self.model, request.user)
         return qs
 
+    def _get_help_text(self, field):
+        widget = field.widget
+        if widget.__class__.__name__ == "Select":
+            choices = [
+                choice[0] for choice in widget.choices
+            ]
+
+        elif widget.__class__.__name__ == "RelatedFieldWidgetWrapper":
+            choices = [
+                choice[1] for choice in widget.choices
+            ]
+        else:
+            choices = []
+        return mark_safe(render_to_string(
+            'admin/custom_help_texts.html', {'choices': choices}
+        ))
+
     def get_form(self, request, *args, **kwargs):
-         form = super().get_form(request, *args, **kwargs)
-         form.current_user = request.user
-         return form
+        form = super().get_form(request, *args, **kwargs)
+        form.current_user = request.user
+
+
+        for field_name in self.help_texts:
+            if field_name in form.base_fields:
+                form.base_fields[field_name].help_text = self._get_help_text(
+                    form.base_fields[field_name]
+                )
+
+        return form

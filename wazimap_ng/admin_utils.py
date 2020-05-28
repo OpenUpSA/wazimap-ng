@@ -5,6 +5,7 @@ from django.contrib import admin
 from guardian.shortcuts import (
     get_group_perms, get_perms_for_model, get_groups_with_perms
 )
+from django import forms
 
 from wazimap_ng.general.services import permissions
 
@@ -36,3 +37,27 @@ class SortableWidget(Widget):
             'name': name,
             'values': values
         }}
+
+class VariableFilterWidget(Widget):
+    template_name = 'widgets/VariableFilterWidget.html'
+
+    class Media:
+        css = {'all': ("/static/css/jquery-ui.min.css", "/static/css/variable-filter-widget.css",)}
+        js = ("/static/js/jquery-ui.min.js", "/static/js/variable-filter-widget.js",)
+
+    def get_context(self, name, value, attrs=None):
+
+        CHOICES = [('public', 'Public'), ('private', 'Private')]
+        choice_field = forms.fields.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
+        queryset = self.choices.queryset
+        selected_permission = "public"
+        if value:
+            value = queryset.get(id=value)
+            selected_permission = value.dataset.permission_type
+        return {
+            'name': name,
+            'value': value,
+            'choices': queryset,
+            'permission_type': selected_permission,
+            "choice_field": choice_field.widget.render("variable_type", selected_permission)
+        }

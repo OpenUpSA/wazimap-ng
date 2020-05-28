@@ -62,7 +62,7 @@ class VariableInlinesChangeView(admin.StackedInline):
     def get_profile_highlights(self, obj):
         if obj.id:
             objects = [{
-                "name": variable.name,
+                "label": variable.label,
                 "link": get_edit_url(variable, "profile")
             } for variable in obj.profilehighlight_set.all()]
 

@@ -19,7 +19,6 @@ class ProfileHighlightAdmin(SortableAdminMixin, BaseAdminModel):
 
     list_display = (
         "profile", 
-        "name", 
         "label", 
         description("Indicator", lambda x: x.indicator.name), 
         "order", 
@@ -27,7 +26,7 @@ class ProfileHighlightAdmin(SortableAdminMixin, BaseAdminModel):
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            "fields": ("profile", "name", "indicator")
+            "fields": ("profile", "indicator")
         }),
         ("Profile fields", {
           "fields": ("label", "subindicator", "denominator")
@@ -35,9 +34,11 @@ class ProfileHighlightAdmin(SortableAdminMixin, BaseAdminModel):
     )
     form = ProfileHighlightForm
 
+    help_texts = ["denominator", ]
+
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
-            return ("profile", "name") + self.readonly_fields
+            return ("profile",) + self.readonly_fields
         return self.readonly_fields
 
     class Media:
