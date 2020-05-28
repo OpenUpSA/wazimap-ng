@@ -15,7 +15,8 @@ services:
     stop_grace_period: 10s
     container_name: wazimap-ng_db_1
   web:
-    image: adieyal/wazimap-ng:staging
+    build: .
+    command: scripts/django/web.sh
     depends_on:
      - db
     ports:
@@ -34,10 +35,24 @@ services:
       - AWS_S3_REGION_NAME
       - DATABASE_URL
       - DJANGO_CONFIGURATION
-      - RUN_QCLUSTER
-      - RUN_GUNICORN
-      - RUN_MIGRATIONS
-      - RUN_COLLECTSTATIC
-      - RUN_TESTS
+  queue:
+    build: .
+    command: scripts/django/django_q.sh
+    depends_on:
+     - db
+    env_file:
+      - ./config/django/django.env
+    volumes:
+      - ./:/app/
+      - ./scripts:/scripts/
+    container_name: wazimap-ng_queue_1
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - DJANGO_DEFAULT_FILE_STORAGE
+      - AWS_STORAGE_BUCKET_NAME
+      - AWS_S3_REGION_NAME
+      - DATABASE_URL
+      - DJANGO_CONFIGURATION
 volumes:
   wazimap-data:
