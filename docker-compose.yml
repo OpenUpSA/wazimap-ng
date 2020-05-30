@@ -16,7 +16,7 @@ services:
     container_name: wazimap-ng_db_1
   web:
     build: .
-    command: scripts/django/web.sh
+    command: /app/scripts/django/web.sh
     depends_on:
      - db
     ports:
@@ -26,7 +26,6 @@ services:
     volumes:
       - ./:/app/
       - ./scripts:/scripts/
-    container_name: wazimap-ng_web_1
     environment:
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
@@ -37,7 +36,7 @@ services:
       - DJANGO_CONFIGURATION
   queue:
     build: .
-    command: scripts/django/django_q.sh
+    command: /app/scripts/django/django_q.sh
     depends_on:
      - db
     env_file:
@@ -45,7 +44,6 @@ services:
     volumes:
       - ./:/app/
       - ./scripts:/scripts/
-    container_name: wazimap-ng_queue_1
     environment:
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY

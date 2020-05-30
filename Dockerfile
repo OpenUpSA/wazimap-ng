@@ -16,3 +16,4 @@ COPY ./nginx.conf.d/ /app/nginx.conf.d
 COPY ./ /app
 WORKDIR /app
 RUN rm -rf .git
+CMD ["tail", "-f", "/dev/null"]
