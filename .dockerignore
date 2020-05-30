@@ -1,0 +1,10 @@
+.git
+.cache
+.pyenv
+.pyenv/*
+.pytest_cache/
+.data
+.data/*
+media
+docker-compose.yml
+db.credentials
