@@ -34,6 +34,17 @@ def int_or_none(i):
 
     return int(i) 
 
+def sort_list_using_order(lst, order):
+    if len(lst) == 0:
+        return []
+
+    if order is None or len(order) == 0:
+        return lst
+
+    lookup = {o: idx for idx, o in enumerate(order)}
+    infinity = float("inf")
+    return sorted(lst, key=lambda x: lookup.get(x, infinity))
+
 def mergedict(a, b, path=None, concatenate_arrays=True, update=True):
     """
     Derived from: http://stackoverflow.com/questions/7204805/python-dictionaries-of-dictionaries-merge
