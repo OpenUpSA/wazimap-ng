@@ -13,5 +13,6 @@ class TestGroup:
 
 
     def test_str(self):
-        g = Group(name="Hello")
-        assert str(g) == "Hello"
+        d = Dataset(name="Test Dataset")
+        g = Group(name="Hello", dataset=d)
+        assert str(g) == f"Test Dataset|Hello"

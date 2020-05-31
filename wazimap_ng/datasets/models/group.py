@@ -9,7 +9,7 @@ class Group(models.Model):
     subindicators = JSONField(blank=True, default=list)
 
     def __str__(self):
-        return str(self.name)
+        return f"{self.dataset.name}|{self.name}"
 
     class Meta:
         verbose_name = "SubindicatorsGroup"
