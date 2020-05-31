@@ -1,7 +1,7 @@
 import uuid
 import pathlib
 import os
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict, defaultdict, Mapping
 import logging
 
 logger = logging.Logger(__name__)
@@ -453,7 +453,7 @@ def flatten_dict(d):
     used as a component of the pivot function
     
     """
-    if type(d) != dict:
+    if not isinstance(d, Mapping):
         return [[d]]
 
     arr = []
