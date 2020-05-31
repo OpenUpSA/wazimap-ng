@@ -13,4 +13,9 @@ class TestGroup:
         assert g.name == "Hello"
 
 
+    def test_str(self):
+        g = Group(name="Hello")
+        assert str(g) == "Hello"
+
+
 
