@@ -1,11 +1,15 @@
 from django import forms
 
 from ... import models
+from wazimap_ng.admin_utils import VariableFilterWidget
 
 class ProfileIndicatorAdminForm(forms.ModelForm):
     class Meta:
         model = models.ProfileIndicator
         fields = '__all__'
+        widgets = {
+            'indicator': VariableFilterWidget
+        }
 
     def clean_subindicators(self):
         if self.instance.pk:

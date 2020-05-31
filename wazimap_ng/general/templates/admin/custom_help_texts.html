@@ -1,0 +1,12 @@
+<ul>
+	{% if "absolute_value" in choices %}
+		<li>Absolute value: This method displays the exact value as provided in the data.</li>
+	{% endif %}
+	{% if "sibling" in choices %}
+		<li>Sibling: This method calculates the proportion of a subindicator in relation to its sibling geographies, e.g. 30% of all the women in the Western Cape live in Cape Town.</li>
+	{% endif %}
+
+	{% if "subindicator" in choices or "subindicators" in choices %}
+		<li>Subindicator: This method uses the proportion of a subindicator for the current geography, e.g. 45% of people in this geography are female.</li>
+	{% endif %}
+</ul>
