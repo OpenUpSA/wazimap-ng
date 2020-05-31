@@ -2,15 +2,27 @@ import os
 import sys
 from os.path import join
 from distutils.util import strtobool
+
+from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
 from configurations import Configuration
-from django.core.exceptions import ImproperlyConfigured
+import sentry_sdk
+
 from wazimap_ng.utils import truthy, int_or_none
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 os.environ["GDAL_DATA"] = "/usr/share/gdal/"
 
 class Common(Configuration):
+
+    if os.path.exists("VERSION"):
+        VERSION = open("VERSION").read().strip()
+    else:
+        VERSION = "Missing version"
+
+
+    sentry_sdk.init("https://aae3ed779891437d984db424db5c9dd0@o242378.ingest.sentry.io/5257787", release=VERSION)
 
 
     INSTALLED_APPS = [
