@@ -42,7 +42,7 @@ class GroupAdmin(DatasetBaseAdminModel):
         fields.JSONField: {"widget": SortableWidget},
     }
 
-    readonly_fields = ("dataset",)
+    readonly_fields = ("dataset", "name")
 
 
     fieldsets = (
