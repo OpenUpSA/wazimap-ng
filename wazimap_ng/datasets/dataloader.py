@@ -21,7 +21,7 @@ def create_groups(dataset, data, group_names):
     groups = []
     for g in group_names:
         subindicators = list(models.DatasetData.objects.get_unique_subindicators(g))
-        group = models.Group.objects.create(name=g, subindicators=subindicators)
+        group = models.Group.objects.create(name=g, dataset=dataset, subindicators=subindicators)
         groups.append(group)
     return groups
 

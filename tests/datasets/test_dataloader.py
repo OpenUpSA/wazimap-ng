@@ -133,9 +133,7 @@ class TestLoadData:
     datasetdata_objects = patch('wazimap_ng.datasets.models.DatasetData.objects', datasetdata)
 
 
-    groups = MockSet()
-    group_objects = patch("wazimap_ng.datasets.models.Group.objects", groups)
-
+class TestCreateGroups:
     @patch('wazimap_ng.datasets.models.Group.objects')
     @patch('wazimap_ng.datasets.models.DatasetData.objects')
     def test_create_groups(self, mock_datasetdata_objects, mock_objects, good_input_with_groups):
@@ -148,6 +146,8 @@ class TestLoadData:
         args2 = mock_objects.create.call_args_list[1][1]
         assert args1["name"] == "group1"
         assert args2["name"] == "group2"
+        assert args1["dataset"] == dataset
+        assert args2["dataset"] == dataset
 
     @patch("wazimap_ng.datasets.models.Group.objects")
     def test_returns_groups(self, mock_objects, good_input_with_groups):
