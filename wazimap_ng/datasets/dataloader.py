@@ -17,7 +17,7 @@ def load_geography(geo_code, version):
     geography = models.Geography.objects.get(code=geo_code, version=version)
     return geography
 
-def create_groups(dataset, data, group_names):
+def create_groups(dataset, group_names):
     groups = []
     for g in group_names:
         subindicators = list(models.DatasetData.objects.get_unique_subindicators(g))
@@ -65,6 +65,6 @@ def loaddata(dataset, iterable, row_number):
 
     group_list = sorted(g for g in groups if g.lower() not in ("count", "geography"))
 
-    create_groups(dataset, iterable, group_list)
+    create_groups(dataset, group_list)
 
     return [errors, warnings]

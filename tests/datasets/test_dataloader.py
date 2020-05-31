@@ -127,7 +127,7 @@ class TestLoadData:
         dataloader.loaddata(dataset, data, 0)
 
         assert create_groups.call_count == 1
-        create_groups.assert_called_with(dataset, data, ["group1", "group2"])
+        create_groups.assert_called_with(dataset, ["group1", "group2"])
 
     datasetdata = MockSet()
     datasetdata_objects = patch('wazimap_ng.datasets.models.DatasetData.objects', datasetdata)
@@ -136,10 +136,10 @@ class TestLoadData:
 class TestCreateGroups:
     @patch('wazimap_ng.datasets.models.Group.objects')
     @patch('wazimap_ng.datasets.models.DatasetData.objects')
-    def test_create_groups(self, mock_datasetdata_objects, mock_objects, good_input_with_groups):
+    def test_create_groups(self, mock_datasetdata_objects, mock_objects):
         dataset = Mock(spec=models.Dataset)
 
-        dataloader.create_groups(dataset, good_input_with_groups, ["group1", "group2"])
+        dataloader.create_groups(dataset, ["group1", "group2"])
 
         assert mock_objects.create.call_count == 2
         args1 = mock_objects.create.call_args_list[0][1]
@@ -150,24 +150,24 @@ class TestCreateGroups:
         assert args2["dataset"] == dataset
 
     @patch("wazimap_ng.datasets.models.Group.objects")
-    def test_returns_groups(self, mock_objects, good_input_with_groups):
+    def test_returns_groups(self, mock_objects):
         dataset = Mock(spec=models.Dataset)
 
         mock_objects.create.side_effect = lambda **kwargs: MockModel(**kwargs)
 
-        groups = dataloader.create_groups(dataset, good_input_with_groups, ["group1", "group2"])
+        groups = dataloader.create_groups(dataset, ["group1", "group2"])
         assert len(groups) == 2
         assert groups[0].name == "group1"
         assert groups[1].name == "group2"
 
     @patch("wazimap_ng.datasets.models.Group.objects")
     @patch("wazimap_ng.datasets.models.DatasetData.objects")
-    def test_populates_subindicators(self, mock_datasetdata_objects, mock_group_objects, good_input_with_groups):
+    def test_populates_subindicators(self, mock_datasetdata_objects, mock_group_objects):
         dataset = Mock(spec=models.Dataset)
 
         mock_group_objects.create.side_effect = lambda **kwargs: MockModel(**kwargs)
         mock_datasetdata_objects.get_unique_subindicators.side_effect = lambda group_name: {"group1": ["A", "B"], "group2": ["X"]}[group_name]
 
-        groups = dataloader.create_groups(dataset, good_input_with_groups, ["group1", "group2"])
+        groups = dataloader.create_groups(dataset, ["group1", "group2"])
         assert groups[0].subindicators == ["A", "B"]
         assert groups[1].subindicators == ["X"]
