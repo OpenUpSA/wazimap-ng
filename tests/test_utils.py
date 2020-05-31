@@ -29,3 +29,9 @@ def test_sort_using_order_with_missing_values():
     order = ["b", "a"]
     sorted_lst = sort_list_using_order(lst, order)
     assert sorted_lst == ["b", "a", "c"]
+
+def test_sort_using_order_with_custom_key():
+    lst = [(1, "a"), (2, "b"), (3, "c")]
+    order = ["b", "a", "c"]
+    sorted_lst = sort_list_using_order(lst, order, key_func=lambda x: x[1])
+    assert sorted_lst == [(2, "b"), (1, "a"), (3, "c")]

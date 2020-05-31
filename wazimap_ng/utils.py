@@ -34,7 +34,7 @@ def int_or_none(i):
 
     return int(i) 
 
-def sort_list_using_order(lst, order):
+def sort_list_using_order(lst, order, key_func=lambda x: x):
     if len(lst) == 0:
         return []
 
@@ -43,7 +43,7 @@ def sort_list_using_order(lst, order):
 
     lookup = {o: idx for idx, o in enumerate(order)}
     infinity = float("inf")
-    return sorted(lst, key=lambda x: lookup.get(x, infinity))
+    return sorted(lst, key=lambda x: lookup.get(key_func(x), infinity))
 
 def mergedict(a, b, path=None, concatenate_arrays=True, update=True):
     """
