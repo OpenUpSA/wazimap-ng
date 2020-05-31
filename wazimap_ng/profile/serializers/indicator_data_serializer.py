@@ -1,7 +1,8 @@
+from collections import OrderedDict
 from django.db.models import F
 
-from wazimap_ng.datasets.models import IndicatorData 
-from wazimap_ng.utils import qsdict, mergedict, expand_nested_list, pivot
+from wazimap_ng.datasets.models import IndicatorData, Group 
+from wazimap_ng.utils import qsdict, mergedict, expand_nested_list, pivot, sort_list_using_order
 
 from .. import models
 
@@ -15,10 +16,12 @@ def get_indicator_data(profile, geography):
             jsdata=F("data"),
             description=F("indicator__profileindicator__description"),
             indicator_name=F("indicator__name"),
+            indicator_group=F("indicator__groups"),
             profile_indicator_label=F("indicator__profileindicator__label"),
             subcategory=F("indicator__profileindicator__subcategory__name"),
             category=F("indicator__profileindicator__subcategory__category__name"),
             choropleth_method=F("indicator__profileindicator__choropleth_method__name"),
+            dataset=F("indicator__dataset"),
             metadata_source=F("indicator__dataset__metadata__source"),
             metadata_description=F("indicator__dataset__metadata__description"),
             licence_url=F("indicator__dataset__metadata__licence__url"),
@@ -37,10 +40,12 @@ def get_child_indicator_data(profile, geography):
             jsdata=F("data"),
             description=F("indicator__profileindicator__description"),
             indicator_name=F("indicator__name"),
+            indicator_group=F("indicator__groups"),
             profile_indicator_label=F("indicator__profileindicator__label"),
             subcategory=F("indicator__profileindicator__subcategory__name"),
             category=F("indicator__profileindicator__subcategory__category__name"),
             choropleth_method=F("indicator__profileindicator__choropleth_method__name"),
+            dataset=F("indicator__dataset"),
             metadata_source=F("indicator__dataset__metadata__source"),
             metadata_description=F("indicator__dataset__metadata__description"),
             licence_url=F("indicator__dataset__metadata__licence__url"),
@@ -59,6 +64,11 @@ def IndicatorDataSerializer(profile, geography):
     indicator_data = get_indicator_data(profile, geography)
     children_indicator_data = get_child_indicator_data(profile, geography)
     indicator_data2 = list(expand_nested_list(indicator_data, "jsdata"))
+
+    groups = Group.objects.filter(dataset__profile=profile).values("name", "dataset", "subindicators")
+    groups_lookup = {
+        (x["name"], x["dataset"]): x["subindicators"] for x in groups
+    }
 
     subcategories = (models.IndicatorSubcategory.objects.filter(category__profile=profile)
         .order_by("category__order", "order")
@@ -79,16 +89,59 @@ def IndicatorDataSerializer(profile, geography):
 
     def rearrange_group(group_dict):
         group_dict = dict(group_dict)
-        for subindicators_dict in group_dict.values():
-            for subindicator, value_array in subindicators_dict.items():
-                subindicators_dict[subindicator] = {}
+        for group_subindicators_dict in group_dict.values():
+            for subindicator, value_array in group_subindicators_dict.items():
+                group_subindicators_dict[subindicator] = {}
                 for value_dict in value_array:
                     count = value_dict.pop("count")
                     value = list(value_dict.values())[0]
-                    subindicators_dict[subindicator][value] = {
+                    group_subindicators_dict[subindicator][value] = {
                         "count": count
                     }
         return group_dict
+
+    def sort_group_subindicators(row, group_dict):
+        new_dict = {}
+        for group, group_subindicators_dict in group_dict.items():
+            key = (group, row["dataset"])
+            if key in groups_lookup:
+                key_func = lambda x: x[0]
+                subindicator_order = groups_lookup[key]
+                sorted_group_subindicators_list = sort_list_using_order(group_subindicators_dict.items(), subindicator_order, key_func=key_func)
+                sorted_group_subindicators_dict = OrderedDict(sorted_group_subindicators_list)
+            else:
+                sorted_group_subindicators_dict = group_subindicators_dict
+
+            new_dict[group] = sorted_group_subindicators_dict
+
+        return new_dict
+
+    def sort_indicator_subindicators(row, group_dict):
+        key = (row["indicator_group"][0], row["dataset"])
+        key_func = lambda x: x[0]
+
+        new_group_dict = {}
+        for group, group_subindicators_dict in group_dict.items():
+            new_group_subindicators_dict = {}
+            for group_subindicator, indicator_subindicators_dict in group_subindicators_dict.items():
+                if key in groups_lookup:
+                    subindicator_order = groups_lookup[key]
+                    items = indicator_subindicators_dict.items()
+                    sorted_tuples = sort_list_using_order(items, subindicator_order, key_func=key_func)
+                    sorted_indicator_subindicators_dict = OrderedDict(sorted_tuples)
+                else:
+                    sorted_indicator_subindicators_dict = indicator_subindicators_dict
+                new_group_subindicators_dict[group_subindicator] = sorted_indicator_subindicators_dict
+            new_group_dict[group] = new_group_subindicators_dict
+
+        return new_group_dict
+
+    def prepare_json(row):
+        json_data = rearrange_group(row["jsdata"]["groups"])
+        json_data = sort_group_subindicators(row, json_data)
+        json_data = sort_indicator_subindicators(row, json_data)
+
+        return json_data
 
 
     d_groups = qsdict(indicator_data,
@@ -98,7 +151,7 @@ def IndicatorDataSerializer(profile, geography):
         lambda x: "indicators",
         "profile_indicator_label",
         lambda x: "groups",
-        lambda x: rearrange_group(x["jsdata"]["groups"]),
+        lambda x: prepare_json(x)
     )
 
     d_groups2 = qsdict(children_indicator_data,
@@ -110,7 +163,7 @@ def IndicatorDataSerializer(profile, geography):
         lambda x: "groups",
         lambda x: "children",
         "geography_code",
-        lambda x: rearrange_group(x["jsdata"]["groups"]),
+        lambda x: prepare_json(x)
     )
     d_groups2 = pivot(d_groups2, [0, 1, 2, 3, 4, 5, 8, 9, 10, 6, 7])
 
