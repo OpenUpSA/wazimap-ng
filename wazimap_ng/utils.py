@@ -111,7 +111,7 @@ def qsdict(qs, *args):
                 break
             else:
                 if not value in current_dict:
-                    current_dict[value] = {}
+                    current_dict[value] = OrderedDict()
                 nested_dicts.append(current_dict[value])
         else:
             current_dict = nested_dicts[-1]
