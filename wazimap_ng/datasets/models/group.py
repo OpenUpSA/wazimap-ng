@@ -4,7 +4,7 @@ from django.contrib.postgres.fields import JSONField
 from .dataset import Dataset
 
 class Group(models.Model):
-    name = models.CharField(max_length=50, blank=False, null=False)
+    name = models.CharField(max_length=100, blank=False, null=False)
     dataset = models.ForeignKey(Dataset, null=True, on_delete=models.CASCADE)
     subindicators = JSONField(blank=True, default=list)
 
