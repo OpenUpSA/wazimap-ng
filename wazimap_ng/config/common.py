@@ -94,11 +94,6 @@ class Common(Configuration):
         ("Author", "adi@openup.org.za"),
     )
 
-    if os.path.exists("VERSION"):
-        VERSION = open("VERSION").read().strip()
-    else:
-        VERSION = "Missing version"
-
 
     # Postgres
     DATABASES = {
