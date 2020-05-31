@@ -7,3 +7,4 @@ from .universe import Universe
 from .metadata import MetaData
 from .licence import Licence
 from .upload import DatasetFile
+from .group import Group
