@@ -1,9 +1,4 @@
-from unittest.mock import patch
-from unittest.mock import Mock
-
 from wazimap_ng.datasets.models import Indicator, Dataset, DatasetData, Group
-# import pytest.mark.django_db
-import pytest
 
 
 class TestGroup:
@@ -16,6 +11,3 @@ class TestGroup:
     def test_str(self):
         g = Group(name="Hello")
         assert str(g) == "Hello"
-
-
-

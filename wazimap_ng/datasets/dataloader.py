@@ -1,11 +1,14 @@
 import math
 import functools
+import logging
 
 import numpy
 
 from django.db import transaction
 
 from . import models
+
+logger = logging.Logger(__name__)
 
 # TODO should add a memoize decorator here
 @functools.lru_cache()
@@ -17,7 +20,7 @@ def load_geography(geo_code, version):
 def create_groups(dataset, data, group_names):
     groups = []
     for g in group_names:
-        subindicators = models.DatasetData.objects.get_unique_subindicators(g)
+        subindicators = list(models.DatasetData.objects.get_unique_subindicators(g))
         group = models.Group.objects.create(name=g, subindicators=subindicators)
         groups.append(group)
     return groups
