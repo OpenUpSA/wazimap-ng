@@ -51,10 +51,7 @@ class CustomQuerySet(models.QuerySet):
 		return self.filter(dataset__in=datasets)
 
 	def get_datasets_dataset_queryset(self, user):
-		profiles = permissions.get_objects_for_user(user, Profile)
-		return permissions.get_objects_for_user(
-			user, Dataset, queryset=Dataset.objects.filter(profile__in=profiles)
-		)
+		return permissions.get_custom_queryset(Dataset, user)
 
 	def get_datasets_indicatordata_queryset(self, user):
 		indicators = permissions.get_custom_queryset(Indicator, user)
