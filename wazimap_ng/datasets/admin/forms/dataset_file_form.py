@@ -26,4 +26,4 @@ class DatasetFileForm(forms.ModelForm):
                 hp = hierarchy.profile_set.all()
                 if hp.count() == 1 and hp.first() == profile:
                     self.fields["geography_hierarchy"].initial = hierarchy
-                    self.fields["geography_hierarchy"].widget.attrs['disabled'] = True
+                    # self.fields["geography_hierarchy"].widget.attrs['disabled'] = True
