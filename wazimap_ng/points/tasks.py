@@ -23,7 +23,7 @@ class CustomDataParsingException(Exception):
     pass
 
 @transaction.atomic
-def process_uploaded_file(point_file, profile, theme, **kwargs):
+def process_uploaded_file(point_file, subtheme, **kwargs):
     """
     Run this Task after saving new document via admin panel.
 
@@ -36,12 +36,6 @@ def process_uploaded_file(point_file, profile, theme, **kwargs):
     columns = None
     row_number = 1
     error_logs = []
-    subtheme = models.Category.objects.create(
-        name=point_file.name,
-        profile=profile,
-        theme=theme, permission_type="private"
-    )
-    assign_perms_to_group(subtheme.profile.name, subtheme)
 
     df = pd.read_csv(file_path, nrows=1, dtype=str, sep=",")
     df.dropna(how='all', axis='columns', inplace=True)

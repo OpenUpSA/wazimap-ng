@@ -76,6 +76,7 @@ class CoordinateFile(models.Model):
     )
     task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
     name = models.CharField(max_length=50)
+    collection_id = models.PositiveSmallIntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.name
