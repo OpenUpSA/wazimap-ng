@@ -1,3 +1,1 @@
-from .variable_inlines_add import VariableInlinesAddView
-from .variable_inlines_change import VariableInlinesChangeView
 from .metadata_inline_view import MetaDataInline

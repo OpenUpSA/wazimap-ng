@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def process_uploaded_file(dataset_file, profile, geography_hierarchy, **kwargs):
+def process_uploaded_file(dataset_file, dataset, **kwargs):
     """
     Run this Task after saving new document via admin panel.
 
@@ -32,13 +32,6 @@ def process_uploaded_file(dataset_file, profile, geography_hierarchy, **kwargs):
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
 
     columns = None
-    dataset = models.Dataset.objects.create(
-        name=dataset_file.name,
-        profile=profile,
-        geography_hierarchy=geography_hierarchy
-    )
-    assign_perms_to_group(dataset.profile.name, dataset)
-
     error_logs = []
     warning_logs = []
     row_number = 1
@@ -79,7 +72,8 @@ def process_uploaded_file(dataset_file, profile, geography_hierarchy, **kwargs):
             i_chunk += 1
 
     groups = [group for group in columns.to_list() if group not in ["geography", "count"]]
-    dataset.groups = groups
+
+    dataset.groups =  list(set(groups + dataset.groups))
     dataset.save()
 
     if error_logs:
