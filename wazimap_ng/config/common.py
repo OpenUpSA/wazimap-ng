@@ -22,9 +22,6 @@ class Common(Configuration):
         VERSION = "Missing version"
 
 
-    sentry_sdk.init("https://aae3ed779891437d984db424db5c9dd0@o242378.ingest.sentry.io/5257787", release=VERSION)
-
-
     INSTALLED_APPS = [
         "django.contrib.admin",
         "django.contrib.auth",
@@ -249,6 +246,11 @@ class Common(Configuration):
             },
         }
     }
+
+    SENTRY_DSN = os.environ.get("SENTRY_DSN", None)
+    if SENTRY_DSN:
+        sentry_sdk.init(SENTRY_DSN, release=VERSION)
+
 
     # Django Rest Framework
     REST_FRAMEWORK = {
