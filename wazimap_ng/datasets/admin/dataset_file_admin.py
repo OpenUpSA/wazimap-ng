@@ -6,8 +6,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
-from django_q.tasks import async_task
-from .. import hooks
+
 
 @admin.register(models.DatasetFile)
 class DatasetFileAdmin(BaseAdminModel):
