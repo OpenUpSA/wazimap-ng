@@ -21,8 +21,3 @@ def get_task_list(session):
     if not task_list:
         return []
     return task_list
-
-
-@register.filter(name='get_all')
-def get_all(session):
-    return session.session_key
