@@ -59,7 +59,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
         if obj:
             dataset_file_links = [
                 get_url(file_obj) for file_obj in models.DatasetFile.objects.filter(
-                    dataset_id=obj.id
+                    dataset_id=obj.id, dataset_id__isnull=False
                 )
             ]
             if dataset_file_links:
