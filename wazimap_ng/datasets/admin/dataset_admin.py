@@ -26,8 +26,8 @@ class DatasetAdmin(DatasetBaseAdminModel):
     exclude = ("groups", )
     inlines = (MetaDataInline, VariableInlinesAddView,)
     actions = (set_to_public, set_to_private, delete_selected_data,)
-    list_display = ("name", "permission_type", "geography_hierarchy")
-    list_filter = ("permission_type", "geography_hierarchy")
+    list_display = ("name", "permission_type", "geography_hierarchy", "profile")
+    list_filter = ("permission_type", "geography_hierarchy", "profile")
     form = DatasetAdminForm
 
     def get_related_fields_data(self, obj):
