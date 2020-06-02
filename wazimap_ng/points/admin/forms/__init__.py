@@ -1,2 +1,1 @@
-from .coordinate_file_form import CoordinateFileForm
 from .category_admin_form import CategoryAdminForm

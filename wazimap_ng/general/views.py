@@ -1,5 +1,8 @@
 from django.views.decorators.http import condition
+from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import user_passes_test
+from django.http import JsonResponse
 
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -56,3 +59,23 @@ from django.contrib.auth import logout
 def logout_view(request):
     logout(request)
     return redirect("version")
+
+
+def authenticate_admin(user):
+    return user.is_staff or user.is_superuser
+
+@user_passes_test(authenticate_admin)
+@never_cache
+def notifications_view(request):
+    messages = request.session.pop("notifications", [])
+    task_list = request.session.get("task_list", [])
+    
+    if messages and task_list:
+        for message in messages:
+            if "task_id" in message:
+                task_list.remove(message["task_id"])
+        request.session["task_list"] = task_list
+    return JsonResponse({
+        "task_list": task_list,
+        "notifications": messages,
+    })

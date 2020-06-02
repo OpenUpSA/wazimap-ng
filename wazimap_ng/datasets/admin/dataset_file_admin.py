@@ -6,18 +6,12 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
-from django_q.tasks import async_task
-from .. import hooks
-from .forms import DatasetFileForm
+
 
 @admin.register(models.DatasetFile)
 class DatasetFileAdmin(BaseAdminModel):
-    form = DatasetFileForm
-    fieldsets = [
-        (None, { 'fields': ("profile", "geography_hierarchy",'name', 'document') } ),
-    ]
-
-    change_fieldsets = (
+    
+    fieldsets = (
         ("Uploaded Dataset", {
             "fields": ("name", "document",)
         }),
@@ -29,16 +23,10 @@ class DatasetFileAdmin(BaseAdminModel):
         }),
     )
 
-    change_view_readonly_fields = (
+    readonly_fields = (
        "name", "document", "get_status", "get_task_link",
        "get_warnings", "get_errors",
     )
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return self.change_view_readonly_fields
-        return self.readonly_fields
-
 
     def get_status(self, obj):
         if obj.id and obj.task:
@@ -91,30 +79,12 @@ class DatasetFileAdmin(BaseAdminModel):
 
     get_errors.short_description = 'Errors'
 
+    def has_add_permission(self, request):
+        return False
 
-    def get_fieldsets(self, request, obj):
-        fields = super().get_fieldsets(request, obj)
-        if obj:
-            fields = self.change_fieldsets
-        return fields
+    def has_delete_permission(self, request, obj=None):
+        return False
 
-    def save_model(self, request, obj, form, change):
-        is_created = obj.pk == None and change == False
-        super().save_model(request, obj, form, change)
-        if is_created:
-            profile = form.cleaned_data.get('profile')
-            geography_hierarchy = form.cleaned_data.get('geography_hierarchy')
-            async_task(
-                "wazimap_ng.datasets.tasks.process_uploaded_file",
-                obj, profile, geography_hierarchy, task_name=f"Uploading data: {obj.name}",
-                hook="wazimap_ng.datasets.hooks.process_task_info",
-                key=request.session.session_key,
-                type="upload", assign=True, notify=True
-            )
-            hooks.custom_admin_notification(
-                request.session,
-                "info",
-                "Data upload for %s started. We will let you know when process is done." % (
-                    obj.name
-                )
-            )
+    def has_change_permission(self, request, obj=None):
+        return False
+
