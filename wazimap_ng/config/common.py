@@ -6,7 +6,6 @@ from distutils.util import strtobool
 from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
 from configurations import Configuration
-import sentry_sdk
 
 from wazimap_ng.utils import truthy, int_or_none
 
@@ -20,9 +19,6 @@ class Common(Configuration):
         VERSION = open("VERSION").read().strip()
     else:
         VERSION = "Missing version"
-
-
-    sentry_sdk.init("https://aae3ed779891437d984db424db5c9dd0@o242378.ingest.sentry.io/5257787", release=VERSION)
 
 
     INSTALLED_APPS = [

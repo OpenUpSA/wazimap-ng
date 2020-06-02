@@ -22,6 +22,9 @@ from wazimap_ng.general.views import logout_view
 def version(*args, **kwargs):
     return Response(settings.VERSION)
 
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
 urlpatterns = [
 
     path("admin/", admin.site.urls),
@@ -124,6 +127,7 @@ urlpatterns = [
         version,
         name="version",
     ),
+    path('sentry-debug/', trigger_error),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
