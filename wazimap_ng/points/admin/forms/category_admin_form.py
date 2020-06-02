@@ -9,6 +9,7 @@ class CategoryAdminForm(forms.ModelForm):
     source = forms.CharField(widget=forms.TextInput(attrs={'class': 'vTextField'}), required=False)
     description = forms.CharField(widget=forms.Textarea(attrs={'class': 'vLargeTextField'}), required=False)
     licence = forms.ModelChoiceField(queryset=Licence.objects.all(), required=False)
+    import_collection = forms.FileField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

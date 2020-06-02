@@ -1,2 +1,1 @@
-from .dataset_file_form import DatasetFileForm
 from .dataset_admin_form import DatasetAdminForm

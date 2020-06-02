@@ -95,9 +95,9 @@ def process_task_info(task):
             message = notify.get_nofitification_details(notification_type, obj, task_type, results)
 
         # Add message to user
-        notify_user(notification_type, session_key, message)
+        notify_user(notification_type, session_key, message, task.id)
 
-def notify_user(notification_type, session_key, message):
+def notify_user(notification_type, session_key, message, task_id=None):
     """
     Call back function after the task has been executed.
     This function gets passed the complete Task object as its argument.
@@ -109,12 +109,12 @@ def notify_user(notification_type, session_key, message):
 
     if session:
         decoded_session = custom_admin_notification(
-            session.get_decoded(), notification_type, message
+            session.get_decoded(), notification_type, message, task_id
         )
         session.session_data = Session.objects.encode(decoded_session)
         session.save()
 
-def custom_admin_notification(session, notification_type, message):
+def custom_admin_notification(session, notification_type, message, task_id=None):
     """
     Function for implementing custom admin notifications.
     notifications are stored in session and show to user when user refreshes page.
@@ -132,9 +132,19 @@ def custom_admin_notification(session, notification_type, message):
     notification = {"type": notification_type, "message": message}
     messages = []
 
+    if task_id:
+        notification["task_id"] = task_id
+
     if "notifications" in session:
         messages = session['notifications']
     messages.append(notification)
     session['notifications'] = messages
-
     return session
+
+def add_to_task_list(session, task):
+    """
+    Add task id to session task_list
+    """
+    task_list = session.get("task_list", [])
+    task_list.append(task)
+    session["task_list"] = task_list

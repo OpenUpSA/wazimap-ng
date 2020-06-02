@@ -90,7 +90,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
         super().save_model(request, obj, form, change)
         
         if run_task:
-            async_task(
+            task = async_task(
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",
                 obj,
                 task_name=f"Data Extraction: {obj.name}",
@@ -98,6 +98,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
                 key=request.session.session_key,
                 type="data_extraction", assign=False, notify=True
             )
+            hooks.add_to_task_list(request.session, task)
             hooks.custom_admin_notification(
                 request.session,
                 "info",

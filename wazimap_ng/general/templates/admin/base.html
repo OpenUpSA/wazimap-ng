@@ -8,22 +8,44 @@
     <script type="text/javascript">
 
     	var notifications = {{ request.session |get_notifications|safe }};
+    	if(notifications){
+    		notify(notifications);
+    	}
 
-    	toastr.options = {
-		  "closeButton": true,
-		  "newestOnTop": true,
-		  "progressBar": true,
-		  "positionClass": "toast-top-right",
-		  "preventDuplicates": false,
-		  "timeOut": 0,
-		  "extendedTimeOut": 0
-		}
+    	var task_in_progress = {{ request.session |get_task_list|safe }};
+    	setInterval(function(){
+    		if (task_in_progress.length){
+    			$.ajax({
+	                url: "{% url 'notifications' %}",
+	                success: function(data) {
+	                    let notifications = data.notifications;
+	                    if(notifications.length){
+	                    	notify(notifications);
+	                    }
+	                    task_in_progress = data.task_list;
+	                }
+	            })
+			}
+		}, 10000)
+			
 
-		$(document).ready(function($) {
-			$.each(notifications, function(index, notification){
-				toastr[notification.type](notification.message);
-			});
-		} );
+	    function notify(notifications){
+	    	toastr.options = {
+			  "closeButton": true,
+			  "newestOnTop": true,
+			  "progressBar": true,
+			  "positionClass": "toast-top-right",
+			  "preventDuplicates": false,
+			  "timeOut": 0,
+			  "extendedTimeOut": 0
+			}
+
+			$(document).ready(function($) {
+				$.each(notifications, function(index, notification){
+					toastr[notification.type](notification.message);
+				});
+			} );
+	    }
     </script>
 
     <style type="text/css">

@@ -6,7 +6,6 @@ from distutils.util import strtobool
 from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
 from configurations import Configuration
-import sentry_sdk
 
 from wazimap_ng.utils import truthy, int_or_none
 
