@@ -6,6 +6,8 @@ from distutils.util import strtobool
 from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
 from configurations import Configuration
+from sentry_sdk.integrations.django import DjangoIntegration
+import sentry_sdk
 
 from wazimap_ng.utils import truthy, int_or_none
 
@@ -19,6 +21,17 @@ class Common(Configuration):
         VERSION = open("VERSION").read().strip()
     else:
         VERSION = "Missing version"
+
+    SERVER_INSTANCE = values.Value("SERVER_INSTANCE")
+    RELEASE = f"{SERVER_INSTANCE}@{VERSION}"
+    SENTRY_DSN = os.environ.get("SENTRY_DSN", None)
+
+    if SENTRY_DSN:
+        sentry_sdk.init(SENTRY_DSN
+            integrations=[DjangoIntegration()],
+            send_default_pii=True,
+            release=RELEASE
+        )
 
 
     INSTALLED_APPS = [
@@ -245,10 +258,6 @@ class Common(Configuration):
             },
         }
     }
-
-    SENTRY_DSN = os.environ.get("SENTRY_DSN", None)
-    if SENTRY_DSN:
-        sentry_sdk.init(SENTRY_DSN, release=VERSION)
 
 
     # Django Rest Framework
