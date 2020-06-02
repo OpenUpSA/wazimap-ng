@@ -22,12 +22,12 @@ class Common(Configuration):
     else:
         VERSION = "Missing version"
 
-    SERVER_INSTANCE = values.Value("SERVER_INSTANCE")
+    SERVER_INSTANCE = os.environ.get("SERVER_INSTANCE", "Dev")
     RELEASE = f"{SERVER_INSTANCE}@{VERSION}"
     SENTRY_DSN = os.environ.get("SENTRY_DSN", None)
 
     if SENTRY_DSN:
-        sentry_sdk.init(SENTRY_DSN
+        sentry_sdk.init(SENTRY_DSN,
             integrations=[DjangoIntegration()],
             send_default_pii=True,
             release=RELEASE
