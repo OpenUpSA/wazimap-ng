@@ -19,10 +19,10 @@ from .. import models
 class GeographyAdmin(TreeAdmin):
     form = movenodeform_factory(models.Geography)
     list_display = (
-        "name", "code", "level"
+        "name", "code", "level", "version"
     )
 
-    list_filter = ("level",)
+    list_filter = ("level", "version")
 
 
 @admin.register(models.Universe)
