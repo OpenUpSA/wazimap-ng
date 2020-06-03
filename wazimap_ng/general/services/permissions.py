@@ -45,7 +45,6 @@ def has_permission(user, obj, permission):
     method_name = f"user_has_perm_for_{app_label}_{model_name}"
 
     if is_method(custom_permissions, method_name):
-        print("IN HERE __>>>")
         return getattr(custom_permissions, method_name)(user, obj, permission)
 
     permission = permission_name(obj._meta, permission)
