@@ -5,7 +5,7 @@ from adminsortable2.admin import SortableAdminMixin
 from ... import models
 from ..forms import ProfileIndicatorAdminForm
 
-from wazimap_ng.admin_utils import customTitledFilter, description, SortableWidget
+from wazimap_ng.general.widgets import customTitledFilter, description, SortableWidget
 from wazimap_ng.datasets.models import Indicator, Dataset
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 
