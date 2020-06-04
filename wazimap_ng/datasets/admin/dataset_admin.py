@@ -80,9 +80,12 @@ class DatasetAdmin(DatasetBaseAdminModel):
 
     def save_model(self, request, obj, form, change):
         is_new = obj.pk == None and change == False
+        is_profile_updated = change and "profile" in form.changed_data
+
         super().save_model(request, obj, form, change)
-        if is_new or obj.permission_type == "private":
-            assign_perms_to_group(obj.profile.name, obj)
+
+        if is_new or is_profile_updated:
+            assign_perms_to_group(obj.profile.name, obj, is_profile_updated)
 
         dataset_import_file = form.cleaned_data.get("import_dataset", None)
 

@@ -2,8 +2,9 @@ from django.contrib.auth import get_permission_codename
 from django.contrib.auth.models import Group
 
 from guardian.shortcuts import (
-    get_perms_for_model, assign_perm,
-    get_objects_for_user as guardian_objects_for_user
+    get_perms_for_model, assign_perm, remove_perm,
+    get_objects_for_user as guardian_objects_for_user,
+    get_groups_with_perms
 )
 
 from .custom_permissions import fk_queryset_filter, custom_permissions
@@ -17,11 +18,18 @@ def get_user_group(user):
         name__in=STAFF_GROUPS
     ).first()
 
-def assign_perms_to_group(profile_name, obj):
+def assign_perms_to_group(
+    profile_name, obj, remove_previous_perms=False
+):
     group, created = Group.objects.get_or_create(
-        name=profile_name.lower()
+        name=profile_name
     )
+    old_groups = get_groups_with_perms(obj)
+
     for perm in get_perms_for_model(obj._meta.model):
+        if remove_previous_perms:
+            for old_group in old_groups:
+                remove_perm(perm, old_group, obj)
         assign_perm(perm, group, obj)
 
 def permission_name(opts, name):
