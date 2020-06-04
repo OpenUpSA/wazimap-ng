@@ -4,7 +4,6 @@ django.jQuery(document).ready(function($) {
             loadGroups();
             loadUniverse();
         });
-        $("#id_groups" ).on('change', loadUniverse);
         $("input[name='_addanother']").attr('type','hidden');
     });
 
