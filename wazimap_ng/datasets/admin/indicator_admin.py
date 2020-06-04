@@ -123,7 +123,10 @@ class IndicatorAdmin(DatasetBaseAdminModel):
                 condition = reduce(
                     operator.or_, [Q(as_string__icontains=group) for group in groups]
                 )
+                # form.universe_queryset = models.Universe.objects.annotate(
+                #     as_string=Cast('filters', CharField())
+                # ).filter(condition)
                 form.universe_queryset = models.Universe.objects.annotate(
                     as_string=Cast('filters', CharField())
-                ).filter(condition)
+                )
         return form
