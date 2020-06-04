@@ -26,5 +26,5 @@ class Migration(migrations.Migration):
     operations = [
         # Disabled migrations due to error
         # Added a fix in : 0040_auto_20200603_0628
-        migrations.RunPython(create_groups_for_profiles),
+        # migrations.RunPython(create_groups_for_profiles),
     ]
