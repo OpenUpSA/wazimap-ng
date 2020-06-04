@@ -21,19 +21,121 @@ def create_groups_for_profiles(apps, schema_editor):
         group = Group.objects.filter(name=profile.name.lower()).first()
 
         if not group:
-            group = Group.objects.create(name=profile.name)
+            group, created = Group.objects.get_or_create(name=profile.name)
         else:
             group.name = profile.name
             group.save()
 
         for perm in profile_perms:
-
             obj_permission_model.objects.get_or_create(
                 content_type=profile_content_type,
                 object_pk=profile.id,
                 permission=perm,
                 group=group
             )
+
+
+def create_permissions_for_datasets(apps, schema_editor):
+    Dataset = apps.get_model("datasets", "Dataset")
+    Group = apps.get_model('auth', 'Group')
+    Permission = apps.get_model('auth', 'Permission')
+    obj_permission_model = apps.get_model("guardian", "GroupObjectPermission")
+    ContentType = apps.get_model('contenttypes', 'ContentType')
+    dataset_content_type = ContentType.objects.get_for_model(Dataset)
+
+    dataset_perms = Permission.objects.filter(
+        content_type__app_label='datasets',
+        content_type__model='dataset'
+    )
+
+    for dataset in Dataset.objects.all():
+        profile = dataset.profile
+        group = Group.objects.get(name=profile.name)
+        
+        for perm in dataset_perms:
+            # Remove all permissions for dataset object
+            obj_permission_model.objects.filter(
+                content_type=dataset_content_type,
+                object_pk=dataset.id,
+                permission=perm,
+            ).delete()
+
+            # create permission for dataset objects
+            obj_permission_model.objects.create(
+                content_type=dataset_content_type,
+                object_pk=dataset.id,
+                permission=perm,
+                group=group
+            )
+
+
+def create_permissions_for_collection(apps, schema_editor):
+    Category = apps.get_model("points", "Category")
+    Group = apps.get_model('auth', 'Group')
+    Permission = apps.get_model('auth', 'Permission')
+    obj_permission_model = apps.get_model("guardian", "GroupObjectPermission")
+    ContentType = apps.get_model('contenttypes', 'ContentType')
+    category_content_type = ContentType.objects.get_for_model(Category)
+
+    category_perms = Permission.objects.filter(
+        content_type__app_label='points',
+        content_type__model='category'
+    )
+
+    for category in Category.objects.all():
+        profile = category.profile
+        group = Group.objects.get(name=profile.name)
+        
+        for perm in category_perms:
+            # Remove all permissions for dataset object
+            obj_permission_model.objects.filter(
+                content_type=category_content_type,
+                object_pk=category.id,
+                permission=perm,
+            ).delete()
+
+            # create permission for dataset objects
+            obj_permission_model.objects.create(
+                content_type=category_content_type,
+                object_pk=category.id,
+                permission=perm,
+                group=group
+            )
+
+
+def create_permissions_for_profile_collection(apps, schema_editor):
+    ProfileCategory = apps.get_model("points", "ProfileCategory")
+    Group = apps.get_model('auth', 'Group')
+    Permission = apps.get_model('auth', 'Permission')
+    obj_permission_model = apps.get_model("guardian", "GroupObjectPermission")
+    ContentType = apps.get_model('contenttypes', 'ContentType')
+    category_content_type = ContentType.objects.get_for_model(ProfileCategory)
+
+    profile_category_perms = Permission.objects.filter(
+        content_type__app_label='points',
+        content_type__model='profilecategory'
+    )
+
+    for category in ProfileCategory.objects.all():
+        profile = category.profile
+        group = Group.objects.get(name=profile.name)
+        
+        for perm in profile_category_perms:
+            # Remove all permissions for dataset object
+            obj_permission_model.objects.filter(
+                content_type=category_content_type,
+                object_pk=category.id,
+                permission=perm,
+            ).delete()
+
+            # create permission for dataset objects
+            obj_permission_model.objects.create(
+                content_type=category_content_type,
+                object_pk=category.id,
+                permission=perm,
+                group=group
+            )
+
 
 class Migration(migrations.Migration):
 
@@ -43,4 +145,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(create_groups_for_profiles),
+        migrations.RunPython(create_permissions_for_datasets),
+        migrations.RunPython(create_permissions_for_collection),
+        migrations.RunPython(create_permissions_for_profile_collection),
     ]
