@@ -101,7 +101,7 @@ def create_permissions_for_collection(apps, schema_editor):
         if profile is None:
             logger.warn(f"Category: {category.id} does not have a profile - skipping")
             continue
-        group, _ = Group.objects.get_or_create(name=profile.name)
+        group, _ = Group.objects.get_or_create(name=profile.name.lower())
         
         for perm in category_perms:
             # Remove all permissions for dataset object
@@ -135,7 +135,7 @@ def create_permissions_for_profile_collection(apps, schema_editor):
 
     for category in ProfileCategory.objects.all():
         profile = category.profile
-        group, _ = Group.objects.get_or_create(name=profile.name)
+        group, _ = Group.objects.get_or_create(name=profile.name.lower())
         
         for perm in profile_category_perms:
             # Remove all permissions for dataset object
