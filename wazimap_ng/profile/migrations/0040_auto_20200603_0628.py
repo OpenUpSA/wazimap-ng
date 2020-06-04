@@ -26,7 +26,7 @@ def create_groups_for_profiles(apps, schema_editor):
         if not group:
             group, created = Group.objects.get_or_create(name=profile.name)
         else:
-            group.name = profile.name
+            group.name = profile.name.lower()
             group.save()
 
         for perm in profile_perms:
