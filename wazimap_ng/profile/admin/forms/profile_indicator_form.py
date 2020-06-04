@@ -1,7 +1,7 @@
 from django import forms
 
 from ... import models
-from wazimap_ng.admin_utils import VariableFilterWidget
+from wazimap_ng.general.widgets import VariableFilterWidget
 
 class ProfileIndicatorAdminForm(forms.ModelForm):
     class Meta:

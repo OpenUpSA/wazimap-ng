@@ -3,7 +3,7 @@ from adminsortable2.admin import SortableAdminMixin
 
 from ... import models
 from ..forms import ProfileKeyMetricsForm
-from wazimap_ng.admin_utils import customTitledFilter, description
+from wazimap_ng.general.widgets import customTitledFilter, description
 from wazimap_ng.datasets.models import Indicator, Dataset
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 
