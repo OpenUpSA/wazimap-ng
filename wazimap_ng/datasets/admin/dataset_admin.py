@@ -12,6 +12,7 @@ from .. import models
 from .. import hooks
 from .views import MetaDataInline
 from .forms import DatasetAdminForm
+from wazimap_ng.general.widgets import description
 
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 
@@ -21,13 +22,18 @@ def set_to_public(modeladmin, request, queryset):
 def set_to_private(modeladmin, request, queryset):
     queryset.make_private()
 
+def get_source(dataset):
+    if hasattr(dataset, "metadata"):
+        return dataset.metadata.source
+    return None 
+
 @admin.register(models.Dataset)
 class DatasetAdmin(DatasetBaseAdminModel):
     exclude = ("groups", )
     inlines = (MetaDataInline,)
     actions = (set_to_public, set_to_private, delete_selected_data,)
-    list_display = ("name", "permission_type", "geography_hierarchy", "profile")
-    list_filter = ("permission_type", "geography_hierarchy", "profile")
+    list_display = ("name", "permission_type", "geography_hierarchy", "profile", description("source", get_source))
+    list_filter = ("permission_type", "geography_hierarchy", "profile", "metadata__source")
     form = DatasetAdminForm
 
     fieldsets = (
