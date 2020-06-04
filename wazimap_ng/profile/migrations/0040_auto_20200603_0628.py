@@ -135,7 +135,7 @@ def create_permissions_for_profile_collection(apps, schema_editor):
 
     for category in ProfileCategory.objects.all():
         profile = category.profile
-        group = Group.objects.get(name=profile.name)
+        group, _ = Group.objects.get_or_create(name=profile.name)
         
         for perm in profile_category_perms:
             # Remove all permissions for dataset object
