@@ -1,18 +1,8 @@
 import os
 from .common import Common
 from configurations import Configuration, values
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
 
 class Production(Common):
-    SERVER_INSTANCE = values.Value("SERVER_INSTANCE")
-    RELEASE = f"{SERVER_INSTANCE}@{Common.VERSION}"
-    sentry_sdk.init(
-        dsn="https://aae3ed779891437d984db424db5c9dd0@o242378.ingest.sentry.io/5257787",
-        integrations=[DjangoIntegration()],
-        send_default_pii=True,
-        release=RELEASE
-    )
 
     INSTALLED_APPS = Common.INSTALLED_APPS
     SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')

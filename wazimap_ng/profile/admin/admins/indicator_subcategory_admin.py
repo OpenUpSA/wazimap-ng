@@ -1,7 +1,7 @@
 from django.contrib.gis import admin
 from adminsortable2.admin import SortableAdminMixin
 
-from wazimap_ng.admin_utils import customTitledFilter, description
+from wazimap_ng.general.widgets import customTitledFilter, description
 
 from ... import models
 from wazimap_ng.general.admin.admin_base import BaseAdminModel

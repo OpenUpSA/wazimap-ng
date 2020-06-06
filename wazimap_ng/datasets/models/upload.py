@@ -43,6 +43,7 @@ class DatasetFile(models.Model):
     )
     task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
     name = name = models.CharField(max_length=60)
+    dataset_id = models.PositiveSmallIntegerField(null=True, blank=True)
 
 
     def __str__(self):

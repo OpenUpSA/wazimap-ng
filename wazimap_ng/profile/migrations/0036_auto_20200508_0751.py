@@ -13,7 +13,7 @@ def create_groups_for_profiles(apps, schema_editor):
     	group, created = Group.objects.get_or_create(name=profile.name.lower())
 
     	if created:
-    		for perm in get_perms_for_model(models.Profile):
+    		for perm in get_perms_for_model(Profile):
     			assign_perm(perm, group, profile)
 
 
@@ -24,5 +24,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-    	migrations.RunPython(create_groups_for_profiles),
+        # Disabled migrations due to error
+        # Added a fix in : 0040_auto_20200603_0628
+        # migrations.RunPython(create_groups_for_profiles),
     ]

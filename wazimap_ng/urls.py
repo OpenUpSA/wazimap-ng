@@ -16,7 +16,7 @@ from .boundaries import views as boundaries_views
 from .general import views as general_views
 from .cache import cache_headers as cache
 
-from wazimap_ng.general.views import logout_view
+from wazimap_ng.general.views import logout_view, notifications_view
 
 @api_view()
 def version(*args, **kwargs):
@@ -27,7 +27,11 @@ def trigger_error(request):
 
 urlpatterns = [
 
+    # Admin
     path("admin/", admin.site.urls),
+    path("admin/notifications", notifications_view, name="notifications"),
+
+    # Api
     path("api/v1/rest-auth/", include("rest_auth.urls")),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view(), name="dataset"),
     path(

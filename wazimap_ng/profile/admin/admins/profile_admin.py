@@ -11,6 +11,6 @@ class ProfileAdmin(BaseAdminModel):
     def save_model(self, request, obj, form, change):
         is_new = obj.pk == None and change == False
         super().save_model(request, obj, form, change)
-        if is_new or obj.permission_type == "private":
+        if is_new:
             assign_perms_to_group(obj.name, obj)
         return obj

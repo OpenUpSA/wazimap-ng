@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.postgres import fields
 from adminsortable2.admin import SortableAdminMixin
 
-from wazimap_ng.admin_utils import customTitledFilter, description, SortableWidget
+from wazimap_ng.general.widgets import customTitledFilter, description, SortableWidget
 from .. import models
 from .base_admin_model import DatasetBaseAdminModel
 

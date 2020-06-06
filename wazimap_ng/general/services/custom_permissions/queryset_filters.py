@@ -47,11 +47,11 @@ class CustomQuerySet(models.QuerySet):
 
 	# Dataset
 	def get_datasets_indicator_queryset(self, user):
-		datasets = permissions.get_custom_queryset(Dataset, user)
+		datasets = permissions.get_objects_for_user(user, Dataset)
 		return self.filter(dataset__in=datasets)
 
 	def get_datasets_dataset_queryset(self, user):
-		return permissions.get_custom_queryset(Dataset, user)
+		return permissions.get_objects_for_user(user, Dataset)
 
 	def get_datasets_indicatordata_queryset(self, user):
 		indicators = permissions.get_custom_queryset(Indicator, user)

@@ -14,6 +14,12 @@ from .. import models
 from .. import hooks
 from .base_admin_model import DatasetBaseAdminModel
 from wazimap_ng.general.services import permissions
+from wazimap_ng.general.widgets import description
+
+def get_source(indicator):
+    if hasattr(indicator.dataset, "metadata"):
+        return indicator.dataset.metadata.source
+    return None 
 
 class IndicatorAdminForm(forms.ModelForm):
     groups = forms.ChoiceField(required=True)
@@ -54,11 +60,11 @@ class DatasetsWithPermissionFilter(admin.SimpleListFilter):
 class IndicatorAdmin(DatasetBaseAdminModel):
 
     list_display = (
-        "name", "dataset", "universe"
+        "name", "dataset", "universe", description("source", get_source)
     )
 
     list_filter = (
-        DatasetsWithPermissionFilter,
+        DatasetsWithPermissionFilter, "dataset__metadata__source"
     )
 
     form = IndicatorAdminForm
@@ -90,7 +96,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
         super().save_model(request, obj, form, change)
         
         if run_task:
-            async_task(
+            task = async_task(
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",
                 obj,
                 task_name=f"Data Extraction: {obj.name}",
@@ -98,6 +104,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
                 key=request.session.session_key,
                 type="data_extraction", assign=False, notify=True
             )
+            hooks.add_to_task_list(request.session, task)
             hooks.custom_admin_notification(
                 request.session,
                 "info",
