@@ -194,6 +194,27 @@ def IndicatorDataSerializer(profile, geography):
 
     d_children = pivot(d_children, [0, 1, 2, 3, 4, 5, 8, 7, 6])
 
+    # This is needed in additio to d3 in case the parent geography does not have this indicator
+    # In which case it won't return metadata
+    d_children2 = qsdict(children_indicator_data,
+        "category",
+        lambda x: "subcategories",
+        "subcategory",
+        lambda x: "indicators",
+        "profile_indicator_label",
+        lambda x: {
+            "description": x["description"],
+            "choropleth_method": x["choropleth_method"],
+            "metadata": {
+                "source": x["metadata_source"],
+                "description": x["metadata_description"],
+                "licence": {
+                    "name": x["licence_name"],
+                    "url": x["licence_url"]
+                }
+            }
+        },
+    )
 
     d3 = qsdict(indicator_data2,
         "category",
@@ -223,6 +244,7 @@ def IndicatorDataSerializer(profile, geography):
     mergedict(new_dict, d_groups2)
     mergedict(new_dict, d_subindicators)
     mergedict(new_dict, d_children)
+    mergedict(new_dict, d_children2)
     mergedict(new_dict, d3)
 
     return new_dict
