@@ -1,3 +1,5 @@
+import lorem
+
 from django.contrib import admin, messages
 from django.contrib.admin.options import DisallowedModelAdminToField
 from django.contrib.admin.utils import unquote
@@ -106,11 +108,12 @@ class BaseAdminModel(admin.ModelAdmin):
         form = super().get_form(request, *args, **kwargs)
         form.current_user = request.user
 
-
         for field_name in self.help_texts:
             if field_name in form.base_fields:
                 form.base_fields[field_name].help_text = self._get_help_text(
                     form.base_fields[field_name]
                 )
 
+        if "description" in form.base_fields:
+            form.base_fields["description"].initial = lorem.paragraph()
         return form

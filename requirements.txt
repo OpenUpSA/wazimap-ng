@@ -75,3 +75,4 @@ boto3==1.9.93
 django-guardian==2.2.0
 
 django-mock-queries==2.1.5
+lorem==0.1.1
