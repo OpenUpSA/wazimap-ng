@@ -10,12 +10,15 @@ from wazimap_ng.datasets.models import Indicator, Dataset
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.admin import filters
 
+class CategoryIndicatorFilter(filters.CategoryFilter):
+    parameter_name = 'subcategory__category__id'
+
 @admin.register(models.ProfileIndicator)
 class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
     list_filter = (
         filters.ProfileNameFilter,
-        ('subcategory__category__name', customTitledFilter('Category')),
-        "subcategory",
+        CategoryIndicatorFilter,
+        filters.SubCategoryFilter,
     )
 
     list_display = (

@@ -9,10 +9,9 @@ from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.admin import filters
 
 
-class ProfileMetricsFilter(filters.ProfileFilter):
-    parameter_name = 'profile__name'
-    lookup_fields = ["profile__name", "profile__name"]
 
+class CategoryMetricsFilter(filters.CategoryFilter):
+    parameter_name = 'subcategory__category__id'
 
 @admin.register(models.ProfileKeyMetrics)
 class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
@@ -27,9 +26,9 @@ class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
     form = ProfileKeyMetricsForm
 
     list_filter = (
-        ProfileMetricsFilter,
-        ('subcategory__category__name', customTitledFilter('Category')),
-        ('subcategory__name', customTitledFilter('Subcategory')),
+        filters.ProfileNameFilter,
+        CategoryMetricsFilter,
+        filters.SubCategoryFilter,
     )
 
     help_texts = ["denominator", ]

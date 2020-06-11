@@ -13,9 +13,8 @@ class CategoryProfileFilter(filters.ProfileFilter):
     parameter_name = 'category__profile'
     lookup_fileds = ["category__profile", "category__profile"]
 
-
 @admin.register(models.IndicatorSubcategory)
 class IndicatorSubcategoryAdmin(SortableAdminMixin, BaseAdminModel):
     list_display = ("name", "category", description("Profile", lambda x: x.category.profile), "order")
-    list_filter = ("category", CategoryProfileFilter)
+    list_filter = (filters.CategoryFilter, CategoryProfileFilter)
 
