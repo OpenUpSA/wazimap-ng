@@ -8,11 +8,12 @@ from ..forms import ProfileIndicatorAdminForm
 from wazimap_ng.general.widgets import customTitledFilter, description, SortableWidget
 from wazimap_ng.datasets.models import Indicator, Dataset
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin import filters
 
 @admin.register(models.ProfileIndicator)
 class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
     list_filter = (
-        ('profile__name', customTitledFilter('Profile')),
+        filters.ProfileNameFilter,
         ('subcategory__category__name', customTitledFilter('Category')),
         "subcategory",
     )

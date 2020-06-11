@@ -6,6 +6,13 @@ from ..forms import ProfileKeyMetricsForm
 from wazimap_ng.general.widgets import customTitledFilter, description
 from wazimap_ng.datasets.models import Indicator, Dataset
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin import filters
+
+
+class ProfileMetricsFilter(filters.ProfileFilter):
+    parameter_name = 'profile__name'
+    lookup_fields = ["profile__name", "profile__name"]
+
 
 @admin.register(models.ProfileKeyMetrics)
 class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
@@ -20,7 +27,7 @@ class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
     form = ProfileKeyMetricsForm
 
     list_filter = (
-        ("subcategory__category__profile", customTitledFilter("Profile")),
+        ProfileMetricsFilter,
         ('subcategory__category__name', customTitledFilter('Category')),
         ('subcategory__name', customTitledFilter('Subcategory')),
     )
