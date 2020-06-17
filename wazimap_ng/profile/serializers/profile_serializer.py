@@ -5,7 +5,7 @@ from wazimap_ng.datasets.serializers import AncestorGeographySerializer
 
 from wazimap_ng.datasets.serializers import GeographyHierarchySerializer
 from .. import models
-from . import IndicatorDataSerializer, MetricsSerializer, ProfileLogoSerializer, HighlightsSerializer
+from . import IndicatorDataSerializer, MetricsSerializer, ProfileLogoSerializer, HighlightsSerializer, OverviewSerializer
 from . import ProfileIndicatorSerializer
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -27,6 +27,7 @@ def ExtendedProfileSerializer(profile, geography):
     metrics_data = MetricsSerializer(profile, geography)
     logo_json = ProfileLogoSerializer(profile)
     highlights = HighlightsSerializer(profile, geography)
+    overview = OverviewSerializer(profile)
 
     geo_js = AncestorGeographySerializer().to_representation(geography)
 
@@ -37,6 +38,7 @@ def ExtendedProfileSerializer(profile, geography):
         "geography": geo_js,
         "profile_data": profile_data,
         "highlights": highlights,
+        "overview":overview
     }
 
     return js
