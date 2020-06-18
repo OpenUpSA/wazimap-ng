@@ -76,7 +76,7 @@ class IndicatorDetailView(generics.RetrieveAPIView):
     serializer_class = serializers.IndicatorSerializer
 
 
-class GeographyHierarchyViewset(viewsets.ModelViewSet):
+class GeographyHierarchyViewset(viewsets.ReadOnlyModelViewSet):
     queryset = models.GeographyHierarchy.objects.all()
     serializer_class = serializers.GeographyHierarchySerializer
 
