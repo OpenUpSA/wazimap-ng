@@ -54,6 +54,16 @@ urlpatterns = [
         cache(dataset_views.IndicatorDetailView.as_view()),
         name="indicator-detail",
     ),
+    path(
+        "api/v1/geography/hierarchies/",
+        cache(dataset_views.GeographyHierarchyViewset.as_view({"get":"list"})),
+        name="geography-hierarchies",
+    ),
+    path(
+        "api/v1/geography/hierarchies/<int:pk>/",
+        cache(dataset_views.GeographyHierarchyViewset.as_view({"get":"retrieve"})),
+        name="geography-hierarchies",
+    ),
     path("api/v1/profiles/", profile_views.ProfileList.as_view(), name="profile-list"),
     path(
         "api/v1/profiles/<int:pk>/",

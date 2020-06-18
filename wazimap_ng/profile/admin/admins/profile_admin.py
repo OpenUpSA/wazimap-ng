@@ -14,3 +14,6 @@ class ProfileAdmin(BaseAdminModel):
         if is_new:
             assign_perms_to_group(obj.name, obj)
         return obj
+
+    class Media:
+        js = ("/static/js/jquery-ui.min.js", "/static/js/geography_hierarchy.js",)
