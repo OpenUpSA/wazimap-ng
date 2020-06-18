@@ -22,7 +22,12 @@ class GeographyAdmin(TreeAdmin):
         "name", "code", "level", "version"
     )
 
+    search_fields = ("name", "code")
     list_filter = ("level", "version")
+
+@admin.register(models.GeographyHierarchy)
+class GeographyHierarchyAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['root_geography']
 
 
 @admin.register(models.Universe)
