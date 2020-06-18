@@ -7,6 +7,7 @@ from .. import models
 from .indicator_data_serializer import IndicatorDataSerializer
 from .metrics_serializer import MetricsSerializer
 from .profile_logo import ProfileLogoSerializer
+from .overview_serializer import OverviewSerializer
 from .highlights_serializer import HighlightsSerializer
 from .profile_indicator_serializer import ProfileIndicatorSerializer
 from .profile_serializer import ProfileSerializer, ExtendedProfileSerializer, FullProfileSerializer
