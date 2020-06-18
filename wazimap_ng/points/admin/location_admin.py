@@ -10,6 +10,7 @@ from import_export.fields import Field
 from django_json_widget.widgets import JSONEditorWidget
 from mapwidgets.widgets import GooglePointFieldWidget
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin import filters
 
 from .. import models
 
@@ -53,7 +54,7 @@ class LocationAdmin(ExportMixin, BaseAdminModel):
     }
 
     list_display = ("name", "category",)
-    list_filter = ("category",)
+    list_filter = (filters.CollectionFilter,)
     search_fields = ("name",)
     resource_class = LocationResource
 

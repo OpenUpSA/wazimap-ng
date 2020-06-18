@@ -15,6 +15,7 @@ from .forms import DatasetAdminForm
 from wazimap_ng.general.widgets import description
 
 from wazimap_ng.general.services.permissions import assign_perms_to_group
+from wazimap_ng.general.admin import filters
 
 def set_to_public(modeladmin, request, queryset):
     queryset.make_public()
@@ -27,13 +28,24 @@ def get_source(dataset):
         return dataset.metadata.source
     return None 
 
+class PermissionTypeFilter(filters.DatasetFilter):
+    title = "Permission Type"
+    parameter_name = "permission_type"
+
+    def lookups(self, request, model_admin):
+        return [("private", "Mine"), ("public", "Public")]
+
+
 @admin.register(models.Dataset)
 class DatasetAdmin(DatasetBaseAdminModel):
     exclude = ("groups", )
     inlines = (MetaDataInline,)
     actions = (set_to_public, set_to_private, delete_selected_data,)
     list_display = ("name", "permission_type", "geography_hierarchy", "profile", description("source", get_source))
-    list_filter = ("permission_type", "geography_hierarchy", "profile", "metadata__source")
+    list_filter = (
+        PermissionTypeFilter, filters.GeographyHierarchyFilter,
+        filters.ProfileFilter, filters.DatasetMetaDataFilter
+    )
     form = DatasetAdminForm
     search_fields = ("name", )
 

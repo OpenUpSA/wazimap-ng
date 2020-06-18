@@ -5,8 +5,21 @@ from django.contrib.postgres import fields
 from adminsortable2.admin import SortableAdminMixin
 
 from wazimap_ng.general.widgets import customTitledFilter, description, SortableWidget
+from wazimap_ng.general.admin import filters
 from .. import models
 from .base_admin_model import DatasetBaseAdminModel
+
+from wazimap_ng.general.admin import filters
+
+class GroupDatasetFilter(filters.DatasetFilter):
+    parameter_name = 'dataset__name'
+    lookup_fields = ["name", "name"]
+
+class GroupProfileFilter(filters.ProfileFilter):
+    parameter_name = 'dataset__profile__name'
+    lookup_fields = ["name", "name"]
+
+
 
 class GroupAdminForm(forms.ModelForm):
     class Meta:
@@ -33,10 +46,7 @@ class GroupAdmin(DatasetBaseAdminModel):
 
     form = GroupAdminForm
 
-    list_filter = (
-        ('dataset__profile__name', customTitledFilter('Profile')),
-        ('dataset__name', customTitledFilter('Dataset')),
-    )
+    list_filter = (GroupProfileFilter, GroupDatasetFilter,)
 
     formfield_overrides = {
         fields.JSONField: {"widget": SortableWidget},
