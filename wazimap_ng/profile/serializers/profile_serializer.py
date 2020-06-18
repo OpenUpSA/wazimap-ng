@@ -38,7 +38,7 @@ def ExtendedProfileSerializer(profile, geography):
         "geography": geo_js,
         "profile_data": profile_data,
         "highlights": highlights,
-        "overview":overview
+        "overview": overview
     }
 
     return js

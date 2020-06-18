@@ -36,7 +36,7 @@ def consolidated_profile_helper(profile_id, geography_code):
             parent_layers.append(layer[children_level])
 
     return ({
-        "profile":profile_js,
+        "profile": profile_js,
         "boundary": boundary_js,
         "children": children_boundary_js,
         "parent_layers": parent_layers,
