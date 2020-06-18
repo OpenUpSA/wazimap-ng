@@ -35,6 +35,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
     list_display = ("name", "permission_type", "geography_hierarchy", "profile", description("source", get_source))
     list_filter = ("permission_type", "geography_hierarchy", "profile", "metadata__source")
     form = DatasetAdminForm
+    search_fields = ("name", )
 
     fieldsets = (
         ("", {

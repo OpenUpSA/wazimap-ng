@@ -72,6 +72,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
         (None, { 'fields': ('dataset', 'groups','universe', 'name',) } ),
     ]
 
+    autocomplete_fields = ("dataset", )
     class Media:
         js = ("/static/js/jquery-ui.min.js", "/static/js/indicator-admin.js",)
 
