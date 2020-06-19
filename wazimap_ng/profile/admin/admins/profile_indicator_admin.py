@@ -41,6 +41,7 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
           'fields': ('subindicators',)
         })
     )
+    search_fields = ("label", )
 
     form = ProfileIndicatorAdminForm
 

@@ -34,6 +34,7 @@ class CategoryAdmin(BaseAdminModel):
     )
 
     readonly_fields = ("imported_collections", )
+    search_fields = ("name", )
 
     class Media:
         css = {

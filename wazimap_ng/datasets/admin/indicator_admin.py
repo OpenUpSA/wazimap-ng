@@ -57,6 +57,8 @@ class IndicatorAdmin(DatasetBaseAdminModel):
     ]
 
     autocomplete_fields = ("dataset", )
+    search_fields = ("name", )
+
     class Media:
         js = ("/static/js/jquery-ui.min.js", "/static/js/indicator-admin.js",)
 

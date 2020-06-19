@@ -24,6 +24,7 @@ class ProfileCategoryAdmin(BaseAdminModel):
           'fields': ('label', 'description',)
         }),
     )
+    search_fields = ("label", )
 
     def get_readonly_fields(self, request, obj=None):
         if obj:

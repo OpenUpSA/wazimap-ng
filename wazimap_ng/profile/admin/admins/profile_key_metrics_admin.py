@@ -34,6 +34,7 @@ class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
     help_texts = ["denominator", ]
 
     fields = ["profile", "variable", "subindicator", "subcategory", "denominator", "label"]
+    search_fields = ("label", )
 
 
     class Media:
