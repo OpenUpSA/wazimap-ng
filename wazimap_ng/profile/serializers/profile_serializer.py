@@ -17,7 +17,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
       model = models.Profile
-      fields = ('id', 'name', 'permission_type', 'requires_authentication', 'geography_hierarchy')
+      fields = ('id', 'name', 'permission_type', 'requires_authentication', 'geography_hierarchy', 'description')
 
 
 def ExtendedProfileSerializer(profile, geography):
