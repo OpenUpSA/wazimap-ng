@@ -6,6 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_headers
+from django.http import Http404
 
 from .profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, ProfileKeyMetrics, Profile
 from .profile.services import authentication
@@ -19,11 +20,14 @@ theme_key = "etag-Theme-profile-%s-%s"
 location_theme_key = "etag-Location-Theme-%s"
 
 def check_has_permission(request, profile_id):
-    profile = Profile.objects.get(pk=profile_id)
-    has_permission = authentication.has_permission(request.user, profile)
-    if has_permission:
-        return True
-    return False
+    try:
+        profile = Profile.objects.get(pk=profile_id)
+        has_permission = authentication.has_permission(request.user, profile)
+        if has_permission:
+            return True
+        return False
+    except Profile.DoesNotExist:
+        raise Http404
 
 def last_modified(request, profile_id, key):
     if check_has_permission(request, profile_id):
