@@ -48,17 +48,20 @@ def last_modified_profile_updated(request, profile_id, geography_code):
     key = profile_key % profile_id
     return last_modified(request, profile_id, key)
     
-def etag_point_updated(request, profile_id, category_id=None, theme_id=None):
-    last_modified = last_modified_point_updated(request, profile_id, category_id, theme_id)
+def etag_point_updated(request, profile_id, category_id=None, theme_id=None, geography_code=None):
+    last_modified = last_modified_point_updated(request, profile_id, category_id, theme_id, geography_code)
     return str(last_modified)
 
-def last_modified_point_updated(request, profile_id, category_id=None, theme_id=None):
+def last_modified_point_updated(request, profile_id, category_id=None, theme_id=None, geography_code=None):
     if category_id is not None:
         key = location_key % (profile_id, category_id)
     elif theme_id is not None:
         key = theme_key % (profile_id, theme_id)
     else:
         return None
+
+    if geography_code is not None:
+        key = f"{key}_{geography_code}"
 
     return last_modified(request, profile_id, key)
 
