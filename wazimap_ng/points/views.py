@@ -70,7 +70,7 @@ def theme_view(request, profile_id):
 class LocationList(generics.ListAPIView):
     pagination_class = GeoJsonPagination
     serializer_class = serializers.LocationSerializer
-    queryset = models.Location.objects.all().select_related("category")
+    queryset = models.Location.objects.all().prefetch_related("category__theme")
 
     def list(self, request, profile_id, category_id=None):
         profile = Profile.objects.get(pk=profile_id)
