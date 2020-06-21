@@ -32,6 +32,7 @@ class ProfileHighlightAdmin(SortableAdminMixin, BaseAdminModel):
         })
     )
     form = ProfileHighlightForm
+    search_fields = ("label", )
 
     help_texts = ["denominator", ]
 

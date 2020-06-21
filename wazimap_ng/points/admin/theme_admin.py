@@ -21,3 +21,4 @@ class ThemeAdmin(BaseAdminModel):
     list_filter = (filters.ProfileFilter,)
 
     form = ThemeAdminForm
+    search_fields = ("name", )
