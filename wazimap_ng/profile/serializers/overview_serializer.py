@@ -2,5 +2,6 @@
 #profile description can be assigned here too
 def OverviewSerializer(profile):
     return {
-       "name":profile.name
+       "name": profile.name,
+       "description": profile.description,
     }
