@@ -60,7 +60,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
     search_fields = ("name", )
 
     class Media:
-        js = ("/static/js/jquery-ui.min.js", "/static/js/indicator-admin.js",)
+        js = ("/static/js/indicator-admin.js",)
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
