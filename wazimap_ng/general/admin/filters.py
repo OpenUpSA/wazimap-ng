@@ -17,7 +17,7 @@ class DynamicBaseFilter(admin.SimpleListFilter):
         choices = getattr(
             permissions, "get_custom_queryset"
         )(self.model_class, request.user)
-        return choices.values_list(*self.lookup_fields)
+        return list(set(choices.values_list(*self.lookup_fields)))
 
     def queryset(self, request, queryset):
         value = self.value()
