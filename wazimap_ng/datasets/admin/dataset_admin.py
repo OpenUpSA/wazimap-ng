@@ -66,7 +66,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
     readonly_fields = ("imported_dataset", )
 
     class Media:
-        js = ("/static/js/jquery-ui.min.js", "/static/js/geography_hierarchy.js",)
+        js = ("/static/js/geography_hierarchy.js",)
 
 
     def imported_dataset(self, obj):

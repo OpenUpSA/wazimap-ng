@@ -42,8 +42,8 @@ class VariableFilterWidget(Widget):
     template_name = 'widgets/VariableFilterWidget.html'
 
     class Media:
-        css = {'all': ("/static/css/jquery-ui.min.css", "/static/css/variable-filter-widget.css",)}
-        js = ("/static/js/jquery-ui.min.js", "/static/js/variable-filter-widget.js",)
+        css = {'all': ("/static/css/variable-filter-widget.css",)}
+        js = ("/static/js/variable-filter-widget.js",)
 
     def get_context(self, name, value, attrs=None):
 
