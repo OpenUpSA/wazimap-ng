@@ -42,6 +42,9 @@ class UniverseListView(generics.ListAPIView):
         if not dataset:
             return queryset
 
+        if not dataset.groups:
+            return models.Universe.objects.none()
+
         groups = dataset.groups
         if group:
             groups = [group]
