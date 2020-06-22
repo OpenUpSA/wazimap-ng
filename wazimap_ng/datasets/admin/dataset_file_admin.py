@@ -10,10 +10,10 @@ from django.template.loader import render_to_string
 
 @admin.register(models.DatasetFile)
 class DatasetFileAdmin(BaseAdminModel):
-    
+
     fieldsets = (
         ("Uploaded Dataset", {
-            "fields": ("name", "document",)
+            "fields": ("name", "get_document",)
         }),
         ("Task Details", {
             "fields": (
@@ -24,9 +24,16 @@ class DatasetFileAdmin(BaseAdminModel):
     )
 
     readonly_fields = (
-       "name", "document", "get_status", "get_task_link",
+       "name", "get_document", "get_status", "get_task_link",
        "get_warnings", "get_errors",
     )
+
+    def get_document(self, obj):
+        return mark_safe(
+            f'<a href="{obj.document.url}" download="{obj.name}-{obj.id}.csv">{obj.name}-{obj.id}.csv</a>'
+        )
+
+    get_document.short_description = 'Document'
 
     def get_status(self, obj):
         if obj.id and obj.task:
