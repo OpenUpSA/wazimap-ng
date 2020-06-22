@@ -22,3 +22,8 @@ class ThemeAdmin(BaseAdminModel):
 
     form = ThemeAdminForm
     search_fields = ("name", )
+
+    class Media:
+        css = {
+             'all': ('/static/css/admin-custom.css',)
+        }
