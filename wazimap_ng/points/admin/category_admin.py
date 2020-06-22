@@ -6,6 +6,7 @@ from django_q.tasks import async_task
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.services.permissions import assign_perms_to_group
+from wazimap_ng.general.admin import filters
 
 from .. import models
 from .forms import CategoryAdminForm
@@ -15,7 +16,7 @@ from wazimap_ng.datasets import hooks
 @admin.register(models.Category)
 class CategoryAdmin(BaseAdminModel):
     list_display = ("name", "theme",)
-    list_filter = ("theme",)
+    list_filter = (filters.ThemeFilter,)
     form = CategoryAdminForm
     exclude = ("metadata", )
 
@@ -33,6 +34,7 @@ class CategoryAdmin(BaseAdminModel):
     )
 
     readonly_fields = ("imported_collections", )
+    search_fields = ("name", )
 
     class Media:
         css = {

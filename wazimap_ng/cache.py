@@ -6,6 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_headers
+from django.http import Http404
 
 from .profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, ProfileKeyMetrics, Profile
 from .profile.services import authentication
@@ -19,11 +20,14 @@ theme_key = "etag-Theme-profile-%s-%s"
 location_theme_key = "etag-Location-Theme-%s"
 
 def check_has_permission(request, profile_id):
-    profile = Profile.objects.get(pk=profile_id)
-    has_permission = authentication.has_permission(request.user, profile)
-    if has_permission:
-        return True
-    return False
+    try:
+        profile = Profile.objects.get(pk=profile_id)
+        has_permission = authentication.has_permission(request.user, profile)
+        if has_permission:
+            return True
+        return False
+    except Profile.DoesNotExist:
+        raise Http404
 
 def last_modified(request, profile_id, key):
     if check_has_permission(request, profile_id):
@@ -44,17 +48,20 @@ def last_modified_profile_updated(request, profile_id, geography_code):
     key = profile_key % profile_id
     return last_modified(request, profile_id, key)
     
-def etag_point_updated(request, profile_id, category_id=None, theme_id=None):
-    last_modified = last_modified_point_updated(request, profile_id, category_id, theme_id)
+def etag_point_updated(request, profile_id, category_id=None, theme_id=None, geography_code=None):
+    last_modified = last_modified_point_updated(request, profile_id, category_id, theme_id, geography_code)
     return str(last_modified)
 
-def last_modified_point_updated(request, profile_id, category_id=None, theme_id=None):
+def last_modified_point_updated(request, profile_id, category_id=None, theme_id=None, geography_code=None):
     if category_id is not None:
         key = location_key % (profile_id, category_id)
     elif theme_id is not None:
         key = theme_key % (profile_id, theme_id)
     else:
         return None
+
+    if geography_code is not None:
+        key = f"{key}_{geography_code}"
 
     return last_modified(request, profile_id, key)
 

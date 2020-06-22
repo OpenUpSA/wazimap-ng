@@ -11,7 +11,7 @@ from django.db.models.functions import Cast
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework_csv import renderers as r
-from rest_framework import generics
+from rest_framework import generics, viewsets
 from .serializers import AncestorGeographySerializer
 from . import serializers
 from . import models
@@ -78,6 +78,11 @@ class IndicatorsList(generics.ListAPIView):
 class IndicatorDetailView(generics.RetrieveAPIView):
     queryset = models.Indicator
     serializer_class = serializers.IndicatorSerializer
+
+
+class GeographyHierarchyViewset(viewsets.ReadOnlyModelViewSet):
+    queryset = models.GeographyHierarchy.objects.all()
+    serializer_class = serializers.GeographyHierarchySerializer
 
 
 @api_view()

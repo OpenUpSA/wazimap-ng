@@ -71,11 +71,18 @@ class Geography(MP_Node):
 class GeographyHierarchy(models.Model):
     name = models.CharField(max_length=50)
     root_geography = models.ForeignKey(Geography, null=False, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
 
     @property
     def version(self):
         return self.root_geography.version
+
+    def help_text(self):
+        return f"{self.name} : {self.description}"
     
 
     def __str__(self):
         return f"{self.name}"
+
+    class Meta:
+        verbose_name_plural = "Geography Hierarchies"

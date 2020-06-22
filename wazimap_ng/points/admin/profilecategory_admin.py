@@ -2,6 +2,7 @@ from django.contrib.gis import admin
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.services.permissions import assign_perms_to_group
+from wazimap_ng.general.admin import filters
 
 from .. import models
 
@@ -9,7 +10,7 @@ from .. import models
 @admin.register(models.ProfileCategory)
 class ProfileCategoryAdmin(BaseAdminModel):
     list_display = ("label", "category", "profile")
-    list_filter = ("category", "profile",)
+    list_filter = (filters.CollectionFilter, filters.ProfileFilter,)
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
@@ -23,6 +24,7 @@ class ProfileCategoryAdmin(BaseAdminModel):
           'fields': ('label', 'description',)
         }),
     )
+    search_fields = ("label", )
 
     def get_readonly_fields(self, request, obj=None):
         if obj:

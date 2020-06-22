@@ -26,6 +26,11 @@ class CustomQuerySet(models.QuerySet):
 		)
 		return self.filter(profile__in=profiles)
 
+	def get_profile_profile_queryset(self, user):
+		return permissions.get_objects_for_user(
+			user, Profile, include_public=False
+		)
+
 	def get_profile_logo_queryset(self, user):
 		profiles = permissions.get_objects_for_user(
 			user, Profile, include_public=False

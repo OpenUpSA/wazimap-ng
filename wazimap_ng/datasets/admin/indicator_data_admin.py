@@ -6,6 +6,9 @@ from django_json_widget.widgets import JSONEditorWidget
 from .base_admin_model import DatasetBaseAdminModel
 from .. import models
 
+from wazimap_ng.general.admin import filters
+
+
 @admin.register(models.IndicatorData)
 class IndicatorDataAdmin(DatasetBaseAdminModel):
 
@@ -32,7 +35,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
         "indicator__name", "geography", "parent"
     )
 
-    list_filter = ("indicator__name",)
+    list_filter = (filters.IndicatorFilter,)
 
     search_fields = ["geography__name"]
 

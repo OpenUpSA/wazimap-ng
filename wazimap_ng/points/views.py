@@ -1,20 +1,26 @@
+from collections import defaultdict
+
 from django.views.decorators.http import condition
 from django.utils.decorators import method_decorator
-from rest_framework.decorators import api_view
-from collections import defaultdict
+from django.http import Http404
 from django.db.models import Count
 from django.forms.models import model_to_dict
+from django.http import Http404
 
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework_gis.pagination import GeoJsonPagination
 from rest_framework import generics
+
+from wazimap_ng.profile.models import Profile
+from wazimap_ng.datasets.models import Geography
+from wazimap_ng.points.services.locations import get_locations
 
 from . import models
 from . import serializers
 from ..cache import etag_point_updated, last_modified_point_updated
 from ..boundaries.models import GeographyBoundary
 from ..general.serializers import MetaDataSerializer
-from wazimap_ng.profile.models import Profile
 
 class CategoryList(generics.ListAPIView):
     queryset = models.Category.objects.all()
@@ -70,19 +76,17 @@ def theme_view(request, profile_id):
 class LocationList(generics.ListAPIView):
     pagination_class = GeoJsonPagination
     serializer_class = serializers.LocationSerializer
-    queryset = models.Location.objects.all().select_related("category")
+    queryset = models.Location.objects.all().prefetch_related("category__theme")
 
-    def list(self, request, profile_id, category_id=None):
-        profile = Profile.objects.get(pk=profile_id)
-        category = models.Category.objects.get(pk=category_id)
+    def list(self, request, profile_id, category_id=None, geography_code=None):
+        try:
+            queryset = get_locations(self.get_queryset(), profile_id, category_id, geography_code)
 
-        queryset = self.get_queryset()
-        if category_id is not None:
-            queryset = queryset.filter(category__pk=category_id)
-
-        serializer = self.get_serializer_class()(queryset, many=True)
-        data = serializer.data
-        return Response(data)
+            serializer = self.get_serializer_class()(queryset, many=True)
+            data = serializer.data
+            return Response(data)
+        except ObjectDoesNotExist:
+            raise Http404
 
     @method_decorator(condition(etag_func=etag_point_updated, last_modified_func=last_modified_point_updated))
     def dispatch(self, *args, **kwargs):

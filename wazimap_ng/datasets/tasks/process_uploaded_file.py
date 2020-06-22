@@ -42,7 +42,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
         columns = df.columns.str.lower()
 
         for df in pd.read_csv(dataset_file.document.open(), chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1):
-            df.dropna(how='any', axis='columns', inplace=True)
+            df.dropna(how='all', axis='columns', inplace=True)
             df.columns = columns
             errors, warnings = process_file_data(df, dataset, row_number)
             error_logs = error_logs + errors

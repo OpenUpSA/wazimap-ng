@@ -1,8 +1,6 @@
 import operator
 from functools import reduce
 
-
-from django import forms
 from django.contrib import admin
 from django.db.models import Q, CharField
 from django.contrib.postgres import fields
@@ -12,49 +10,34 @@ from django_q.tasks import async_task
 
 from .. import models
 from .. import hooks
+from .forms import IndicatorAdminForm
 from .base_admin_model import DatasetBaseAdminModel
 from wazimap_ng.general.services import permissions
 from wazimap_ng.general.widgets import description
+from wazimap_ng.general.admin import filters
+
 
 def get_source(indicator):
     if hasattr(indicator.dataset, "metadata"):
         return indicator.dataset.metadata.source
-    return None 
-
-class IndicatorAdminForm(forms.ModelForm):
-    groups = forms.ChoiceField(required=True)
-    class Meta:
-        model = models.Indicator
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields
-        if not self.instance.id:
-            self.fields['groups'].choices = self.group_choices
-            self.fields['universe'].queryset = self.universe_queryset
-
-    def clean(self,*args,**kwargs):
-        cleaned_data = super().clean(*args,**kwargs)
-        cleaned_data['groups'] = [cleaned_data.get("groups")]
-        return cleaned_data
+    return None
 
 
-class DatasetsWithPermissionFilter(admin.SimpleListFilter):
-    title = 'Datasets'
-
-    parameter_name = 'dataset_id'
+# Custom Filters
+class PermissionTypeFilter(filters.DatasetFilter):
+    title = "Permission Type"
+    model_class = models.Indicator
+    parameter_name = "dataset__permission_type"
 
     def lookups(self, request, model_admin):
-        datasets = permissions.get_objects_for_user(request.user, models.Dataset)
-        return [(d.id, d.name) for d in datasets]
+        return [("private", "Mine"), ("public", "Public")]
 
-    def queryset(self, request, queryset):
-        dataset_id = self.value()
+class IndicatorMetaDataFilter(filters.DatasetMetaDataFilter):
+    parameter_name = 'dataset__metadata__source'
 
-        if dataset_id is None:
-            return queryset
-        return queryset.filter(dataset__id=dataset_id)
+class IndicatorGeographyHierarchyFilter(filters.GeographyHierarchyFilter):
+    parameter_name = 'dataset__geography_hierarchy_id'
+
 
 @admin.register(models.Indicator)
 class IndicatorAdmin(DatasetBaseAdminModel):
@@ -64,13 +47,17 @@ class IndicatorAdmin(DatasetBaseAdminModel):
     )
 
     list_filter = (
-        DatasetsWithPermissionFilter, "dataset__metadata__source"
+        PermissionTypeFilter, filters.DatasetFilter, IndicatorMetaDataFilter,
+        IndicatorGeographyHierarchyFilter
     )
 
     form = IndicatorAdminForm
     fieldsets = [
         (None, { 'fields': ('dataset', 'groups','universe', 'name',) } ),
     ]
+
+    autocomplete_fields = ("dataset", )
+    search_fields = ("name", )
 
     class Media:
         js = ("/static/js/jquery-ui.min.js", "/static/js/indicator-admin.js",)

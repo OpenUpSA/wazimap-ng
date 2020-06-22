@@ -54,6 +54,16 @@ urlpatterns = [
         cache(dataset_views.IndicatorDetailView.as_view()),
         name="indicator-detail",
     ),
+    path(
+        "api/v1/geography/hierarchies/",
+        cache(dataset_views.GeographyHierarchyViewset.as_view({"get":"list"})),
+        name="geography-hierarchies",
+    ),
+    path(
+        "api/v1/geography/hierarchies/<int:pk>/",
+        cache(dataset_views.GeographyHierarchyViewset.as_view({"get":"retrieve"})),
+        name="geography-hierarchies",
+    ),
     path("api/v1/profiles/", profile_views.ProfileList.as_view(), name="profile-list"),
     path(
         "api/v1/profiles/<int:pk>/",
@@ -87,6 +97,7 @@ urlpatterns = [
     path("api/v1/points/profile/<int:profile_id>/theme/<int:theme_id>/categories/", cache(points_views.CategoryList.as_view())),
     path("api/v1/points/profile/<int:profile_id>/categories/", cache(points_views.CategoryList.as_view())),
     path("api/v1/points/profile/<int:profile_id>/category/<int:category_id>/points/", cache(points_views.LocationList.as_view()), name="category-points"),
+    path("api/v1/points/profile/<int:profile_id>/category/<int:category_id>/geography/<str:geography_code>/points/", cache(points_views.LocationList.as_view()), name="category-points-geography"),
 
     re_path(r"^$", RedirectView.as_view(url="/api/v1/datasets/", permanent=False)),
 
