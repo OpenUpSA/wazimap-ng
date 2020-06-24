@@ -40,6 +40,7 @@ class IndicatorCategory(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
+    icon = models.CharField(max_length=30, null=True, blank=True)
 
     def __str__(self):
         return f"{self.profile.name} -> {self.name}"
