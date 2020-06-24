@@ -62,6 +62,12 @@ class CustomQuerySet(models.QuerySet):
 		indicators = permissions.get_custom_queryset(Indicator, user)
 		return self.filter(indicator__in=indicators)
 
+	def get_datasets_datasetfile_queryset(self, user):
+		dataset_ids = permissions.get_objects_for_user(
+			user, Dataset
+		).values_list("id", flat=True)
+		return self.filter(dataset_id__in=dataset_ids)
+
 
 	# Points
 	def get_points_category_queryset(self, user):
