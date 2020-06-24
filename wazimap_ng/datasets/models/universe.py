@@ -1,8 +1,9 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
+from wazimap_ng.general.models import BaseModel
 
 
-class Universe(models.Model):
+class Universe(BaseModel):
     filters = JSONField()
 
     label = models.CharField(max_length=100)
