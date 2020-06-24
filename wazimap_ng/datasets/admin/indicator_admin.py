@@ -32,8 +32,8 @@ class PermissionTypeFilter(filters.DatasetFilter):
     def lookups(self, request, model_admin):
         return [("private", "Mine"), ("public", "Public")]
 
-class IndicatorMetaDataFilter(filters.DatasetMetaDataFilter):
-    parameter_name = 'dataset__metadata__source'
+class IndicatorProfileFilter(filters.ProfileFilter):
+    parameter_name = 'dataset__profile'
 
 class IndicatorGeographyHierarchyFilter(filters.GeographyHierarchyFilter):
     parameter_name = 'dataset__geography_hierarchy_id'
@@ -47,7 +47,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
     )
 
     list_filter = (
-        PermissionTypeFilter, filters.DatasetFilter, IndicatorMetaDataFilter,
+        PermissionTypeFilter, IndicatorProfileFilter,
         IndicatorGeographyHierarchyFilter
     )
 
