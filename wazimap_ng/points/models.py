@@ -60,6 +60,7 @@ class ProfileCategory(models.Model):
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
     description = models.TextField(blank=True)
     permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="private")
+    icon = models.CharField(max_length=30, null=True, blank=True)
 
     def __str__(self):
         return self.label

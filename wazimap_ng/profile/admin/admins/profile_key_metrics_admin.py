@@ -39,6 +39,5 @@ class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
 
     class Media:
         js = (
-            "/static/js/jquery-ui.min.js",
             "/static/js/variable_subindicators.js",
         )

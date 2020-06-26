@@ -16,4 +16,4 @@ class ProfileAdmin(BaseAdminModel):
         return obj
 
     class Media:
-        js = ("/static/js/jquery-ui.min.js", "/static/js/geography_hierarchy.js",)
+        js = ("/static/js/geography_hierarchy.js",)

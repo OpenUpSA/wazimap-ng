@@ -1,10 +1,19 @@
 from django.contrib.gis import admin
+from django import forms
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.admin import filters
 
 from .. import models
+
+from icon_picker_widget.widgets import IconPickerWidget
+
+
+class ProfileCategoryAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['icon'].widget = IconPickerWidget()
 
 
 @admin.register(models.ProfileCategory)
@@ -20,11 +29,21 @@ class ProfileCategoryAdmin(BaseAdminModel):
             'fields': ('permission_type', )
 
         }),
+        ("Profile Collection Icon", {
+            'fields': ('icon', )
+
+        }),
         ("Point Collection description fields", {
           'fields': ('label', 'description',)
         }),
     )
+    form = ProfileCategoryAdminForm
     search_fields = ("label", )
+
+    class Media:
+        css = {
+             'all': ('/static/css/admin-custom.css',)
+        }
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
