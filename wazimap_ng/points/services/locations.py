@@ -5,7 +5,7 @@ from wazimap_ng.profile.models import Profile
 from wazimap_ng.datasets.models import Geography
 from wazimap_ng.boundaries.models import GeographyBoundary
 
-logger = logging.Logger(__name__)
+logger = logging.getLogger(__name__)
 
 def get_locations(locations_qs, profile_id, category_id, geography_code=None):
     profile = Profile.objects.get(id=profile_id)

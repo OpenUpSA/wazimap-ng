@@ -16,7 +16,7 @@ from operator import itemgetter
 import pandas as pd
 from django_q.models import Task
 from wazimap_ng.general.services.permissions import assign_perms_to_group
-logger = logging.Logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class CustomDataParsingException(Exception):
