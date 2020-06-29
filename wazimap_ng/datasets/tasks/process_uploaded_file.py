@@ -30,6 +30,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     filename = dataset_file.document.name
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
+    logger.debug(f"Processing: {filename}")
 
     columns = None
     error_logs = []
@@ -37,6 +38,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
     row_number = 1
 
     if ".csv" in filename:
+        logger.debug(f"Processing as csv")
         df = pd.read_csv(dataset_file.document.open(), nrows=1, dtype=str, sep=",")
         df.dropna(how='all', axis='columns', inplace=True)
         columns = df.columns.str.lower()
@@ -49,6 +51,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
             warning_logs = warning_logs + warnings
             row_number = row_number + chunksize
     else:
+        logger.debug("Process as other filetype")
         skiprows = 1
         i_chunk = 0
         df = pd.read_excel(dataset_file.document.open(), nrows=1, dtype=str)
@@ -77,6 +80,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
     dataset.save()
 
     if error_logs:
+        logger.error(error_logs)
         logdir = settings.MEDIA_ROOT + "/logs/dataset/errors/"
         if not os.path.exists(logdir):
             os.makedirs(logdir)
@@ -86,6 +90,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
         error_logs = logfile
 
     if warning_logs:
+        logger.warning(warning_logs)
         logdir = settings.MEDIA_ROOT + "/logs/dataset/warnings/"
         if not os.path.exists(logdir):
             os.makedirs(logdir)

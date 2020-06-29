@@ -8,7 +8,7 @@ from django.db import transaction
 
 from . import models
 
-logger = logging.Logger(__name__)
+logger = logging.getLogger(__name__)
 
 # TODO should add a memoize decorator here
 @functools.lru_cache()
