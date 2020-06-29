@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 @transaction.atomic
 def process_uploaded_file(dataset_file, dataset, **kwargs):
+    logger.debug(f"process_uploaded_file: {dataset_file}")
     """
     Run this Task after saving new document via admin panel.
 
