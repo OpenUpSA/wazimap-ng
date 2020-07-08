@@ -6,6 +6,45 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
+from wazimap_ng.general.services import permissions
+from wazimap_ng.general.admin import filters
+
+
+# Filters
+def filter_custom_queryset(self, request, queryset):
+    value = self.value()
+    if value is None:
+        return queryset
+    user_datasets = permissions.get_objects_for_user(
+        request.user, models.Dataset
+    ).filter(**{self.parameter_name: value}).values_list(
+        "id", flat=True
+    )
+    return queryset.filter(dataset_id__in=user_datasets)
+
+
+class CustomPermissionTypeFilter(admin.SimpleListFilter):
+    title = "Permission Type"
+    parameter_name = 'permission_type'
+
+    def lookups(self, request, model_admin):
+        return [("private", "Mine"), ("public", "Public")]
+
+    def queryset(self, request, queryset):
+        return filter_custom_queryset(self, request, queryset)
+
+
+class CustomGeographyHierarchyFilter(filters.GeographyHierarchyFilter):
+    def queryset(self, request, queryset):
+        return filter_custom_queryset(self, request, queryset)
+
+class CustomProfileFilter(filters.ProfileFilter):
+    def queryset(self, request, queryset):
+        return filter_custom_queryset(self, request, queryset)
+
+class CustomMetadataFilter(filters.DatasetMetaDataFilter):
+    def queryset(self, request, queryset):
+        return filter_custom_queryset(self, request, queryset)
 
 
 @admin.register(models.DatasetFile)
@@ -13,7 +52,7 @@ class DatasetFileAdmin(BaseAdminModel):
 
     fieldsets = (
         ("Uploaded Dataset", {
-            "fields": ("name", "get_document",)
+            "fields": ("name", "get_document", "get_dataset_link",)
         }),
         ("Task Details", {
             "fields": (
@@ -28,12 +67,45 @@ class DatasetFileAdmin(BaseAdminModel):
        "get_warnings", "get_errors",
     )
 
+    list_filter = (
+        CustomPermissionTypeFilter, CustomGeographyHierarchyFilter,
+        CustomProfileFilter, CustomMetadataFilter
+    )
+    list_display = (
+        "name", 'get_dataset_name'
+    )
+
+    def get_dataset_name(self, obj):
+        if obj:
+            dataset = models.Dataset.objects.filter(id=obj.dataset_id).first()
+            return dataset.name if dataset else "-"
+        return '-'
+
+    get_dataset_name.short_description = 'Dataset'
+
     def get_document(self, obj):
         return mark_safe(
             f'<a href="{obj.document.url}" download="{obj.name}-{obj.id}.csv">{obj.name}-{obj.id}.csv</a>'
         )
 
     get_document.short_description = 'Document'
+
+    def get_dataset_link(self, obj):
+        if obj:
+            dataset = models.Dataset.objects.filter(id=obj.dataset_id).first()
+
+            if not dataset:
+                return "-"
+
+            url = reverse('admin:%s_%s_change' % (
+                dataset._meta.app_label,  dataset._meta.model_name
+            ),  args=[dataset.id] )
+            return mark_safe(
+                f'<a href="{url}">{dataset.name}</a>'
+            )
+        return "-"
+
+    get_dataset_link.short_description = 'Dataset'
 
     def get_status(self, obj):
         if obj.id and obj.task:
