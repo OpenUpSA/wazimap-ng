@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import JSONField
 
 from .dataset import Dataset
 from .geography import Geography
+from wazimap_ng.general.models import BaseModel
 
 from django.db.models import Sum, FloatField
 from django.db.models.functions import Cast
@@ -37,7 +38,7 @@ class DatasetDataQuerySet(models.QuerySet):
         c = Cast(KeyTextTransform("count", "data"), FloatField())
         return self.values(*groups, "geography_id").annotate(count=Sum(c))
 
-class DatasetData(models.Model):
+class DatasetData(BaseModel):
     dataset = models.ForeignKey(Dataset, null=True, on_delete=models.CASCADE)
     geography = models.ForeignKey(Geography, on_delete=models.CASCADE)
     data = JSONField()

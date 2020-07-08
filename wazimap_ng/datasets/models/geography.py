@@ -6,6 +6,7 @@ from treebeard.mp_tree import MP_NodeManager, MP_NodeQuerySet
 
 from django.contrib.postgres.search import TrigramSimilarity
 from wazimap_ng.extensions.index import GinTrgmIndex
+from wazimap_ng.general.models import BaseModel
 
 
 class GeographyQuerySet(MP_NodeQuerySet):
@@ -24,7 +25,7 @@ class GeographyManager(MP_NodeManager):
     def search(self, text, similarity=0.3):
         return self.get_queryset().search(text, similarity)
 
-class Geography(MP_Node):
+class Geography(MP_Node, BaseModel):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=20)
     level = models.CharField(max_length=20)
@@ -68,7 +69,7 @@ class Geography(MP_Node):
                 )
         return child_types
 
-class GeographyHierarchy(models.Model):
+class GeographyHierarchy(BaseModel):
     name = models.CharField(max_length=50)
     root_geography = models.ForeignKey(Geography, null=False, on_delete=models.CASCADE)
     description = models.TextField(blank=True)

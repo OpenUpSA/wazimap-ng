@@ -15,12 +15,16 @@ class CategoryMetricsFilter(filters.CategoryFilter):
 
 @admin.register(models.ProfileKeyMetrics)
 class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
+
+    exclude_common_list_display = True
     list_display = (
         "label",
         description("Variable", lambda x: x.variable.name),
         description("Profile", lambda x: x.subcategory.category.profile.name),
         description("Subcategory", lambda x: x.subcategory.name),
         description("Category", lambda x: x.subcategory.category.name),
+        "created",
+        "updated",
         "order"
     )
     form = ProfileKeyMetricsForm

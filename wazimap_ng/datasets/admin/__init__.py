@@ -19,7 +19,7 @@ from .. import models
 class GeographyAdmin(TreeAdmin):
     form = movenodeform_factory(models.Geography)
     list_display = (
-        "name", "code", "level", "version"
+        "name", "code", "level", "version", "created", "updated"
     )
 
     search_fields = ("name", "code")
@@ -28,6 +28,9 @@ class GeographyAdmin(TreeAdmin):
 @admin.register(models.GeographyHierarchy)
 class GeographyHierarchyAdmin(admin.ModelAdmin):
     autocomplete_fields = ['root_geography']
+    list_display = (
+        "name", "created", "updated"
+    )
 
 
 @admin.register(models.Universe)
@@ -35,7 +38,12 @@ class UniverseAdmin(admin.ModelAdmin):
   formfield_overrides = {
     fields.JSONField: {"widget": JSONEditorWidget},
   }
+  list_display = (
+        "label", "created", "updated"
+    )
   
 @admin.register(models.Licence)
 class LicenceAdmin(admin.ModelAdmin):
-    pass
+    list_display = (
+        "name", "created", "updated"
+    )

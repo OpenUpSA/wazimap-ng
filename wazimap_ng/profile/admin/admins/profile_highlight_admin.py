@@ -16,10 +16,13 @@ class ProfileHighlightAdmin(SortableAdminMixin, BaseAdminModel):
 
     list_filter = (filters.ProfileNameFilter, )
 
+    exclude_common_list_display = True
     list_display = (
         "profile", 
         "label", 
-        description("Indicator", lambda x: x.indicator.name), 
+        description("Indicator", lambda x: x.indicator.name),
+        "created",
+        "updated",
         "order", 
     )
 

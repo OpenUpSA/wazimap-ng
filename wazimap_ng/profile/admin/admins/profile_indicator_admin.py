@@ -21,12 +21,15 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
         filters.SubCategoryFilter,
     )
 
+    exclude_common_list_display = True
     list_display = (
         "profile",
         "label", 
         description("Indicator", lambda x: x.indicator.name), 
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
+        "created",
+        "updated",
         "order",
     )
 
