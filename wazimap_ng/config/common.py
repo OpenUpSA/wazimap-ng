@@ -309,6 +309,7 @@ class Common(Configuration):
        "recycle": int(os.environ.get("Q_CLUSTER_RECYCLE", 500)),
        "timeout": int_or_none(os.environ.get("Q_CLUSTER_TIMEOUT", None)),
        "ack_failures": truthy(os.environ.get("Q_CLUSTER_ACK_FAILURES", True)),
+       "sync": truthy(os.environ.get("Q_CLUSTER_SYNC", False)),
     }
 
     def get_env_value(env_variable):
