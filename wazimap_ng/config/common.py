@@ -10,12 +10,13 @@ from sentry_sdk.integrations.django import DjangoIntegration
 import sentry_sdk
 
 from wazimap_ng.utils import truthy, int_or_none
+from .qcluster import QCluster
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 os.environ["GDAL_DATA"] = "/usr/share/gdal/"
 
-class Common(Configuration):
+class Common(QCluster, Configuration):
 
     if os.path.exists("VERSION"):
         VERSION = open("VERSION").read().strip()
@@ -306,16 +307,6 @@ class Common(Configuration):
         'x-csrftoken',
         'x-requested-with',
     )
-
-    Q_CLUSTER = {
-       "orm": 'default',
-       "retry": int(os.environ.get("Q_CLUSTER_RETRY", 100000)),
-       "workers": int(os.environ.get("Q_CLUSTER_WORKERS", 4)),
-       "recycle": int(os.environ.get("Q_CLUSTER_RECYCLE", 500)),
-       "timeout": int_or_none(os.environ.get("Q_CLUSTER_TIMEOUT", None)),
-       "ack_failures": truthy(os.environ.get("Q_CLUSTER_ACK_FAILURES", True)),
-       "sync": truthy(os.environ.get("Q_CLUSTER_SYNC", False)),
-    }
 
     def get_env_value(env_variable):
         try:
