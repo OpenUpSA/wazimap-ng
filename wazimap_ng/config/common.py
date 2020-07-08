@@ -237,6 +237,11 @@ class Common(Configuration):
                 "propagate": True,
                 "level": "DEBUG",
             },
+            "django_q": {
+                "handlers": ["console", "file"],
+                "propagate": True,
+                "level": "DEBUG",
+            },
             "django": {
                 "handlers": ["console", "file"],
                 "propagate": True,
