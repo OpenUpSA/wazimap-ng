@@ -4,9 +4,13 @@ from ... import models
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.services.permissions import assign_perms_to_group
+from wazimap_ng.general.admin import filters
 
 @admin.register(models.Profile)
 class ProfileAdmin(BaseAdminModel):
+
+    list_display = ('name', 'geography_hierarchy',)
+    list_filter = (filters.GeographyHierarchyFilter,)
 
     def save_model(self, request, obj, form, change):
         is_new = obj.pk == None and change == False
