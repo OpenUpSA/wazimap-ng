@@ -3,7 +3,7 @@
 import logging
 from django.db import migrations
 
-logger = logging.Logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def create_groups_for_profiles(apps, schema_editor):

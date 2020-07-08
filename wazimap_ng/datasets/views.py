@@ -53,9 +53,13 @@ class UniverseListView(generics.ListAPIView):
             operator.or_, [Q(as_string__icontains=group) for group in groups]
         )
 
+        # return queryset.annotate(
+        #     as_string=Cast('filters', CharField())
+        # ).filter(condition)
+
         return queryset.annotate(
             as_string=Cast('filters', CharField())
-        ).filter(condition)
+        )
 
 class DatasetIndicatorsList(generics.ListAPIView):
     queryset = models.Indicator.objects.all()

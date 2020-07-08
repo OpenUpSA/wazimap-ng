@@ -8,7 +8,7 @@ from rest_framework.permissions import BasePermission
 from .services import authentication
 from .models import Profile
 
-logger = logging.Logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ProfilePermissions(BasePermission):
