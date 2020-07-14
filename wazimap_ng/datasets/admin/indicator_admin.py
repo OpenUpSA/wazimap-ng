@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.db.models import Q, CharField
 from django.contrib.postgres import fields
 from django.db.models.functions import Cast
+from django.db import transaction
 
 from django_q.tasks import async_task
 
@@ -80,7 +81,8 @@ class IndicatorAdmin(DatasetBaseAdminModel):
         """
         run_task = False if change else True
 
-        super().save_model(request, obj, form, change)
+        with transaction.atomic():
+            super().save_model(request, obj, form, change)
         
         if run_task:
             task = async_task(

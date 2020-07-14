@@ -113,6 +113,8 @@ class Common(QCluster, Configuration):
         )
     }
 
+    ATOMIC_REQUESTS = truthy(os.environ.get("ATOMIC_REQUESTS", False))
+
     CACHES = {
         'default': {
             # 'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
