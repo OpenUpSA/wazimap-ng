@@ -114,9 +114,9 @@ class IndicatorAdmin(DatasetBaseAdminModel):
                 groups = dataset.groups
 
                 form.group_choices = [[group, group] for group in dataset.groups]
-                condition = reduce(
-                    operator.or_, [Q(as_string__icontains=group) for group in groups]
-                )
+                # condition = reduce(
+                #     operator.or_, [Q(as_string__icontains=group) for group in groups]
+                # )
                 # form.universe_queryset = models.Universe.objects.annotate(
                 #     as_string=Cast('filters', CharField())
                 # ).filter(condition)
