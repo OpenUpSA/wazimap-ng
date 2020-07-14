@@ -134,3 +134,17 @@ class DatasetAdmin(DatasetBaseAdminModel):
                 )
             )
         return obj
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+
+        if "autocomplete" in request.path:
+
+            dataset_ids = queryset.values_list("id", flat=True)
+            in_progress_uploads = models.DatasetFile.objects.filter(
+                task_id=None, dataset_id__in=dataset_ids
+            ).values_list("dataset_id", flat=True)
+
+            queryset = queryset.exclude(id__in=in_progress_uploads)
+
+        return queryset, use_distinct
