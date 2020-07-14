@@ -1,5 +1,9 @@
+import logging
+
 from django import template
 import json
+
+logger = logging.getLogger(__name__)
 
 register = template.Library()
 
@@ -9,8 +13,11 @@ def get_messages(session):
 
     task_list = session.get("task_list", [])
     for message in messages:
-    	if "task_id" in message and task_list:
-    		task_list.remove(message["task_id"])
+        try:
+            task_id = message["task_id"]
+            task_list.remove(task_id)
+        except (ValueError, KeyError) as e:
+            logger.exception("Error removed a message from the task list. Probably missing.")
 
     session["task_list"] = task_list
     return messages
