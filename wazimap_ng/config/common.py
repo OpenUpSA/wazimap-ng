@@ -7,6 +7,7 @@ from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
 from configurations import Configuration
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
 import sentry_sdk
 
 from wazimap_ng.utils import truthy, int_or_none
@@ -29,11 +30,10 @@ class Common(QCluster, Configuration):
 
     if SENTRY_DSN:
         sentry_sdk.init(SENTRY_DSN,
-            integrations=[DjangoIntegration()],
+            integrations=[DjangoIntegration(), RedisIntegration()],
             send_default_pii=True,
             release=RELEASE
         )
-
 
     INSTALLED_APPS = [
         "django.contrib.admin",
@@ -112,6 +112,8 @@ class Common(QCluster, Configuration):
             conn_max_age=int(os.getenv("POSTGRES_CONN_MAX_AGE", 600))
         )
     }
+
+    ATOMIC_REQUESTS = truthy(os.environ.get("ATOMIC_REQUESTS", False))
 
     CACHES = {
         'default': {

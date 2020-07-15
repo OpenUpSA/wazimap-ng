@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.db.models import Q, CharField
 from django.contrib.postgres import fields
 from django.db.models.functions import Cast
+from django.db import transaction
 
 from django_q.tasks import async_task
 
@@ -80,7 +81,8 @@ class IndicatorAdmin(DatasetBaseAdminModel):
         """
         run_task = False if change else True
 
-        super().save_model(request, obj, form, change)
+        with transaction.atomic():
+            super().save_model(request, obj, form, change)
         
         if run_task:
             task = async_task(
@@ -114,9 +116,9 @@ class IndicatorAdmin(DatasetBaseAdminModel):
                 groups = dataset.groups
 
                 form.group_choices = [[group, group] for group in dataset.groups]
-                condition = reduce(
-                    operator.or_, [Q(as_string__icontains=group) for group in groups]
-                )
+                # condition = reduce(
+                #     operator.or_, [Q(as_string__icontains=group) for group in groups]
+                # )
                 # form.universe_queryset = models.Universe.objects.annotate(
                 #     as_string=Cast('filters', CharField())
                 # ).filter(condition)
