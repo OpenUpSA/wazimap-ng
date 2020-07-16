@@ -7,15 +7,17 @@ from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
 from configurations import Configuration
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
 import sentry_sdk
 
 from wazimap_ng.utils import truthy, int_or_none
+from .qcluster import QCluster
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 os.environ["GDAL_DATA"] = "/usr/share/gdal/"
 
-class Common(Configuration):
+class Common(QCluster, Configuration):
 
     if os.path.exists("VERSION"):
         VERSION = open("VERSION").read().strip()
@@ -28,11 +30,10 @@ class Common(Configuration):
 
     if SENTRY_DSN:
         sentry_sdk.init(SENTRY_DSN,
-            integrations=[DjangoIntegration()],
+            integrations=[DjangoIntegration(), RedisIntegration()],
             send_default_pii=True,
             release=RELEASE
         )
-
 
     INSTALLED_APPS = [
         "django.contrib.admin",
@@ -111,6 +112,8 @@ class Common(Configuration):
             conn_max_age=int(os.getenv("POSTGRES_CONN_MAX_AGE", 600))
         )
     }
+
+    ATOMIC_REQUESTS = truthy(os.environ.get("ATOMIC_REQUESTS", False))
 
     CACHES = {
         'default': {
@@ -237,6 +240,11 @@ class Common(Configuration):
                 "propagate": True,
                 "level": "DEBUG",
             },
+            "django_q": {
+                "handlers": ["console", "file"],
+                "propagate": True,
+                "level": "DEBUG",
+            },
             "django": {
                 "handlers": ["console", "file"],
                 "propagate": True,
@@ -301,15 +309,6 @@ class Common(Configuration):
         'x-csrftoken',
         'x-requested-with',
     )
-
-    Q_CLUSTER = {
-       "orm": 'default',
-       "retry": int(os.environ.get("Q_CLUSTER_RETRY", 100000)),
-       "workers": int(os.environ.get("Q_CLUSTER_WORKERS", 4)),
-       "recycle": int(os.environ.get("Q_CLUSTER_RECYCLE", 500)),
-       "timeout": int_or_none(os.environ.get("Q_CLUSTER_TIMEOUT", None)),
-       "ack_failures": truthy(os.environ.get("Q_CLUSTER_ACK_FAILURES", True)),
-    }
 
     def get_env_value(env_variable):
         try:

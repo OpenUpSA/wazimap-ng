@@ -49,9 +49,9 @@ class UniverseListView(generics.ListAPIView):
         if group:
             groups = [group]
 
-        condition = reduce(
-            operator.or_, [Q(as_string__icontains=group) for group in groups]
-        )
+        # condition = reduce(
+        #     operator.or_, [Q(as_string__icontains=group) for group in groups]
+        # )
 
         # return queryset.annotate(
         #     as_string=Cast('filters', CharField())

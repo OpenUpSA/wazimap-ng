@@ -3,8 +3,9 @@ from django.contrib.postgres.fields import JSONField
 
 from .indicator import Indicator
 from .geography import Geography
+from wazimap_ng.general.models import BaseModel
 
-class IndicatorData(models.Model):
+class IndicatorData(BaseModel):
     """
     Indicator Data for caching results of indicator group according to
     geography.

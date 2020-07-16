@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.contrib import admin
 from django import forms
@@ -16,6 +17,9 @@ from wazimap_ng.general.widgets import description
 
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.admin import filters
+
+logger = logging.getLogger(__name__)
+
 
 def set_to_public(modeladmin, request, queryset):
     queryset.make_public()
@@ -101,6 +105,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
         }]
 
     def save_model(self, request, obj, form, change):
+        logger.debug("saving dataset")
         is_new = obj.pk == None and change == False
         is_profile_updated = change and "profile" in form.changed_data
 
@@ -111,12 +116,26 @@ class DatasetAdmin(DatasetBaseAdminModel):
 
         dataset_import_file = form.cleaned_data.get("import_dataset", None)
 
+        logger.debug(f"Dataset import file: {dataset_import_file}")
+
         if dataset_import_file:
             datasetfile_obj = models.DatasetFile.objects.create(
                 name=obj.name,
                 document=dataset_import_file,
                 dataset_id=obj.id
             )
+            logger.debug(f"""Starting async task: 
+                Task name: wazimap_ng.datasets.tasks.process_uploaded_file
+                Datasetfile_obj: {datasetfile_obj}
+                Object: {obj}
+                Hook: wazimap_ng.datasets.hooks.process_task_info,
+                key: {request.session.session_key},
+                type: upload,
+                assign: True,
+                notify: True
+            """)
+
+
             task = async_task(
                 "wazimap_ng.datasets.tasks.process_uploaded_file",
                 datasetfile_obj, obj,
@@ -134,3 +153,18 @@ class DatasetAdmin(DatasetBaseAdminModel):
                 )
             )
         return obj
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+
+        if "autocomplete" in request.path:
+
+            dataset_ids = queryset.values_list("id", flat=True)
+            in_progress_uploads = models.DatasetFile.objects.filter(
+                task_id=None, dataset_id__in=dataset_ids
+            ).values_list("dataset_id", flat=True)
+
+            queryset = queryset.exclude(id__in=in_progress_uploads)
+
+        return queryset, use_distinct
+        

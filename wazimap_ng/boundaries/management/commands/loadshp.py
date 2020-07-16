@@ -11,7 +11,7 @@ from wazimap_ng.boundaries.models import GeographyBoundary
 import fiona
 from shapely.geometry import shape as shapely_shape
 
-logger = logging.Logger(__name__)
+logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = "Loads new geographies. Example class: python3 manage.py loadshp /tmp/gcro.shp Region_cod=code,Parent_g_3=parent_code,Region_nam=name,Shape_Area=area planning_region"

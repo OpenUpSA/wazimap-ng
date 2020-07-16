@@ -4,7 +4,7 @@ import os
 from collections import OrderedDict, defaultdict, Mapping
 import logging
 
-logger = logging.Logger(__name__)
+logger = logging.getLogger(__name__)
 
 def format_perc(n):
     return f"{n :.2%}"

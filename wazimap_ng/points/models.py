@@ -12,13 +12,14 @@ from wazimap_ng.profile.models import Profile
 from django_q.models import Task
 from wazimap_ng import utils
 from wazimap_ng.datasets.models import Licence
+from wazimap_ng.general.models import BaseModel
 from wazimap_ng.config.common import PERMISSION_TYPES
 
 def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)
     return os.path.join('points', filename)
 
-class Theme(models.Model):
+class Theme(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=30)
     icon = models.CharField(max_length=30, null=True, blank=True)
@@ -30,7 +31,7 @@ class Theme(models.Model):
         ordering = ["profile__name"]
 
 
-class Category(models.Model):
+class Category(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=50)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, related_name="categories")
@@ -44,7 +45,7 @@ class Category(models.Model):
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
 
-class Location(models.Model):
+class Location(BaseModel):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(Category, related_name="locations", on_delete=models.CASCADE, verbose_name="collection")
     coordinates = models.PointField()
@@ -54,7 +55,7 @@ class Location(models.Model):
         return "%s: %s" % (self.category, self.name)
 
 
-class ProfileCategory(models.Model):
+class ProfileCategory(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="collection")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
@@ -69,7 +70,7 @@ class ProfileCategory(models.Model):
         verbose_name = "Profile Collection"
         verbose_name_plural = "Profile Collections"
 
-class CoordinateFile(models.Model):
+class CoordinateFile(BaseModel):
     document = models.FileField(
         upload_to=get_file_path,
         validators=[FileExtensionValidator(allowed_extensions=["csv",])],

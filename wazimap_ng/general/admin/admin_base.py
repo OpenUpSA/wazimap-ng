@@ -58,6 +58,14 @@ class BaseAdminModel(admin.ModelAdmin):
     custom_queryset_func = 'get_custom_queryset'
     exclude_fk_filters = []
     help_texts = []
+    exclude_common_list_display = False
+    common_list_display = ("created", "updated",)
+
+    def __init__(self, model, admin_site):
+        if not self.exclude_common_list_display:
+            list_display = self.list_display
+            self.list_display = list_display + self.common_list_display
+        super().__init__(model, admin_site)
 
     def has_delete_permission(self, request, obj=None):
         has_perm = super().has_delete_permission(request, obj)

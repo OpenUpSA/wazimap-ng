@@ -16,6 +16,7 @@ from django_q.models import Task
 from .dataset import Dataset
 
 from wazimap_ng import utils
+from wazimap_ng.general.models import BaseModel
 
 
 max_filesize = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
@@ -29,7 +30,7 @@ def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)
     return os.path.join('datasets', filename)
 
-class DatasetFile(models.Model):
+class DatasetFile(BaseModel):
     document = models.FileField(
         upload_to=get_file_path,
         validators=[

@@ -3,9 +3,10 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
 
 from wazimap_ng.datasets.models import Indicator, GeographyHierarchy
+from wazimap_ng.general.models import BaseModel
 from wazimap_ng.config.common import DENOMINATOR_CHOICES, PERMISSION_TYPES
 
-class Profile(models.Model):
+class Profile(BaseModel):
     name = models.CharField(max_length=50)
     indicators = models.ManyToManyField(Indicator, through="profile.ProfileIndicator", verbose_name="variables")
     geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.PROTECT, null=False)
@@ -18,7 +19,7 @@ class Profile(models.Model):
     class Meta:
         ordering = ["id"]
 
-class Logo(models.Model):
+class Logo(BaseModel):
     profile = models.OneToOneField(Profile, null=False, on_delete=models.CASCADE)
     logo = models.ImageField(upload_to="logos/")
     url = models.CharField(max_length=255, blank=True, null=True)
@@ -26,7 +27,7 @@ class Logo(models.Model):
     def __str__(self):
         return f"{self.logo}"
 
-class ChoroplethMethod(models.Model):
+class ChoroplethMethod(BaseModel):
     name = models.CharField(max_length=30, blank=False)
     description = models.TextField(max_length=255)
 
@@ -35,11 +36,12 @@ class ChoroplethMethod(models.Model):
 
 
 
-class IndicatorCategory(models.Model):
+class IndicatorCategory(BaseModel):
     name = models.CharField(max_length=25)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
+    icon = models.CharField(max_length=30, null=True, blank=True)
 
     def __str__(self):
         return f"{self.profile.name} -> {self.name}"
@@ -49,7 +51,7 @@ class IndicatorCategory(models.Model):
         ordering = ["order"]
 
 
-class IndicatorSubcategory(models.Model):
+class IndicatorSubcategory(BaseModel):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(IndicatorCategory, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
@@ -62,7 +64,7 @@ class IndicatorSubcategory(models.Model):
         verbose_name_plural = "Indicator Subcategories"
         ordering = ["order"]
 
-class ProfileKeyMetrics(models.Model):
+class ProfileKeyMetrics(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     variable = models.ForeignKey(Indicator, on_delete=models.CASCADE)
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
@@ -79,7 +81,7 @@ class ProfileKeyMetrics(models.Model):
         ordering = ["order"]
         verbose_name_plural = "Profile key metrics"
 
-class ProfileHighlight(models.Model):
+class ProfileHighlight(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this highlight is based on.", verbose_name="variable")
     # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.
@@ -95,7 +97,7 @@ class ProfileHighlight(models.Model):
         ordering = ["order"]
 
 
-class ProfileIndicator(models.Model):
+class ProfileIndicator(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.", verbose_name="variable")
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)

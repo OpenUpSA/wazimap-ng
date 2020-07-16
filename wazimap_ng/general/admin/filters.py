@@ -61,6 +61,12 @@ class GeographyHierarchyFilter(DynamicBaseFilter):
     parameter_name = 'geography_hierarchy_id'
     model_class = GeographyHierarchy
 
+    def lookups(self, request, model_admin):
+        choices = getattr(
+            permissions, "get_custom_fk_queryset"
+        )(request.user, self.model_class)
+        return list(set(choices.values_list(*self.lookup_fields)))
+
 
 class DatasetFilter(DynamicBaseFilter):
     title = 'Dataset'

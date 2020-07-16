@@ -5,6 +5,7 @@ from ..datasets.models import Geography
 from .fields import CachedMultiPolygonField
 from ..points.models import Location
 from django_q.tasks import async_task
+from wazimap_ng.general.models import BaseModel
 
 class GeographyBoundaryManager(models.Manager):
     # Deal with a situation where there are multiple geographies with the same code
@@ -14,7 +15,7 @@ class GeographyBoundaryManager(models.Manager):
         obj = GeographyBoundary.objects.filter(geography__code=geography.code, geography__version=geography.version).first()
         return obj
 
-class GeographyBoundary(models.Model):
+class GeographyBoundary(BaseModel):
     geography = models.OneToOneField(Geography, on_delete=models.PROTECT, null=False)
 
     area = models.FloatField()

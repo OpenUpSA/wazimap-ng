@@ -7,10 +7,11 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from .dataset import Dataset
 from .datasetdata import DatasetData
 from .universe import Universe
+from wazimap_ng.general.models import BaseModel
 
 logger = logging.getLogger(__name__)
 
-class Indicator(models.Model):
+class Indicator(BaseModel):
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     universe = models.ForeignKey(
         Universe, on_delete=models.CASCADE, blank=True, null=True
