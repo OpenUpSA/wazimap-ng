@@ -105,7 +105,6 @@ class DatasetAdmin(DatasetBaseAdminModel):
         }]
 
     def save_model(self, request, obj, form, change):
-        logger.debug("saving dataset")
         is_new = obj.pk == None and change == False
         is_profile_updated = change and "profile" in form.changed_data
 
