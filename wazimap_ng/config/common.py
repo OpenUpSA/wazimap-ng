@@ -240,7 +240,7 @@ class Common(QCluster, Configuration):
                 "propagate": True,
                 "level": "DEBUG",
             },
-            "django_q": {
+            "django-q": {
                 "handlers": ["console", "file"],
                 "propagate": True,
                 "level": "DEBUG",
