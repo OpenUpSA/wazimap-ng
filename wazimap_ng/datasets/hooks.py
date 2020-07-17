@@ -153,6 +153,7 @@ def custom_admin_notification(session, notification_type, message, task_id=None)
         messages = session['notifications']
     messages.append(notification)
     session['notifications'] = messages
+    logger.debug(f"Added notification: {notification}")
     return session
 
 def add_to_task_list(session, task):
