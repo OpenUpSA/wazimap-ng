@@ -164,7 +164,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
                 task_id=None, dataset_id__in=dataset_ids
             ).values_list("dataset_id", flat=True)
 
-            queryset = queryset.exclude(id__in=in_progress_uploads)
+            #queryset = queryset.exclude(id__in=in_progress_uploads)
 
         return queryset, use_distinct
         
