@@ -42,7 +42,7 @@ class DatasetFile(BaseModel):
             file extensions should be one of {", ".join(allowed_file_extensions)}.
         """
     )
-    task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
+    task = models.ForeignKey(Task, on_delete=models.SET_NULL, blank=True, null=True)
     name = name = models.CharField(max_length=60)
     dataset_id = models.PositiveSmallIntegerField(null=True, blank=True)
 

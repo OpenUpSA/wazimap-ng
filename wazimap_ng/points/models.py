@@ -76,7 +76,7 @@ class CoordinateFile(BaseModel):
         validators=[FileExtensionValidator(allowed_extensions=["csv",])],
         help_text="File Type required : CSV | Fields that are required: Name, Longitude, latitude"
     )
-    task = models.ForeignKey(Task, on_delete=models.PROTECT, blank=True, null=True)
+    task = models.ForeignKey(Task, on_delete=models.SET_NULL, blank=True, null=True)
     name = models.CharField(max_length=50)
     collection_id = models.PositiveSmallIntegerField(null=True, blank=True)
 
