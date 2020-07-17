@@ -91,7 +91,6 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
         error_logs = logfile
 
     if warning_logs:
-        logger.warning(warning_logs)
         logdir = settings.MEDIA_ROOT + "/logs/dataset/warnings/"
         if not os.path.exists(logdir):
             os.makedirs(logdir)
