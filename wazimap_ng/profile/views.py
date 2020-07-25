@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 from django.views.decorators.http import condition
 
 
@@ -20,6 +21,21 @@ class ProfileDetail(generics.RetrieveAPIView):
 class ProfileList(generics.ListAPIView):
     queryset = models.Profile.objects.all()
     serializer_class = serializers.ProfileSerializer
+
+class ProfileByUrl(generics.RetrieveAPIView):
+    queryset = models.Profile.objects.all()
+    serializer_class = serializers.FullProfileSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+        hostname = request.META["HTTP_HOST"]
+        qs = qs.filter(configuration__urls__contains=[hostname])
+        if qs.count() == 0:
+            raise Http404
+
+        instance = qs.first()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)

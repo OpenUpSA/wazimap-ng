@@ -65,6 +65,7 @@ urlpatterns = [
         name="geography-hierarchies",
     ),
     path("api/v1/profiles/", profile_views.ProfileList.as_view(), name="profile-list"),
+    path("api/v1/profile_by_url/", profile_views.ProfileByUrl.as_view(), name="profile-by-url"),
     path(
         "api/v1/profiles/<int:pk>/",
         cache(profile_views.ProfileDetail.as_view()),
