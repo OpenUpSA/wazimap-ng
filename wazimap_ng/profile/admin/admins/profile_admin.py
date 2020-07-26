@@ -1,4 +1,7 @@
 from django.contrib.gis import admin
+from django.contrib.postgres import fields
+
+from django_json_widget.widgets import JSONEditorWidget
 
 from ... import models
 
@@ -11,6 +14,9 @@ class ProfileAdmin(BaseAdminModel):
 
     list_display = ('name', 'geography_hierarchy',)
     list_filter = (filters.GeographyHierarchyFilter,)
+    formfield_overrides = {
+        fields.JSONField: {"widget": JSONEditorWidget},
+    }
 
     def save_model(self, request, obj, form, change):
         is_new = obj.pk == None and change == False
