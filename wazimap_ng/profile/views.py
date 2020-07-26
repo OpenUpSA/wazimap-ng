@@ -1,6 +1,8 @@
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.views.decorators.http import condition
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 
 
 from rest_framework import generics
@@ -26,6 +28,7 @@ class ProfileByUrl(generics.RetrieveAPIView):
     queryset = models.Profile.objects.all()
     serializer_class = serializers.FullProfileSerializer
 
+    @method_decorator(never_cache)
     def retrieve(self, request, *args, **kwargs):
         qs = self.get_queryset()
         hostname = request.META["HTTP_HOST"]
