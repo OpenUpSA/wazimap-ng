@@ -1,3 +1,7 @@
+import logging
+
+from urllib.parse import urlparse
+
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.views.decorators.http import condition
@@ -16,6 +20,8 @@ from ..cache import etag_profile_updated, last_modified_profile_updated
 
 from wazimap_ng.datasets.models import Geography
 
+logger = logging.getLogger(__name__)
+
 class ProfileDetail(generics.RetrieveAPIView):
     queryset = models.Profile
     serializer_class = serializers.FullProfileSerializer
@@ -31,7 +37,9 @@ class ProfileByUrl(generics.RetrieveAPIView):
     @method_decorator(never_cache)
     def retrieve(self, request, *args, **kwargs):
         qs = self.get_queryset()
-        hostname = request.META["HTTP_HOST"]
+        http_origin = request.META["HTTP_ORIGIN"]
+        hostname = urlparse(http_origin).hostname
+        logger.info(f"Received configuration request from: {hostname}")
         qs = qs.filter(configuration__urls__contains=[hostname])
         if qs.count() == 0:
             raise Http404
