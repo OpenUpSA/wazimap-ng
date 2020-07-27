@@ -138,7 +138,7 @@ def IndicatorDataSerializer(profile, geography):
 
     def prepare_json(row):
         json_data = rearrange_group(row["jsdata"]["groups"])
-        json_data = sort_group_subindicators(row, json_data)
+        # json_data = sort_group_subindicators(row, json_data)
         json_data = sort_indicator_subindicators(row, json_data)
 
         return json_data
