@@ -15,12 +15,13 @@ from rest_framework import generics
 from wazimap_ng.profile.models import Profile
 from wazimap_ng.datasets.models import Geography
 from wazimap_ng.points.services.locations import get_locations
+from wazimap_ng.general.serializers import MetaDataSerializer
 
 from . import models
 from . import serializers
 from ..cache import etag_point_updated, last_modified_point_updated
 from ..boundaries.models import GeographyBoundary
-from ..general.serializers import MetaDataSerializer
+
 
 class CategoryList(generics.ListAPIView):
     queryset = models.Category.objects.all()
