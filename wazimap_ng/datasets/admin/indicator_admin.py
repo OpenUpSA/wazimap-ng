@@ -80,6 +80,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
         During Step 1, no background tasks are run because only the Dataset is available.
         """
         run_task = False if change else True
+        run_task = True
 
         with transaction.atomic():
             super().save_model(request, obj, form, change)
