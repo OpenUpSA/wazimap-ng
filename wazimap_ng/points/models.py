@@ -50,6 +50,12 @@ class Location(BaseModel):
     category = models.ForeignKey(Category, related_name="locations", on_delete=models.CASCADE, verbose_name="collection")
     coordinates = models.PointField()
     data = JSONField()
+    url = models.CharField(max_length=150, null=True, blank=True, help_text="Optional url for this point")
+    image = models.ImageField(
+        upload_to=get_file_path,
+        help_text="Optional image for point",
+        null=True
+    )
 
     def __str__(self):
         return "%s: %s" % (self.category, self.name)

@@ -34,12 +34,18 @@ class ThemeSerializer(serializers.ModelSerializer):
 
 class LocationSerializer(GeoFeatureModelSerializer):
     category = CategorySerializer()
+    image = serializers.SerializerMethodField()
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        photo_url = obj.image.url
+        return request.build_absolute_uri(photo_url)
 
     class Meta:
         model = models.Location
         geo_field = "coordinates"
 
-        fields = ('id', 'data', "category", "name")
+        fields = ('id', 'data', "category", "name", "url", "image")
 
 class LocationInlineSerializer(serializers.ModelSerializer):
     class Meta:

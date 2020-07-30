@@ -6,6 +6,7 @@ from django.http import Http404
 from django.db.models import Count
 from django.forms.models import model_to_dict
 from django.http import Http404
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -82,8 +83,7 @@ class LocationList(generics.ListAPIView):
     def list(self, request, profile_id, category_id=None, geography_code=None):
         try:
             queryset = get_locations(self.get_queryset(), profile_id, category_id, geography_code)
-
-            serializer = self.get_serializer_class()(queryset, many=True)
+            serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
             return Response(data)
         except ObjectDoesNotExist:
