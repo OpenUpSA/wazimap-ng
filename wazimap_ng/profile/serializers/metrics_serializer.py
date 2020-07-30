@@ -32,7 +32,7 @@ def absolute_value(profile_key_metric, geography):
     if indicator_data.count() > 0:
         subindicator = get_subindicator(profile_key_metric)
         data = indicator_data.first().data # TODO what to do with multiple results
-        return format_int(data["subindicators"][subindicator])
+        return data["subindicators"][subindicator]
     return None
 
 def subindicator(profile_key_metric, geography):
