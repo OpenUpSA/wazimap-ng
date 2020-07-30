@@ -16,8 +16,7 @@ def format_int(n):
     return f"{round(n):,}"
 
 def get_random_filename(filename):
-    ext = pathlib.Path(filename).suffix
-    filename = os.path.join(str(uuid.uuid4()), os.path.extsep, ext)
+    filename = f"{uuid.uuid4()}_{filename}"
     return filename
 
 def truthy(s):
