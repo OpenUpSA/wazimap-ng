@@ -38,8 +38,10 @@ class LocationSerializer(GeoFeatureModelSerializer):
 
     def get_image(self, obj):
         request = self.context.get('request')
-        photo_url = obj.image.url
-        return request.build_absolute_uri(photo_url)
+        if obj.image != None:
+            photo_url = obj.image.url
+            return request.build_absolute_uri(photo_url)
+        return None
 
     class Meta:
         model = models.Location
