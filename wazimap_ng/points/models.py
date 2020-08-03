@@ -34,12 +34,11 @@ class Theme(BaseModel):
 class Category(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=50)
-    theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, related_name="categories")
     metadata = models.OneToOneField('general.MetaData', on_delete=models.CASCADE, null=True, blank=True)
     permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="public")
 
     def __str__(self):
-        return "%s -> %s" % (self.theme, self.name)
+        return self.name
 
     class Meta:
         verbose_name = "Collection"
@@ -63,6 +62,7 @@ class Location(BaseModel):
 
 class ProfileCategory(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, related_name="profile_categories")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="collection")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
     description = models.TextField(blank=True)

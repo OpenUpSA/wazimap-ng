@@ -23,7 +23,7 @@ class ProfileCategoryAdmin(BaseAdminModel):
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'category',)
+            'fields': ('profile', 'theme', 'category',)
         }),
         ("Permissions", {
             'fields': ('permission_type', )

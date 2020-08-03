@@ -11,11 +11,12 @@ class SimpleThemeSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 class CategorySerializer(serializers.ModelSerializer):
+    metadata = MetaDataSerializer(source="category.metadata")
     theme = SimpleThemeSerializer()
-    metadata = MetaDataSerializer()
+    name = serializers.ReadOnlyField(source='category.name')
 
     class Meta:
-        model = models.Category
+        model = models.ProfileCategory
         fields = ("id", "name", "theme", "metadata")
 
 class ThemeSerializer(serializers.ModelSerializer):
@@ -33,12 +34,23 @@ class ThemeSerializer(serializers.ModelSerializer):
         return representation
 
 class LocationSerializer(GeoFeatureModelSerializer):
-    category = CategorySerializer()
+    category = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
+
+    def get_category(self, obj):
+        category_js = self.context.get("category_js", None)
+
+        if not category_js:
+            profile_id = self.context.get("profile_id", None)
+            profile_category = obj.category.profilecategory_set.filter(
+                profile_id=profile_id
+            ).first()
+            category_js = CategorySerializer(profile_category).data
+        return category_js
 
     def get_image(self, obj):
         request = self.context.get('request')
-        if obj.image != None:
+        if obj.image:
             photo_url = obj.image.url
             return request.build_absolute_uri(photo_url)
         return None

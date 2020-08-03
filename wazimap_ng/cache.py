@@ -48,13 +48,13 @@ def last_modified_profile_updated(request, profile_id, geography_code):
     key = profile_key % profile_id
     return last_modified(request, profile_id, key)
     
-def etag_point_updated(request, profile_id, category_id=None, theme_id=None, geography_code=None):
-    last_modified = last_modified_point_updated(request, profile_id, category_id, theme_id, geography_code)
+def etag_point_updated(request, profile_id, profile_category_id=None, theme_id=None, geography_code=None):
+    last_modified = last_modified_point_updated(request, profile_id, profile_category_id, theme_id, geography_code)
     return str(last_modified)
 
-def last_modified_point_updated(request, profile_id, category_id=None, theme_id=None, geography_code=None):
-    if category_id is not None:
-        key = location_key % (profile_id, category_id)
+def last_modified_point_updated(request, profile_id, profile_category_id=None, theme_id=None, geography_code=None):
+    if profile_category_id is not None:
+        key = location_key % (profile_id, profile_category_id)
     elif theme_id is not None:
         key = theme_key % (profile_id, theme_id)
     else:
@@ -72,15 +72,11 @@ def update_profile_cache(profile):
     cache.set(key, datetime.now())
 
 def update_point_cache(category):
-    theme = category.theme
-    key1 = location_key % (theme.profile.id, category.id)
-    key2 = theme_key % (theme.profile.id, theme.id)
+    profile = category.profile
+    key1 = location_key % (profile.id, category.id)
 
     logger.debug(f"Set cache key (category): {key1}")
-    logger.debug(f"Set cache key (theme): {key2}")
-
     cache.set(key1, datetime.now())
-    cache.set(key2, datetime.now())
 
 @receiver(post_save, sender=ProfileIndicator)
 def profile_indicator_updated(sender, instance, **kwargs):
