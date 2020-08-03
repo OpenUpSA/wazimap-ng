@@ -31,7 +31,7 @@ class CategoryAdmin(BaseAdminModel):
           'fields': ('source', 'description', 'licence', )
         }),
     )
-
+    list_filter = (filters.ThemeFilter,)
     readonly_fields = ("imported_collections", )
     search_fields = ("name", )
 
