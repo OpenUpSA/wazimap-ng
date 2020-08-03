@@ -3,7 +3,7 @@ from .. import models
 def ProfileLogoSerializer(profile):
     try:
         logo = models.Logo.objects.get(profile=profile)
-        url = logo.url if logo.url.strip() != "" else "/"
+        url = logo.url if logo.url and logo.url.strip() != "" else "/"
         return {
             "image": f"{logo.logo.url}",
             "url": url
