@@ -154,3 +154,21 @@ def boundary_point_count_helper(profile, geography):
 
     return res
 
+
+class ProfileCategoryList(generics.ListAPIView):
+    queryset = models.ProfileCategory.objects.all()
+    serializer_class = serializers.ProfileCategorySerializer
+
+    def list(self, request, profile_id, theme_id=None):
+        query_dict = {
+            "profile_id": profile_id
+        }
+        if theme_id:
+            query_dict["theme_id"] = theme_id
+        queryset = self.get_queryset().filter(**query_dict)
+
+        serializer = self.get_serializer_class()(queryset, many=True)
+        data = serializer.data
+
+        return Response(data)
+

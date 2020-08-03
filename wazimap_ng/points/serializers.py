@@ -66,14 +66,24 @@ class LocationInlineSerializer(serializers.ModelSerializer):
         model = models.Location
         fields = ('id', 'coordinates', 'data', )
 
-class ProfileCategorySerializer(serializers.ModelSerializer):
-    subtheme = serializers.ReadOnlyField(source='category.name')
-    theme = serializers.ReadOnlyField(source='category.theme.name')
-    theme_id = serializers.ReadOnlyField(source='category.theme_id')
-    subtheme_id = serializers.ReadOnlyField(source='category_id')
-    theme_icon = serializers.ReadOnlyField(source='category.theme.icon')
+
+class CategorySerializer(serializers.ModelSerializer):
+    metadata = MetaDataSerializer(source="category.metadata")
 
     class Meta:
         model = models.ProfileCategory
-        fields = ('id', 'label', 'description', 'theme', 'theme_id', 'theme_icon', 'subtheme', 'subtheme_id')
-        #fields = ('id', 'label', 'description', 'theme', 'theme_id', 'theme_icon', 'subtheme', 'subtheme_id', 'locations', )
+        fields = ("id", "name", "theme", "metadata")
+
+
+class InlineThemeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Theme
+        fields = ("id", "name", "icon",)
+
+class ProfileCategorySerializer(serializers.ModelSerializer):
+    metadata = MetaDataSerializer(source="category.metadata")
+    theme = InlineThemeSerializer()
+
+    class Meta:
+        model = models.ProfileCategory
+        fields = ('id', 'label', 'description', 'theme', 'metadata',)
