@@ -77,22 +77,16 @@ def process_task_info(task):
     """
     Process task
     """
-    logger.debug(f"Processing task info: {task}")
-    logger.debug(f"Kwargs: {task.kwargs}")
     notify = task.kwargs.get("notify", False)
     assign_task = task.kwargs.get("assign", False)
     obj = next(iter(task.args))
 
-    logger.debug("Checking assign task")
     if assign_task:
         obj.task = task
         obj.save()
-        logger.debug("Saved task")
 
-    logger.debug("Checking notify")
     if notify:
         notification_type = "success" if task.success else "error"
-        logger.debug(f"Notification type: {notification_type}")
 
         session_key = task.kwargs.get("key", False)
         task_type = task.kwargs.get("type", False)
@@ -101,15 +95,11 @@ def process_task_info(task):
 
         # Get message
         notify = Notify()
-        logger.debug("Notify created")
         if not message:
-            logger.debug("No message")
             message = notify.get_nofitification_details(notification_type, obj, task_type, results)
-            logger.debug("Notification details: {message}")
 
         # Add message to user
         notify_user(notification_type, session_key, message, task.id)
-        logger.debug("Notified user")
 
 def notify_user(notification_type, session_key, message, task_id=None):
     """
@@ -153,15 +143,12 @@ def custom_admin_notification(session, notification_type, message, task_id=None)
         messages = session['notifications']
     messages.append(notification)
     session['notifications'] = messages
-    logger.debug(f"Added notification: {notification}")
     return session
 
 def add_to_task_list(session, task):
     """
     Add task id to session task_list
     """
-    logger.debug(f"Adding task: {task} to session")
     task_list = session.get("task_list", [])
     task_list.append(task)
     session["task_list"] = task_list
-    logger.debug("finished adding task to session")

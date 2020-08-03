@@ -31,7 +31,6 @@ class DataAccumulator:
             if len(values) > 0:
                 if len(values) > 1:
                     logger.warn(f"Expected a single group when creating a subindicator - found {len(values)}!")
-                    logger.debug(values)
                 subindicator = values[0]
                 subindicators[subindicator] = count
             else: 

@@ -1,5 +1,12 @@
+import logging
+
+from urllib.parse import urlparse
+
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 from django.views.decorators.http import condition
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 
 
 from rest_framework import generics
@@ -13,6 +20,8 @@ from ..cache import etag_profile_updated, last_modified_profile_updated
 
 from wazimap_ng.datasets.models import Geography
 
+logger = logging.getLogger(__name__)
+
 class ProfileDetail(generics.RetrieveAPIView):
     queryset = models.Profile
     serializer_class = serializers.FullProfileSerializer
@@ -20,6 +29,24 @@ class ProfileDetail(generics.RetrieveAPIView):
 class ProfileList(generics.ListAPIView):
     queryset = models.Profile.objects.all()
     serializer_class = serializers.ProfileSerializer
+
+class ProfileByUrl(generics.RetrieveAPIView):
+    queryset = models.Profile.objects.all()
+    serializer_class = serializers.FullProfileSerializer
+
+    @method_decorator(never_cache)
+    def retrieve(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+        http_origin = request.META["HTTP_ORIGIN"]
+        hostname = urlparse(http_origin).hostname
+        logger.info(f"Received configuration request from: {hostname}")
+        qs = qs.filter(configuration__urls__contains=[hostname])
+        if qs.count() == 0:
+            raise Http404
+
+        instance = qs.first()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)

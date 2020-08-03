@@ -1,3 +1,5 @@
+import logging
+
 from collections import OrderedDict
 from django.db.models import F
 
@@ -5,6 +7,8 @@ from wazimap_ng.datasets.models import IndicatorData, Group
 from wazimap_ng.utils import qsdict, mergedict, expand_nested_list, pivot, sort_list_using_order
 
 from .. import models
+
+logger = logging.getLogger(__name__)
 
 def get_indicator_data(profile, geography):
     data = (IndicatorData.objects
@@ -65,7 +69,7 @@ def IndicatorDataSerializer(profile, geography):
     children_indicator_data = get_child_indicator_data(profile, geography)
     indicator_data2 = list(expand_nested_list(indicator_data, "jsdata"))
 
-    groups = Group.objects.filter(dataset__profile=profile).values("name", "dataset", "subindicators")
+    groups = Group.objects.filter(dataset__indicator__profileindicator__profile=profile).values("name", "dataset", "subindicators")
     groups_lookup = {
         (x["name"], x["dataset"]): x["subindicators"] for x in groups
     }
@@ -110,6 +114,7 @@ def IndicatorDataSerializer(profile, geography):
                 sorted_group_subindicators_list = sort_list_using_order(group_subindicators_dict.items(), subindicator_order, key_func=key_func)
                 sorted_group_subindicators_dict = OrderedDict(sorted_group_subindicators_list)
             else:
+                logger.warning(f"Key: {key} not in groups lookup")
                 sorted_group_subindicators_dict = group_subindicators_dict
 
             new_dict[group] = sorted_group_subindicators_dict

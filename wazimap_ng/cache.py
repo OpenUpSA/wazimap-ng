@@ -67,6 +67,7 @@ def last_modified_point_updated(request, profile_id, category_id=None, theme_id=
 
 ########### Signals #################
 def update_profile_cache(profile):
+    logger.info(f"Updating profile cache: {profile}")
     key = profile_key % profile.id
     cache.set(key, datetime.now())
 
@@ -100,6 +101,10 @@ def profile_subcategory_updated(sender, instance, **kwargs):
 @receiver(post_save, sender=ProfileKeyMetrics)
 def profile_keymetrics_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
+
+@receiver(post_save, sender=Profile)
+def profile_indicator_updated(sender, instance, **kwargs):
+    update_profile_cache(instance)
 
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
