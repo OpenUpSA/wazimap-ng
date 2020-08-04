@@ -38,7 +38,7 @@ class LocationSerializer(GeoFeatureModelSerializer):
 
     def get_image(self, obj):
         request = self.context.get('request')
-        if obj.image != None:
+        if obj.image != None and obj.image.url != None:
             photo_url = obj.image.url
             return request.build_absolute_uri(photo_url)
         return None
