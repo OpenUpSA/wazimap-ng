@@ -97,8 +97,10 @@ urlpatterns = [
     path("api/v1/points/profile/<int:profile_id>/themes/", cache(points_views.theme_view)),
     path("api/v1/points/profile/<int:profile_id>/theme/<int:theme_id>/categories/", cache(points_views.CategoryList.as_view())),
     path("api/v1/points/profile/<int:profile_id>/categories/", cache(points_views.CategoryList.as_view())),
-    path("api/v1/points/profile/<int:profile_id>/category/<int:category_id>/points/", cache(points_views.LocationList.as_view()), name="category-points"),
-    path("api/v1/points/profile/<int:profile_id>/category/<int:category_id>/geography/<str:geography_code>/points/", cache(points_views.LocationList.as_view()), name="category-points-geography"),
+    path("api/v1/points/profile/<int:profile_id>/category/<int:profile_category_id>/points/", cache(points_views.LocationList.as_view()), name="category-points"),
+    path("api/v1/points/profile/<int:profile_id>/category/<int:profile_category_id>/geography/<str:geography_code>/points/", cache(points_views.LocationList.as_view()), name="category-points-geography"),
+    path("api/v1/points/profile/<int:profile_id>/profile_categories/", cache(points_views.ProfileCategoryList.as_view()), name="profile-category"),
+    path("api/v1/points/profile/<int:profile_id>/theme/<int:theme_id>/profile_categories/", cache(points_views.ProfileCategoryList.as_view()), name="profile-category-theme"),
 
     re_path(r"^$", RedirectView.as_view(url="/api/v1/datasets/", permanent=False)),
 

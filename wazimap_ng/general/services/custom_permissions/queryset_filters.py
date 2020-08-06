@@ -79,10 +79,10 @@ class CustomQuerySet(models.QuerySet):
 
 	def get_points_location_queryset(self, user):
 		profiles = permissions.get_objects_for_user(
-			user, Profile, include_public=False
+			user, Profile
 		)
 		collections = permissions.get_objects_for_user(
-			user, Category, include_public=False
+			user, Category
 		).filter(profile__in=profiles)
 		return self.filter(category__in=collections)
 

@@ -25,14 +25,13 @@ from ..boundaries.models import GeographyBoundary
 
 
 class CategoryList(generics.ListAPIView):
-    queryset = models.Category.objects.all()
+    queryset = models.ProfileCategory.objects.all()
     serializer_class = serializers.CategorySerializer
 
     def list(self, request, profile_id, theme_id=None):
         profile = Profile.objects.get(id=profile_id)
-
         queryset = self.get_queryset()
-        queryset = queryset.filter(theme__profile=profile_id)
+        queryset = queryset.filter(profile=profile_id)
 
         if theme_id is not None:
             theme = models.Theme.objects.get(id=theme_id)
@@ -50,7 +49,7 @@ def theme_view(request, profile_id):
     qs = models.ProfileCategory.objects.filter(profile=profile)
 
     for pc in qs:
-        theme = pc.category.theme
+        theme = pc.theme
         themes[theme].append(pc)
 
     js = []
@@ -64,7 +63,7 @@ def theme_view(request, profile_id):
 
         for pc in themes[theme]:
             js_theme["categories"].append({
-                "id": pc.category.id,
+                "id": pc.id,
                 "name": pc.label,
                 "metadata": MetaDataSerializer(pc.category.metadata).data
             })
@@ -78,11 +77,27 @@ def theme_view(request, profile_id):
 class LocationList(generics.ListAPIView):
     pagination_class = GeoJsonPagination
     serializer_class = serializers.LocationSerializer
-    queryset = models.Location.objects.all().prefetch_related("category__theme")
+    queryset = models.Location.objects.all().prefetch_related("category")
 
-    def list(self, request, profile_id, category_id=None, geography_code=None):
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update(self.kwargs)
+
+        if context["profile_category_id"]:
+             profile_category = models.ProfileCategory.objects.get(
+                id=context["profile_category_id"]
+            )
+             context["category_js"] = serializers.CategorySerializer(
+                profile_category
+            ).data
+        else:
+            context["category_js"] = None
+        return context
+
+    def list(self, request, profile_id, profile_category_id=None, geography_code=None):
         try:
-            queryset = get_locations(self.get_queryset(), profile_id, category_id, geography_code)
+            profile_category = models.ProfileCategory.objects.get(id=profile_category_id)
+            queryset = get_locations(self.get_queryset(), profile_id, profile_category.category, geography_code)
             serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
             return Response(data)
@@ -100,8 +115,10 @@ def boundary_point_count_helper(profile, geography):
         locations
             .filter(category__profilecategory__profile=profile)
             .values(
-                "category__id", "category__profilecategory__label",
-                "category__theme__name", "category__theme__icon", "category__theme__id",
+                "category__profilecategory__id", "category__profilecategory__label",
+                "category__profilecategory__theme__name",
+                "category__profilecategory__theme__icon",
+                "category__profilecategory__theme__id",
                 "category__metadata__source", "category__metadata__description",
                 "category__metadata__licence"
             )
@@ -113,12 +130,12 @@ def boundary_point_count_helper(profile, geography):
     res = []
 
     for lc in location_count:
-        id = lc["category__theme__id"]
+        id = lc["category__profilecategory__theme__id"]
         if id not in theme_dict:
             theme = {
-                "name": lc["category__theme__name"],
-                "id": lc["category__theme__id"],
-                "icon": lc["category__theme__icon"],
+                "name": lc["category__profilecategory__theme__name"],
+                "id": lc["category__profilecategory__theme__id"],
+                "icon": lc["category__profilecategory__theme__icon"],
                 "subthemes": []
             }
             theme_dict[id] = theme
@@ -126,7 +143,7 @@ def boundary_point_count_helper(profile, geography):
         theme = theme_dict[id]
         theme["subthemes"].append({
             "label": lc["category__profilecategory__label"],
-            "id": lc["category__id"],
+            "id": lc["category__profilecategory__id"],
             "count": lc["count_category"],
             "metadata": {
                 "source": lc["category__metadata__source"],
@@ -136,4 +153,22 @@ def boundary_point_count_helper(profile, geography):
         })
 
     return res
+
+
+class ProfileCategoryList(generics.ListAPIView):
+    queryset = models.ProfileCategory.objects.all()
+    serializer_class = serializers.ProfileCategorySerializer
+
+    def list(self, request, profile_id, theme_id=None):
+        query_dict = {
+            "profile_id": profile_id
+        }
+        if theme_id:
+            query_dict["theme_id"] = theme_id
+        queryset = self.get_queryset().filter(**query_dict)
+
+        serializer = self.get_serializer_class()(queryset, many=True)
+        data = serializer.data
+
+        return Response(data)
 
