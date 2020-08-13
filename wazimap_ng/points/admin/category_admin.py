@@ -15,7 +15,7 @@ from wazimap_ng.datasets import hooks
 
 @admin.register(models.Category)
 class CategoryAdmin(BaseAdminModel):
-    list_display = ("name",)
+    list_display = ("name", "profile")
     form = CategoryAdminForm
     exclude = ("metadata", )
 
@@ -31,7 +31,7 @@ class CategoryAdmin(BaseAdminModel):
           'fields': ('source', 'description', 'licence', )
         }),
     )
-    list_filter = (filters.ThemeFilter,)
+    list_filter = (filters.ProfileFilter,)
     readonly_fields = ("imported_collections", )
     search_fields = ("name", )
 
