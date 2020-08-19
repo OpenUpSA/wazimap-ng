@@ -4,6 +4,7 @@ from django.core.serializers import serialize
 
 from . import models
 from wazimap_ng.general.serializers import LicenceSerializer, MetaDataSerializer
+from wazimap_ng.profile.serializers import SimpleProfileSerializer as ProfileSerializer
 
 class SimpleThemeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,16 +12,16 @@ class SimpleThemeSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 class CategorySerializer(serializers.ModelSerializer):
-    metadata = MetaDataSerializer(source="category.metadata")
-    theme = SimpleThemeSerializer()
-    name = serializers.ReadOnlyField(source='category.name')
+    metadata = MetaDataSerializer()
+    name = serializers.ReadOnlyField()
+    profile = ProfileSerializer()
 
     class Meta:
-        model = models.ProfileCategory
-        fields = ("id", "name", "theme", "metadata")
+        model = models.Category
+        fields = ("id", "profile", "permission_type", "name", "metadata")
 
 class ThemeSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True)
+    # categories = CategorySerializer(many=True)
 
     class Meta:
         model = models.Theme
@@ -45,7 +46,7 @@ class LocationSerializer(GeoFeatureModelSerializer):
             profile_category = obj.category.profilecategory_set.filter(
                 profile_id=profile_id
             ).first()
-            category_js = CategorySerializer(profile_category).data
+            category_js = Profile(profile_category).data
         return category_js
 
     def get_image(self, obj):
@@ -67,14 +68,6 @@ class LocationInlineSerializer(serializers.ModelSerializer):
         fields = ('id', 'coordinates', 'data', )
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    metadata = MetaDataSerializer(source="category.metadata")
-
-    class Meta:
-        model = models.ProfileCategory
-        fields = ("id", "name", "theme", "metadata")
-
-
 class InlineThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Theme
@@ -83,7 +76,8 @@ class InlineThemeSerializer(serializers.ModelSerializer):
 class ProfileCategorySerializer(serializers.ModelSerializer):
     metadata = MetaDataSerializer(source="category.metadata")
     theme = InlineThemeSerializer()
+    name = serializers.ReadOnlyField(source="label")
 
     class Meta:
         model = models.ProfileCategory
-        fields = ('id', 'label', 'description', 'theme', 'metadata',)
+        fields = ('id', 'name', 'description', 'theme', 'metadata',)

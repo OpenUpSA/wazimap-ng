@@ -25,17 +25,16 @@ from ..boundaries.models import GeographyBoundary
 
 
 class CategoryList(generics.ListAPIView):
-    queryset = models.ProfileCategory.objects.all()
+    queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer
 
-    def list(self, request, profile_id, theme_id=None):
-        profile = Profile.objects.get(id=profile_id)
+    def list(self, request, profile_id=None):
         queryset = self.get_queryset()
-        queryset = queryset.filter(profile=profile_id)
+        
+        if profile_id is not None:
+            profile = Profile.objects.get(id=profile_id)
+            queryset = queryset.filter(profile=profile_id)
 
-        if theme_id is not None:
-            theme = models.Theme.objects.get(id=theme_id)
-            queryset = queryset.filter(theme=theme)
 
         serializer = self.get_serializer_class()(queryset, many=True)
         data = serializer.data
@@ -87,7 +86,7 @@ class LocationList(generics.ListAPIView):
              profile_category = models.ProfileCategory.objects.get(
                 id=context["profile_category_id"]
             )
-             context["category_js"] = serializers.CategorySerializer(
+             context["category_js"] = serializers.ProfileCategorySerializer(
                 profile_category
             ).data
         else:
