@@ -18,12 +18,12 @@ class ProfileCategoryAdminForm(forms.ModelForm):
 
 @admin.register(models.ProfileCategory)
 class ProfileCategoryAdmin(BaseAdminModel):
-    list_display = ("label", "category", "profile")
-    list_filter = (filters.CollectionFilter, filters.ProfileFilter,)
+    list_display = ("label", "theme", "category", "profile")
+    list_filter = (filters.ProfileFilter, filters.ThemeFilter, filters.CollectionFilter)
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'category',)
+            'fields': ('profile', 'theme', 'category',)
         }),
         ("Permissions", {
             'fields': ('permission_type', )

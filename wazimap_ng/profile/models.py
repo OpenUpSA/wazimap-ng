@@ -38,7 +38,7 @@ class ChoroplethMethod(BaseModel):
 
 
 class IndicatorCategory(BaseModel):
-    name = models.CharField(max_length=25)
+    name = models.CharField(max_length=255)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
@@ -72,7 +72,7 @@ class ProfileKeyMetrics(BaseModel):
     # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.
     subindicator = models.PositiveSmallIntegerField()
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32, help_text="Method for calculating the denominator that will normalise this value.")
-    label = models.CharField(max_length=100, help_text="Text used for display to users.")
+    label = models.CharField(max_length=255, help_text="Text used for display to users.")
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     
     def __str__(self):
@@ -88,7 +88,7 @@ class ProfileHighlight(BaseModel):
     # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.
     subindicator = models.PositiveSmallIntegerField(null=True, blank=True)
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32, help_text="Method for calculating the denominator that will normalise this value.")
-    label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
+    label = models.CharField(max_length=255, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
 
     def __str__(self):
@@ -102,7 +102,7 @@ class ProfileIndicator(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.", verbose_name="variable")
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
-    label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
+    label = models.CharField(max_length=255, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
     description = models.TextField(blank=True)
     subindicators = JSONField(default=list, blank=True)
     choropleth_method = models.ForeignKey(ChoroplethMethod, null=False, on_delete=models.CASCADE)

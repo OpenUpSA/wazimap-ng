@@ -4,6 +4,7 @@ from django.core.serializers import serialize
 
 from . import models
 from wazimap_ng.general.serializers import LicenceSerializer, MetaDataSerializer
+from wazimap_ng.profile.serializers import SimpleProfileSerializer as ProfileSerializer
 
 class SimpleThemeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,15 +12,16 @@ class SimpleThemeSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 class CategorySerializer(serializers.ModelSerializer):
-    theme = SimpleThemeSerializer()
     metadata = MetaDataSerializer()
+    name = serializers.ReadOnlyField()
+    profile = ProfileSerializer()
 
     class Meta:
         model = models.Category
-        fields = ("id", "name", "theme", "metadata")
+        fields = ("id", "profile", "permission_type", "name", "metadata")
 
 class ThemeSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True)
+    # categories = CategorySerializer(many=True)
 
     class Meta:
         model = models.Theme
@@ -33,8 +35,19 @@ class ThemeSerializer(serializers.ModelSerializer):
         return representation
 
 class LocationSerializer(GeoFeatureModelSerializer):
-    category = CategorySerializer()
+    category = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
+
+    def get_category(self, obj):
+        category_js = self.context.get("category_js", None)
+
+        if not category_js:
+            profile_id = self.context.get("profile_id", None)
+            profile_category = obj.category.profilecategory_set.filter(
+                profile_id=profile_id
+            ).first()
+            category_js = Profile(profile_category).data
+        return category_js
 
     def get_image(self, obj):
         request = self.context.get('request')
@@ -54,14 +67,17 @@ class LocationInlineSerializer(serializers.ModelSerializer):
         model = models.Location
         fields = ('id', 'coordinates', 'data', )
 
+
+class InlineThemeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Theme
+        fields = ("id", "name", "icon",)
+
 class ProfileCategorySerializer(serializers.ModelSerializer):
-    subtheme = serializers.ReadOnlyField(source='category.name')
-    theme = serializers.ReadOnlyField(source='category.theme.name')
-    theme_id = serializers.ReadOnlyField(source='category.theme_id')
-    subtheme_id = serializers.ReadOnlyField(source='category_id')
-    theme_icon = serializers.ReadOnlyField(source='category.theme.icon')
+    metadata = MetaDataSerializer(source="category.metadata")
+    theme = InlineThemeSerializer()
+    name = serializers.ReadOnlyField(source="label")
 
     class Meta:
         model = models.ProfileCategory
-        fields = ('id', 'label', 'description', 'theme', 'theme_id', 'theme_icon', 'subtheme', 'subtheme_id')
-        #fields = ('id', 'label', 'description', 'theme', 'theme_id', 'theme_icon', 'subtheme', 'subtheme_id', 'locations', )
+        fields = ('id', 'name', 'description', 'theme', 'metadata',)

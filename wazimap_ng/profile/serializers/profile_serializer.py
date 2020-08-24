@@ -8,16 +8,21 @@ from .. import models
 from . import IndicatorDataSerializer, MetricsSerializer, ProfileLogoSerializer, HighlightsSerializer, OverviewSerializer
 from . import ProfileIndicatorSerializer
 
+class SimpleProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Profile
+        fields = ('id', 'name')
+
 class ProfileSerializer(serializers.ModelSerializer):
     requires_authentication = serializers.SerializerMethodField('is_authentication_required')
     geography_hierarchy = GeographyHierarchySerializer()
 
     def is_authentication_required(self, obj):
-      return obj.permission_type == "private"
+        return obj.permission_type == "private"
 
     class Meta:
-      model = models.Profile
-      fields = ('id', 'name', 'permission_type', 'requires_authentication', 'geography_hierarchy', 'description', 'configuration')
+        model = models.Profile
+        fields = ('id', 'name', 'permission_type', 'requires_authentication', 'geography_hierarchy', 'description', 'configuration')
 
 
 def ExtendedProfileSerializer(profile, geography):
@@ -49,7 +54,7 @@ class FullProfileSerializer(serializers.ModelSerializer):
     requires_authentication = serializers.SerializerMethodField('is_authentication_required')
 
     def is_authentication_required(self, obj):
-      return obj.permission_type == "private"
+        return obj.permission_type == "private"
 
     class Meta:
         model = models.Profile

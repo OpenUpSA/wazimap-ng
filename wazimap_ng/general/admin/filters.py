@@ -25,7 +25,7 @@ class DynamicBaseFilter(admin.SimpleListFilter):
             return queryset
         return queryset.filter(**{
             self.parameter_name: value
-        })
+        }).distinct()
 
 
 # Profile Filter
@@ -90,7 +90,7 @@ class IndicatorFilter(DynamicBaseFilter):
 # Points app
 class ThemeFilter(DynamicBaseFilter):
     title = "Theme"
-    parameter_name = 'theme_id'
+    parameter_name = 'profilecategory__theme_id'
     model_class = Theme
 
     def lookups(self, request, model_admin):
