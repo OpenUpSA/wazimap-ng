@@ -8,7 +8,11 @@ def add_decimal_places_to_profile_config(apps, schema_editor):
     Profile = apps.get_model("profile", "Profile")
     for profile in Profile.objects.all():
     	config = profile.configuration
-    	config["decimal_places"] = 2
+    	config["formatting"] = {
+            'percentage': '.1%',
+            'decimal': ',.2f',
+            'integer': ',.2d'
+        }
     	profile.configuration = config
     	profile.save()
 
