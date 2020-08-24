@@ -60,6 +60,7 @@ class BaseAdminModel(admin.ModelAdmin):
     help_texts = []
     exclude_common_list_display = False
     common_list_display = ("created", "updated",)
+    date_hierarchy = "created"
 
     def __init__(self, model, admin_site):
         if not self.exclude_common_list_display:

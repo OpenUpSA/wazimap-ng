@@ -54,7 +54,7 @@ class LocationAdmin(ExportMixin, BaseAdminModel):
     }
 
     list_display = ("name", "category",)
-    list_filter = (filters.CollectionFilter,)
+    list_filter = ("category__profile", filters.CollectionFilter,)
     search_fields = ("name",)
     resource_class = LocationResource
 
