@@ -39,8 +39,8 @@ class ProfileByUrl(generics.RetrieveAPIView):
         qs = self.get_queryset()
         http_origin = request.META.get("HTTP_ORIGIN", None)
         if http_origin is None:
-            logger.warning(f"Missing HTTP_ORIGIN header - can't identify profile")
-            raise Http404
+            http_origin = "http://localhost"
+            logger.warning(f"Missing HTTP_ORIGIN header - can't identify profile, defaulting to localhost")
 
         hostname = urlparse(http_origin).hostname
         logger.info(f"Received configuration request from: {hostname}")
