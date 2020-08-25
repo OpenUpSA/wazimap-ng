@@ -37,10 +37,10 @@ class ProfileByUrl(generics.RetrieveAPIView):
     @method_decorator(never_cache)
     def retrieve(self, request, *args, **kwargs):
         qs = self.get_queryset()
-        http_origin = request.META.get("HTTP_ORIGIN", None)
+        http_origin = request.META.get("WM_HOSTNAME", None)
         if http_origin is None:
             http_origin = "http://localhost"
-            logger.warning(f"Missing HTTP_ORIGIN header - can't identify profile, defaulting to localhost")
+            logger.warning(f"Missing WM_HOSTNAME header - can't identify profile, defaulting to localhost")
 
         hostname = urlparse(http_origin).hostname
         logger.info(f"Received configuration request from: {hostname}")
