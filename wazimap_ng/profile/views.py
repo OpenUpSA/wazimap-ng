@@ -32,7 +32,7 @@ class ProfileList(generics.ListAPIView):
 
 class ProfileByUrl(generics.RetrieveAPIView):
     queryset = models.Profile.objects.all()
-    serializer_class = serializers.FullProfileSerializer
+    serializer_class = serializers.ProfileSerializer
 
     @method_decorator(never_cache)
     def retrieve(self, request, *args, **kwargs):
