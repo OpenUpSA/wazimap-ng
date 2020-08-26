@@ -171,3 +171,12 @@ class ProfileCategoryList(generics.ListAPIView):
 
         return Response(data)
 
+
+class ThemeList(generics.ListAPIView):
+    queryset = models.Theme.objects.all()
+    serializer_class = serializers.ThemeSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        profile_id = self.request.query_params.get('profile_id', None)
+        return qs.filter(profile_id=profile_id)

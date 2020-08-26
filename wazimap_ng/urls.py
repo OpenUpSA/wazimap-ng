@@ -94,6 +94,7 @@ urlpatterns = [
     path("api/v1/geography/search/<str:profile_id>/", cache(dataset_views.search_geography)),
     path("api/v1/geography/ancestors/<str:geography_code>/<str:version>/", cache(dataset_views.geography_ancestors), name="geography-ancestors"),
 
+    path("api/v1/points/themes/", cache(points_views.ThemeList.as_view())),
     path("api/v1/points/profile/<int:profile_id>/themes/", cache(points_views.theme_view)),
     
     path("api/v1/points/profile/<int:profile_id>/categories/", cache(points_views.ProfileCategoryList.as_view())),
