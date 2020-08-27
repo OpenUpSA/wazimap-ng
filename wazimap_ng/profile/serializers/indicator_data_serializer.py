@@ -30,6 +30,8 @@ def get_indicator_data(profile, geography):
             metadata_description=F("indicator__dataset__metadata__description"),
             licence_url=F("indicator__dataset__metadata__licence__url"),
             licence_name=F("indicator__dataset__metadata__licence__name"),
+            chart_presentation_label=F("indicator__profileindicator__default_chart_presentation__label"),
+            chart_presentation_type=F("indicator__profileindicator__default_chart_presentation__presentation_type")
         ))
 
     return data
@@ -210,6 +212,10 @@ def IndicatorDataSerializer(profile, geography):
         lambda x: {
             "description": x["description"],
             "choropleth_method": x["choropleth_method"],
+            "chart_presentation": {
+                "label": x["chart_presentation_label"],
+                "type": x["chart_presentation_type"]
+            },
             "metadata": {
                 "source": x["metadata_source"],
                 "description": x["metadata_description"],
@@ -230,6 +236,10 @@ def IndicatorDataSerializer(profile, geography):
         lambda x: {
             "description": x["description"],
             "choropleth_method": x["choropleth_method"],
+            "chart_presentation": {
+                "label": x["chart_presentation_label"],
+                "type": x["chart_presentation_type"]
+            },
             "metadata": {
                 "source": x["metadata_source"],
                 "description": x["metadata_description"],

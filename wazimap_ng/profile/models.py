@@ -36,6 +36,12 @@ class ChoroplethMethod(BaseModel):
         return f"{self.name}"
 
 
+class DefaultChartPresentation(BaseModel):
+    label = models.CharField(max_length=30, blank=False)
+    presentation_type = models.CharField(max_length=30, blank=False, verbose_name="type")
+
+    def __str__(self):
+        return f"{self.label}"
 
 class IndicatorCategory(BaseModel):
     name = models.CharField(max_length=255)
@@ -107,6 +113,9 @@ class ProfileIndicator(BaseModel):
     subindicators = JSONField(default=list, blank=True)
     choropleth_method = models.ForeignKey(ChoroplethMethod, null=False, on_delete=models.CASCADE)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
+    default_chart_presentation = models.ForeignKey(
+        DefaultChartPresentation, null=True, blank=True, on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return f"{self.profile.name} -> {self.label}"
