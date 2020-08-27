@@ -308,7 +308,7 @@ class Common(QCluster, Configuration):
         'user-agent',
         'x-csrftoken',
         'x-requested-with',
-        'wm_hostname'
+        'wm-hostname'
     )
 
     def get_env_value(env_variable):
