@@ -7,6 +7,7 @@ from django.db.models import Count
 from django.forms.models import model_to_dict
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -179,4 +180,7 @@ class ThemeList(generics.ListAPIView):
     def get_queryset(self):
         qs = super().get_queryset()
         profile_id = self.request.query_params.get('profile_id', None)
-        return qs.filter(profile_id=profile_id)
+        if profile_id:
+            profile = get_object_or_404(Profile, pk=profile_id)
+            return qs.filter(profile_id=profile_id)
+        return qs
