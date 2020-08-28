@@ -1,4 +1,4 @@
-from wazimap_ng.utils import mergedict, format_perc, format_float, format_int
+from wazimap_ng.utils import mergedict
 
 from wazimap_ng.datasets.models import IndicatorData 
 
@@ -24,7 +24,7 @@ def sibling(profile_key_metric, geography):
             denominator += s[subindicator]
 
         if denominator > 0 and numerator is not None:
-            return format_perc(numerator / denominator)
+            return numerator / denominator
     return None
 
 def absolute_value(profile_key_metric, geography):
@@ -44,7 +44,7 @@ def subindicator(profile_key_metric, geography):
         denominator = sum(indicator_data.data["subindicators"].values())
 
         if denominator > 0 and numerator is not None:
-            return format_perc(numerator / denominator)
+            return numerator / denominator
     return None
 
 algorithms = {

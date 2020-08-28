@@ -1,5 +1,5 @@
 from wazimap_ng.datasets.models import IndicatorData 
-from wazimap_ng.utils import mergedict, format_perc, format_float, format_int
+from wazimap_ng.utils import mergedict
 
 
 def get_subindicator(highlight):
@@ -20,7 +20,7 @@ def sibling(highlight, geography):
         denominator += s
 
     if denominator > 0 and numerator is not None:
-        return format_perc(numerator / denominator)
+        return numerator / denominator
     return None
 
 def absolute_value(highlight, geography):
@@ -42,7 +42,7 @@ def subindicator(highlight, geography):
             denominator += count
 
         if denominator > 0 and numerator is not None:
-            return format_perc(numerator / denominator)
+            return numerator / denominator
     return None
 
 algorithms = {
