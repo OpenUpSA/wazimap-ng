@@ -45,3 +45,21 @@ class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
         js = (
             "/static/js/variable_subindicators.js",
         )
+
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        qs = form.base_fields["subcategory"].queryset
+        if obj:
+            profile_id = obj.profile_id
+            if request.method == "POST":
+                profile_id = request.POST.get("profile", profile_id)
+            qs = models.IndicatorSubcategory.objects.filter(
+                category__profile_id=profile_id
+            )
+        elif not obj and request.method == "GET":
+             qs = qs = models.IndicatorSubcategory.objects.none()
+
+        form.base_fields["subcategory"].queryset = qs
+
+        return form
