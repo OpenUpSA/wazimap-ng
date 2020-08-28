@@ -71,7 +71,8 @@ def MetricsSerializer(profile, geography):
                         profile_key_metric.subcategory.name: {
                             "key_metrics": [{
                                 "label": profile_key_metric.label,
-                                "value": val
+                                "value": val,
+                                "method": denominator
                             }]
                         }
                     }
