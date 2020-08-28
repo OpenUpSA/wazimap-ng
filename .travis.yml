@@ -11,7 +11,7 @@ before_script:
 - docker-compose up -d
 
 script:
-- docker-compose exec web pytest /app/tests
+- docker-compose exec -e DJANGO_CONFIGURATION=Test web pytest /app/tests
 
 after_script:
   - docker-compose down
