@@ -63,7 +63,7 @@ def test_etag_point_updated(mock_last_modified, mock_request):
     mock_last_modified.return_value = 9999
     profile_id = 1
 
-    assert cache.etag_point_updated(mock_request, profile_id, category_id=1) == "9999"
+    assert cache.etag_point_updated(mock_request, profile_id, profile_category_id=1) == "9999"
 
 @patch("django.http.request")
 @patch("wazimap_ng.cache.last_modified")
@@ -71,7 +71,7 @@ def test_last_modified_point_updated(mock_last_modified, mock_request):
     mock_last_modified.return_value = 9999
     profile_id = 1
 
-    assert cache.last_modified_point_updated(mock_request, profile_id, category_id=2) == 9999
+    assert cache.last_modified_point_updated(mock_request, profile_id, profile_category_id=2) == 9999
     mock_last_modified.assert_called_with(mock_request, profile_id, "etag-Location-profile-1-2")
 
     assert cache.last_modified_point_updated(mock_request, profile_id, theme_id=3) == 9999
@@ -95,7 +95,7 @@ def test_update_profile_cache_signal(mock_datetime):
 
 @patch("wazimap_ng.cache.datetime")
 def test_update_point_cache_signal(mock_datetime):
-    category = namedtuple("category", ["id", "theme"])
+    category = namedtuple("category", ["id", "theme", "profile"])
     theme = namedtuple("theme", ["id", "profile"])
     profile = namedtuple("profile", "id")
 
@@ -104,16 +104,15 @@ def test_update_point_cache_signal(mock_datetime):
     theme.id = 20
     theme.profile = profile
     profile.id = 99
+    category.profile = profile
 
     mock_datetime.now.return_value = "Some time"
 
     cache.update_point_cache(category)
 
-    key1 = "etag-Location-profile-%s-%s" % (profile.id, category.id)
-    key2 = "etag-Theme-profile-%s-%s" % (profile.id, theme.id)
+    key = "etag-Location-profile-%s-%s" % (profile.id, category.id)
 
-    assert django_cache.get(key1) == "Some time"
-    assert django_cache.get(key2) == "Some time"
+    assert django_cache.get(key) == "Some time"
 
 # @patch("wazimap_ng.cache.update_profile_cache")
 # def test_profile_indicator_updated(mock_update_profile_cache):

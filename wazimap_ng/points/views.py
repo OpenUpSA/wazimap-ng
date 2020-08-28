@@ -96,7 +96,13 @@ class LocationList(generics.ListAPIView):
     def list(self, request, profile_id, profile_category_id=None, geography_code=None):
         try:
             profile_category = models.ProfileCategory.objects.get(id=profile_category_id)
-            queryset = get_locations(self.get_queryset(), profile_id, profile_category.category, geography_code)
+            profile = Profile.objects.get(id=profile_id)
+            geography = None
+            if geography_code is not None:
+                version = profile.geography_hierarchy.version
+                geography = Geography.objects.get(code=geography_code, version=version)
+
+            queryset = get_locations(self.get_queryset(), profile, profile_category.category, geography)
             serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
             return Response(data)
@@ -108,7 +114,7 @@ class LocationList(generics.ListAPIView):
         return super().dispatch(*args, **kwargs)
 
 def boundary_point_count_helper(profile, geography):
-    boundary = GeographyBoundary.objects.get_unique_boundary(geography)
+    boundary = GeographyBoundary.objects.get(geography__code=geography.code, geography__version=geography.version)
     locations = models.Location.objects.filter(coordinates__contained=boundary.geom) 
     location_count = (
         locations
