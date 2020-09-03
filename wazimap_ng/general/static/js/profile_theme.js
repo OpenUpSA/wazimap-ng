@@ -8,12 +8,12 @@
             var profileId = $(this).val();
             var $el = $("#id_theme");
             if (profileId) {
-                var url = '/api/v1/points/themes/?profile_id=' + profileId;
+                var url = '/api/v1/profile/' + profileId + '/points/themes/';
                 var themes = [];
                 $.ajax({
                     url: url,
                     success: function(data) {
-                        data.results.forEach(function(theme) {
+                        data.forEach(function(theme) {
                             themes = themes.concat(theme);
                         })
 
