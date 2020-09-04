@@ -78,21 +78,6 @@ class LocationList(generics.ListAPIView):
     serializer_class = serializers.LocationSerializer
     queryset = models.Location.objects.all().prefetch_related("category")
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update(self.kwargs)
-
-        if context["profile_category_id"]:
-             profile_category = models.ProfileCategory.objects.get(
-                id=context["profile_category_id"]
-            )
-             context["category_js"] = serializers.ProfileCategorySerializer(
-                profile_category
-            ).data
-        else:
-            context["category_js"] = None
-        return context
-
     def list(self, request, profile_id, profile_category_id=None, geography_code=None):
         try:
             profile_category = models.ProfileCategory.objects.get(id=profile_category_id)
