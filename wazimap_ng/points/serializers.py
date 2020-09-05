@@ -20,20 +20,6 @@ class CategorySerializer(serializers.ModelSerializer):
         model = models.Category
         fields = ("id", "profile", "permission_type", "name", "metadata")
 
-class ThemeSerializer(serializers.ModelSerializer):
-    # categories = CategorySerializer(many=True)
-
-    class Meta:
-        model = models.Theme
-        fields = "__all__"
-
-    def to_representation(self, obj):
-        representation = super().to_representation(obj)
-
-        if not obj.icon:
-            representation["icon"] = "icon--%s" % obj.name.lower()
-        return representation
-
 class LocationSerializer(GeoFeatureModelSerializer):
     image = serializers.SerializerMethodField()
 
@@ -69,3 +55,18 @@ class ProfileCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProfileCategory
         fields = ('id', 'name', 'description', 'theme', 'metadata',)
+
+class ThemeSerializer(serializers.ModelSerializer):
+    categories = ProfileCategorySerializer(many=True, source="profile_categories")
+
+    class Meta:
+        model = models.Theme
+        fields = "__all__"
+
+    def to_representation(self, obj):
+        representation = super().to_representation(obj)
+
+        if not obj.icon:
+            representation["icon"] = ""
+        return representation
+
