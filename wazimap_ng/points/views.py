@@ -7,6 +7,7 @@ from django.db.models import Count
 from django.forms.models import model_to_dict
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -41,37 +42,6 @@ class CategoryList(generics.ListAPIView):
 
         return Response(data)
 
-@api_view()
-def theme_view(request, profile_id):
-    themes = defaultdict(list)
-    profile = Profile.objects.get(id=profile_id)
-    qs = models.ProfileCategory.objects.filter(profile=profile)
-
-    for pc in qs:
-        theme = pc.theme
-        themes[theme].append(pc)
-
-    js = []
-    for theme in themes:
-        js_theme = {
-            "id": theme.id,
-            "name": theme.name,
-            "icon": theme.icon,
-            "categories": []
-        }
-
-        for pc in themes[theme]:
-            js_theme["categories"].append({
-                "id": pc.id,
-                "name": pc.label,
-                "metadata": MetaDataSerializer(pc.category.metadata).data
-            })
-            
-        js.append(js_theme)
-
-    return Response({
-        "results" : js
-    })
 
 class LocationList(generics.ListAPIView):
     pagination_class = GeoJsonPagination
@@ -162,3 +132,13 @@ class ProfileCategoryList(generics.ListAPIView):
 
         return Response(data)
 
+
+class ThemeList(generics.ListAPIView):
+    queryset = models.Theme.objects.all()
+    serializer_class = serializers.ThemeSerializer
+
+    def list(self, request, profile_id):
+        queryset = self.get_queryset().filter(profile_id=profile_id)
+        serializer = self.get_serializer_class()(queryset, many=True)
+        data = serializer.data
+        return Response(data)

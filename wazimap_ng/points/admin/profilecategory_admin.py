@@ -25,10 +25,6 @@ class ProfileCategoryAdmin(BaseAdminModel):
         ("Database fields (can't change after being created)", {
             'fields': ('profile', 'theme', 'category',)
         }),
-        ("Permissions", {
-            'fields': ('permission_type', )
-
-        }),
         ("Profile Collection Icon", {
             'fields': ('icon', )
 
@@ -44,6 +40,9 @@ class ProfileCategoryAdmin(BaseAdminModel):
         css = {
              'all': ('/static/css/admin-custom.css',)
         }
+        js = (
+            "/static/js/profile_theme.js",
+        )
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
@@ -58,3 +57,16 @@ class ProfileCategoryAdmin(BaseAdminModel):
         if is_new or is_profile_updated:
             assign_perms_to_group(obj.profile.name, obj, is_profile_updated)
         return obj
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        qs = form.base_fields["theme"].queryset
+        if obj:
+            qs = models.Theme.objects.filter(profile_id=obj.profile_id)
+        elif not obj and request.method == "GET":
+             qs = qs = models.Theme.objects.none()
+
+        form.base_fields["theme"].queryset = qs
+
+        return form

@@ -94,6 +94,9 @@ class CustomQuerySet(models.QuerySet):
 
 	def get_points_profilecategory_queryset(self, user):
 
-		return permissions.get_objects_for_user(
-			user, ProfileCategory, include_public=False
+		profiles = permissions.get_objects_for_user(
+		    user, Profile
 		)
+		return permissions.get_objects_for_user(
+		    user, ProfileCategory
+		).filter(profile__in=profiles)
