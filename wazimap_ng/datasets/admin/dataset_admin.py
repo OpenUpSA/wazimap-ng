@@ -1,22 +1,18 @@
-import json
 import logging
 
 from django.contrib import admin
-from django import forms
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-
 from django_q.tasks import async_task
 
-from .base_admin_model import DatasetBaseAdminModel, delete_selected_data
-from .. import models
-from .. import hooks
-from .views import MetaDataInline
-from .forms import DatasetAdminForm
-from wazimap_ng.general.widgets import description
-
-from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.admin import filters
+from wazimap_ng.general.services.permissions import assign_perms_to_group
+from wazimap_ng.general.widgets import description
+from .base_admin_model import DatasetBaseAdminModel, delete_selected_data
+from .forms import DatasetAdminForm
+from .views import MetaDataInline
+from .. import hooks
+from .. import models
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +20,16 @@ logger = logging.getLogger(__name__)
 def set_to_public(modeladmin, request, queryset):
     queryset.make_public()
 
+
 def set_to_private(modeladmin, request, queryset):
     queryset.make_private()
+
 
 def get_source(dataset):
     if hasattr(dataset, "metadata"):
         return dataset.metadata.source
-    return None 
+    return None
+
 
 class PermissionTypeFilter(filters.DatasetFilter):
     title = "Permission Type"
@@ -42,7 +41,7 @@ class PermissionTypeFilter(filters.DatasetFilter):
 
 @admin.register(models.Dataset)
 class DatasetAdmin(DatasetBaseAdminModel):
-    exclude = ("groups", )
+    exclude = ("groups",)
     inlines = (MetaDataInline,)
     actions = (set_to_public, set_to_private, delete_selected_data,)
     list_display = ("name", "permission_type", "geography_hierarchy", "profile", description("source", get_source))
@@ -51,7 +50,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
         filters.ProfileFilter, filters.DatasetMetaDataFilter
     )
     form = DatasetAdminForm
-    search_fields = ("name", )
+    search_fields = ("name",)
 
     fieldsets = (
         ("", {
@@ -67,11 +66,10 @@ class DatasetAdmin(DatasetBaseAdminModel):
         }),
     )
 
-    readonly_fields = ("imported_dataset", )
+    readonly_fields = ("imported_dataset",)
 
     class Media:
         js = ("/static/js/geography_hierarchy.js",)
-
 
     def imported_dataset(self, obj):
 
@@ -79,7 +77,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
             return '<a href="%s">%s</a>' % (reverse(
                 'admin:%s_%s_change' % (
                     file_obj._meta.app_label, file_obj._meta.model_name
-                ),  args=[file_obj.id]
+                ), args=[file_obj.id]
             ), F"{file_obj.name}-{file_obj.id}")
 
         if obj:
@@ -97,11 +95,11 @@ class DatasetAdmin(DatasetBaseAdminModel):
     def get_related_fields_data(self, obj):
 
         return [{
-                "name": "dataset data",
-                "count": obj.datasetdata_set.count()
-            }, {
-                "name": "indicator",
-                "count": obj.indicator_set.count()
+            "name": "dataset data",
+            "count": obj.datasetdata_set.count()
+        }, {
+            "name": "indicator",
+            "count": obj.indicator_set.count()
         }]
 
     def save_model(self, request, obj, form, change):
@@ -134,7 +132,6 @@ class DatasetAdmin(DatasetBaseAdminModel):
                 notify: True
             """)
 
-
             task = async_task(
                 "wazimap_ng.datasets.tasks.process_uploaded_file",
                 datasetfile_obj, obj,
@@ -157,13 +154,11 @@ class DatasetAdmin(DatasetBaseAdminModel):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
         if "autocomplete" in request.path:
-
             dataset_ids = queryset.values_list("id", flat=True)
             in_progress_uploads = models.DatasetFile.objects.filter(
                 task_id=None, dataset_id__in=dataset_ids
             ).values_list("dataset_id", flat=True)
 
-            #queryset = queryset.exclude(id__in=in_progress_uploads)
+            # queryset = queryset.exclude(id__in=in_progress_uploads)
 
         return queryset, use_distinct
-        
