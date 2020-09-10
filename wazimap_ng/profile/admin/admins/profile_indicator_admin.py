@@ -42,15 +42,15 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
         }),
         ("Subindicators", {
           'fields': ('subindicators',)
+        }),
+        ("Configs", {
+          'fields': ('configuration',)
         })
     )
     search_fields = ("label", )
 
     form = ProfileIndicatorAdminForm
 
-    formfield_overrides = {
-        fields.JSONField: {"widget": SortableWidget},
-    }
     help_texts = ["choropleth_method", ]
 
     def get_readonly_fields(self, request, obj=None):
