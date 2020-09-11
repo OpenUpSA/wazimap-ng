@@ -7,6 +7,7 @@ from django.db.models import Count
 from django.forms.models import model_to_dict
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -41,62 +42,22 @@ class CategoryList(generics.ListAPIView):
 
         return Response(data)
 
-@api_view()
-def theme_view(request, profile_id):
-    themes = defaultdict(list)
-    profile = Profile.objects.get(id=profile_id)
-    qs = models.ProfileCategory.objects.filter(profile=profile)
-
-    for pc in qs:
-        theme = pc.theme
-        themes[theme].append(pc)
-
-    js = []
-    for theme in themes:
-        js_theme = {
-            "id": theme.id,
-            "name": theme.name,
-            "icon": theme.icon,
-            "categories": []
-        }
-
-        for pc in themes[theme]:
-            js_theme["categories"].append({
-                "id": pc.id,
-                "name": pc.label,
-                "metadata": MetaDataSerializer(pc.category.metadata).data
-            })
-            
-        js.append(js_theme)
-
-    return Response({
-        "results" : js
-    })
 
 class LocationList(generics.ListAPIView):
     pagination_class = GeoJsonPagination
     serializer_class = serializers.LocationSerializer
     queryset = models.Location.objects.all().prefetch_related("category")
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update(self.kwargs)
-
-        if context["profile_category_id"]:
-             profile_category = models.ProfileCategory.objects.get(
-                id=context["profile_category_id"]
-            )
-             context["category_js"] = serializers.ProfileCategorySerializer(
-                profile_category
-            ).data
-        else:
-            context["category_js"] = None
-        return context
-
     def list(self, request, profile_id, profile_category_id=None, geography_code=None):
         try:
             profile_category = models.ProfileCategory.objects.get(id=profile_category_id)
-            queryset = get_locations(self.get_queryset(), profile_id, profile_category.category, geography_code)
+            profile = Profile.objects.get(id=profile_id)
+            geography = None
+            if geography_code is not None:
+                version = profile.geography_hierarchy.version
+                geography = Geography.objects.get(code=geography_code, version=version)
+
+            queryset = get_locations(self.get_queryset(), profile, profile_category.category, geography)
             serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
             return Response(data)
@@ -108,7 +69,7 @@ class LocationList(generics.ListAPIView):
         return super().dispatch(*args, **kwargs)
 
 def boundary_point_count_helper(profile, geography):
-    boundary = GeographyBoundary.objects.get_unique_boundary(geography)
+    boundary = GeographyBoundary.objects.get(geography__code=geography.code, geography__version=geography.version)
     locations = models.Location.objects.filter(coordinates__contained=boundary.geom) 
     location_count = (
         locations
@@ -171,3 +132,13 @@ class ProfileCategoryList(generics.ListAPIView):
 
         return Response(data)
 
+
+class ThemeList(generics.ListAPIView):
+    queryset = models.Theme.objects.all()
+    serializer_class = serializers.ThemeSerializer
+
+    def list(self, request, profile_id):
+        queryset = self.get_queryset().filter(profile_id=profile_id)
+        serializer = self.get_serializer_class()(queryset, many=True)
+        data = serializer.data
+        return Response(data)

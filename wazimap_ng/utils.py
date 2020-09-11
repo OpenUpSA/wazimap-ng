@@ -6,15 +6,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def format_perc(n):
-    return f"{n :.2%}"
-
-def format_float(n, decimals=2):
-    return f"{round(n, decimals) :,}"
-
-def format_int(n):
-    return f"{round(n):,}"
-
 def get_random_filename(filename):
     filename = f"{uuid.uuid4()}_{filename}"
     return filename

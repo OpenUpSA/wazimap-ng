@@ -32,17 +32,21 @@ class ProfileList(generics.ListAPIView):
 
 class ProfileByUrl(generics.RetrieveAPIView):
     queryset = models.Profile.objects.all()
-    serializer_class = serializers.FullProfileSerializer
+    serializer_class = serializers.ProfileSerializer
 
     @method_decorator(never_cache)
     def retrieve(self, request, *args, **kwargs):
         qs = self.get_queryset()
-        http_origin = request.META.get("HTTP_ORIGIN", None)
-        if http_origin is None:
-            logger.warning(f"Missing HTTP_ORIGIN header - can't identify profile")
-            raise Http404
 
-        hostname = urlparse(http_origin).hostname
+        if "HTTP_WM_HOSTNAME" in request.META:
+            hostname = request.META.get("HTTP_WM_HOSTNAME")
+        elif "HTTP_REFERER" in request.META:
+            http_origin = request.META.get("HTTP_WM_HOSTNAME")
+            hostname = urlparse(http_origin).hostname
+        else:
+            logger.warning(f"Missing HTTP_WM_HOSTNAME header - can't identify profile, defaulting to localhost")
+            hostname = "localhost"
+
         logger.info(f"Received configuration request from: {hostname}")
         qs = qs.filter(configuration__urls__contains=[hostname])
         if qs.count() == 0:
@@ -52,7 +56,6 @@ class ProfileByUrl(generics.RetrieveAPIView):
         instance = qs.first()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
