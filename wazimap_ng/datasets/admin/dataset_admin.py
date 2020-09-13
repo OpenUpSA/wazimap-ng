@@ -5,14 +5,14 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django_q.tasks import async_task
 
+from wazimap_ng.datasets import hooks
+from wazimap_ng.datasets import models
+from wazimap_ng.datasets.admin.base_admin_model import DatasetBaseAdminModel, delete_selected_data
+from wazimap_ng.datasets.admin.forms import DatasetAdminForm
+from wazimap_ng.datasets.admin.views import MetaDataInline
 from wazimap_ng.general.admin import filters
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.widgets import description
-from .base_admin_model import DatasetBaseAdminModel, delete_selected_data
-from .forms import DatasetAdminForm
-from .views import MetaDataInline
-from .. import hooks
-from .. import models
 
 logger = logging.getLogger(__name__)
 
