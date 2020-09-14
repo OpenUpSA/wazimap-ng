@@ -8,15 +8,8 @@ from django.http import Http404
 from django.views.decorators.cache import cache_control
 from django.views.decorators.vary import vary_on_headers
 
-from wazimap_ng.points.models import Category
-from wazimap_ng.points.models import Location
-from wazimap_ng.profile.models import Indicator
-from wazimap_ng.profile.models import IndicatorCategory
-from wazimap_ng.profile.models import IndicatorSubcategory
-from wazimap_ng.profile.models import Profile
-from wazimap_ng.profile.models import ProfileHighlight
-from wazimap_ng.profile.models import ProfileIndicator
-from wazimap_ng.profile.models import ProfileKeyMetrics
+from wazimap_ng.points import models as points_models
+from wazimap_ng.profile import models as profile_models
 from wazimap_ng.profile.services import authentication
 
 logger = logging.getLogger(__name__)
@@ -29,12 +22,12 @@ location_theme_key = "etag-Location-Theme-%s"
 
 def check_has_permission(request, profile_id):
     try:
-        profile = Profile.objects.get(pk=profile_id)
+        profile = profile_models.Profile.objects.get(pk=profile_id)
         has_permission = authentication.has_permission(request.user, profile)
         if has_permission:
             return True
         return False
-    except Profile.DoesNotExist:
+    except profile_models.Profile.DoesNotExist:
         raise Http404
 
 
@@ -94,61 +87,61 @@ def update_point_cache(category):
     cache.set(key1, datetime.now())
 
 
-@receiver(post_save, sender=ProfileIndicator)
+@receiver(post_save, sender=profile_models.ProfileIndicator)
 def profile_indicator_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
-@receiver(post_save, sender=ProfileHighlight)
+@receiver(post_save, sender=profile_models.ProfileHighlight)
 def profile_highlight_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
-@receiver(post_save, sender=IndicatorCategory)
+@receiver(post_save, sender=profile_models.IndicatorCategory)
 def profile_category_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
-@receiver(post_save, sender=IndicatorSubcategory)
+@receiver(post_save, sender=profile_models.IndicatorSubcategory)
 def profile_subcategory_updated(sender, instance, **kwargs):
     update_profile_cache(instance.category.profile)
 
 
-@receiver(post_save, sender=ProfileKeyMetrics)
+@receiver(post_save, sender=profile_models.ProfileKeyMetrics)
 def profile_keymetrics_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
-@receiver(post_save, sender=Profile)
+@receiver(post_save, sender=profile_models.Profile)
 def profile_indicator_updated(sender, instance, **kwargs):
     update_profile_cache(instance)
 
 
-@receiver(post_save, sender=Location)
+@receiver(post_save, sender=points_models.Location)
 def point_updated_location(sender, instance, **kwargs):
     update_point_cache(instance.category)
 
 
-@receiver(post_save, sender=Category)
+@receiver(post_save, sender=points_models.Category)
 def point_updated_category(sender, instance, **kwargs):
     update_point_cache(instance)
 
 
-@receiver(post_save, sender=Indicator)
+@receiver(post_save, sender=profile_models.Indicator)
 def indicator_updated(sender, instance, **kwargs):
     indicator_obj = instance
-    all_profile_indicators = ProfileIndicator.objects.filter(
+    all_profile_indicators = profile_models.ProfileIndicator.objects.filter(
         indicator_id=indicator_obj.id
     ).values_list('profile_id', flat=True)
-    all_profile_key_metrics = ProfileKeyMetrics.objects.filter(
+    all_profile_key_metrics = profile_models.ProfileKeyMetrics.objects.filter(
         variable_id=indicator_obj.id
     ).values_list('profile_id', flat=True)
-    all_profile_highlights = ProfileHighlight.objects.filter(
+    all_profile_highlights = profile_models.ProfileHighlight.objects.filter(
         indicator_id=indicator_obj.id
     ).values_list('profile_id', flat=True)
     # find the unique profiles whose cache needs to be invalidated
     list_of_profile_cache_to_be_update = set(all_profile_indicators + all_profile_key_metrics + all_profile_highlights)
-    profile_query = Profile.objects.filter(id__in=list_of_profile_cache_to_be_update)
+    profile_query = profile_models.Profile.objects.filter(id__in=list_of_profile_cache_to_be_update)
     for profile_obj in profile_query:
         update_profile_cache(profile_obj)
 
