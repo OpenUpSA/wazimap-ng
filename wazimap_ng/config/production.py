@@ -1,19 +1,22 @@
+# -*- coding: utf-8 -*-
 import os
 
+from configurations import Configuration
 from configurations import values
 
-from wazimap_ng.config.common import Common
+from .common import Common
 
 
 class Production(Common):
+
     INSTALLED_APPS = Common.INSTALLED_APPS
-    SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+    SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
     # Site
     # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
     ALLOWED_HOSTS = ["*"]
     INSTALLED_APPS += ("gunicorn",)
     SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/2.0/howto/static-files/
@@ -42,27 +45,30 @@ class Production(Common):
     FILE_SIZE_LIMIT = 1000 * 1024 * 1024
 
     CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-            'LOCATION': '/var/tmp/django_cache',
+        "default": {
+            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+            "LOCATION": "/var/tmp/django_cache",
         }
     }
 
-    AWS_ACCESS_KEY_ID = Common.get_env_value('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = Common.get_env_value('AWS_SECRET_ACCESS_KEY')
+    AWS_ACCESS_KEY_ID = Common.get_env_value("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = Common.get_env_value("AWS_SECRET_ACCESS_KEY")
 
     DEFAULT_FILE_STORAGE = values.Value("django.core.files.storage.FileSystemStorage")
-    AWS_STORAGE_BUCKET_NAME = Common.get_env_value('AWS_STORAGE_BUCKET_NAME')
-    AWS_S3_REGION_NAME = Common.get_env_value('AWS_S3_REGION_NAME')
+    AWS_STORAGE_BUCKET_NAME = Common.get_env_value("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = Common.get_env_value("AWS_S3_REGION_NAME")
     AWS_DEFAULT_ACL = None
 
     MAP_WIDGETS = {
         "GooglePointFieldWidget": (
             ("zoom", 15),
             ("mapCenterLocationName", "south africa"),
-            ("GooglePlaceAutocompleteOptions", {'componentRestrictions': {'country': 'za'}}),
+            (
+                "GooglePlaceAutocompleteOptions",
+                {"componentRestrictions": {"country": "za"}},
+            ),
             ("markerFitZoom", 12),
         ),
-        "GOOGLE_MAP_API_KEY": os.environ.get("GOOGLE_MAP_API_KEY", "")
+        "GOOGLE_MAP_API_KEY": os.environ.get("GOOGLE_MAP_API_KEY", ""),
     }
     GOOGLE_MAP_API_KEY = os.environ.get("GOOGLE_MAP_API_KEY", "")
