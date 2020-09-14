@@ -11,7 +11,7 @@ before_script:
 - docker-compose up -d
 
 script:
-- docker exec wazimap_ng_web pytest tests
+- docker exec wazimap-ng_web_1 pytest /app/wazimap_ng/datasets/tests
 
 after_script:
   - docker-compose down
