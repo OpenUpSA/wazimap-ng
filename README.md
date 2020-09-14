@@ -11,16 +11,16 @@ We use [pre-commit](<https://pre-commit.com/>) to make sure our code is consiste
 
 Start the dev server for local development. Before you've created your database, the webserver will break because it can't find the database.
 
-~~~bash
-docker-compose up
 ~~~
+bash
+docker-compose up
 
 curl https://wazimap-ng.s3-eu-west-1.amazonaws.com/wazimap\_ng-2020203.bak.gz | gunzip -c | docker exec -i wazimap-ng\_db\_1 pg\_restore -U postgres -d wazimap\_ng
-
 ~~~
 
 If this is the first time you're running this, bring the containers down, then up again
-```bash
+
+~~~bash
 docker-compose down
 docker-compose up
 ~~~
@@ -35,6 +35,7 @@ To build a new image:
 
 Note, this currently logs into adieyal on docker-hub. This will be moved to the OpenUp account in future.
 
+~~~
 <!-- Set the environment variables
 export DATABASE_URL=postgis://wazimap_ng:wazimap_ng@localhost:5432/wazimap_ng
 export DJANGO_SECRET_KEY=ffsrwerefdsfweffs
@@ -42,17 +43,17 @@ export DJANGO_SECRET_KEY=ffsrwerefdsfweffs
 
 <!-- # Install GDAL for geodjango
 On a mac
-```bash
+
+bash
 brew install gdal
- -->```
+ -->
+
 
 <!-- or some variation of apt-get for Ubuntu
 
-then
+then bash
 
-```bash
 pip install pygdal==$(gdal-config --version)
-```
 
 Note: you may get an error that says
 
@@ -61,21 +62,28 @@ If that happens, run the pip install again but with the highest version that sti
 
 
 GDAL installation errors are generally a result of mismatched versions between the python library and the system libraries. Ensure that you are installing the correct versions. If you are using dokku/heroku with the heroku geo buildpack, you should consult https://github.com/heroku/heroku-geo-buildpack - the default version of gdal is 2.4.0 at the time of writing.
+~~~
 
 ## Note when installing with the Heroku geo buildpack
 
 The Heroku geo buildpack installs the library in /app/.heroku-geo-buildpack/vendor. In order for pygdal to find it, you need to set the follow environment variables
 
+~~~
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/app/.heroku-geo-buildpack/vendor/bin/
 GDALHOME=/app/.heroku-geo-buildpack/vendor/
+~~~
 
-On dokku you would run the following
-```bash
+On dokku you would run the following bash
+
+~~~
 dokku config:set wazimap-ng --no-restart PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/app/.heroku-geo-buildpack/vendor/bin/
 dokku config:set wazimap-ng --no-restart GDALHOME=/app/.heroku-geo-buildpack/vendor/ -->
+~~~
 
 Some notes for database migration - will turn this into proper documentation in the future
 
-SELECT 'ALTER TABLE '|| schemaname || '.' || tablename ||' OWNER TO wazimap\_ng;'
-FROM pg\_tables WHERE NOT schemaname IN ('pg\_catalog', 'information\_schema')
+~~~
+SELECT 'ALTER TABLE '|| schemaname || '.' || tablename ||' OWNER TO wazimap_ng;'
+FROM pg_tables WHERE NOT schemaname IN ('pg_catalog', 'information_schema')
 ORDER BY schemaname, tablename;
+~~~
