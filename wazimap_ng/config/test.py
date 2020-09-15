@@ -3,14 +3,13 @@ from .common import Common
 from configurations import Configuration, values
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = 'zayaj0rl+17y&wf@$qtfq_@zj@v4xkj%t3hdf&yw)!ga!5zhtq'
 
 class Test(Common):
 
-    # Testing
     DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
     INSTALLED_APPS = Common.INSTALLED_APPS
-    #INSTALLED_APPS += ('django_nose',)
+    SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
     NOSE_ARGS = [
         BASE_DIR,
@@ -28,7 +27,7 @@ class Test(Common):
 
     ## Honor the 'X-Forwarded-Proto' header for request.is_secure()
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
+
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
