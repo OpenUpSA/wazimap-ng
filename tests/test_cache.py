@@ -7,6 +7,7 @@ from django.core.cache import cache as django_cache
 
 from wazimap_ng import cache
 
+
 @patch("django.http.request")
 @patch("wazimap_ng.profile.services.authentication.has_permission")
 @patch("wazimap_ng.profile.models.Profile.objects")
@@ -19,6 +20,7 @@ def test_check_has_permissions(mock_Profile_objects, mock_has_permission, mock_r
     mock_has_permission.return_value = False
     assert cache.check_has_permission(mock_request, 1) == False
 
+
 @patch("django.http.request")
 @patch("wazimap_ng.cache.datetime")
 @patch("wazimap_ng.cache.check_has_permission")
@@ -27,8 +29,8 @@ def test_last_modified_without_permissions(mock_check_has_permission, mock_datet
     mock_check_has_permission.return_value = False
     mock_datetime.now.return_value = "Some date"
 
-
     assert cache.last_modified(mock_request, 1, "key") == "Some date"
+
 
 @patch("django.http.request")
 @patch("wazimap_ng.cache.check_has_permission")
@@ -41,12 +43,14 @@ def test_last_modified_with_permissions(mock_check_has_permission, mock_request)
 
     assert cache.last_modified(mock_request, 1, "key_in_cache") == "some value"
 
+
 @patch("django.http.request")
 @patch("wazimap_ng.cache.last_modified_profile_updated")
 def test_etag_profile_updated(mock_last_modified, mock_request):
     mock_last_modified.return_value = 9999
 
     assert cache.etag_profile_updated(mock_request, 1, "ZA") == "9999"
+
 
 @patch("django.http.request")
 @patch("wazimap_ng.cache.last_modified")
@@ -57,6 +61,7 @@ def test_last_modified_profile_updated(mock_last_modified, mock_request):
 
     mock_last_modified.assert_called_with(mock_request, 1, "etag-Profile-1")
 
+
 @patch("django.http.request")
 @patch("wazimap_ng.cache.last_modified_point_updated")
 def test_etag_point_updated(mock_last_modified, mock_request):
@@ -64,6 +69,7 @@ def test_etag_point_updated(mock_last_modified, mock_request):
     profile_id = 1
 
     assert cache.etag_point_updated(mock_request, profile_id, profile_category_id=1) == "9999"
+
 
 @patch("django.http.request")
 @patch("wazimap_ng.cache.last_modified")
@@ -92,6 +98,7 @@ def test_update_profile_cache_signal(mock_datetime):
     key = "etag-Profile-%s" % profile.id
 
     assert django_cache.get(key) == "Some time"
+
 
 @patch("wazimap_ng.cache.datetime")
 def test_update_point_cache_signal(mock_datetime):

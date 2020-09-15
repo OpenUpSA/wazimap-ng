@@ -7,19 +7,20 @@ import json
 
 logger = logging.getLogger(__name__)
 
+
 class Notify:
 
     generic_messages = {
-        "delete" : {
+        "delete": {
             "success": "Data deleted for %s",
             "error": "Error in deleting data for %s",
         },
-        "upload" : {
+        "upload": {
             "success": "Imported File successfully for %s",
             "error": "Error in uploading file for %s.",
         },
 
-        "data_extraction" : {
+        "data_extraction": {
             "success": "Data extraction successful for %s",
             "error": "Data extraction failed for %s.",
         }
@@ -29,7 +30,6 @@ class Notify:
         "success": "Imported File successfully for model %s with name %s. For more details check : <a href='%s'>Click Here</a>",
         "error": "Error in uploading file for model %s with name %s. For more details check : <a href='%s'>Click Here</a>",
     }
-
 
     @classmethod
     def get_nofitification_details(self, notification_type, obj, task_type, results=None):
@@ -61,7 +61,7 @@ class Notify:
             obj_id = obj.id
 
         admin_url = reverse(
-            'admin:%s_%s_change' % (obj._meta.app_label,  model_name),  args=[obj_id]
+            'admin:%s_%s_change' % (obj._meta.app_label, model_name), args=[obj_id]
         )
         return self.upload_message[notification_type] % (model, obj, admin_url)
 
@@ -72,6 +72,7 @@ class Notify:
         """
         message = self.generic_messages[task_type][notification_type]
         return message % obj
+
 
 def process_task_info(task):
     """
@@ -101,6 +102,7 @@ def process_task_info(task):
         # Add message to user
         notify_user(notification_type, session_key, message, task.id)
 
+
 def notify_user(notification_type, session_key, message, task_id=None):
     """
     Call back function after the task has been executed.
@@ -118,13 +120,14 @@ def notify_user(notification_type, session_key, message, task_id=None):
         session.session_data = Session.objects.encode(decoded_session)
         session.save()
 
+
 def custom_admin_notification(session, notification_type, message, task_id=None):
     """
     Function for implementing custom admin notifications.
     notifications are stored in session and show to user when user refreshes page.
 
     A valid session object must be passed to this function with notification type and message
-    
+
     Type of notifications:
         * success
         * info
@@ -144,6 +147,7 @@ def custom_admin_notification(session, notification_type, message, task_id=None)
     messages.append(notification)
     session['notifications'] = messages
     return session
+
 
 def add_to_task_list(session, task):
     """

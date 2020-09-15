@@ -10,8 +10,10 @@ from wazimap_ng.datasets.models import Indicator, Dataset
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.admin import filters
 
+
 class CategoryIndicatorFilter(filters.CategoryFilter):
     parameter_name = 'subcategory__category__id'
+
 
 @admin.register(models.ProfileIndicator)
 class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
@@ -24,8 +26,8 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
     exclude_common_list_display = True
     list_display = (
         "profile",
-        "label", 
-        description("Indicator", lambda x: x.indicator.name), 
+        "label",
+        description("Indicator", lambda x: x.indicator.name),
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
         "created",
@@ -38,10 +40,10 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
             'fields': ('profile', 'indicator')
         }),
         ("Profile fields", {
-          'fields': ('label', 'subcategory', 'description', 'choropleth_method')
+            'fields': ('label', 'subcategory', 'description', 'choropleth_method')
         }),
         ("Subindicators", {
-          'fields': ('subindicators',)
+            'fields': ('subindicators',)
         })
     )
     search_fields = ("label", )
@@ -54,7 +56,7 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
     help_texts = ["choropleth_method", ]
 
     def get_readonly_fields(self, request, obj=None):
-        if obj: # editing an existing object
+        if obj:  # editing an existing object
             return ("profile",) + self.readonly_fields
         return self.readonly_fields
 

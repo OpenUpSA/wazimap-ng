@@ -4,10 +4,12 @@ from wazimap_ng.datasets.models import Licence
 
 from . import models
 
+
 class LicenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Licence
         fields = ("name", "url",)
+
 
 class MetaDataSerializer(serializers.ModelSerializer):
     licence = LicenceSerializer(read_only=True)

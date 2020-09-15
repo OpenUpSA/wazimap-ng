@@ -9,6 +9,7 @@ from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.admin import filters
 
+
 @admin.register(models.Profile)
 class ProfileAdmin(BaseAdminModel):
 
@@ -19,7 +20,7 @@ class ProfileAdmin(BaseAdminModel):
     }
 
     def save_model(self, request, obj, form, change):
-        is_new = obj.pk == None and change == False
+        is_new = obj.pk is None and change == False
         super().save_model(request, obj, form, change)
         if is_new:
             assign_perms_to_group(obj.name, obj)

@@ -2,7 +2,7 @@
 
 # from django.contrib.gis.db import models
 # from fields import CachedMultiPolygonField
-# 
+#
 #
 # class MyGeography(models.model):
 #     name = models.CharField(max_length=128)
@@ -41,7 +41,7 @@ class CachedMultiPolygonField(MultiPolygonField):
                     value = MultiPolygon(value)
                 setattr(model_instance, self.attname, value)
                 return value
-            except:
+            except BaseException:
                 pass
 
         return super(CachedMultiPolygonField, self).pre_save(model_instance, add)

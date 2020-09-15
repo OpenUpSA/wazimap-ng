@@ -19,6 +19,7 @@ location_key = "etag-Location-profile-%s-%s"
 theme_key = "etag-Theme-profile-%s-%s"
 location_theme_key = "etag-Location-Theme-%s"
 
+
 def check_has_permission(request, profile_id):
     try:
         profile = Profile.objects.get(pk=profile_id)
@@ -28,6 +29,7 @@ def check_has_permission(request, profile_id):
         return False
     except Profile.DoesNotExist:
         raise Http404
+
 
 def last_modified(request, profile_id, key):
     if check_has_permission(request, profile_id):
@@ -40,17 +42,21 @@ def last_modified(request, profile_id, key):
         _last_modified = datetime.now()
     return _last_modified
 
+
 def etag_profile_updated(request, profile_id, geography_code):
     last_modified = last_modified_profile_updated(request, profile_id, geography_code)
     return str(last_modified)
 
+
 def last_modified_profile_updated(request, profile_id, geography_code):
     key = profile_key % profile_id
     return last_modified(request, profile_id, key)
-    
+
+
 def etag_point_updated(request, profile_id, profile_category_id=None, theme_id=None, geography_code=None):
     last_modified = last_modified_point_updated(request, profile_id, profile_category_id, theme_id, geography_code)
     return str(last_modified)
+
 
 def last_modified_point_updated(request, profile_id, profile_category_id=None, theme_id=None, geography_code=None):
     if profile_category_id is not None:
@@ -66,10 +72,13 @@ def last_modified_point_updated(request, profile_id, profile_category_id=None, t
     return last_modified(request, profile_id, key)
 
 ########### Signals #################
+
+
 def update_profile_cache(profile):
     logger.info(f"Updating profile cache: {profile}")
     key = profile_key % profile.id
     cache.set(key, datetime.now())
+
 
 def update_point_cache(category):
     profile = category.profile
@@ -78,42 +87,52 @@ def update_point_cache(category):
     logger.debug(f"Set cache key (category): {key1}")
     cache.set(key1, datetime.now())
 
+
 @receiver(post_save, sender=ProfileIndicator)
 def profile_indicator_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
+
 
 @receiver(post_save, sender=ProfileHighlight)
 def profile_highlight_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
+
 @receiver(post_save, sender=IndicatorCategory)
 def profile_category_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
+
 
 @receiver(post_save, sender=IndicatorSubcategory)
 def profile_subcategory_updated(sender, instance, **kwargs):
     update_profile_cache(instance.category.profile)
 
+
 @receiver(post_save, sender=ProfileKeyMetrics)
 def profile_keymetrics_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
+
 
 @receiver(post_save, sender=Profile)
 def profile_indicator_updated(sender, instance, **kwargs):
     update_profile_cache(instance)
 
+
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
     update_point_cache(instance.category)
+
 
 @receiver(post_save, sender=Category)
 def point_updated_category(sender, instance, **kwargs):
     update_point_cache(instance)
 
+
 def cache_headers(func):
     return vary_on_headers("Authorization")(cache_control(max_age=0, public=True, must_revalidate=True)(func))
 
-def cache_decorator(key, expiry=60*60*24*365):
+
+def cache_decorator(key, expiry=60 * 60 * 24 * 365):
     def clean(s):
         return str(s).replace(" ", "-").lower().strip()
 
@@ -129,7 +148,6 @@ def cache_decorator(key, expiry=60*60*24*365):
             cached_obj = cache.get(cache_key)
             if cached_obj is not None:
                 return cached_obj
-
 
             obj = func(*args, **kwargs)
             cache.set(cache_key, obj, expiry)

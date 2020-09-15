@@ -28,7 +28,7 @@ class CategoryAdmin(BaseAdminModel):
 
         }),
         ("MetaData", {
-          'fields': ('source', 'description', 'licence', )
+            'fields': ('source', 'description', 'licence', )
         }),
     )
     list_filter = (filters.ProfileFilter,)
@@ -37,7 +37,7 @@ class CategoryAdmin(BaseAdminModel):
 
     class Media:
         css = {
-             'all': ('/static/css/admin-custom.css',)
+            'all': ('/static/css/admin-custom.css',)
         }
 
     def imported_collections(self, obj):
@@ -46,7 +46,7 @@ class CategoryAdmin(BaseAdminModel):
             return '<a href="%s">%s</a>' % (reverse(
                 'admin:%s_%s_change' % (
                     file_obj._meta.app_label, file_obj._meta.model_name
-                ),  args=[file_obj.id]
+                ), args=[file_obj.id]
             ), F"{file_obj.name}-{file_obj.id}")
 
         if obj:
@@ -62,7 +62,7 @@ class CategoryAdmin(BaseAdminModel):
     imported_collections.short_description = 'Previously Imported'
 
     def save_model(self, request, obj, form, change):
-        is_new = obj.pk == None and change == False
+        is_new = obj.pk is None and change == False
         is_profile_updated = change and "profile" in form.changed_data
 
         super().save_model(request, obj, form, change)

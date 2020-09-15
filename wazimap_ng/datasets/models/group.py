@@ -4,6 +4,7 @@ from django.contrib.postgres.fields import JSONField
 from .dataset import Dataset
 from wazimap_ng.general.models import BaseModel
 
+
 class Group(BaseModel):
     name = models.CharField(max_length=100, blank=False, null=False)
     dataset = models.ForeignKey(Dataset, null=True, on_delete=models.CASCADE)

@@ -28,7 +28,7 @@ class CategoryAdminForm(forms.ModelForm):
                     "source", "description", "licence"
                 ]
             }
-            create_metadata = not self.instance.id or (self.instance.id and self.instance.metadata == None)
+            create_metadata = not self.instance.id or (self.instance.id and self.instance.metadata is None)
 
             if create_metadata:
                 self.instance.metadata = MetaData.objects.create(**metadata)

@@ -33,8 +33,10 @@ class PermissionTypeFilter(filters.DatasetFilter):
     def lookups(self, request, model_admin):
         return [("private", "Mine"), ("public", "Public")]
 
+
 class IndicatorProfileFilter(filters.ProfileFilter):
     parameter_name = 'dataset__profile'
+
 
 class IndicatorGeographyHierarchyFilter(filters.GeographyHierarchyFilter):
     parameter_name = 'dataset__geography_hierarchy_id'
@@ -54,7 +56,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
 
     form = IndicatorAdminForm
     fieldsets = [
-        (None, { 'fields': ('dataset', 'groups','universe', 'name',) } ),
+        (None, {'fields': ('dataset', 'groups', 'universe', 'name',)}),
     ]
 
     autocomplete_fields = ("dataset", )
@@ -65,7 +67,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            to_add = ('dataset',"groups", "universe",)
+            to_add = ('dataset', "groups", "universe",)
             return self.readonly_fields + to_add
         return self.readonly_fields
 
@@ -84,7 +86,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
 
         with transaction.atomic():
             super().save_model(request, obj, form, change)
-        
+
         if run_task:
             task = async_task(
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",

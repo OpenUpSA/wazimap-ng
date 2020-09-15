@@ -30,7 +30,7 @@ class ProfileCategoryAdmin(BaseAdminModel):
 
         }),
         ("Point Collection description fields", {
-          'fields': ('label', 'description',)
+            'fields': ('label', 'description',)
         }),
     )
     form = ProfileCategoryAdminForm
@@ -38,7 +38,7 @@ class ProfileCategoryAdmin(BaseAdminModel):
 
     class Media:
         css = {
-             'all': ('/static/css/admin-custom.css',)
+            'all': ('/static/css/admin-custom.css',)
         }
         js = (
             "/static/js/profile_theme.js",
@@ -50,7 +50,7 @@ class ProfileCategoryAdmin(BaseAdminModel):
         return self.readonly_fields
 
     def save_model(self, request, obj, form, change):
-        is_new = obj.pk == None and change == False
+        is_new = obj.pk is None and change == False
         is_profile_updated = change and "profile" in form.changed_data
 
         super().save_model(request, obj, form, change)
@@ -65,7 +65,7 @@ class ProfileCategoryAdmin(BaseAdminModel):
         if obj:
             qs = models.Theme.objects.filter(profile_id=obj.profile_id)
         elif not obj and request.method == "GET":
-             qs = qs = models.Theme.objects.none()
+            qs = qs = models.Theme.objects.none()
 
         form.base_fields["theme"].queryset = qs
 

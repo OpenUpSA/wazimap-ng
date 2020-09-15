@@ -14,8 +14,6 @@ from .. import models
 
 
 @admin.register(models.Geography)
-
-
 class GeographyAdmin(TreeAdmin):
     form = movenodeform_factory(models.Geography)
     list_display = (
@@ -24,6 +22,7 @@ class GeographyAdmin(TreeAdmin):
 
     search_fields = ("name", "code")
     list_filter = ("level", "version")
+
 
 @admin.register(models.GeographyHierarchy)
 class GeographyHierarchyAdmin(admin.ModelAdmin):
@@ -35,13 +34,14 @@ class GeographyHierarchyAdmin(admin.ModelAdmin):
 
 @admin.register(models.Universe)
 class UniverseAdmin(admin.ModelAdmin):
-  formfield_overrides = {
-    fields.JSONField: {"widget": JSONEditorWidget},
-  }
-  list_display = (
+    formfield_overrides = {
+        fields.JSONField: {"widget": JSONEditorWidget},
+    }
+    list_display = (
         "label", "created", "updated"
     )
-  
+
+
 @admin.register(models.Licence)
 class LicenceAdmin(admin.ModelAdmin):
     list_display = (

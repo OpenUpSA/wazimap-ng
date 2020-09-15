@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 def create_choropleth_methods(apps, schema_editor):
     choropleth_method = apps.get_model('profile', 'ChoroplethMethod')
     methods = [
@@ -11,6 +12,7 @@ def create_choropleth_methods(apps, schema_editor):
 
     for (name, description) in methods:
         choropleth_method.objects.create(name=name, description=description)
+
 
 class Migration(migrations.Migration):
 

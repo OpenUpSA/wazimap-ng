@@ -25,7 +25,7 @@ def copy_data_to_new_field(apps, schema_editor):
                     data.append(subdata)
             elif groups and len(groups) == 1:
                 for idx, subindicator in enumerate(pi.subindicators):
-                    data.append({groups[0] : subindicator})
+                    data.append({groups[0]: subindicator})
 
             indicator_subindicators = pi.indicator.subindicators
             for idx, val in enumerate(data):

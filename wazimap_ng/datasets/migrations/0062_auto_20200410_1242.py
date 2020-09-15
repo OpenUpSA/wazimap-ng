@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 def create_metadata(apps, schema_editor):
     Dataset = apps.get_model('datasets', 'Dataset')
     MetaData = apps.get_model('datasets', 'MetaData')

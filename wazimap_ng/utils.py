@@ -6,23 +6,29 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def get_random_filename(filename):
     filename = f"{uuid.uuid4()}_{filename}"
     return filename
 
+
 def truthy(s):
-    if noney(s): return None
+    if noney(s):
+        return None
 
     return str(s).lower() == "true" or str(s) == 1
 
+
 def noney(n):
     return n is None or str(n).lower() == "none"
+
 
 def int_or_none(i):
     if noney(i):
         return None
 
-    return int(i) 
+    return int(i)
+
 
 def sort_list_using_order(lst, order, key_func=lambda x: x):
     if len(lst) == 0:
@@ -35,6 +41,7 @@ def sort_list_using_order(lst, order, key_func=lambda x: x):
     infinity = float("inf")
     return sorted(lst, key=lambda x: lookup.get(key_func(x), infinity))
 
+
 def mergedict(a, b, path=None, concatenate_arrays=True, update=True):
     """
     Derived from: http://stackoverflow.com/questions/7204805/python-dictionaries-of-dictionaries-merge
@@ -43,13 +50,14 @@ def mergedict(a, b, path=None, concatenate_arrays=True, update=True):
         concatenate_arrays - if True then arrays are concatenate, otherwise they are recursively traversed
         update - if True then values in b clobber values in a
     """
-    if path is None: path = []
+    if path is None:
+        path = []
     for key in b:
         if key in a:
             if isinstance(a[key], dict) and isinstance(b[key], dict):
                 mergedict(a[key], b[key], path + [str(key)])
             elif a[key] == b[key]:
-                pass # same leaf value
+                pass  # same leaf value
             elif isinstance(a[key], list) and isinstance(b[key], list):
                 if concatenate_arrays:
                     a[key].extend(b[key])
@@ -62,6 +70,7 @@ def mergedict(a, b, path=None, concatenate_arrays=True, update=True):
                 raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
         else:
             a[key] = b[key]
+
 
 def qsdict(qs, *args):
     """
@@ -105,7 +114,7 @@ def qsdict(qs, *args):
         for idx, key in enumerate(args[:-2]):
             current_dict = nested_dicts[-1]
             value = v(q, key)
-            if type(value) == list:
+            if isinstance(value, list):
                 arr = value
                 for el in arr:
                     current_dict[el] = qsdict([q], *args[idx + 1:])
@@ -117,18 +126,19 @@ def qsdict(qs, *args):
         else:
             current_dict = nested_dicts[-1]
             value = v(q, args[-2])
-            if type(value) == list:
+            if isinstance(value, list):
                 arr = value
                 for el in arr:
-                    current_dict[el] = v(q, args[-1]) # need to handle a tuple as well
-                
+                    current_dict[el] = v(q, args[-1])  # need to handle a tuple as well
+
             else:
-                if type(args[-1]) == tuple:
+                if isinstance(args[-1], tuple):
                     current_dict[v(q, args[-2])] = [v(q, el) for el in args[-1]]
                 else:
                     current_dict[v(q, args[-2])] = v(q, args[-1])
 
     return d
+
 
 def expand_nested_list(lst, key):
     """
@@ -147,6 +157,7 @@ def expand_nested_list(lst, key):
             row_copy[key] = js
             yield row_copy
 
+
 try:
     pytest_available = True
     import pytest
@@ -155,6 +166,8 @@ except ImportError as error:
     logger.warning("pytest not installed - some tests cannot be run.")
 
 # Tests
+
+
 def test_qdict_empty_input():
     if not pytest_available:
         return
@@ -165,9 +178,11 @@ def test_qdict_empty_input():
     with pytest.raises(ValueError):
         d = qsdict([[]])
 
+
 def test_qdict_empty_row():
     if not pytest_available:
         return
+
 
 def test_qdict_at_least_two_parameters():
     if not pytest_available:
@@ -176,12 +191,12 @@ def test_qdict_at_least_two_parameters():
     with pytest.raises(ValueError):
         d = qsdict([{"a": "b"}], "a")
 
+
 def test_qdict_basic_input():
     d = qsdict([{"a": "b", "c": "d"}], "a", "c")
     assert d == {
         "b": "d"
     }
-
 
 
 def test_qdict_two_rows():
@@ -195,6 +210,7 @@ def test_qdict_two_rows():
         "c": "e"
     }
 
+
 def test_qdict_overwrites_value_with_two_parameters():
     d = qsdict([
         {"a": "b", "c": "d"},
@@ -205,6 +221,7 @@ def test_qdict_overwrites_value_with_two_parameters():
         "b": "f"
     }
 
+
 def test_qdict_3_level_nesting():
     d = [
         {"a": 1, "b": 2, "c": 3},
@@ -214,7 +231,7 @@ def test_qdict_3_level_nesting():
     d1 = qsdict(d, "a", "b", "c")
 
     assert d1 == {
-        1 : {
+        1: {
             2: 3,
             4: 6
         }
@@ -223,13 +240,14 @@ def test_qdict_3_level_nesting():
     d2 = qsdict(d, "b", "a", "c")
 
     assert d2 == {
-        2 : {
+        2: {
             1: 3
         },
-        4 : {
+        4: {
             1: 6
         }
     }
+
 
 def test_callable():
     d = [
@@ -240,7 +258,7 @@ def test_callable():
     d1 = qsdict(d, "a", lambda x: "Hello World", "b", "c")
 
     assert d1 == {
-        1 : {
+        1: {
             "Hello World": {
                 2: 3,
                 4: 6
@@ -248,16 +266,17 @@ def test_callable():
         }
     }
 
-    d2 = qsdict(d, "b", lambda x: x["a"] + 1,  "c")
+    d2 = qsdict(d, "b", lambda x: x["a"] + 1, "c")
 
     assert d2 == {
-        2 : {
+        2: {
             2: 3
         },
-        4 : {
+        4: {
             2: 6
         }
     }
+
 
 def test_object_properties():
     class TestClass:
@@ -272,11 +291,12 @@ def test_object_properties():
     d1 = qsdict(d, "a", "b", "c")
 
     assert d1 == {
-        1 : {
+        1: {
             2: 3,
             4: 6
         }
     }
+
 
 def test_long_input():
     d = [
@@ -284,7 +304,7 @@ def test_long_input():
         {"a": 1, "b": 2, "c": 3, "d": 7, "e": 8},
     ]
 
-    d1 = qsdict(d, "a", "b", "c", "d",  "e")
+    d1 = qsdict(d, "a", "b", "c", "d", "e")
 
     assert d1 == {
         1: {
@@ -292,17 +312,17 @@ def test_long_input():
                 3: {
                     4: 5,
                     7: 8
-                } 
+                }
             }
         }
     }
+
 
 def test_array():
     d = [
         {"a": 1, "b": ["x", "y"], "c": 4, "d": 5},
         {"a": 2, "b": ["x", "y"], "c": 4, "d": 6}
     ]
-
 
     d1 = qsdict(d, "a", "b", "c", "d")
 
@@ -325,12 +345,12 @@ def test_array():
         }
     }
 
+
 def test_multiple_arrays():
     d = [
         {"a": 1, "b": ["x", "y"], "c": 2, "d": ["z", "w"], "e": 5, "f": 6},
         {"a": 2, "b": ["x", "y"], "c": 4, "d": ["z", "w"], "e": 6, "f": 8}
     ]
-
 
     d1 = qsdict(d, "a", "b", "c", "d", "e", "f")
 
@@ -381,12 +401,12 @@ def test_multiple_arrays():
         }
     }
 
+
 def test_array_at_the_end():
     d = [
         {"a": 1, "b": 3, "c": 5, "d": ["x", "y"]},
         {"a": 2, "b": 4, "c": 6, "d": ["x", "y"]},
     ]
-
 
     d1 = qsdict(d, "a", "b", "c", "d")
 
@@ -403,12 +423,12 @@ def test_array_at_the_end():
         }
     }
 
+
 def test_array_at_second_last_position():
     d = [
         {"a": 1, "b": 3, "c": ["x", "y"], "d": 5},
         {"a": 2, "b": 4, "c": ["x", "y"], "d": 6},
     ]
-
 
     d1 = qsdict(d, "a", "b", "c", "d")
 
@@ -416,13 +436,13 @@ def test_array_at_second_last_position():
         1: {
             3: {
                 "x": 5,
-                "y": 5 
+                "y": 5
             }
         },
         2: {
             4: {
                 "x": 6,
-                "y": 6 
+                "y": 6
             }
         },
     }
@@ -452,7 +472,7 @@ def flatten_dict(d):
     ]
 
     used as a component of the pivot function
-    
+
     """
     if not isinstance(d, Mapping):
         return [[d]]
@@ -463,6 +483,7 @@ def flatten_dict(d):
             arr.append([k] + el)
 
     return arr
+
 
 def rearrange(in_arrs, order):
     """
@@ -493,13 +514,13 @@ def rearrange(in_arrs, order):
 
     return out_arrs
 
+
 def nest(arrays, root=None):
     """
     Unflatten a dictionary. Similar to qsdict but is simpler and works on arrays
     """
     if len(arrays) == 0:
         return {}
-
 
     d = root or defaultdict(dict)
     for arr in arrays:
@@ -510,7 +531,8 @@ def nest(arrays, root=None):
             elif len(tail) > 1:
                 d[head] = nest([tail], d[head])
     return d
-        
+
+
 def pivot(d, order):
     """
     Pivots an array by a list of keys
@@ -546,10 +568,10 @@ def pivot(d, order):
         },
     }
 
-    pivot(d, [2, 1, 0]) 
+    pivot(d, [2, 1, 0])
 
     becomes:
-    
+
     d = {
     "X": {
         "Category1": {

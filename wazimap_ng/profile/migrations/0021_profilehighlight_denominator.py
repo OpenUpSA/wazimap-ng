@@ -13,7 +13,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='profilehighlight',
             name='denominator',
-            field=models.CharField(choices=[('absolute_value', 'Absolute value'), ('subindicators', 'Sub-indicators'), ('sibling', 'Sibling')], default='absolute_value', help_text='Method for calculating the denominator that will normalise this value.', max_length=32),
+            field=models.CharField(choices=[('absolute_value', 'Absolute value'), ('subindicators', 'Sub-indicators'), ('sibling', 'Sibling')],
+                                   default='absolute_value', help_text='Method for calculating the denominator that will normalise this value.', max_length=32),
             preserve_default=False,
         ),
     ]

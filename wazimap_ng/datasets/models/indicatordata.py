@@ -5,6 +5,7 @@ from .indicator import Indicator
 from .geography import Geography
 from wazimap_ng.general.models import BaseModel
 
+
 class IndicatorData(BaseModel):
     """
     Indicator Data for caching results of indicator group according to
@@ -19,5 +20,3 @@ class IndicatorData(BaseModel):
 
     class Meta:
         verbose_name_plural = "Indicator Data items"
-
-

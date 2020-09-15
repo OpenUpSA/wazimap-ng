@@ -12,6 +12,7 @@ def add_theme_to_pc(apps, schema_editor):
         pc.theme = pc.category.theme
         pc.save()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [

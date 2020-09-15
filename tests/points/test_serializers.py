@@ -14,6 +14,7 @@ from wazimap_ng.profile.models import Profile
 
 SkipField = locate("rest_framework.fields.SkipField")
 
+
 class HasContext:
     def set_context(self, context):
         self.context = context
@@ -26,6 +27,7 @@ class HasContext:
             self._serializer.context.update(self.context)
 
         return self._serializer
+
 
 class Geoserializer:
     def _test_expected_fields(self, data, values):
@@ -41,8 +43,10 @@ class Geoserializer:
             assert val == values[field], \
                 'Field {0} equals {1}, expected {2}.'.format(field, val, values[field])
 
+
 class SerializerAssertWithContext(HasContext, Geoserializer, SerializerAssert):
     pass
+
 
 def assert_serializer(cls):
     return SerializerAssertWithContext(cls)

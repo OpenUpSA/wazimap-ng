@@ -13,10 +13,12 @@ from .custom_permissions.queryset_filters import CustomQuerySet
 from .custom_permissions.fk_queryset_filter import CustomFKQuerySet
 from wazimap_ng.config.common import STAFF_GROUPS
 
+
 def get_user_group(user):
     return user.groups.all().exclude(
         name__in=STAFF_GROUPS
     ).first()
+
 
 def assign_perms_to_group(
     profile_name, obj, remove_previous_perms=False
@@ -32,17 +34,21 @@ def assign_perms_to_group(
                 remove_perm(perm, old_group, obj)
         assign_perm(perm, group, obj)
 
+
 def permission_name(opts, name):
     codename = get_permission_codename(name, opts)
     permission = f"{opts.app_label}.{codename}"
     return permission
 
+
 def is_method(mod, name):
     return hasattr(mod, name) and callable(getattr(mod, name))
+
 
 def get_model_info(model):
     meta_details = model._meta
     return meta_details.model_name, meta_details.app_label
+
 
 def has_permission(user, obj, permission):
     if user.is_superuser or not obj:
@@ -61,13 +67,14 @@ def has_permission(user, obj, permission):
         return user.has_perm(permission, obj)
     return user.has_perm(permission)
 
+
 def get_objects_for_user(
-        user, model, perm="view", queryset=None, include_public=True
-    ):
+    user, model, perm="view", queryset=None, include_public=True
+):
     """
     Get Objects for a user according access type of object
     """
-    if queryset == None:
+    if queryset is None:
         queryset = model.objects.all()
 
     if not hasattr(model, 'permission_type'):
@@ -90,6 +97,7 @@ def get_objects_for_user(
         )
 
     return queryset
+
 
 def get_custom_queryset(model, user):
     """

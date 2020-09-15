@@ -13,12 +13,16 @@ from shapely.geometry import shape as shapely_shape
 
 logger = logging.getLogger(__name__)
 
+
 class Command(BaseCommand):
     help = "Loads new geographies. Example class: python3 manage.py loadshp /tmp/gcro.shp Region_cod=code,Parent_g_3=parent_code,Region_nam=name,Shape_Area=area planning_region"
 
     def add_arguments(self, parser):
         parser.add_argument("shapefile", type=str, help="Shapefile containing boundaries to be loaded.")
-        parser.add_argument("field_map", type=str, help="Mapping of fields to extract from the shapefile. Should be formatted as follows: code_field=code,name_field=name,parent_code_field=parent_code,area_field=area....")
+        parser.add_argument(
+            "field_map",
+            type=str,
+            help="Mapping of fields to extract from the shapefile. Should be formatted as follows: code_field=code,name_field=name,parent_code_field=parent_code,area_field=area....")
         parser.add_argument("level", type=str, help="Geography level, e.g. province, municipality, ...")
         parser.add_argument("version", type=str, help="Geography version, e.g. 'census 2016'...")
 
@@ -70,7 +74,6 @@ class Command(BaseCommand):
             "area": properties[area_field]
         }
 
-
     def process_shape(self, shape, field_map, level, version):
         properties = shape["properties"]
 
@@ -84,7 +87,7 @@ class Command(BaseCommand):
 
         sh = shapely_shape(shape["geometry"])
         geometry = GEOSGeometry(sh.wkt)
-        if type(geometry) == Polygon:
+        if isinstance(geometry, Polygon):
             geo_shape = MultiPolygon([geometry])
         else:
             geo_shape = geometry
@@ -112,4 +115,3 @@ class Command(BaseCommand):
             self.process_shape(s, field_map, level, version)
 
         print(f"{idx + 1} geographies successfully loaded")
-

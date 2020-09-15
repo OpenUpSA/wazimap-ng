@@ -30,4 +30,3 @@ class Migration(migrations.Migration):
 
         #migrations.RunSQL(migration, reverse_migration)
     ]
-

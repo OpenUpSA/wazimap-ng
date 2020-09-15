@@ -1,4 +1,4 @@
-from wazimap_ng.datasets.models import IndicatorData 
+from wazimap_ng.datasets.models import IndicatorData
 from wazimap_ng.utils import mergedict
 
 
@@ -6,6 +6,7 @@ def get_subindicator(highlight):
     subindicators = highlight.indicator.subindicators
     idx = highlight.subindicator if highlight.subindicator is not None else 0
     return subindicators[idx]
+
 
 def sibling(highlight, geography):
     siblings = geography.get_siblings()
@@ -23,18 +24,20 @@ def sibling(highlight, geography):
         return numerator / denominator
     return None
 
+
 def absolute_value(highlight, geography):
     indicator_data = IndicatorData.objects.filter(indicator__profilehighlight=highlight, geography=geography)
     if indicator_data.count() > 0:
         subindicator = get_subindicator(highlight)
-        data = indicator_data.first().data # TODO what to do with multiple results
+        data = indicator_data.first().data  # TODO what to do with multiple results
         return data["subindicators"].get(subindicator, 0)
     return None
+
 
 def subindicator(highlight, geography):
     indicator_data = IndicatorData.objects.filter(indicator__profilehighlight=highlight, geography=geography)
     if indicator_data.count() > 0:
-        indicator_data = indicator_data.first() # Fix this need to cater for multiple results
+        indicator_data = indicator_data.first()  # Fix this need to cater for multiple results
         subindicator = get_subindicator(highlight)
         numerator = indicator_data.data["subindicators"].get(subindicator, 0)
         denominator = 0
@@ -45,11 +48,13 @@ def subindicator(highlight, geography):
             return numerator / denominator
     return None
 
+
 algorithms = {
     "absolute_value": absolute_value,
     "sibling": sibling,
     "subindicators": subindicator
 }
+
 
 def HighlightsSerializer(profile, geography):
     highlights = []

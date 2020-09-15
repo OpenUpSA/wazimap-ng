@@ -12,7 +12,7 @@ def create_groups_for_profiles(apps, schema_editor):
     Group = apps.get_model('auth', 'Group')
     Permission = apps.get_model('auth', 'Permission')
     obj_permission_model = apps.get_model("guardian", "GroupObjectPermission")
-    ContentType = apps.get_model('contenttypes', 'ContentType') 
+    ContentType = apps.get_model('contenttypes', 'ContentType')
 
     profile_perms = Permission.objects.filter(
         content_type__app_label='profile',
@@ -36,6 +36,7 @@ def create_groups_for_profiles(apps, schema_editor):
                 permission=perm,
                 group=group
             )
+
 
 def get_profile_for_dataset(Profile, dataset):
     profile = dataset.profile
@@ -65,7 +66,7 @@ def create_permissions_for_datasets(apps, schema_editor):
     for dataset in Dataset.objects.all():
         profile = get_profile_for_dataset(Profile, dataset)
         group, _ = Group.objects.get_or_create(name=profile.name)
-        
+
         for perm in dataset_perms:
             # Remove all permissions for dataset object
             obj_permission_model.objects.filter(
@@ -102,7 +103,7 @@ def create_permissions_for_collection(apps, schema_editor):
             logger.warn(f"Category: {category.id} does not have a profile - skipping")
             continue
         group, _ = Group.objects.get_or_create(name=profile.name.lower())
-        
+
         for perm in category_perms:
             # Remove all permissions for dataset object
             obj_permission_model.objects.filter(
@@ -136,7 +137,7 @@ def create_permissions_for_profile_collection(apps, schema_editor):
     for category in ProfileCategory.objects.all():
         profile = category.profile
         group, _ = Group.objects.get_or_create(name=profile.name.lower())
-        
+
         for perm in profile_category_perms:
             # Remove all permissions for dataset object
             obj_permission_model.objects.filter(

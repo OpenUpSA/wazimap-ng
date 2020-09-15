@@ -9,6 +9,7 @@ from django import forms
 
 from wazimap_ng.general.services import permissions
 
+
 def customTitledFilter(title):
     class Wrapper(admin.FieldListFilter):
         def __new__(cls, *args, **kwargs):
@@ -16,7 +17,8 @@ def customTitledFilter(title):
             instance.title = title
             return instance
     return Wrapper
-    
+
+
 def description(description, func):
     func.short_description = description
     return func
@@ -37,6 +39,7 @@ class SortableWidget(Widget):
             'name': name,
             'values': values
         }}
+
 
 class VariableFilterWidget(Widget):
     template_name = 'widgets/VariableFilterWidget.html'

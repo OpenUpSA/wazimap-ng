@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from wazimap_ng.utils import mergedict 
+from wazimap_ng.utils import mergedict
 from wazimap_ng.datasets.serializers import AncestorGeographySerializer
 
 from wazimap_ng.datasets.serializers import GeographyHierarchySerializer
@@ -8,10 +8,12 @@ from .. import models
 from . import IndicatorDataSerializer, MetricsSerializer, ProfileLogoSerializer, HighlightsSerializer, OverviewSerializer
 from . import ProfileIndicatorSerializer
 
+
 class SimpleProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Profile
         fields = ('id', 'name')
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     requires_authentication = serializers.SerializerMethodField('is_authentication_required')

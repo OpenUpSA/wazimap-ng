@@ -10,12 +10,14 @@ def forwards(apps, schema_editor):
     profileHighlight = apps.get_model('datasets', 'profileHighlight')
 
     for highlight in profileHighlight.objects.all():
-    	if highlight.indicator.subindicators:
+        if highlight.indicator.subindicators:
             highlight.subindicator = 0
             highlight.save()
 
+
 def backwards(apps, schema_editor):
     pass
+
 
 class Migration(migrations.Migration):
 
@@ -24,5 +26,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-    	#migrations.RunPython(forwards, backwards),
+        #migrations.RunPython(forwards, backwards),
     ]

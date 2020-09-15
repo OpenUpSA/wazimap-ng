@@ -21,7 +21,7 @@ class BaseAdminModel(admin.ModelAdmin):
 
     Base Admin Model Permissions
 
-    custom_queryset_fun: 
+    custom_queryset_fun:
         * This is the function you want to call to get your queryset.
         * Set to None if you want original queryset or change name and
           add new custom queryset function in services/permissions
@@ -31,7 +31,7 @@ class BaseAdminModel(admin.ModelAdmin):
 
         Name of the custom filter should be : get_filters_for_{model_name}
 
-    exclude_fk_filters: 
+    exclude_fk_filters:
         * This is the list of foreign key to exclude from filtering fks
         If fk for a model is not added here than it will be filtered out
         using get_custom_queryset function.

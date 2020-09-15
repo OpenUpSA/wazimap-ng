@@ -18,12 +18,12 @@ class ProfileHighlightAdmin(SortableAdminMixin, BaseAdminModel):
 
     exclude_common_list_display = True
     list_display = (
-        "profile", 
-        "label", 
+        "profile",
+        "label",
         description("Indicator", lambda x: x.indicator.name),
         "created",
         "updated",
-        "order", 
+        "order",
     )
 
     fieldsets = (
@@ -31,7 +31,7 @@ class ProfileHighlightAdmin(SortableAdminMixin, BaseAdminModel):
             "fields": ("profile", "indicator")
         }),
         ("Profile fields", {
-          "fields": ("label", "subindicator", "denominator")
+            "fields": ("label", "subindicator", "denominator")
         })
     )
     form = ProfileHighlightForm
@@ -40,7 +40,7 @@ class ProfileHighlightAdmin(SortableAdminMixin, BaseAdminModel):
     help_texts = ["denominator", ]
 
     def get_readonly_fields(self, request, obj=None):
-        if obj: # editing an existing object
+        if obj:  # editing an existing object
             return ("profile",) + self.readonly_fields
         return self.readonly_fields
 

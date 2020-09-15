@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 def prepopulate_profile_highlight_order(apps, schema_editor):
     # We can't import the Person model directly as it may be a newer
     # version than this migration expects. We use the historical version.
@@ -9,6 +10,7 @@ def prepopulate_profile_highlight_order(apps, schema_editor):
     for idx, ph in enumerate(ProfileHighlight.objects.all()):
         ph.order = idx
         ph.save()
+
 
 class Migration(migrations.Migration):
 

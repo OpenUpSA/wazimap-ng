@@ -24,13 +24,16 @@ logger = logging.getLogger(__name__)
 def set_to_public(modeladmin, request, queryset):
     queryset.make_public()
 
+
 def set_to_private(modeladmin, request, queryset):
     queryset.make_private()
+
 
 def get_source(dataset):
     if hasattr(dataset, "metadata"):
         return dataset.metadata.source
-    return None 
+    return None
+
 
 class PermissionTypeFilter(filters.DatasetFilter):
     title = "Permission Type"
@@ -72,14 +75,13 @@ class DatasetAdmin(DatasetBaseAdminModel):
     class Media:
         js = ("/static/js/geography_hierarchy.js",)
 
-
     def imported_dataset(self, obj):
 
         def get_url(file_obj):
             return '<a href="%s">%s</a>' % (reverse(
                 'admin:%s_%s_change' % (
                     file_obj._meta.app_label, file_obj._meta.model_name
-                ),  args=[file_obj.id]
+                ), args=[file_obj.id]
             ), F"{file_obj.name}-{file_obj.id}")
 
         if obj:
@@ -99,13 +101,13 @@ class DatasetAdmin(DatasetBaseAdminModel):
         return [{
                 "name": "dataset data",
                 "count": obj.datasetdata_set.count()
-            }, {
+                }, {
                 "name": "indicator",
                 "count": obj.indicator_set.count()
-        }]
+                }]
 
     def save_model(self, request, obj, form, change):
-        is_new = obj.pk == None and change == False
+        is_new = obj.pk is None and change == False
         is_profile_updated = change and "profile" in form.changed_data
 
         super().save_model(request, obj, form, change)
@@ -123,7 +125,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
                 document=dataset_import_file,
                 dataset_id=obj.id
             )
-            logger.debug(f"""Starting async task: 
+            logger.debug(f"""Starting async task:
                 Task name: wazimap_ng.datasets.tasks.process_uploaded_file
                 Datasetfile_obj: {datasetfile_obj}
                 Object: {obj}
@@ -133,7 +135,6 @@ class DatasetAdmin(DatasetBaseAdminModel):
                 assign: True,
                 notify: True
             """)
-
 
             task = async_task(
                 "wazimap_ng.datasets.tasks.process_uploaded_file",
@@ -166,4 +167,3 @@ class DatasetAdmin(DatasetBaseAdminModel):
             #queryset = queryset.exclude(id__in=in_progress_uploads)
 
         return queryset, use_distinct
-        

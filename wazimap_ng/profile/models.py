@@ -6,6 +6,7 @@ from wazimap_ng.datasets.models import Indicator, GeographyHierarchy
 from wazimap_ng.general.models import BaseModel
 from wazimap_ng.config.common import DENOMINATOR_CHOICES, PERMISSION_TYPES
 
+
 class Profile(BaseModel):
     name = models.CharField(max_length=50)
     indicators = models.ManyToManyField(Indicator, through="profile.ProfileIndicator", verbose_name="variables")
@@ -20,6 +21,7 @@ class Profile(BaseModel):
     class Meta:
         ordering = ["id"]
 
+
 class Logo(BaseModel):
     profile = models.OneToOneField(Profile, null=False, on_delete=models.CASCADE)
     logo = models.ImageField(upload_to="logos/")
@@ -28,13 +30,13 @@ class Logo(BaseModel):
     def __str__(self):
         return f"{self.logo}"
 
+
 class ChoroplethMethod(BaseModel):
     name = models.CharField(max_length=30, blank=False)
     description = models.TextField(max_length=255)
 
     def __str__(self):
         return f"{self.name}"
-
 
 
 class IndicatorCategory(BaseModel):
@@ -65,6 +67,7 @@ class IndicatorSubcategory(BaseModel):
         verbose_name_plural = "Indicator Subcategories"
         ordering = ["order"]
 
+
 class ProfileKeyMetrics(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     variable = models.ForeignKey(Indicator, on_delete=models.CASCADE)
@@ -74,13 +77,14 @@ class ProfileKeyMetrics(BaseModel):
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32, help_text="Method for calculating the denominator that will normalise this value.")
     label = models.CharField(max_length=255, help_text="Text used for display to users.")
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
-    
+
     def __str__(self):
         return f"{self.label}"
 
     class Meta:
         ordering = ["order"]
         verbose_name_plural = "Profile key metrics"
+
 
 class ProfileHighlight(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
@@ -93,7 +97,7 @@ class ProfileHighlight(BaseModel):
 
     def __str__(self):
         return f"Highlight: {self.label}"
-        
+
     class Meta:
         ordering = ["order"]
 
@@ -113,4 +117,3 @@ class ProfileIndicator(BaseModel):
 
     class Meta:
         ordering = ["order"]
-

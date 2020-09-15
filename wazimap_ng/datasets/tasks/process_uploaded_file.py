@@ -25,7 +25,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
     Get header index for geography & count and create Result objects.
     """
     def process_file_data(df, dataset, row_number):
-        df = df.applymap(lambda s:s.capitalize().strip() if type(s) == str else s)
+        df = df.applymap(lambda s: s.capitalize().strip() if isinstance(s, str) else s)
         datasource = (dict(d[1]) for d in df.iterrows())
         return loaddata(dataset, datasource, row_number)
 
@@ -77,7 +77,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     groups = [group for group in columns.to_list() if group not in ["geography", "count"]]
 
-    dataset.groups =  list(set(groups + dataset.groups))
+    dataset.groups = list(set(groups + dataset.groups))
     dataset.save()
 
     if error_logs:

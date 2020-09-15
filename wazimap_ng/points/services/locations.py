@@ -7,6 +7,7 @@ from wazimap_ng.boundaries.models import GeographyBoundary
 
 logger = logging.getLogger(__name__)
 
+
 def get_locations(queryset, profile, category=None, geography_code=None):
     geography = None
 
@@ -15,7 +16,7 @@ def get_locations(queryset, profile, category=None, geography_code=None):
 
     if geography_code is not None:
         version = profile.geography_hierarchy.root_geography.version
-        geography = Geography.objects.get(code=geography_code, version=version) 
+        geography = Geography.objects.get(code=geography_code, version=version)
         boundary = GeographyBoundary.objects.get(geography=geography)
 
         queryset = queryset.filter(coordinates__contained=boundary.geom)

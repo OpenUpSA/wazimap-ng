@@ -8,21 +8,23 @@ from wazimap_ng.datasets import dataloader
 from wazimap_ng.datasets import models
 # import pytest.mark.django_db
 
+
 @patch('wazimap_ng.datasets.models.Geography.objects.get', side_effect=lambda code, version: (code, version))
 def test_load_geography(mock_objects):
     o = ("X", "Y")
-    assert  dataloader.load_geography(*o) == o
+    assert dataloader.load_geography(*o) == o
+
 
 @patch('wazimap_ng.datasets.models.Geography.objects.get', side_effect=lambda code, version: (code, version))
 def test_correct_geography_cache(mock_objects):
     o = ("X", "Y")
-    assert  dataloader.load_geography(*o) == o
+    assert dataloader.load_geography(*o) == o
 
     p = ("X", "Z")
-    assert  dataloader.load_geography(*p) == p
-    
+    assert dataloader.load_geography(*p) == p
+
     q = ("Z", "Y")
-    assert  dataloader.load_geography(*q) == q
+    assert dataloader.load_geography(*q) == q
 
 
 @pytest.fixture
@@ -32,12 +34,14 @@ def good_input():
         {"geography": "YYY", "count": 222},
     ]
 
+
 @pytest.fixture
 def good_input_with_groups():
     return [
         {"geography": "XXX", "count": 111, "group1": "A", "group2": "X"},
         {"geography": "YYY", "count": 222, "group1": "B", "group2": "X"},
     ]
+
 
 class TestLoadData:
     @patch('wazimap_ng.datasets.models.DatasetData')

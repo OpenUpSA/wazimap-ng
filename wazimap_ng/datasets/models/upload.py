@@ -22,13 +22,16 @@ from wazimap_ng.general.models import BaseModel
 max_filesize = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
 allowed_file_extensions = getattr(settings, "ALLOWED_FILE_EXTENSIONS", ["xls", "xlsx", "csv"])
 
+
 def file_size(value):
     if value.size > max_filesize:
         raise ValidationError(f"File too large. Size should not exceed {max_filesize / (1024 * 1024)} MiB.")
 
+
 def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)
     return os.path.join('datasets', filename)
+
 
 class DatasetFile(BaseModel):
     document = models.FileField(
@@ -38,14 +41,13 @@ class DatasetFile(BaseModel):
             file_size
         ],
         help_text=f"""
-            Uploaded document should be less than {max_filesize / (1024 * 1024)} MiB in size and 
+            Uploaded document should be less than {max_filesize / (1024 * 1024)} MiB in size and
             file extensions should be one of {", ".join(allowed_file_extensions)}.
         """
     )
     task = models.ForeignKey(Task, on_delete=models.SET_NULL, blank=True, null=True)
     name = name = models.CharField(max_length=60)
     dataset_id = models.PositiveSmallIntegerField(null=True, blank=True)
-
 
     def __str__(self):
         return self.name

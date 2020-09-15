@@ -9,9 +9,9 @@ from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.admin import filters
 
 
-
 class CategoryMetricsFilter(filters.CategoryFilter):
     parameter_name = 'subcategory__category__id'
+
 
 @admin.register(models.ProfileKeyMetrics)
 class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
@@ -40,12 +40,10 @@ class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
     fields = ["profile", "variable", "subindicator", "subcategory", "denominator", "label"]
     search_fields = ("label", )
 
-
     class Media:
         js = (
             "/static/js/variable_subindicators.js",
         )
-
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -58,7 +56,7 @@ class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
                 category__profile_id=profile_id
             )
         elif not obj and request.method == "GET":
-             qs = qs = models.IndicatorSubcategory.objects.none()
+            qs = qs = models.IndicatorSubcategory.objects.none()
 
         form.base_fields["subcategory"].queryset = qs
 

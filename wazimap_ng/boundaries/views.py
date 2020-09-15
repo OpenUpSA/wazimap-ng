@@ -15,6 +15,7 @@ from . import serializers
 from ..datasets.models import Geography
 from ..cache import cache_decorator
 
+
 class GeographySwitchMixin(object):
     def _get_classes(self, geo_type):
         return (models.GeographyBoundary, serializers.GeographyBoundarySerializer)
@@ -30,6 +31,7 @@ class GeographySwitchMixin(object):
             print(f"More than 1: {code}")
             return geos[1]
         return geos[0]
+
 
 @cache_decorator("geography_item")
 def geography_item_helper(code, version):
@@ -59,10 +61,12 @@ class GeographyChildren(GeographySwitchMixin, generics.ListAPIView):
         js = geography_children_helper(code, version)
         return Response(js)
 
+
 class GeographyItem(GeographySwitchMixin, generics.RetrieveAPIView):
     def get(self, request, code, version=""):
         js = geography_item_helper(code, version)
         return Response(js)
+
 
 class GeographyList(GeographySwitchMixin, generics.ListAPIView):
     pass

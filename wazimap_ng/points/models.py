@@ -15,9 +15,11 @@ from wazimap_ng.datasets.models import Licence
 from wazimap_ng.general.models import BaseModel
 from wazimap_ng.config.common import PERMISSION_TYPES
 
+
 def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)
     return os.path.join('points', filename)
+
 
 class Theme(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
@@ -43,6 +45,7 @@ class Category(BaseModel):
     class Meta:
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
+
 
 class Location(BaseModel):
     name = models.CharField(max_length=255)
@@ -75,10 +78,11 @@ class ProfileCategory(BaseModel):
         verbose_name = "Profile Collection"
         verbose_name_plural = "Profile Collections"
 
+
 class CoordinateFile(BaseModel):
     document = models.FileField(
         upload_to=get_file_path,
-        validators=[FileExtensionValidator(allowed_extensions=["csv",])],
+        validators=[FileExtensionValidator(allowed_extensions=["csv", ])],
         help_text="File Type required : CSV | Fields that are required: Name, Longitude, latitude"
     )
     task = models.ForeignKey(Task, on_delete=models.SET_NULL, blank=True, null=True)

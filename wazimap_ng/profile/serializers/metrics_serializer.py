@@ -1,17 +1,19 @@
 from wazimap_ng.utils import mergedict
 
-from wazimap_ng.datasets.models import IndicatorData 
+from wazimap_ng.datasets.models import IndicatorData
 
 from .. import models
+
 
 def get_subindicator(metric):
     subindicators = metric.variable.subindicators
     idx = metric.subindicator if metric.subindicator is not None else 0
     return subindicators[idx]
 
+
 def sibling(profile_key_metric, geography):
     siblings = geography.get_siblings()
-    
+
     indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography__in=siblings)
     if indicator_data.count() > 0:
         subindicator = get_subindicator(profile_key_metric)
@@ -27,18 +29,20 @@ def sibling(profile_key_metric, geography):
             return numerator / denominator
     return None
 
+
 def absolute_value(profile_key_metric, geography):
     indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography=geography)
     if indicator_data.count() > 0:
         subindicator = get_subindicator(profile_key_metric)
-        data = indicator_data.first().data # TODO what to do with multiple results
+        data = indicator_data.first().data  # TODO what to do with multiple results
         return data["subindicators"][subindicator]
     return None
+
 
 def subindicator(profile_key_metric, geography):
     indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography=geography)
     if indicator_data.count() > 0:
-        indicator_data = indicator_data.first() # Fix this need to cater for multiple results
+        indicator_data = indicator_data.first()  # Fix this need to cater for multiple results
         subindicator = get_subindicator(profile_key_metric)
         numerator = indicator_data.data["subindicators"].get(subindicator, 0)
         denominator = sum(indicator_data.data["subindicators"].values())
@@ -47,19 +51,21 @@ def subindicator(profile_key_metric, geography):
             return numerator / denominator
     return None
 
+
 algorithms = {
     "absolute_value": absolute_value,
     "sibling": sibling,
     "subindicators": subindicator
 }
 
+
 def MetricsSerializer(profile, geography):
     out_js = {}
     profile_key_metrics = (models.ProfileKeyMetrics.objects
-        .filter(profile=profile)
-        .order_by("order")
-        .select_related("subcategory", "subcategory__category")
-    )
+                           .filter(profile=profile)
+                           .order_by("order")
+                           .select_related("subcategory", "subcategory__category")
+                           )
     for profile_key_metric in profile_key_metrics:
         denominator = profile_key_metric.denominator
         method = algorithms.get(denominator, absolute_value)

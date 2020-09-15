@@ -14,6 +14,7 @@ class DatasetQuerySet(models.QuerySet):
     def make_private(self):
         return self.update(permission_type="private")
 
+
 class Dataset(BaseModel):
     profile = models.ForeignKey(
         'profile.Profile', on_delete=models.CASCADE, blank=True, null=True

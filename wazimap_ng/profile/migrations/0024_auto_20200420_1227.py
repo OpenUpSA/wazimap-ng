@@ -2,17 +2,20 @@
 
 from django.db import migrations
 
+
 def prepopulate_category_order(apps, schema_editor):
     IndicatorCategory = apps.get_model("profile", "IndicatorCategory")
     for idx, category in enumerate(IndicatorCategory.objects.all()):
         category.order = idx
         category.save()
 
+
 def prepopulate_subcategory_order(apps, schema_editor):
     IndicatorSubcategory = apps.get_model("profile", "IndicatorSubcategory")
     for idx, subcategory in enumerate(IndicatorSubcategory.objects.all()):
         subcategory.order = idx
         subcategory.save()
+
 
 class Migration(migrations.Migration):
 

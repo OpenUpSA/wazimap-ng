@@ -11,14 +11,15 @@ from .base_admin_model import DatasetBaseAdminModel
 
 from wazimap_ng.general.admin import filters
 
+
 class GroupDatasetFilter(filters.DatasetFilter):
     parameter_name = 'dataset__name'
     lookup_fields = ["name", "name"]
 
+
 class GroupProfileFilter(filters.ProfileFilter):
     parameter_name = 'dataset__profile__name'
     lookup_fields = ["name", "name"]
-
 
 
 class GroupAdminForm(forms.ModelForm):
@@ -36,12 +37,13 @@ class GroupAdminForm(forms.ModelForm):
             return [values[i] for i in order] if order else values
         return []
 
+
 @admin.register(models.Group)
 class GroupAdmin(DatasetBaseAdminModel):
     list_display = (
         "name",
-        "dataset", 
-        description("Profile", lambda x: x.dataset.profile), 
+        "dataset",
+        description("Profile", lambda x: x.dataset.profile),
     )
 
     form = GroupAdminForm
@@ -54,12 +56,11 @@ class GroupAdmin(DatasetBaseAdminModel):
 
     readonly_fields = ("dataset", "name")
 
-
     fieldsets = (
         ("General", {
             'fields': ('name', 'dataset')
         }),
         ("Subindicators", {
-          'fields': ('subindicators',)
+            'fields': ('subindicators',)
         })
     )

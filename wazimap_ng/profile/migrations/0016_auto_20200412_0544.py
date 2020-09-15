@@ -13,9 +13,8 @@ class Migration(migrations.Migration):
     operations = [
     ]
 
-
     database_operations = [
-        migrations.AlterModelTable('Licence', 'datasets_licence'),  
+        migrations.AlterModelTable('Licence', 'datasets_licence'),
     ]
 
     state_operations = [
@@ -27,4 +26,3 @@ class Migration(migrations.Migration):
             database_operations=database_operations,
             state_operations=state_operations)
     ]
-

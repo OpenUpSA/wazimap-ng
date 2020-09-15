@@ -2,11 +2,13 @@
 
 from django.db import migrations
 
+
 def prepopulate_profile_keymetric_order(apps, schema_editor):
     ProfileKeyMetrics = apps.get_model("profile", "ProfileKeyMetrics")
     for idx, km in enumerate(ProfileKeyMetrics.objects.all()):
         km.order = idx
         km.save()
+
 
 class Migration(migrations.Migration):
 

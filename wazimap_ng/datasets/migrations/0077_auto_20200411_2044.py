@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     ]
 
     database_operations = [
-        migrations.AlterModelTable('IndicatorCategory', 'profile_indicatorcategory'),  
+        migrations.AlterModelTable('IndicatorCategory', 'profile_indicatorcategory'),
     ]
 
     state_operations = [

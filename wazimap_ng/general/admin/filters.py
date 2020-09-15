@@ -34,9 +34,11 @@ class ProfileFilter(DynamicBaseFilter):
     parameter_name = 'profile_id'
     model_class = Profile
 
+
 class ProfileNameFilter(ProfileFilter):
     parameter_name = 'profile__name'
     lookup_fields = ["name", "name"]
+
 
 class CategoryFilter(DynamicBaseFilter):
     title = "Category"
@@ -48,6 +50,7 @@ class CategoryFilter(DynamicBaseFilter):
             permissions, "get_custom_queryset"
         )(self.model_class, request.user)
         return [(category.id, category) for category in choices]
+
 
 class SubCategoryFilter(DynamicBaseFilter):
     title = "Subcategory"
@@ -101,6 +104,7 @@ class ThemeFilter(DynamicBaseFilter):
             profile__in=profiles
         )]
 
+
 class CollectionFilter(DynamicBaseFilter):
     title = 'Collection'
     parameter_name = 'category_id'
@@ -111,4 +115,3 @@ class CollectionFilter(DynamicBaseFilter):
             permissions, "get_custom_queryset"
         )(self.model_class, request.user)
         return [(collection.id, collection) for collection in choices]
-

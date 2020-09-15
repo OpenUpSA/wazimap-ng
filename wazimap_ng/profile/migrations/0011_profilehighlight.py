@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
         ('profile', '0010_auto_20200407_1155'),
     ]
 
-
     state_operations = [
         migrations.CreateModel(
             name='ProfileHighlight',

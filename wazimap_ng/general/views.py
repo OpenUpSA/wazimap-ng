@@ -1,3 +1,4 @@
+from django.contrib.auth import logout
 from django.views.decorators.http import condition
 from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404, redirect
@@ -16,6 +17,7 @@ from ..boundaries import views as boundaries_views
 from ..cache import etag_profile_updated, last_modified_profile_updated
 from ..points import views as point_views
 from ..points import models as point_models
+
 
 def consolidated_profile_helper(profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
@@ -43,11 +45,13 @@ def consolidated_profile_helper(profile_id, geography_code):
         "themes": point_views.boundary_point_count_helper(profile, geography)
     })
 
+
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
 def consolidated_profile(request, profile_id, geography_code):
     js = consolidated_profile_helper(profile_id, geography_code)
     return Response(js)
+
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
@@ -55,7 +59,7 @@ def consolidated_profile_test(request, profile_id, geography_code):
     js = consolidated_profile_helper(profile_id, geography_code)
     return Response("test2")
 
-from django.contrib.auth import logout
+
 def logout_view(request):
     logout(request)
     return redirect("version")
@@ -64,12 +68,13 @@ def logout_view(request):
 def authenticate_admin(user):
     return user.is_staff or user.is_superuser
 
+
 @user_passes_test(authenticate_admin)
 @never_cache
 def notifications_view(request):
     messages = request.session.pop("notifications", [])
     task_list = request.session.get("task_list", [])
-    
+
     if messages and task_list:
         for message in messages:
             if "task_id" in message:

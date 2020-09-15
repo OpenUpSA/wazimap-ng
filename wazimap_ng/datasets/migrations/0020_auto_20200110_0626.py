@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-            migrations.AddIndex(
+        migrations.AddIndex(
             model_name='geography',
             index=wazimap_ng.extensions.index.GinTrgmIndex(fields=['name'], name='datasets_ge_name_53e877_gin'),
         ),

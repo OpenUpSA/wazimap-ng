@@ -9,6 +9,7 @@ from django.template.loader import render_to_string
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.datasets import hooks
 
+
 @admin.register(models.CoordinateFile)
 class CoordinateFileAdmin(BaseAdminModel):
     fieldsets = (
@@ -17,14 +18,14 @@ class CoordinateFileAdmin(BaseAdminModel):
         }),
         ("Task Details", {
             "fields": (
-            	"get_status", "get_task_link", "get_errors",
+                "get_status", "get_task_link", "get_errors",
             )
         }),
     )
 
     readonly_fields = (
-       "name", "get_document", "get_status", "get_task_link",
-       "get_errors",
+        "name", "get_document", "get_status", "get_task_link",
+        "get_errors",
     )
 
     def get_document(self, obj):
@@ -35,7 +36,7 @@ class CoordinateFileAdmin(BaseAdminModel):
 
     def get_status(self, obj):
         if obj.id and obj.task:
-                return "Processed" if obj.task.success else "Failed"
+            return "Processed" if obj.task.success else "Failed"
         return "In Queue"
 
     get_status.short_description = 'Status'
@@ -46,7 +47,7 @@ class CoordinateFileAdmin(BaseAdminModel):
             admin_url = reverse(
                 'admin:%s_%s_change' % (
                     obj.task._meta.app_label, task_type
-                ),  args=[obj.task.id]
+                ), args=[obj.task.id]
             )
 
             return mark_safe('<a href="%s">%s</a>' % (admin_url, obj.task.id))
@@ -61,11 +62,11 @@ class CoordinateFileAdmin(BaseAdminModel):
                 filename = "%s_%d_log.csv" % ("point_file", obj.id)
                 download_url = settings.MEDIA_URL + "logs/points/"
 
-                df = pd.read_csv(logdir+filename, header=None, sep=",", nrows=10, skiprows=1)
+                df = pd.read_csv(logdir + filename, header=None, sep=",", nrows=10, skiprows=1)
                 error_list = df.values.tolist()
 
                 result = render_to_string(
-                    'custom/render_task_errors.html', { 'errors': error_list, 'download_url': download_url + filename}
+                    'custom/render_task_errors.html', {'errors': error_list, 'download_url': download_url + filename}
                 )
 
             return mark_safe(result)

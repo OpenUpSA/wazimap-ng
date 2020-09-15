@@ -4,6 +4,7 @@ from .licence import Licence
 from .dataset import Dataset
 from wazimap_ng.general.models import BaseModel
 
+
 class MetaData(BaseModel):
     source = models.CharField(max_length=60, null=False, blank=True)
     description = models.TextField(blank=True)

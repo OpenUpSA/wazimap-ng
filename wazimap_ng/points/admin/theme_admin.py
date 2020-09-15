@@ -9,6 +9,7 @@ from icon_picker_widget.widgets import IconPickerWidget
 
 from .. import models
 
+
 class ThemeAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -25,5 +26,5 @@ class ThemeAdmin(BaseAdminModel):
 
     class Media:
         css = {
-             'all': ('/static/css/admin-custom.css',)
+            'all': ('/static/css/admin-custom.css',)
         }

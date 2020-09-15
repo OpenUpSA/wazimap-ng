@@ -22,7 +22,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='coordinatefile',
             name='document',
-            field=models.FileField(help_text='File Type required : CSV | Fields that are required: Name, Longitude, latitude', upload_to='points/', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['csv'])]),
+            field=models.FileField(help_text='File Type required : CSV | Fields that are required: Name, Longitude, latitude',
+                                   upload_to='points/', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['csv'])]),
         ),
         migrations.CreateModel(
             name='ProfileCategory',

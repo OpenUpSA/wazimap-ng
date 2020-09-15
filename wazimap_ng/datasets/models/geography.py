@@ -13,10 +13,11 @@ class GeographyQuerySet(MP_NodeQuerySet):
     def search(self, text, similarity=0.3):
         return (
             self
-                .annotate(similarity=TrigramSimilarity("name", text))
-                .filter(similarity__gt=similarity)
-                .order_by("-similarity")
+            .annotate(similarity=TrigramSimilarity("name", text))
+            .filter(similarity__gt=similarity)
+            .order_by("-similarity")
         )
+
 
 class GeographyManager(MP_NodeManager):
     def get_queryset(self):
@@ -24,6 +25,7 @@ class GeographyManager(MP_NodeManager):
 
     def search(self, text, similarity=0.3):
         return self.get_queryset().search(text, similarity)
+
 
 class Geography(MP_Node, BaseModel):
     name = models.CharField(max_length=50)
@@ -64,10 +66,11 @@ class Geography(MP_Node, BaseModel):
             for child_level in levels:
                 child_types[child_level] = (
                     GeographyBoundary.objects
-                        .filter(geography__code__in=codes, geography__level=child_level, geography__version=self.version)
-                        .select_related("geography")
+                    .filter(geography__code__in=codes, geography__level=child_level, geography__version=self.version)
+                    .select_related("geography")
                 )
         return child_types
+
 
 class GeographyHierarchy(BaseModel):
     name = models.CharField(max_length=50)
@@ -80,7 +83,6 @@ class GeographyHierarchy(BaseModel):
 
     def help_text(self):
         return f"{self.name} : {self.description}"
-    
 
     def __str__(self):
         return f"{self.name}"

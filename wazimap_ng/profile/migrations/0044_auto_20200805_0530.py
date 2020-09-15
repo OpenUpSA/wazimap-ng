@@ -11,6 +11,7 @@ def create_choropleth_method(apps, schema_editor):
         description="This method displays the exact value as provided in the data."
     )
 
+
 class Migration(migrations.Migration):
 
     dependencies = [

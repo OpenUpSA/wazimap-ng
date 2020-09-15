@@ -2,11 +2,12 @@
 
 from django.db import migrations
 
+
 def set_profile_to_private(apps, schema_editor):
     Profile = apps.get_model("profile", "Profile")
     for profile in Profile.objects.filter(requires_authentication=True):
-    	profile.permission_type = "private"
-    	profile.save()
+        profile.permission_type = "private"
+        profile.save()
 
 
 class Migration(migrations.Migration):
@@ -16,5 +17,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-    	migrations.RunPython(set_profile_to_private),
+        migrations.RunPython(set_profile_to_private),
     ]

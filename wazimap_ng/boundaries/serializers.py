@@ -1,5 +1,5 @@
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
-from rest_framework_gis.fields import GeometrySerializerMethodField 
+from rest_framework_gis.fields import GeometrySerializerMethodField
 from rest_framework import serializers
 from . import models
 from ..datasets.models import Geography
@@ -19,7 +19,6 @@ class GeographySerializer(GeoFeatureModelSerializer):
         super(GeographySerializer, self).__init__(*args, **kwargs)
         self.simplification = simplification
         self.parentCode = parentCode
-
 
     def get_geom(self, obj):
         return obj.geom_cache

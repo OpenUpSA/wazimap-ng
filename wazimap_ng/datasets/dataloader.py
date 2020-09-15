@@ -11,11 +11,14 @@ from . import models
 logger = logging.getLogger(__name__)
 
 # TODO should add a memoize decorator here
+
+
 @functools.lru_cache()
 def load_geography(geo_code, version):
     geo_code = str(geo_code).upper()
     geography = models.Geography.objects.get(code=geo_code, version=version)
     return geography
+
 
 def create_groups(dataset, group_names):
     groups = []
@@ -25,8 +28,9 @@ def create_groups(dataset, group_names):
         groups.append(group)
     return groups
 
+
 @transaction.atomic
-def loaddata(dataset, iterable, row_number):  
+def loaddata(dataset, iterable, row_number):
     datarows = []
     errors = []
     warnings = []
@@ -43,14 +47,13 @@ def loaddata(dataset, iterable, row_number):
             warnings.append(list(row.values()))
             continue
 
-
         try:
             count = float(row["count"])
             if math.isnan(count):
-                errors.append([row_number+idx, "count", "Missing data for count"])
+                errors.append([row_number + idx, "count", "Missing data for count"])
                 continue
         except (TypeError, ValueError):
-            errors.append([row_number+idx, "count", f"""Expected a number in the 'count' column, received '{row["count"]}'"""])
+            errors.append([row_number + idx, "count", f"""Expected a number in the 'count' column, received '{row["count"]}'"""])
             continue
 
         del row["geography"]

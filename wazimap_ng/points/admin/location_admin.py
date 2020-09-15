@@ -14,6 +14,7 @@ from wazimap_ng.general.admin import filters
 
 from .. import models
 
+
 def assign_to_category_action(category):
     def assign_to_category(modeladmin, request, queryset):
         queryset.update(category=category)
@@ -43,7 +44,6 @@ class LocationResource(resources.ModelResource):
         model = models.Location
         fields = ("name", "category", "latitude", "longitude", "data",)
         export_order = ("name", "category", "latitude", "longitude", "data")
-
 
 
 @admin.register(models.Location)

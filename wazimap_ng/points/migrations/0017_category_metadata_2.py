@@ -3,6 +3,7 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
+
 def copy_metadata_to_general_metadata(apps, schema_editor):
     """
     copy metadata from points.MetaData to general.MetaData

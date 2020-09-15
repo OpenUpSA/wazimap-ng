@@ -12,6 +12,7 @@ from itertools import groupby
 
 logger = logging.getLogger(__name__)
 
+
 class DataAccumulator:
     def __init__(self, geography_id):
         self.geography_id = geography_id
@@ -33,10 +34,11 @@ class DataAccumulator:
                     logger.warn(f"Expected a single group when creating a subindicator - found {len(values)}!")
                 subindicator = values[0]
                 subindicators[subindicator] = count
-            else: 
+            else:
                 raise Exception("Missing subindicator in datablob")
 
         self.data["subindicators"] = subindicators
+
 
 class Sorter:
     def __init__(self):
@@ -66,7 +68,7 @@ class Sorter:
 @transaction.atomic
 def indicator_data_extraction(indicator, **kwargs):
     sorter = Sorter()
-    primary_group = indicator.groups[0] # TODO ensure that we only ever have one primary group. Probably need to change the model
+    primary_group = indicator.groups[0]  # TODO ensure that we only ever have one primary group. Probably need to change the model
 
     models.IndicatorData.objects.filter(indicator=indicator).delete()
     groups = ["data__" + i for i in indicator.dataset.groups]
@@ -87,13 +89,12 @@ def indicator_data_extraction(indicator, **kwargs):
             counts = extract_counts(indicator, qs)
             sorter.add_subindicator(counts)
 
-
     datarows = []
     for geography_id, accumulator in sorter.accumulators.items():
         datarows.append(models.IndicatorData(
             indicator=indicator, geography_id=geography_id, data=accumulator.data
         )
-    )
+        )
 
     models.IndicatorData.objects.bulk_create(datarows, 1000)
 
@@ -101,7 +102,8 @@ def indicator_data_extraction(indicator, **kwargs):
         "model": "indicator",
         "name": indicator.name,
         "id": indicator.id,
-    }           
+    }
+
 
 def extract_counts(indicator, qs):
     """

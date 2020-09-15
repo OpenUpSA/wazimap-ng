@@ -28,7 +28,6 @@ class DatasetDataQuerySet(models.QuerySet):
 
         return self.order_by().values_list(group, flat=True).distinct()
 
-
     def grouped_totals_by_geography(self, groups):
         """
         groups need to be a list of fields to group by. They must be prefixed by data__
@@ -37,6 +36,7 @@ class DatasetDataQuerySet(models.QuerySet):
 
         c = Cast(KeyTextTransform("count", "data"), FloatField())
         return self.values(*groups, "geography_id").annotate(count=Sum(c))
+
 
 class DatasetData(BaseModel):
     dataset = models.ForeignKey(Dataset, null=True, on_delete=models.CASCADE)

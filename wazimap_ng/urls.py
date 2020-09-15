@@ -18,12 +18,15 @@ from .cache import cache_headers as cache
 
 from wazimap_ng.general.views import logout_view, notifications_view
 
+
 @api_view()
 def version(*args, **kwargs):
     return Response(settings.VERSION)
 
+
 def trigger_error(request):
     division_by_zero = 1 / 0
+
 
 urlpatterns = [
 
@@ -56,12 +59,12 @@ urlpatterns = [
     ),
     path(
         "api/v1/geography/hierarchies/",
-        cache(dataset_views.GeographyHierarchyViewset.as_view({"get":"list"})),
+        cache(dataset_views.GeographyHierarchyViewset.as_view({"get": "list"})),
         name="geography-hierarchies",
     ),
     path(
         "api/v1/geography/hierarchies/<int:pk>/",
-        cache(dataset_views.GeographyHierarchyViewset.as_view({"get":"retrieve"})),
+        cache(dataset_views.GeographyHierarchyViewset.as_view({"get": "retrieve"})),
         name="geography-hierarchies",
     ),
     path("api/v1/profiles/", profile_views.ProfileList.as_view(), name="profile-list"),

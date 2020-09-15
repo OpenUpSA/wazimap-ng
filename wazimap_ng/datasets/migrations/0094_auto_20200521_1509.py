@@ -12,36 +12,34 @@ def create_staff_groups(apps, schema_editor):
     data_admin = Group.objects.create(name="DataAdmin")
     profile_admin = Group.objects.create(name="ProfileAdmin")
 
-
     # Perms to be assigned
     data_admin_perm_models = {
-    	"datasets": [
+        "datasets": [
             "datasetfile", "dataset", "indicator", "indicatordata", "universe",
-    	]
+        ]
     }
     profile_admin_perm_models = {
-    	"points": [
+        "points": [
             "profilecategory", "location", "theme", "category",
-    	],
-    	"profile": [
+        ],
+        "profile": [
             "indicatorcategory", "indicatorsubcategory", "coordinatefile",
             "logo", "profilehighlight", "profilekeymetrics", "profileindicator"
-    	]
+        ]
     }
 
     # Assign perms to groups
     for app_label, models in data_admin_perm_models.items():
-    	permissions = Permission.objects.filter(
+        permissions = Permission.objects.filter(
             content_type__app_label=app_label, content_type__model__in=models
-    	).values_list("id", flat=True)
-    	data_admin.permissions.add(*permissions)
-
+        ).values_list("id", flat=True)
+        data_admin.permissions.add(*permissions)
 
     for app_label, models in profile_admin_perm_models.items():
-    	permissions = Permission.objects.filter(
+        permissions = Permission.objects.filter(
             content_type__app_label=app_label, content_type__model__in=models
-    	).values_list("id", flat=True)
-    	profile_admin.permissions.add(*permissions)
+        ).values_list("id", flat=True)
+        profile_admin.permissions.add(*permissions)
 
 
 class Migration(migrations.Migration):
@@ -51,5 +49,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-    	migrations.RunPython(create_staff_groups),
+        migrations.RunPython(create_staff_groups),
     ]

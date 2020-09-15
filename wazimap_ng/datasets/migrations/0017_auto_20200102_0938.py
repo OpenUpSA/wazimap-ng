@@ -39,6 +39,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='profileindicator',
             name='universe',
-            field=models.ForeignKey(blank=True, help_text='The subset of the population considered for this indicator.', null=True, on_delete=django.db.models.deletion.CASCADE, to='datasets.Universe'),
+            field=models.ForeignKey(blank=True, help_text='The subset of the population considered for this indicator.',
+                                    null=True, on_delete=django.db.models.deletion.CASCADE, to='datasets.Universe'),
         ),
     ]

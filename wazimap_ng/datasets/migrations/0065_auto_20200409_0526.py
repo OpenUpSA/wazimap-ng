@@ -21,7 +21,7 @@ def copy_data_to_new_field(apps, schema_editor):
                     subdata = {}
                     text_list = ""
                     text_list = []
-                
+
                     subindicators = subindicator.split("/")
                     for sidx, val in enumerate(groups):
                         subdata[val] = subindicators[sidx]
@@ -34,7 +34,7 @@ def copy_data_to_new_field(apps, schema_editor):
             elif groups and len(groups) == 1:
                 for idx, subindicator in enumerate(indicator.subindicators):
                     data.append({
-                        "groups" : {groups[0]: subindicator},
+                        "groups": {groups[0]: subindicator},
                         "id": idx,
                         "label": f"{groups[0]}: {subindicator}",
                     })

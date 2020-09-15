@@ -2,6 +2,7 @@ import os
 from .common import Common
 from configurations import Configuration, values
 
+
 class Production(Common):
 
     INSTALLED_APPS = Common.INSTALLED_APPS
@@ -12,7 +13,6 @@ class Production(Common):
     INSTALLED_APPS += ("gunicorn", )
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
 
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/2.0/howto/static-files/
@@ -31,9 +31,9 @@ class Production(Common):
     # https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching#cache-control
     # Response can be cached by browser and any intermediary caches (i.e. it is "public") for up to 1 day
     # 86400 = (60 seconds x 60 minutes x 24 hours)
-    #AWS_HEADERS = {
+    # AWS_HEADERS = {
     #    'Cache-Control': 'max-age=86400, s-maxage=86400, must-revalidate',
-    #}
+    # }
 
     # Disable Django's own staticfiles handling in favour of WhiteNoise, for
     # greater consistency between gunicorn and `./manage.py runserver`. See:

@@ -11,12 +11,12 @@ def forwards(apps, schema_editor):
     ProfileKeyMetrics = apps.get_model('profile', 'ProfileKeyMetrics')
 
     for pi in ProfileIndicator.objects.filter(key_metric=True):
-    	ProfileKeyMetrics.objects.create(
-    		variable=pi.indicator,
-    		subcategory=pi.subcategory,
-                subindicator=0,
-                denominator='absolute_value'
-    	)
+        ProfileKeyMetrics.objects.create(
+            variable=pi.indicator,
+            subcategory=pi.subcategory,
+            subindicator=0,
+            denominator='absolute_value'
+        )
 
 
 def backwards(apps, schema_editor):
@@ -30,5 +30,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-    	migrations.RunPython(forwards, backwards)
+        migrations.RunPython(forwards, backwards)
     ]

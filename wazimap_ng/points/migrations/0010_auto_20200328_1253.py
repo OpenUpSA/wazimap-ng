@@ -15,6 +15,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='coordinatefile',
             name='document',
-            field=models.FileField(help_text='File Type required : CSV | Fields that are required: Name, Longitude, latitude', upload_to=wazimap_ng.points.models.get_file_path, validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['csv'])]),
+            field=models.FileField(
+                help_text='File Type required : CSV | Fields that are required: Name, Longitude, latitude',
+                upload_to=wazimap_ng.points.models.get_file_path,
+                validators=[
+                    django.core.validators.FileExtensionValidator(
+                        allowed_extensions=['csv'])]),
         ),
     ]

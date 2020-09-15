@@ -3,6 +3,7 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
+
 def copy_name_of_coordinate_file(apps, schema_editor):
     """
     copy name of collection to coordinate file object
@@ -14,6 +15,7 @@ def copy_name_of_coordinate_file(apps, schema_editor):
             name = file_obj.category.name
             file_obj.name = name
             file_obj.save()
+
 
 class Migration(migrations.Migration):
 

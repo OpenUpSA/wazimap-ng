@@ -17,6 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 os.environ["GDAL_DATA"] = "/usr/share/gdal/"
 
+
 class Common(QCluster, Configuration):
 
     if os.path.exists("VERSION"):
@@ -30,10 +31,10 @@ class Common(QCluster, Configuration):
 
     if SENTRY_DSN:
         sentry_sdk.init(SENTRY_DSN,
-            integrations=[DjangoIntegration(), RedisIntegration()],
-            send_default_pii=True,
-            release=RELEASE
-        )
+                        integrations=[DjangoIntegration(), RedisIntegration()],
+                        send_default_pii=True,
+                        release=RELEASE
+                        )
 
     INSTALLED_APPS = [
         "django.contrib.admin",
@@ -104,7 +105,6 @@ class Common(QCluster, Configuration):
         ("Author", "adi@openup.org.za"),
     )
 
-
     # Postgres
     DATABASES = {
         "default": dj_database_url.config(
@@ -152,7 +152,7 @@ class Common(QCluster, Configuration):
     TEMPLATES = [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
-            "DIRS": [os.path.join(BASE_DIR, 'general/templates'),],
+            "DIRS": [os.path.join(BASE_DIR, 'general/templates'), ],
             "APP_DIRS": True,
             "OPTIONS": {
                 "context_processors": [
@@ -187,7 +187,7 @@ class Common(QCluster, Configuration):
     ]
 
     AUTHENTICATION_BACKENDS = (
-        'django.contrib.auth.backends.ModelBackend', # default
+        'django.contrib.auth.backends.ModelBackend',  # default
         'guardian.backends.ObjectPermissionBackend',
     )
 
@@ -267,7 +267,6 @@ class Common(QCluster, Configuration):
         }
     }
 
-
     # Django Rest Framework
     REST_FRAMEWORK = {
         "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -317,6 +316,7 @@ class Common(QCluster, Configuration):
         except KeyError:
             error_msg = 'Set the {} environment variable'.format(env_variable)
             raise ImproperlyConfigured(error_msg)
+
 
 FILE_SIZE_LIMIT = 3000 * 1024 * 1024
 ALLOWED_FILE_EXTENSIONS = ["csv", "xls", "xlsx"]

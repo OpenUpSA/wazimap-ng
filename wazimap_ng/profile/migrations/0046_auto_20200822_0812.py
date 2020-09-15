@@ -7,14 +7,15 @@ def add_decimal_places_to_profile_config(apps, schema_editor):
 
     Profile = apps.get_model("profile", "Profile")
     for profile in Profile.objects.all():
-    	config = profile.configuration
-    	config["formatting"] = {
+        config = profile.configuration
+        config["formatting"] = {
             'percentage': '.1%',
             'decimal': ',.2f',
             'integer': ',.2d'
         }
-    	profile.configuration = config
-    	profile.save()
+        profile.configuration = config
+        profile.save()
+
 
 class Migration(migrations.Migration):
 
@@ -23,5 +24,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-    	migrations.RunPython(add_decimal_places_to_profile_config),
+        migrations.RunPython(add_decimal_places_to_profile_config),
     ]

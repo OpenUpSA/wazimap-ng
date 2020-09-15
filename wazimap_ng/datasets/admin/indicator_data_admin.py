@@ -27,7 +27,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
             "fields": ("geography", "indicator")
         }),
         ("Data fields", {
-          "fields": ("data",)
+            "fields": ("data",)
         })
     )
 
@@ -40,6 +40,6 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
     search_fields = ["geography__name"]
 
     def get_readonly_fields(self, request, obj=None):
-        if obj: # editing an existing object
+        if obj:  # editing an existing object
             return ("geography", "indicator") + self.readonly_fields
         return self.readonly_fields

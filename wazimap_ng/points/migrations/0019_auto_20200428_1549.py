@@ -15,6 +15,7 @@ def change_points_upload(apps, schema_editor):
             coordinate_file.category = coordinate_file.profile_category.category
             coordinate_file.save()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [

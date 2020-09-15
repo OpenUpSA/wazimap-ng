@@ -3,6 +3,7 @@ from unittest.mock import Mock
 
 from wazimap_ng.datasets.models import Indicator, Dataset, DatasetData
 
+
 class TestIndicatorGetUniqueSubindicators:
     @patch("wazimap_ng.datasets.models.DatasetData.objects")
     def test_get_subindicators(self, mock_datasetdata_objects):

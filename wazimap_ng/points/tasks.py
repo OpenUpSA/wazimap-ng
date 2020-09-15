@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 class CustomDataParsingException(Exception):
     pass
 
+
 @transaction.atomic
 def process_uploaded_file(point_file, subtheme, **kwargs):
     """

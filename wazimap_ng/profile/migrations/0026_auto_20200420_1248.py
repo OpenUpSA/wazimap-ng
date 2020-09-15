@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 def prepopulate_profile_indicator_order(apps, schema_editor):
     ProfileIndicator = apps.get_model("profile", "ProfileIndicator")
     for idx, pi in enumerate(ProfileIndicator.objects.all()):

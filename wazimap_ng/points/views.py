@@ -31,11 +31,10 @@ class CategoryList(generics.ListAPIView):
 
     def list(self, request, profile_id=None):
         queryset = self.get_queryset()
-        
+
         if profile_id is not None:
             profile = Profile.objects.get(id=profile_id)
             queryset = queryset.filter(profile=profile_id)
-
 
         serializer = self.get_serializer_class()(queryset, many=True)
         data = serializer.data
@@ -68,21 +67,22 @@ class LocationList(generics.ListAPIView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
+
 def boundary_point_count_helper(profile, geography):
     boundary = GeographyBoundary.objects.get(geography__code=geography.code, geography__version=geography.version)
-    locations = models.Location.objects.filter(coordinates__contained=boundary.geom) 
+    locations = models.Location.objects.filter(coordinates__contained=boundary.geom)
     location_count = (
         locations
-            .filter(category__profilecategory__profile=profile)
-            .values(
-                "category__profilecategory__id", "category__profilecategory__label",
-                "category__profilecategory__theme__name",
-                "category__profilecategory__theme__icon",
-                "category__profilecategory__theme__id",
-                "category__metadata__source", "category__metadata__description",
-                "category__metadata__licence"
-            )
-            .annotate(count_category=Count("category"))
+        .filter(category__profilecategory__profile=profile)
+        .values(
+            "category__profilecategory__id", "category__profilecategory__label",
+            "category__profilecategory__theme__name",
+            "category__profilecategory__theme__icon",
+            "category__profilecategory__theme__id",
+            "category__metadata__source", "category__metadata__description",
+            "category__metadata__licence"
+        )
+        .annotate(count_category=Count("category"))
     )
 
     theme_dict = {}

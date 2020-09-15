@@ -10,11 +10,11 @@ def create_groups_for_profiles(apps, schema_editor):
     Group = apps.get_model('auth', 'Group')
 
     for profile in Profile.objects.filter(permission_type="private"):
-    	group, created = Group.objects.get_or_create(name=profile.name.lower())
+        group, created = Group.objects.get_or_create(name=profile.name.lower())
 
-    	if created:
-    		for perm in get_perms_for_model(Profile):
-    			assign_perm(perm, group, profile)
+        if created:
+            for perm in get_perms_for_model(Profile):
+                assign_perm(perm, group, profile)
 
 
 class Migration(migrations.Migration):

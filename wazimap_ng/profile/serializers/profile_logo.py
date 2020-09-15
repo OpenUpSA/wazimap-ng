@@ -1,5 +1,6 @@
 from .. import models
 
+
 def ProfileLogoSerializer(profile):
     try:
         logo = models.Logo.objects.get(profile=profile)

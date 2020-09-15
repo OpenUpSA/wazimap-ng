@@ -12,7 +12,6 @@ class MetaDataInline(admin.StackedInline):
     verbose_name = ""
     verbose_name_plural = "Metadata"
 
-
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name == "description":
             db_field.default = lorem.paragraph()

@@ -15,6 +15,7 @@ class IndicatorCategoryAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['icon'].widget = IconPickerWidget()
 
+
 @admin.register(models.IndicatorCategory)
 class IndicatorCategoryAdmin(SortableAdminMixin, BaseAdminModel):
     list_display = ("name", "profile", "order")
@@ -23,6 +24,5 @@ class IndicatorCategoryAdmin(SortableAdminMixin, BaseAdminModel):
 
     class Media:
         css = {
-             'all': ('/static/css/admin-custom.css',)
+            'all': ('/static/css/admin-custom.css',)
         }
-

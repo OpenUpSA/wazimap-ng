@@ -13,6 +13,7 @@ from wazimap_ng.general.admin.admin_base import BaseAdminModel
 
 from .. import hooks
 
+
 def delete_selected_data(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):
         raise PermissionDenied
@@ -69,6 +70,7 @@ def delete_selected_data(modeladmin, request, queryset):
 
 
 delete_selected_data.short_description = "Delete selected objects"
+
 
 class DatasetBaseAdminModel(BaseAdminModel):
 

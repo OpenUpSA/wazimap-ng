@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 register = template.Library()
 
+
 @register.filter(name='get_notifications')
 def get_messages(session):
     messages = session.pop("notifications", [])
@@ -21,6 +22,7 @@ def get_messages(session):
 
     session["task_list"] = task_list
     return messages
+
 
 @register.filter(name='get_task_list')
 def get_task_list(session):

@@ -22,13 +22,16 @@ from wazimap_ng.datasets.models import Geography
 
 logger = logging.getLogger(__name__)
 
+
 class ProfileDetail(generics.RetrieveAPIView):
     queryset = models.Profile
     serializer_class = serializers.FullProfileSerializer
 
+
 class ProfileList(generics.ListAPIView):
     queryset = models.Profile.objects.all()
     serializer_class = serializers.ProfileSerializer
+
 
 class ProfileByUrl(generics.RetrieveAPIView):
     queryset = models.Profile.objects.all()
@@ -57,6 +60,7 @@ class ProfileByUrl(generics.RetrieveAPIView):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
 def profile_geography_data(request, profile_id, geography_code):
@@ -66,6 +70,7 @@ def profile_geography_data(request, profile_id, geography_code):
 
     js = serializers.ExtendedProfileSerializer(profile, geography)
     return Response(js)
+
 
 class ProfileCategoriesList(generics.ListAPIView):
     queryset = models.IndicatorCategory.objects.all()
@@ -77,6 +82,7 @@ class ProfileCategoriesList(generics.ListAPIView):
 
         serializer = self.get_serializer_class()(queryset, many=True)
         return Response(serializer.data)
+
 
 class ProfileSubcategoriesList(generics.ListAPIView):
     queryset = models.IndicatorSubcategory.objects.all()
