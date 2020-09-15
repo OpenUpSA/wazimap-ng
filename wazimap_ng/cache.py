@@ -129,15 +129,15 @@ def point_updated_category(sender, instance, **kwargs):
 
 @receiver(post_save, sender=profile_models.Indicator)
 def indicator_updated(sender, instance, **kwargs):
-    indicator_obj = instance
+    indicator_id = instance.id
     all_profile_indicators = profile_models.ProfileIndicator.objects.filter(
-        indicator_id=indicator_obj.id
+        indicator_id=indicator_id
     ).values_list('profile_id', flat=True)
     all_profile_key_metrics = profile_models.ProfileKeyMetrics.objects.filter(
-        variable_id=indicator_obj.id
+        variable_id=indicator_id
     ).values_list('profile_id', flat=True)
     all_profile_highlights = profile_models.ProfileHighlight.objects.filter(
-        indicator_id=indicator_obj.id
+        indicator_id=indicator_id
     ).values_list('profile_id', flat=True)
     # find the unique profiles whose cache needs to be invalidated
     list_of_profile_cache_to_be_update = set(all_profile_indicators + all_profile_key_metrics + all_profile_highlights)
