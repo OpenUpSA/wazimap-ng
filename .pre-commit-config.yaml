@@ -21,7 +21,3 @@ repos:
     rev: '3.8.3'
     hooks:
       - id: flake8
-  - repo: https://github.com/hukkinj1/mdformat
-    rev: 0.1.1
-    hooks:
-      - id: mdformat
