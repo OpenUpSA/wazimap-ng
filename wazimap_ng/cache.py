@@ -140,8 +140,8 @@ def indicator_updated(sender, instance, **kwargs):
         indicator_id=indicator_id
     ).values_list('profile_id', flat=True)
     # find the unique profiles whose cache needs to be invalidated
-    list_of_profile_cache_to_be_update = set(all_profile_indicators + all_profile_key_metrics + all_profile_highlights)
-    profile_query = profile_models.Profile.objects.filter(id__in=list_of_profile_cache_to_be_update)
+    unique_profile_ids_to_invalidate = set(all_profile_indicators + all_profile_key_metrics + all_profile_highlights)
+    profile_query = profile_models.Profile.objects.filter(id__in=unique_profile_ids_to_invalidate)
     for profile_obj in profile_query:
         update_profile_cache(profile_obj)
 
