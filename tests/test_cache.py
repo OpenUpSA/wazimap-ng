@@ -1,11 +1,16 @@
 from unittest.mock import patch
-from unittest.mock import Mock
+from unittest.mock import call
+
 from datetime import datetime
 from collections import namedtuple
+import unittest
+import pytest
 
 from django.core.cache import cache as django_cache
 
 from wazimap_ng import cache
+from tests.profile import factoryboy as profile_factoryboy
+from tests.datasets import factoryboy as datasets_factoryboy
 
 @patch("django.http.request")
 @patch("wazimap_ng.profile.services.authentication.has_permission")
@@ -114,66 +119,17 @@ def test_update_point_cache_signal(mock_datetime):
 
     assert django_cache.get(key) == "Some time"
 
-# @patch("wazimap_ng.cache.update_profile_cache")
-# def test_profile_indicator_updated(mock_update_profile_cache):
-#     instance = namedtuple("profile_indicator", "profile")
-#     instance.profile = "Some profile"
 
-#     cache.profile_indicator_updated("sender", instance)
-
-#     assert mock_update_profile_cache.assert_called_with("Some profile")
-
-# @patch("wazimap_ng.cache.update_profile_cache")
-# def test_profile_highlight_updated(mock_update_profile_cache):
-#     instance = namedtuple("profile_highlight", "profile")
-#     instance.profile = "Some profile"
-
-#     cache.profile_highlight_updated("sender", instance)
-
-#     assert mock_update_profile_cache.assert_called_with("Some profile")
-
-# @patch("wazimap_ng.cache.update_profile_cache")
-# def test_profile_category_updated(mock_update_profile_cache):
-#     instance = namedtuple("profile_category", "profile")
-#     instance.profile = "Some profile"
-
-#     cache.profile_category_updated("sender", instance)
-
-#     assert mock_update_profile_cache.assert_called_with("Some profile")
-
-# @patch("wazimap_ng.cache.update_profile_cache")
-# def test_profile_subcategory_updated(mock_update_profile_cache):
-#     subcategory = namedtuple("profile_subcategory", "category")
-#     category = namedtuple("profile_category", "profile")
-#     subcategory.category = category
-#     category.profile = "Some profile"
-
-#     cache.profile_subcategory_updated("sender", subcategory)
-
-#     assert mock_update_profile_cache.assert_called_with("Some profile")
-
-# @patch("wazimap_ng.cache.update_profile_cache")
-# def test_profile_keymetrics_updated(mock_update_profile_cache):
-#     keymetric = namedtuple("key_metric", "profile")
-#     keymetric.profile = "Some profile"
-
-#     cache.profile_keymetrics_updated("sender", keymetric)
-
-#     assert mock_update_profile_cache.assert_called_with("Some profile")
-
-# @patch("wazimap_ng.cache.update_point_cache")
-# def test_point_updated_location(mock_update_point_cache):
-#     location = namedtuple("location", "category")
-#     location.category = "Some category"
-
-#     cache.point_updated_location("sender", location)
-
-#     assert mock_update_point_cache.assert_called_with("Some category")
-
-# @patch("wazimap_ng.cache.update_point_cache")
-# def test_point_updated_category(mock_update_point_cache):
-#     category = "Some category"
-
-#     cache.point_updated_category("sender", category)
-
-#     assert mock_update_point_cache.assert_called_with("Some category")
+@pytest.mark.django_db
+class TestCache(unittest.TestCase):
+    @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
+    def test_indicator_updated(self, mock_update_profile_cache):
+        indicator_obj = datasets_factoryboy.IndicatorFactory()
+        profile_indicator_obj = profile_factoryboy.ProfileIndicatorFactory(indicator=indicator_obj)
+        profilekey_metrics_obj = profile_factoryboy.ProfileKeyMetricsFactory(variable_id=indicator_obj.id)
+        profile_highlights_obj = profile_factoryboy.ProfileHighlightFactory(indicator_id=indicator_obj.id)
+        mock_update_profile_cache.reset_mock()
+        cache.indicator_updated(None, indicator_obj)
+        self.assertEqual(mock_update_profile_cache.call_count,3)
+        calls = [call(profile_highlights_obj.profile),  call(profilekey_metrics_obj.profile) , call(profile_indicator_obj.profile)]
+        mock_update_profile_cache.assert_has_calls(calls, any_order=True)

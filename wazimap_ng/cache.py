@@ -10,7 +10,7 @@ from django.views.decorators.vary import vary_on_headers
 
 from wazimap_ng.points.models import Location, Category
 from wazimap_ng.profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, \
-    ProfileKeyMetrics, Profile
+    ProfileKeyMetrics, Profile, Indicator
 from wazimap_ng.profile.services import authentication
 
 logger = logging.getLogger(__name__)
@@ -141,7 +141,7 @@ def indicator_updated(sender, instance, **kwargs):
         indicator_id=indicator_id
     ).values_list('profile_id', flat=True)
     # find the unique profiles whose cache needs to be invalidated
-    unique_profile_ids_to_invalidate = set(all_profile_indicators + all_profile_key_metrics + all_profile_highlights)
+    unique_profile_ids_to_invalidate = set(list(all_profile_indicators) + list(all_profile_key_metrics) + list(all_profile_highlights))
     profile_query = Profile.objects.filter(id__in=unique_profile_ids_to_invalidate)
     for profile_obj in profile_query:
         update_profile_cache(profile_obj)
