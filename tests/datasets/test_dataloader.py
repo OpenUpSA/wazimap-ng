@@ -6,7 +6,8 @@ import pytest
 
 from wazimap_ng.datasets import dataloader
 from wazimap_ng.datasets import models
-# import pytest.mark.django_db
+
+pytestmark = pytest.mark.django_db
 
 @patch('wazimap_ng.datasets.models.Geography.objects.get', side_effect=lambda code, version: (code, version))
 def test_load_geography(mock_objects):
@@ -39,7 +40,10 @@ def good_input_with_groups():
         {"geography": "YYY", "count": 222, "group1": "B", "group2": "X"},
     ]
 
+@pytest.mark.django_db
 class TestLoadData:
+    pytestmark = pytest.mark.django_db
+
     @patch('wazimap_ng.datasets.models.DatasetData')
     @patch('wazimap_ng.datasets.dataloader.load_geography')
     def test_bulk_create_lt_10000(self, load_geography, MockDatasetData, good_input):

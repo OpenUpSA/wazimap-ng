@@ -17,7 +17,6 @@ services:
       - POSTGRES_PASS=wazimap_ng
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,pg_trgm
     stop_grace_period: 10s
-    container_name: wazimap-ng_db_1
   web:
     build: .
     command: /app/scripts/django/web.sh
