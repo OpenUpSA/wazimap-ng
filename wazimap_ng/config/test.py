@@ -6,7 +6,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Test(Common):
 
-    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
     INSTALLED_APPS = Common.INSTALLED_APPS
     SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
