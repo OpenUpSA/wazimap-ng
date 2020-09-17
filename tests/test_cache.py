@@ -129,11 +129,15 @@ def test_update_point_cache_signal(mock_datetime):
 @pytest.mark.django_db
 class TestCache(unittest.TestCase):
     @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
-    def test_indicator_updated(self, mock_update_profile_cache):
+    def test_invalidate_profile_cache_for_indicator_update(self, mock_update_profile_cache):
         indicator_obj = datasets_factoryboy.IndicatorFactory()
         profile_indicator_obj = profile_factoryboy.ProfileIndicatorFactory(indicator=indicator_obj)
-        profilekey_metrics_obj = profile_factoryboy.ProfileKeyMetricsFactory(variable_id=indicator_obj.id)
-        profile_highlights_obj = profile_factoryboy.ProfileHighlightFactory(indicator_id=indicator_obj.id)
+        profilekey_metrics_obj = profile_factoryboy.ProfileKeyMetricsFactory(variable=indicator_obj)
+        profile_highlights_obj = profile_factoryboy.ProfileHighlightFactory(indicator=indicator_obj)
+        indicator_obj_2 = datasets_factoryboy.IndicatorFactory()
+        profile_factoryboy.ProfileIndicatorFactory(indicator=indicator_obj_2)
+        profile_factoryboy.ProfileKeyMetricsFactory(variable=indicator_obj_2)
+        profile_factoryboy.ProfileHighlightFactory(indicator=indicator_obj_2)
         mock_update_profile_cache.reset_mock()
         cache.indicator_updated(None, indicator_obj)
         self.assertEqual(mock_update_profile_cache.call_count, 3)

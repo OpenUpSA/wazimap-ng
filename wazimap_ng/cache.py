@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 from django.core.cache import cache
+from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.http import Http404
@@ -131,19 +132,14 @@ def point_updated_category(sender, instance, **kwargs):
 @receiver(post_save, sender=Indicator)
 def indicator_updated(sender, instance, **kwargs):
     indicator_id = instance.id
-    all_profile_indicators = ProfileIndicator.objects.filter(
-        indicator_id=indicator_id
-    ).values_list('profile_id', flat=True)
-    all_profile_key_metrics = ProfileKeyMetrics.objects.filter(
-        variable_id=indicator_id
-    ).values_list('profile_id', flat=True)
-    all_profile_highlights = ProfileHighlight.objects.filter(
-        indicator_id=indicator_id
-    ).values_list('profile_id', flat=True)
-    # find the unique profiles whose cache needs to be invalidated
-    unique_profile_ids_to_invalidate = set(list(all_profile_indicators) + list(all_profile_key_metrics) + list(all_profile_highlights))
-    profile_query = Profile.objects.filter(id__in=unique_profile_ids_to_invalidate)
-    for profile_obj in profile_query:
+    profiles_ids_to_invalidate_cache = Profile.objects.filter(
+        Q(profileindicator__indicator_id=indicator_id)
+        | Q(profilekeymetrics__variable_id=indicator_id)
+        | Q(profilehighlight__indicator_id=indicator_id)
+    ).values('id').distinct()
+    profile_ids_to_invalidate = [data['id'] for data in profiles_ids_to_invalidate_cache]
+    profiles_to_invalidate_cache = Profile.objects.filter(id__in=profile_ids_to_invalidate)
+    for profile_obj in profiles_to_invalidate_cache:
         update_profile_cache(profile_obj)
 
 
