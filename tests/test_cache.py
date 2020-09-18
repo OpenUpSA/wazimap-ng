@@ -152,3 +152,9 @@ class TestCache(unittest.TestCase):
         mock_update_profile_cache.reset_mock()
         cache.indicator_updated(None, indicator_obj)
         self.assertEqual(mock_update_profile_cache.call_count, 3)
+        calls = [
+            call(profile_highlights_obj.profile),
+            call(profilekey_metrics_obj.profile),
+            call(profile_indicator_obj.profile)
+        ]
+        mock_update_profile_cache.assert_has_calls(calls, any_order=True)
