@@ -132,14 +132,12 @@ def point_updated_category(sender, instance, **kwargs):
 @receiver(post_save, sender=Indicator)
 def indicator_updated(sender, instance, **kwargs):
     indicator_id = instance.id
-    profiles_ids_to_invalidate_cache = Profile.objects.filter(
+    profile_ids_to_invalidate_cache = Profile.objects.filter(
         Q(profileindicator__indicator_id=indicator_id)
         | Q(profilekeymetrics__variable_id=indicator_id)
         | Q(profilehighlight__indicator_id=indicator_id)
-    ).values('id').distinct()
-    profile_ids_to_invalidate = [data['id'] for data in profiles_ids_to_invalidate_cache]
-    profiles_to_invalidate_cache = Profile.objects.filter(id__in=profile_ids_to_invalidate)
-    for profile_obj in profiles_to_invalidate_cache:
+    ).values_list('id', flat=True)
+    for profile_obj in profile_ids_to_invalidate_cache:
         update_profile_cache(profile_obj)
 
 
