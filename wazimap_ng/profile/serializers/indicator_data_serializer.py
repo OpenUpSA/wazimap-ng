@@ -73,6 +73,20 @@ def sort_subindicators(subindicators, sort_order):
         sorted_dict = OrderedDict(sorted_tuples)
     return sorted_dict
 
+def sort_group_subindicators(group_dict, primary_order, order_lookup):
+    new_dict = {}
+    for group, group_subindicators_dict in group_dict.items():
+        group_order = order_lookup(group)
+        sorted_group_subindicators_dict = sort_subindicators(group_subindicators_dict, group_order)
+
+        for group_subindicator, indicator_subindicators in sorted_group_subindicators_dict.items():
+            sorted_group_subindicators_dict[group_subindicator] = sort_subindicators(indicator_subindicators, primary_order)
+
+        new_dict[group] = sorted_group_subindicators_dict
+
+    return new_dict
+
+
 def IndicatorDataSerializer(profile, geography):
     indicator_data = get_indicator_data(profile, geography)
     children_indicator_data = get_child_indicator_data(profile, geography)
@@ -113,35 +127,22 @@ def IndicatorDataSerializer(profile, geography):
                     }
         return group_dict
 
-    def sort_group_subindicators(row, group_dict):
-        new_dict = {}
-        for group, group_subindicators_dict in group_dict.items():
-            key = (group, row["dataset"])
-            if key in groups_lookup:
-                key_func = lambda x: x[0]
-                subindicator_order = groups_lookup[key]
-                sorted_group_subindicators_list = sort_list_using_order(group_subindicators_dict.items(), subindicator_order, key_func=key_func)
-                sorted_group_subindicators_dict = OrderedDict(sorted_group_subindicators_list)
-            else:
-                logger.warning(f"Key: {key} not in groups lookup")
-                sorted_group_subindicators_dict = group_subindicators_dict
-
-            new_dict[group] = sorted_group_subindicators_dict
-
-        return new_dict
-
     def prepare_json(row):
-        json_data = rearrange_group(row["jsdata"]["groups"])
-        json_data = sort_group_subindicators(row, json_data)
+        dataset = row["dataset"]
+        groups = row["indicator_group"]
+        primary_group = groups[0]
 
-        primary_group = row["indicator_group"][0]
-        key = (primary_group, row["dataset"])
-        sort_order = groups_lookup.get(key, None)
+        order_lookup = lambda group: groups_lookup.get((group, dataset), None)
+        primary_order = order_lookup(primary_group)
+
+        group_data = row["jsdata"]["groups"]
+        group_data = rearrange_group(group_data)
         subindicators = row["jsdata"]["subindicators"]
 
-        row["jsdata"]["subindicators"] = sort_subindicators(subindicators, sort_order)
+        group_data = sort_group_subindicators(group_data, primary_order, order_lookup)
+        row["jsdata"]["subindicators"] = sort_subindicators(subindicators, primary_order)
 
-        return json_data
+        return group_data
 
 
     d_groups = qsdict(indicator_data,
