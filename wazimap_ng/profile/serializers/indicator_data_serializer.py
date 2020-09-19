@@ -1,13 +1,12 @@
-import operator
 import logging
 
-from collections import OrderedDict, Counter
 from django.db.models import F
 
 from wazimap_ng.datasets.models import IndicatorData, Group 
-from wazimap_ng.utils import qsdict, mergedict, expand_nested_list, pivot, sort_list_using_order
+from wazimap_ng.utils import qsdict, mergedict, expand_nested_list, pivot
 
 from .. import models
+from .subindicator_sorter import SubindicatorSorter
 
 logger = logging.getLogger(__name__)
 
@@ -64,38 +63,23 @@ def get_child_indicator_data(profile, geography):
 
     return children_profiles
 
+def get_sorters(profile):
+    groups = (Group.objects
+        .filter(dataset__indicator__profileindicator__profile=profile)
+        .order_by("dataset")
+        .values("name", "dataset", "subindicators")
+    )
 
-def sort_subindicators(subindicators, sort_order):
-    sorted_dict = subindicators
-    unique_sort_order = list(Counter(sort_order).keys())
-    if unique_sort_order is not None:
-        sorted_tuples = sort_list_using_order(subindicators.items(), unique_sort_order, operator.itemgetter(0))
-        sorted_dict = OrderedDict(sorted_tuples)
-    return sorted_dict
-
-def sort_group_subindicators(group_dict, primary_order, order_lookup):
-    new_dict = {}
-    for group, group_subindicators_dict in group_dict.items():
-        group_order = order_lookup(group)
-        sorted_group_subindicators_dict = sort_subindicators(group_subindicators_dict, group_order)
-
-        for group_subindicator, indicator_subindicators in sorted_group_subindicators_dict.items():
-            sorted_group_subindicators_dict[group_subindicator] = sort_subindicators(indicator_subindicators, primary_order)
-
-        new_dict[group] = sorted_group_subindicators_dict
-
-    return new_dict
+    grouped_orders = qsdict(groups, "dataset", "name", "subindicators")
+    sorters = {ds: SubindicatorSorter(ds_groups) for ds, ds_groups in grouped_orders.items()}
+    return sorters
 
 
 def IndicatorDataSerializer(profile, geography):
     indicator_data = get_indicator_data(profile, geography)
     children_indicator_data = get_child_indicator_data(profile, geography)
     indicator_data2 = list(expand_nested_list(indicator_data, "jsdata"))
-
-    groups = Group.objects.filter(dataset__indicator__profileindicator__profile=profile).values("name", "dataset", "subindicators")
-    groups_lookup = {
-        (x["name"], x["dataset"]): x["subindicators"] for x in groups
-    }
+    sorters = get_sorters(profile)
 
     subcategories = (models.IndicatorSubcategory.objects.filter(category__profile=profile)
         .order_by("category__order", "order")
@@ -131,16 +115,14 @@ def IndicatorDataSerializer(profile, geography):
         dataset = row["dataset"]
         groups = row["indicator_group"]
         primary_group = groups[0]
-
-        order_lookup = lambda group: groups_lookup.get((group, dataset), None)
-        primary_order = order_lookup(primary_group)
+        sorter = sorters[dataset]
 
         group_data = row["jsdata"]["groups"]
         group_data = rearrange_group(group_data)
         subindicators = row["jsdata"]["subindicators"]
 
-        group_data = sort_group_subindicators(group_data, primary_order, order_lookup)
-        row["jsdata"]["subindicators"] = sort_subindicators(subindicators, primary_order)
+        group_data = sorter.sort_groups(group_data, primary_group)
+        row["jsdata"]["subindicators"] = sorter.sort_subindicators(primary_group, subindicators)
 
         return group_data
 
