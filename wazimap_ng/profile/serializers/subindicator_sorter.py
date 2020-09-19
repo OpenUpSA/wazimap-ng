@@ -1,0 +1,32 @@
+from collections import Counter, OrderedDict
+import operator
+
+from wazimap_ng.utils import sort_list_using_order
+
+class SubindicatorSorter:
+    def __init__(self, group_orders):
+        self._group_orders = group_orders
+
+    def sort_subindicators(self, group, subindicators):
+        sorted_dict = subindicators
+
+        sort_order = self._group_orders.get(group, None)
+
+        if sort_order is not None:
+            unique_sort_order = list(Counter(sort_order).keys())
+            sorted_tuples = sort_list_using_order(subindicators.items(), unique_sort_order, operator.itemgetter(0))
+            sorted_dict = OrderedDict(sorted_tuples)
+
+        return sorted_dict
+
+    def sort_groups(self, groups, primary_group):
+        new_dict = {}
+        for group, group_subindicators in groups.items():
+            sorted_group_subindicators = dict(self.sort_subindicators(group, group_subindicators))
+
+            for group_subindicator, subindicators in sorted_group_subindicators.items():
+                sorted_group_subindicators[group_subindicator] = self.sort_subindicators(primary_group, subindicators)
+
+            new_dict[group] = sorted_group_subindicators
+
+        return new_dict
