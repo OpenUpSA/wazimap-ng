@@ -1,6 +1,7 @@
+import operator
 import logging
 
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 from django.db.models import F
 
 from wazimap_ng.datasets.models import IndicatorData, Group 
@@ -64,6 +65,14 @@ def get_child_indicator_data(profile, geography):
     return children_profiles
 
 
+def sort_subindicators(subindicators, sort_order):
+    sorted_dict = subindicators
+    unique_sort_order = list(Counter(sort_order).keys())
+    if unique_sort_order is not None:
+        sorted_tuples = sort_list_using_order(subindicators.items(), unique_sort_order, operator.itemgetter(0))
+        sorted_dict = OrderedDict(sorted_tuples)
+    return sorted_dict
+
 def IndicatorDataSerializer(profile, geography):
     indicator_data = get_indicator_data(profile, geography)
     children_indicator_data = get_child_indicator_data(profile, geography)
@@ -121,30 +130,16 @@ def IndicatorDataSerializer(profile, geography):
 
         return new_dict
 
-    def sort_indicator_subindicators(row, group_dict):
-        key = (row["indicator_group"][0], row["dataset"])
-        key_func = lambda x: x[0]
-
-        new_group_dict = {}
-        for group, group_subindicators_dict in group_dict.items():
-            new_group_subindicators_dict = {}
-            for group_subindicator, indicator_subindicators_dict in group_subindicators_dict.items():
-                if key in groups_lookup:
-                    subindicator_order = groups_lookup[key]
-                    items = indicator_subindicators_dict.items()
-                    sorted_tuples = sort_list_using_order(items, subindicator_order, key_func=key_func)
-                    sorted_indicator_subindicators_dict = OrderedDict(sorted_tuples)
-                else:
-                    sorted_indicator_subindicators_dict = indicator_subindicators_dict
-                new_group_subindicators_dict[group_subindicator] = sorted_indicator_subindicators_dict
-            new_group_dict[group] = new_group_subindicators_dict
-
-        return new_group_dict
-
     def prepare_json(row):
         json_data = rearrange_group(row["jsdata"]["groups"])
         json_data = sort_group_subindicators(row, json_data)
-        json_data = sort_indicator_subindicators(row, json_data)
+
+        primary_group = row["indicator_group"][0]
+        key = (primary_group, row["dataset"])
+        sort_order = groups_lookup.get(key, None)
+        subindicators = row["jsdata"]["subindicators"]
+
+        row["jsdata"]["subindicators"] = sort_subindicators(subindicators, sort_order)
 
         return json_data
 
