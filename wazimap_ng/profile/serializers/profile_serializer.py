@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from wazimap_ng.utils import mergedict 
+from dictutils import mergedict
 from wazimap_ng.datasets.serializers import AncestorGeographySerializer
 
 from wazimap_ng.datasets.serializers import GeographyHierarchySerializer

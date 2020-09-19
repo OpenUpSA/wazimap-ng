@@ -1,6 +1,4 @@
 from wazimap_ng.datasets.models import IndicatorData 
-from wazimap_ng.utils import mergedict
-
 
 def get_subindicator(highlight):
     subindicators = highlight.indicator.subindicators

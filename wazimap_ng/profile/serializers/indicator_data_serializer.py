@@ -4,7 +4,8 @@ from collections import OrderedDict
 from django.db.models import F
 
 from wazimap_ng.datasets.models import IndicatorData, Group 
-from wazimap_ng.utils import qsdict, mergedict, expand_nested_list, pivot, sort_list_using_order
+from wazimap_ng.utils import expand_nested_list
+from dictutils import pivot, qsdict, mergedict
 
 from .. import models
 
@@ -170,6 +171,7 @@ def IndicatorDataSerializer(profile, geography):
         "geography_code",
         lambda x: prepare_json(x)
     )
+
     d_groups2 = pivot(d_groups2, [0, 1, 2, 3, 4, 5, 8, 9, 10, 6, 7])
 
     d_subindicators = qsdict(indicator_data,
