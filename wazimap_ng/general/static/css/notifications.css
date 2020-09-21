@@ -1,0 +1,215 @@
+.dropmic-menu {
+  width: 400px;
+  overflow: hidden;
+  border-radius: 4px;
+  -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+  box-shadow: 0 6px 12px rgba(0,0,0,.175);
+  z-index: 9999;
+  border: none;
+}
+
+.dropmic-menu__listItem:hover{
+  background-color: #f2f2f2;
+  cursor: default !important;
+}
+.dropmic-menu__listContent:hover{
+  cursor: default !important;
+}
+
+.mark_as_read:hover{
+  text-decoration: underline;
+  cursor: pointer;
+}
+.dropmic-menu__listContent:active, .dropmic-menu__listContent:focus{
+  outline: 0;
+}
+
+#header{
+    overflow: visible;
+}
+
+.dropmic-menu .dropmic-menu__list{
+  min-height: 200px;
+}
+
+.notification-body{
+  height: 500px;
+  overflow: scroll;
+}
+
+.dropmic-menu .dropmic-menu__listItem{
+  display: inline-flex;
+  border-top: 1px solid #f2f2f2;
+}
+
+.dropmic-menu .dropmic-menu__custom{
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.175);
+  color: #747F8B;
+  font-weight: bold;
+}
+
+.dropmic-menu .mark_as_read{
+  float: right;
+  font-weight: normal;
+}
+
+.dropmic-menu .heading_block{
+  color: black;
+  padding: 15px;
+  float: left;
+  padding-top: 20px;
+  padding-bottom: 2px;
+  text-align: left;
+  width: 100%;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.dropmic-menu .no_task {
+  color: black;
+  text-align: center;
+  position: relative;
+  top: 70px;
+}
+.dropmic-menu .dropmic-menu__listContent{
+  text-transform: none;
+  padding: 15px;
+  border: none !important;
+}
+
+.dropmic-menu__listContent .in_progress .fa-circle{
+  color: #808080;
+}
+.dropmic-menu__listContent .success .fa-circle{
+  color: #28a745;
+}
+.dropmic-menu__listContent .error .fa-circle{
+  color: #dc3545;
+}
+.dropmic-menu__listContent .info .fa-circle{
+  color: #17a2b8;
+}
+.dropmic-menu__listContent .warning .fa-circle{
+  color: #ffc107;
+}
+
+.dropmic-menu__listContent .info .fa-custom:before{
+  content: "\f129";
+  color: white;
+}
+.dropmic-menu__listContent .warning .fa-custom:before{
+  content: "\f071";
+  color: white;
+}
+.dropmic-menu__listContent .success .fa-custom:before{
+  content: "\f164";
+  color: white;
+}
+.dropmic-menu__listContent .error .fa-custom:before{
+  content: "\f714";
+  color: white;
+}
+.dropmic-menu__listContent .upload .fa-custom:before{
+  content: "\f093";
+  color: white;
+}
+.dropmic-menu__listContent .delete .fa-custom:before{
+  content: "\f2ed";
+  color: white;
+}
+.dropmic-menu__listContent .extraction .fa-custom:before{
+  content: "\f085";
+  color: white;
+}
+
+.dropmic-menu__listContent a{
+  color: #447e9b !important;
+}
+
+.dropmic-menu__listContent .fa-stack{
+  width: 10%;
+  vertical-align: text-top;
+}
+
+.dropmic-menu__listContent .msg{
+  width: 85%;
+  float: right;
+  padding-left: 10px;
+}
+
+.dropmic-menu__listContent .msg .time{
+  color: #747F8B;
+  font-size: 12px;
+  float: right;
+}
+.unread{
+  color: red;
+  width: 5%;
+  text-align: left;
+  vertical-align: middle;
+  margin: auto;
+  font-size: 16px;
+}
+.dot{
+  height: 10px;
+  width: 10px;
+  background-color: #2fb6ab;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.delete-notification{
+  color: #dc3545;
+  width: 10%;
+  text-align: center;
+  vertical-align: middle;
+  margin: auto;
+  font-size: 16px;
+}
+
+.delete-notification:hover{
+  cursor: pointer;
+}
+
+.dropmic > button{
+  color: white;
+  font-size:16px;
+  background: none;
+  border: none;
+  margin: 0 10px;
+}
+
+.dropmic > button:active, .dropmic > button:focus{
+  background: none !important;
+  border: none !important;
+  outline:0 !important;
+}
+
+.dropmic > button:hover{
+  cursor: pointer;
+}
+
+.has-badge[data-count]:after{
+  position: absolute;
+  left: 54%;
+  bottom: 44%;
+  content: attr(data-count);
+  padding: 6px 5px;
+  border-radius: 999px;
+  line-height: 0.4em;
+  color: white;
+  background: #dc3545;
+  text-align: center;
+  /* font-weight: normal; */
+  border: 1px solid #6074dd;
+  font-size: 9px;
+  font-family: OpenSansBold;
+  text-align: center;
+}
+
+.in-progress .delete-notification{
+  display: none;
+}
+[data-dropmic-direction=bottom-middle]::after, [data-dropmic-direction=bottom-middle]::before{
+  left: calc(50%);
+}

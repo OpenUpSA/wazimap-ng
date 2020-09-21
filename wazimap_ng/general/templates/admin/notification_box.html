@@ -1,0 +1,40 @@
+{% load notifications_tags %}
+
+{% notifications_unread as unread_count %}
+<div class="dropmic" id="notification-box" data-dropmic-direction="bottom-middle">
+  <button class="{% if unread_count %} has-badge {% endif %}" data-count="{{ unread_count }}" data-dropmic-btn>
+    <i class="fas fa-bell"></i>
+  </button>
+  <div class="dropmic-menu" aria-hidden="true">
+    <div class="dropmic-menu__custom">
+      <span>Notifications (<span id="total-count">{{ request.user.notifications.active_qs.count }}</span>)</span>
+      <span class="mark_as_read">Clear Notifictions</span>
+    </div>
+    <div class="notification-body">
+      <div class="in-progress">
+        <div class="task_in_progress heading_block">
+          <p>Task in Progress (<span id="in-progress-count">{{ request.user.notifications.in_progress.count }}</span>)</p>
+        </div>
+        <ul class="dropmic-menu__list" role="menu">
+          {% for notification in  request.user.notifications.in_progress %}
+            {% include "admin/subtemplate/notification_msg.html" %}
+          {% empty %}
+            <li class="no_task">No Task in progress right now</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="completed">
+        <div class="heading_block">
+          <p>Other Notifications (<span id="complete-count">{{ request.user.notifications.filtered_qs.count }}</span>)</p>
+        </div>
+        <ul class="dropmic-menu__list" role="menu">
+          {% for notification in request.user.notifications.filtered_qs %}
+            {% include "admin/subtemplate/notification_msg.html" %}
+          {% empty %}
+            <li class="no_task">No New Notification</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

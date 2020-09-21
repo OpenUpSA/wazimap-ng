@@ -16,6 +16,7 @@ from .base_admin_model import DatasetBaseAdminModel
 from wazimap_ng.general.services import permissions
 from wazimap_ng.general.widgets import description
 from wazimap_ng.general.admin import filters
+from wazimap_ng.general.signals import notify
 
 
 def get_source(indicator):
@@ -84,9 +85,9 @@ class IndicatorAdmin(DatasetBaseAdminModel):
 
         with transaction.atomic():
             super().save_model(request, obj, form, change)
-        
+
         if run_task:
-            task = async_task(
+            task_id = async_task(
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",
                 obj,
                 task_name=f"Data Extraction: {obj.name}",
@@ -94,13 +95,12 @@ class IndicatorAdmin(DatasetBaseAdminModel):
                 key=request.session.session_key,
                 type="data_extraction", assign=False, notify=True
             )
-            hooks.add_to_task_list(request.session, task)
-            hooks.custom_admin_notification(
-                request.session,
-                "info",
-                "Process of Data extraction started for %s. We will let you know when process is done." % (
-                    obj.name
-                )
+            notify.send(
+                request.user, recipient=request.user,
+                verb='Started data extraction',
+                action_object=obj, target=obj.dataset,
+                task_id=task_id, level="in_progress",
+                profile=obj.dataset.profile, type="extraction"
             )
         return obj
 

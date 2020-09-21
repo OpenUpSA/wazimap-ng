@@ -1,51 +1,30 @@
 {% extends 'admin/base.html' %}
 {% load template_tags %}
+{% load notifications_tags %}
+{% load static %}
 
 {% block extrahead %}
-	<link rel="stylesheet" type="text/css" href="/static/css/toastr.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/dropmic.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/all.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/notifications.css">
 	<script src="/static/admin/js/vendor/jquery/jquery.js"></script>
-	<script type="text/javascript" src="/static/js/toastr.min.js"></script>
-    <script type="text/javascript">
-
-    	var notifications = {{ request.session |get_notifications|safe }};
-    	if(notifications){
-    		notify(notifications);
-    	}
-
-    	var task_in_progress = {{ request.session |get_task_list|safe }};
-    	setInterval(function(){
-    		if (task_in_progress.length){
-    			$.ajax({
-	                url: "{% url 'notifications' %}",
-	                success: function(data) {
-	                    let notifications = data.notifications;
-	                    if(notifications.length){
-	                    	notify(notifications);
-	                    }
-	                    task_in_progress = data.task_list;
-	                }
-	            })
-			}
-		}, 10000)
-			
-
-	    function notify(notifications){
-	    	toastr.options = {
-			  "closeButton": true,
-			  "newestOnTop": true,
-			  "progressBar": true,
-			  "positionClass": "toast-top-right",
-			  "preventDuplicates": false,
-			  "timeOut": 0,
-			  "extendedTimeOut": 0
-			}
-
+	<script type="text/javascript" src="/static/js/dropmic.min.js"></script>
+	<script src="/static/admin/js/vendor/jquery/jquery.js"></script>
+	<script src="/static/js/notification.js"></script>
+  <script type="text/javascript">
 			$(document).ready(function($) {
-				$.each(notifications, function(index, notification){
-					toastr[notification.type](notification.message);
-				});
-			} );
-	    }
+				var dropmic = new Dropmic(document.querySelector('#notification-box'), {
+				  onOpen: function() {
+				     mark_notifications_as_viewed();
+				  },
+				  onClose: function() {
+						 mark_notifications_as_viewed();
+				     remove_viewed_icons();
+					},
+			  });
+
+			});
+
     </script>
 
     <style type="text/css">
@@ -53,4 +32,9 @@
     		background: url(/static/img/drag.png) no-repeat center !important;
     	}
     </style>
+{% endblock %}
+
+{% block userlinks %}
+	{% include "admin/notification_box.html" %}
+	{{ block.super }}
 {% endblock %}

@@ -9,7 +9,7 @@ from django.contrib.admin import helpers
 from django_q.tasks import async_task
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
-
+from wazimap_ng.general.signals import notify
 
 from .. import hooks
 
@@ -30,7 +30,7 @@ def delete_selected_data(modeladmin, request, queryset):
                 obj_display = str(obj)
                 modeladmin.log_deletion(request, obj, obj_display)
 
-            async_task(
+            task_id = async_task(
                 'wazimap_ng.datasets.tasks.delete_data',
                 queryset, objects_name,
                 task_name=f"Deleting data: {objects_name}",
@@ -38,11 +38,13 @@ def delete_selected_data(modeladmin, request, queryset):
                 key=request.session.session_key,
                 type="delete"
             )
-            modeladmin.delete_queryset(request, queryset)
-            modeladmin.message_user(request, "Successfully deleted %(count)d %(items)s." % {
-                "count": n, "items": model_ngettext(modeladmin.opts, n)
-            }, messages.SUCCESS)
-        # Return None to display the change list page again.
+            notify.send(
+                request.user, recipient=request.user,
+                verb=F"Initiating bulk delete process for",
+                task_id=task_id, level="in_progress",
+                type="delete", object_name=objects_name,
+                count=queryset.count(), bulk=True
+            )
         return None
 
     context = {
@@ -56,11 +58,7 @@ def delete_selected_data(modeladmin, request, queryset):
         'media': modeladmin.media,
         'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
     }
-    hooks.custom_admin_notification(
-        request.session,
-        "info",
-        "We run data deletion in background because of related data and caches. We will let you know when processing is done"
-    )
+
     return TemplateResponse(
         request,
         "admin/datasets_delete_selected_confirmation.html",
@@ -75,6 +73,7 @@ class DatasetBaseAdminModel(BaseAdminModel):
     actions = [delete_selected_data]
 
     def delete_view(self, request, object_id, extra_context=None):
+
         opts = self.model._meta
         app_label = opts.app_label
 
@@ -99,13 +98,20 @@ class DatasetBaseAdminModel(BaseAdminModel):
             attr = str(to_field) if to_field else opts.pk.attname
             obj_id = obj.serializable_value(attr)
             self.log_deletion(request, obj, obj_display)
-            async_task(
-                'wazimap_ng.datasets.tasks.delete_data',
+            task_id = async_task(
+                "wazimap_ng.datasets.tasks.delete_data",
                 obj, object_name,
                 task_name=f"Deleting data: {obj.name}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
-                type="delete"
+                type="delete", notify=True
+            )
+            notify.send(
+                request.user, recipient=request.user,
+                verb=F"Initiating delete process for",
+                task_id=task_id, level="in_progress",
+                type="delete", object_name=object_name,
+                name=obj.name, bulk=False
             )
 
             return self.response_delete(request, obj_display, obj_id)
@@ -123,12 +129,6 @@ class DatasetBaseAdminModel(BaseAdminModel):
             'to_field': to_field,
             **(extra_context or {}),
         }
-
-        hooks.custom_admin_notification(
-            request.session,
-            "info",
-            "We run data deletion in background because of related data and caches. We will let you know when processing is done"
-        )
 
         return TemplateResponse(
             request,

@@ -1,0 +1,29 @@
+<li class="dropmic-menu__listItem" role="menuitem" data-id="{{ notification.id }}">
+  <span class="dropmic-menu__listContent cross" data-unread="{{ notification.unread }}">
+      <span class="fa-stack fa-lg {{ notification.data.type }} {{ notification.level }}">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-custom fa-stack-1x"></i>
+      </span>
+      <span class="msg">
+          {% if notification.data.type == "delete" %}
+            {% if notification.data.bulk %}
+              {{ notification.verb }} {{ notification.data.count }}
+              {{ notification.data.object_name }} object{% if notification.data.count > 1  %}s{% endif %}
+            {% else %}
+              {{ notification.verb }} {{ notification.data.object_name }}
+              {{ notification.data.name }}
+            {% endif %}
+          {% else %}
+            {{ notification.verb }} for {{ notification.target_content_type }}
+            <a href="{{ notification.get_action_object_link }}" >{{ notification.action_object }}</a>
+            on {{ notification.action_object_content_type }}
+            <a href="{{ notification.get_target_link }}">{{ notification.target }}</a>
+          {% endif %}
+      <span class="time"> -- {{notification.timesince}} ago..</span>
+      </span>
+  </span>
+  <span class="delete-notification"><i class="far fa-times-circle"></i></span>
+  {% if notification.unread %}
+    <span class="unread"> <i class="dot"></i></span>
+  {% endif %}
+</li>

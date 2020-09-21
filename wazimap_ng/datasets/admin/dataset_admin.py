@@ -14,6 +14,7 @@ from .. import hooks
 from .views import MetaDataInline
 from .forms import DatasetAdminForm
 from wazimap_ng.general.widgets import description
+from wazimap_ng.general.signals import notify
 
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.admin import filters
@@ -30,7 +31,7 @@ def set_to_private(modeladmin, request, queryset):
 def get_source(dataset):
     if hasattr(dataset, "metadata"):
         return dataset.metadata.source
-    return None 
+    return None
 
 class PermissionTypeFilter(filters.DatasetFilter):
     title = "Permission Type"
@@ -123,7 +124,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
                 document=dataset_import_file,
                 dataset_id=obj.id
             )
-            logger.debug(f"""Starting async task: 
+            logger.debug(f"""Starting async task:
                 Task name: wazimap_ng.datasets.tasks.process_uploaded_file
                 Datasetfile_obj: {datasetfile_obj}
                 Object: {obj}
@@ -135,22 +136,23 @@ class DatasetAdmin(DatasetBaseAdminModel):
             """)
 
 
-            task = async_task(
+            task_id = async_task(
                 "wazimap_ng.datasets.tasks.process_uploaded_file",
                 datasetfile_obj, obj,
                 task_name=f"Uploading data: {obj.name}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
-                type="upload", assign=True, notify=True
+                type="upload", notify=True
             )
-            hooks.add_to_task_list(request.session, task)
-            hooks.custom_admin_notification(
-                request.session,
-                "info",
-                "Data upload for %s started. We will let you know when process is done." % (
-                    obj.name
-                )
+
+            notify.send(
+                request.user, recipient=request.user,
+                verb='Started a new upload for dataset',
+                action_object=obj, target=datasetfile_obj,
+                task_id=task_id, level="in_progress", profile=obj.profile,
+                type="upload"
             )
+
         return obj
 
     def get_search_results(self, request, queryset, search_term):
@@ -166,4 +168,3 @@ class DatasetAdmin(DatasetBaseAdminModel):
             #queryset = queryset.exclude(id__in=in_progress_uploads)
 
         return queryset, use_distinct
-        

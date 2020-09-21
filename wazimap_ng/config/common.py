@@ -60,6 +60,7 @@ class Common(QCluster, Configuration):
         "mapwidgets",
         "guardian",
         "icon_picker_widget",
+        "notifications",
 
         # Your apps
         "wazimap_ng.datasets",
@@ -332,6 +333,8 @@ PERMISSION_TYPES = (
 )
 
 STAFF_GROUPS = ["ProfileAdmin", "DataAdmin"]
+
+NOTIFICATIONS_NOTIFICATION_MODEL = 'general.Notification'
 
 
 if TESTING:

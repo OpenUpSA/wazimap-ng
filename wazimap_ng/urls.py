@@ -1,3 +1,5 @@
+import notifications.urls
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -16,7 +18,15 @@ from .boundaries import views as boundaries_views
 from .general import views as general_views
 from .cache import cache_headers as cache
 
-from wazimap_ng.general.views import logout_view, notifications_view
+from wazimap_ng.general.views import (
+    logout_view, notifications_delete, notifications_delete_all,
+    unread_notifications
+)
+
+
+@api_view()
+def version(*args, **kwargs):
+    return Response(settings.VERSION)
 
 def trigger_error(request):
     division_by_zero = 1 / 0
@@ -25,7 +35,10 @@ urlpatterns = [
 
     # Admin
     path("admin/", admin.site.urls),
-    path("admin/notifications", notifications_view, name="notifications"),
+    path("notifications/", include(notifications.urls)),
+    path("notifications/delete-notification/<int:pk>/", notifications_delete, name='delete'),
+    path("notifications/delete-notification/all/", notifications_delete_all, name='delete-all'),
+    path("notifications/unread-notifications/", unread_notifications, name='unread-notifications'),
 
     # Api
     path("api/v1/rest-auth/", include("rest_auth.urls")),

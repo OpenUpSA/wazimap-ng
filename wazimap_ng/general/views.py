@@ -3,6 +3,7 @@ from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -16,6 +17,9 @@ from ..boundaries import views as boundaries_views
 from ..cache import etag_profile_updated, last_modified_profile_updated
 from ..points import views as point_views
 from ..points import models as point_models
+
+from .models import Notification
+
 
 def consolidated_profile_helper(profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
@@ -66,16 +70,36 @@ def authenticate_admin(user):
 
 @user_passes_test(authenticate_admin)
 @never_cache
-def notifications_view(request):
-    messages = request.session.pop("notifications", [])
-    task_list = request.session.get("task_list", [])
-    
-    if messages and task_list:
-        for message in messages:
-            if "task_id" in message:
-                task_list.remove(message["task_id"])
-        request.session["task_list"] = task_list
-    return JsonResponse({
-        "task_list": task_list,
-        "notifications": messages,
-    })
+def notifications_delete(request, pk):
+    notification = Notification.objects.filter(id=pk).first()
+
+    notification.deleted = True
+    notification.unread = False
+    notification.save()
+    return JsonResponse({ "deleted": True })
+
+@user_passes_test(authenticate_admin)
+@never_cache
+def notifications_delete_all(request):
+    request.user.notifications.filtered_qs().update(
+        deleted = True, unread=False
+    )
+    return JsonResponse({ "deleted": True })
+
+@user_passes_test(authenticate_admin)
+@never_cache
+def unread_notifications(request):
+    data = []
+    unread_notifications = request.user.notifications.unread()
+
+    for notification in request.user.notifications.unread():
+        html = render_to_string(
+            'admin/subtemplate/notification_msg.html',
+            {"notification": notification}
+        )
+        data.append({
+            "id": notification.id,
+            "html": html,
+            "level": notification.level,
+        })
+    return JsonResponse({ "results": data })
