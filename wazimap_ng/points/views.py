@@ -52,12 +52,11 @@ class LocationList(generics.ListAPIView):
         try:
             profile_category = models.ProfileCategory.objects.get(id=profile_category_id)
             profile = Profile.objects.get(id=profile_id)
-            geography = None
-            if geography_code is not None:
-                version = profile.geography_hierarchy.version
-                geography = Geography.objects.get(code=geography_code, version=version)
 
-            queryset = get_locations(self.get_queryset(), profile, profile_category.category, geography)
+            queryset = get_locations(
+                self.get_queryset(), profile,
+                profile_category.category, geography_code
+            )
             serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
             return Response(data)
