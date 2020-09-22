@@ -2,11 +2,11 @@ import logging
 
 from django.db.models import F
 
-from wazimap_ng.datasets.models import IndicatorData, Group 
+from wazimap_ng.datasets.models import IndicatorData 
 from wazimap_ng.utils import qsdict, mergedict, expand_nested_list, pivot
 
 from .. import models
-from .subindicator_sorter import SubindicatorSorter
+from .profile_indicator_sorter import ProfileIndicatorSorter
 
 logger = logging.getLogger(__name__)
 
@@ -63,23 +63,19 @@ def get_child_indicator_data(profile, geography):
 
     return children_profiles
 
-def get_sorters(profile):
-    groups = (Group.objects
-        .filter(dataset__indicator__profileindicator__profile=profile)
-        .order_by("dataset")
-        .values("name", "dataset", "subindicators")
-    )
-
-    grouped_orders = qsdict(groups, "dataset", "name", "subindicators")
-    sorters = {ds: SubindicatorSorter(ds_groups) for ds, ds_groups in grouped_orders.items()}
-    return sorters
 
 
 def IndicatorDataSerializer(profile, geography):
+
+    sorters = ProfileIndicatorSorter(profile)
+
     indicator_data = get_indicator_data(profile, geography)
+    indicator_data = sorters.sort(indicator_data)
+
     children_indicator_data = get_child_indicator_data(profile, geography)
+    children_indicator_data = sorters.sort(children_indicator_data)
+
     indicator_data2 = list(expand_nested_list(indicator_data, "jsdata"))
-    sorters = get_sorters(profile)
 
     subcategories = (models.IndicatorSubcategory.objects.filter(category__profile=profile)
         .order_by("category__order", "order")
@@ -98,35 +94,6 @@ def IndicatorDataSerializer(profile, geography):
         lambda x: {"description": x.description}
     )
 
-    def rearrange_group(group_dict):
-        group_dict = dict(group_dict)
-        for group_subindicators_dict in group_dict.values():
-            for subindicator, value_array in group_subindicators_dict.items():
-                group_subindicators_dict[subindicator] = {}
-                for value_dict in value_array:
-                    count = value_dict.pop("count")
-                    value = list(value_dict.values())[0]
-                    group_subindicators_dict[subindicator][value] = {
-                        "count": count
-                    }
-        return group_dict
-
-    def prepare_json(row):
-        dataset = row["dataset"]
-        groups = row["indicator_group"]
-        primary_group = groups[0]
-        sorter = sorters[dataset]
-
-        group_data = row["jsdata"]["groups"]
-        group_data = rearrange_group(group_data)
-        subindicators = row["jsdata"]["subindicators"]
-
-        group_data = sorter.sort_groups(group_data, primary_group)
-        row["jsdata"]["subindicators"] = sorter.sort_subindicators(subindicators, primary_group)
-
-        return group_data
-
-
     d_groups = qsdict(indicator_data,
         "category",
         lambda x: "subcategories",
@@ -134,7 +101,7 @@ def IndicatorDataSerializer(profile, geography):
         lambda x: "indicators",
         "profile_indicator_label",
         lambda x: "groups",
-        lambda x: prepare_json(x)
+        lambda x: x["jsdata"]["groups"]
     )
 
     d_groups2 = qsdict(children_indicator_data,
@@ -146,7 +113,7 @@ def IndicatorDataSerializer(profile, geography):
         lambda x: "groups",
         lambda x: "children",
         "geography_code",
-        lambda x: prepare_json(x)
+        lambda x: x["jsdata"]["groups"]
     )
     d_groups2 = pivot(d_groups2, [0, 1, 2, 3, 4, 5, 8, 9, 10, 6, 7])
 
