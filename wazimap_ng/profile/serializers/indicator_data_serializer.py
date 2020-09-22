@@ -30,7 +30,7 @@ def get_indicator_data(profile, geography):
             metadata_description=F("indicator__dataset__metadata__description"),
             licence_url=F("indicator__dataset__metadata__licence__url"),
             licence_name=F("indicator__dataset__metadata__licence__name"),
-            configuration=F("indicator__profileindicator__configuration"),
+            indicator_chart_configuration=F("indicator__profileindicator__chart_configuration"),
         ))
 
     return data
@@ -55,7 +55,7 @@ def get_child_indicator_data(profile, geography):
             metadata_description=F("indicator__dataset__metadata__description"),
             licence_url=F("indicator__dataset__metadata__licence__url"),
             licence_name=F("indicator__dataset__metadata__licence__name"),
-            configuration=F("indicator__profileindicator__configuration"),
+            indicator_chart_configuration=F("indicator__profileindicator__chart_configuration"),
 
 
 
@@ -220,7 +220,7 @@ def IndicatorDataSerializer(profile, geography):
                     "url": x["licence_url"]
                 }
             },
-            "configuration": x["configuration"],
+            "chart_configuration": x["indicator_chart_configuration"],
         },
     )
 
@@ -241,7 +241,7 @@ def IndicatorDataSerializer(profile, geography):
                     "url": x["licence_url"]
                 }
             },
-            "configuration": x["configuration"],
+            "chart_configuration": x["indicator_chart_configuration"],
         },
     )
 

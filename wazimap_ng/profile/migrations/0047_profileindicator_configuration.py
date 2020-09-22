@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='profileindicator',
-            name='configuration',
+            name='chart_configuration',
             field=django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=dict),
         ),
     ]

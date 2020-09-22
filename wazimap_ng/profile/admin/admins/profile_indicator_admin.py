@@ -43,8 +43,8 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
         ("Subindicators", {
           'fields': ('subindicators',)
         }),
-        ("Configs", {
-          'fields': ('configuration',)
+        ("Charts", {
+          'fields': ('chart_configuration',)
         })
     )
     search_fields = ("label", )

@@ -11,7 +11,7 @@ class ProfileIndicatorAdminForm(forms.ModelForm):
         widgets = {
             'indicator': VariableFilterWidget,
             'subindicators': SortableWidget,
-            'configuration': JSONEditorWidget,
+            'chart_configuration': JSONEditorWidget,
 
         }
 
