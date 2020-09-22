@@ -7,15 +7,6 @@ from tests.datasets import factoryboy as datasets_factoryboy
 
 from wazimap_ng.profile.serializers.profile_indicator_sorter import ProfileIndicatorSorter
 
-"""
-groups = (Group.objects
-        .filter(dataset__indicator__profileindicator__profile=profile)
-        .order_by("dataset")
-        .values("name", "dataset", "subindicators")
-        )
-return groups
-
-    """
 @pytest.fixture
 def profile():
     return profile_factoryboy.ProfileFactory()
