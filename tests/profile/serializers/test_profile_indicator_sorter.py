@@ -71,9 +71,9 @@ def test_data(datasets):
             "subindicators": {"g1s1": "ABC", "g1s2": "DEF", "g1s3": "GHI", },
             "groups": {
                 "group2": {
-                    "g2s2": [{"group1": "g1s1", "count": 4}, {"group1": "g1s2", "count": 5}, {"group1": "g1s3", "count": 6}],
-                    "g2s1": [{"group1": "g1s1", "count": 1}, {"group1": "g1s2", "count": 2}, {"group1": "g1s3", "count": 3}],
-                    "g2s3": [{"group1": "g1s1", "count": 7}, {"group1": "g1s2", "count": 8}, {"group1": "g1s3", "count": 9}],
+                    "g2s2": {"g1s1": 4, "g1s2": 5, "g1s3": 6},
+                    "g2s1": {"g1s1": 1, "g1s2": 2, "g1s3": 3},
+                    "g2s3": {"g1s1": 7, "g1s2": 8, "g1s3": 9},
                 }
             }
         }
@@ -84,9 +84,9 @@ def test_data(datasets):
             "subindicators": {"g1s2": "123", "g1s1": "456", "g1s3": "789", },
             "groups": {
                 "group2": {
-                    "g2s2": [{"group1": "g1s1", "count": 40}, {"group1": "g1s2", "count": 50}, {"group1": "g1s3", "count": 60}],
-                    "g2s1": [{"group1": "g1s1", "count": 10}, {"group1": "g1s2", "count": 20}, {"group1": "g1s3", "count": 30}],
-                    "g2s3": [{"group1": "g1s1", "count": 70}, {"group1": "g1s2", "count": 80}, {"group1": "g1s3", "count": 90}],
+                    "g2s2": {"g1s1": 40, "g1s2": 50, "g1s3": 60},
+                    "g2s1": {"g1s1": 10, "g1s2": 20, "g1s3": 30},
+                    "g2s3": {"g1s1": 70, "g1s2": 80, "g1s3": 90},
                 }
             }
         }
@@ -105,16 +105,16 @@ def expected_subindicators():
 def expected_groups():
     return [{
         "group2": {
-            "g2s2": OrderedDict(g1s3={"count": 6}, g1s2={"count": 5}, g1s1={"count": 4}),
-            "g2s1": OrderedDict(g1s3={"count": 3}, g1s2={"count": 2}, g1s1={"count": 1}),
-            "g2s3": OrderedDict(g1s3={"count": 9}, g1s2={"count": 8}, g1s1={"count": 7}),
+            "g2s2": OrderedDict(g1s3=6, g1s2=5, g1s1=4),
+            "g2s1": OrderedDict(g1s3=3, g1s2=2, g1s1=1),
+            "g2s3": OrderedDict(g1s3=9, g1s2=8, g1s1=7),
         }
     },
     {
         "group2": {
-            "g2s2": OrderedDict(g1s3={"count": 60}, g1s2={"count": 50}, g1s1={"count": 40}),
-            "g2s1": OrderedDict(g1s3={"count": 30}, g1s2={"count": 20}, g1s1={"count": 10}),
-            "g2s3": OrderedDict(g1s3={"count": 90}, g1s2={"count": 80}, g1s1={"count": 70}),
+            "g2s2": OrderedDict(g1s3=60, g1s2=50, g1s1=40),
+            "g2s1": OrderedDict(g1s3=30, g1s2=20, g1s1=10),
+            "g2s3": OrderedDict(g1s3=90, g1s2=80, g1s1=70),
         }
     }]
 
@@ -159,6 +159,6 @@ class TestProfileIndicatorSorter:
 
         assert sorted_data[0]["jsdata"]["subindicators"] == expected_subindicators[0]
         assert sorted_data[1]["jsdata"]["subindicators"] == expected_subindicators[1]
-        
+
         assert sorted_data[0]["jsdata"]["groups"] == expected_groups[0]
         assert sorted_data[1]["jsdata"]["groups"] == expected_groups[1]

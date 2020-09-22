@@ -18,19 +18,6 @@ class ProfileIndicatorSorter:
         sorters = {ds: SubindicatorSorter(ds_groups) for ds, ds_groups in grouped_orders.items()}
         return sorters
 
-    def _rearrange_group(self, group_dict):
-        group_dict = dict(group_dict)
-        for group_subindicators_dict in group_dict.values():
-            for subindicator, value_array in group_subindicators_dict.items():
-                group_subindicators_dict[subindicator] = {}
-                for value_dict in value_array:
-                    count = value_dict.pop("count")
-                    value = list(value_dict.values())[0]
-                    group_subindicators_dict[subindicator][value] = {
-                        "count": count
-                    }
-        return group_dict
-
     def _sort_indicators(self, row, sort_func):
         dataset = row["dataset"]
         sorter = self._sorters[dataset]
@@ -43,7 +30,6 @@ class ProfileIndicatorSorter:
     def sort_groups(self, data):
         for row in data:
             group_data = row["jsdata"]["groups"]
-            group_data = self._rearrange_group(group_data)
             sort_func = lambda sorter, group: sorter.sort_groups(group_data, group)
 
             row["jsdata"]["groups"] = self._sort_indicators(row, sort_func)

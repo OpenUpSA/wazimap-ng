@@ -63,6 +63,20 @@ def get_child_indicator_data(profile, geography):
 
     return children_profiles
 
+def rearrange_group(data):
+    for row in data:
+        group_dict = row["jsdata"]["groups"]
+
+        for group_subindicators_dict in group_dict.values():
+            for subindicator, value_array in group_subindicators_dict.items():
+                group_subindicators_dict[subindicator] = {}
+                for value_dict in value_array:
+                    count = value_dict.pop("count")
+                    value = list(value_dict.values())[0]
+                    group_subindicators_dict[subindicator][value] = {
+                        "count": count
+                    }
+        yield row
 
 
 def IndicatorDataSerializer(profile, geography):
@@ -70,9 +84,11 @@ def IndicatorDataSerializer(profile, geography):
     sorters = ProfileIndicatorSorter(profile)
 
     indicator_data = get_indicator_data(profile, geography)
+    indicator_data = rearrange_group(indicator_data)
     indicator_data = sorters.sort(indicator_data)
 
     children_indicator_data = get_child_indicator_data(profile, geography)
+    children_indicator_data = rearrange_group(children_indicator_data)
     children_indicator_data = sorters.sort(children_indicator_data)
 
     indicator_data2 = list(expand_nested_list(indicator_data, "jsdata"))
