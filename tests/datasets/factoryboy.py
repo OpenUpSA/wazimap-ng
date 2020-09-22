@@ -40,3 +40,11 @@ class IndicatorFactory(factory.django.DjangoModelFactory):
 
     dataset = factory.SubFactory(DatasetFactory)
     universe = factory.SubFactory(UniverseFactory)
+
+
+class GroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Group
+
+    dataset = factory.SubFactory(DatasetFactory)
+
