@@ -19,13 +19,8 @@ os.environ["GDAL_DATA"] = "/usr/share/gdal/"
 
 class Common(QCluster, Configuration):
 
-    if os.path.exists("VERSION"):
-        VERSION = open("VERSION").read().strip()
-    else:
-        VERSION = "Missing version"
-
     SERVER_INSTANCE = os.environ.get("SERVER_INSTANCE", "Dev")
-    RELEASE = f"{SERVER_INSTANCE}@{VERSION}"
+    RELEASE = f"{SERVER_INSTANCE}"
     SENTRY_DSN = os.environ.get("SENTRY_DSN", None)
 
     if SENTRY_DSN:
