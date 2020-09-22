@@ -18,10 +18,6 @@ from .cache import cache_headers as cache
 
 from wazimap_ng.general.views import logout_view, notifications_view
 
-@api_view()
-def version(*args, **kwargs):
-    return Response(settings.VERSION)
-
 def trigger_error(request):
     division_by_zero = 1 / 0
 
@@ -140,11 +136,6 @@ urlpatterns = [
         "api/v1/all_details/profile/<int:profile_id>/geography/<str:geography_code>/test/",
         cache(general_views.consolidated_profile_test),
         name="all-details-test"
-    ),
-    path(
-        "api/v1/version/",
-        version,
-        name="version",
     ),
     path('sentry-debug/', trigger_error),
 
