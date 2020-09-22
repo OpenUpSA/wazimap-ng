@@ -7,7 +7,7 @@ class SubindicatorSorter:
     def __init__(self, group_orders):
         self._group_orders = group_orders
 
-    def sort_subindicators(self, group, subindicators):
+    def sort_subindicators(self, subindicators, group):
         sorted_dict = subindicators
 
         sort_order = self._group_orders.get(group, None)
@@ -22,10 +22,10 @@ class SubindicatorSorter:
     def sort_groups(self, groups, primary_group):
         new_dict = {}
         for group, group_subindicators in groups.items():
-            sorted_group_subindicators = dict(self.sort_subindicators(group, group_subindicators))
+            sorted_group_subindicators = dict(self.sort_subindicators(group_subindicators, group))
 
             for group_subindicator, subindicators in sorted_group_subindicators.items():
-                sorted_group_subindicators[group_subindicator] = self.sort_subindicators(primary_group, subindicators)
+                sorted_group_subindicators[group_subindicator] = self.sort_subindicators(subindicators, primary_group)
 
             new_dict[group] = sorted_group_subindicators
 

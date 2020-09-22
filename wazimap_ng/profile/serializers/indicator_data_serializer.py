@@ -122,7 +122,7 @@ def IndicatorDataSerializer(profile, geography):
         subindicators = row["jsdata"]["subindicators"]
 
         group_data = sorter.sort_groups(group_data, primary_group)
-        row["jsdata"]["subindicators"] = sorter.sort_subindicators(primary_group, subindicators)
+        row["jsdata"]["subindicators"] = sorter.sort_subindicators(subindicators, primary_group)
 
         return group_data
 

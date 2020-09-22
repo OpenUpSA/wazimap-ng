@@ -38,41 +38,41 @@ class TestSubindicatorSorter:
     def test_subindicator_sort(self, sorter, subindicators):
         sort_order = ["b", "c", "a"]
 
-        sorted_subindicators = sorter.sort_subindicators("group1", subindicators)
+        sorted_subindicators = sorter.sort_subindicators(subindicators, "group1")
         assert sorted_subindicators == OrderedDict(b="y", c="z", a="x")
 
         sort_order = ["c", "a", "b"]
         sorter._group_orders["group1"] = sort_order
 
-        sorted_subindicators = sorter.sort_subindicators("group1", subindicators)
+        sorted_subindicators = sorter.sort_subindicators(subindicators, "group1")
         assert sorted_subindicators == OrderedDict(c="z", a="x", b="y")
 
     def test_subindicator_sort_with_missing_order(self, sorter, subindicators):
-        sorted_subindicators = sorter.sort_subindicators("missing group", subindicators)
+        sorted_subindicators = sorter.sort_subindicators(subindicators, "missing group")
         assert sorted_subindicators == OrderedDict(a="x", b="y", c="z")
 
     def test_subindicator_sort_with_incomplete_order(self, sorter, subindicators):
         sorter._group_orders["group1"] = ["b", "c"]
-        sorted_subindicators = sorter.sort_subindicators("group1", subindicators)
+        sorted_subindicators = sorter.sort_subindicators(subindicators, "group1")
 
         assert sorted_subindicators == OrderedDict(b="y", c="z", a="x")
 
     def test_subindicator_sort_with_extra_order_element(self, sorter, subindicators):
         sorter._group_orders["group1"] = ["b", "c", "a", "z"]
-        sorted_subindicators = sorter.sort_subindicators("group1", subindicators)
+        sorted_subindicators = sorter.sort_subindicators(subindicators, "group1")
 
         assert sorted_subindicators == OrderedDict(b="y", c="z", a="x")
 
     def test_subindicator_duplicate_keys_are_ignored(self, sorter, subindicators):
         sorter._group_orders["group1"] = ["b", "c", "a", "b"]
 
-        sorted_subindicators = sorter.sort_subindicators("group1", subindicators)
+        sorted_subindicators = sorter.sort_subindicators(subindicators, "group1")
         assert sorted_subindicators == OrderedDict(b="y", c="z", a="x")
 
     def test_subindicator_no_side_effects(self, sorter, subindicators):
         sort_order = ["b", "c", "a"]
 
-        sorted_subindicators = sorter.sort_subindicators("group1", subindicators)
+        sorted_subindicators = sorter.sort_subindicators(subindicators, "group1")
         sorted_subindicators["dummy"] = "XXX"
         assert "dummy" not in subindicators
 
