@@ -1,5 +1,3 @@
-# from wazimap_ng.utils import mergedict
-
 from wazimap_ng.datasets.models import IndicatorData 
 from dictutils import mergedict
 
