@@ -10,16 +10,16 @@ def loaddata(category, iterable, row_number):
     datarows = []
     logs = []
     for idx, row in enumerate(iterable):
-
+        line_no = row_number+idx+1
         if "longitude" not in row:
-            logs.append([row_number+idx+1, "longitude", "Missing Header Longitude"])
+            logs.append([line_no, "longitude", "Missing Header Longitude"])
 
         if "latitude" not in row:
-            logs.append([row_number+idx+1, "latitude", "Missing Header Latitude"])
+            logs.append([line_no, "latitude", "Missing Header Latitude"])
             continue
 
         if "name" not in row:
-            logs.append([row_number+idx+1, "name", "Missing Header Name"])
+            logs.append([line_no, "name", "Missing Header Name"])
             continue
 
         location = row.pop("name").strip()
@@ -27,35 +27,35 @@ def loaddata(category, iterable, row_number):
         latitude = row.pop("latitude")
 
         if not location.strip():
-            logs.append([row_number+idx+1, "Name", "Empty value for Name"])
+            logs.append([line_no, "Name", "Empty value for Name"])
             continue
 
         try:
             longitude = float(longitude)
         except Exception as e:
             if not longitude:
-                logs.append([row_number+idx+1, "longitude", "Empty value for longitude"])
+                logs.append([line_no, "longitude", "Empty value for longitude"])
             elif isinstance(longitude, str) and not longitude.isdigit():
-                logs.append([row_number+idx+1, "longitude", "Invalid value passed for longitude %s" % longitude])
+                logs.append([line_no, "longitude", "Invalid value passed for longitude %s" % longitude])
             else:
-                logs.append([row_number+idx+1, "longitude", e])
+                logs.append([line_no, "longitude", e])
             continue
 
         try:
             latitude = float(latitude)
         except Exception as e:
             if not latitude:
-                logs.append([row_number+idx+1, "latitude", "Empty value for latitude"])
+                logs.append([line_no, "latitude", "Empty value for latitude"])
             elif isinstance(latitude, str) and not latitude.isdigit():
-                logs.append([row_number+idx+1, "latitude", "Invalid value passed for latitude %s" % latitude])
+                logs.append([line_no, "latitude", "Invalid value passed for latitude %s" % latitude])
             else:
-                logs.append([row_number+idx+1, "latitude", e])
+                logs.append([line_no, "latitude", e])
             continue
 
         try:
             coordinates = Point(longitude, latitude)
         except Exception as e:
-            logs.append([row_number+idx+1, "Coordinates", "Issue while creating coordinates %s " % e])
+            logs.append([line_no, "Coordinates", "Issue while creating coordinates %s " % e])
             continue
 
         dd = models.Location(
