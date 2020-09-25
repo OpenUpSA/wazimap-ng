@@ -1,22 +1,18 @@
 import os
-from .common import Common
+from .local import Local
 from configurations import Configuration, values
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-class Test(Common):
+class Test(Local):
 
-    INSTALLED_APPS = Common.INSTALLED_APPS
+    INSTALLED_APPS = Local.INSTALLED_APPS
     SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
     NOSE_ARGS = [
         BASE_DIR,
-        '-s',
-        '--nologcapture',
-        '--with-coverage',
-        '--with-progressive',
-        '--cover-package=wazimap_ng'
+        "--verbose",
     ]
 
     # Mail
