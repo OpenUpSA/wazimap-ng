@@ -42,6 +42,7 @@ coverage==4.5.2
 pytest==5.4.1
 pytest-django==3.9.0
 django-mock-queries==2.1.5
+django-test-plus==1.4.0
 
 # Static and Media Storage
 django-storages==1.7.1

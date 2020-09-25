@@ -1,27 +1,35 @@
-from unittest.mock import patch
-from unittest.mock import Mock
-
-from django_mock_queries.query import MockSet, MockModel
+from test_plus import APITestCase
 import pytest
-from django.urls import reverse
-from rest_framework.test import APIClient
 
-@pytest.fixture
-def api_client():
-   
-   return APIClient()
+from tests.profile.factories import ProfileFactory
+from tests.points.factories import ProfileCategoryFactory
+from tests.datasets.factories import GeographyFactory, GeographyHierarchyFactory
+from tests.boundaries.factories import GeographyBoundaryFactory
 
-class TestCategoryView:
-    def test_category_points_reverse_url(self):
-        url = reverse("category-points", kwargs={"profile_id": 1, "profile_category_id": 2})
-        assert url == "/api/v1/profile/1/points/category/2/points/"
+class TestCategoryView(APITestCase):
+
+    def setUp(self):
+        self.profile = ProfileFactory()
+        self.profile_category = ProfileCategoryFactory()
+
+    def test_category_points_list(self):
+        self.get('category-points', profile_id=self.profile.pk, profile_category_id=self.profile_category.pk, extra={'format': 'json'})
+        self.assert_http_200_ok()
 
     def test_category_points_geography_reverse_url(self):
-        url = reverse("category-points-geography", kwargs={"profile_id": 1, "profile_category_id": 2, "geography_code": "WC"})
-        assert url == "/api/v1/profile/1/points/category/2/geography/WC/points/"
+        geography = GeographyFactory()
+        GeographyBoundaryFactory(geography=geography)
+        hierarchy = GeographyHierarchyFactory(root_geography=geography)
+        profile = ProfileFactory(geography_hierarchy=hierarchy)
+        self.get('category-points-geography', profile_id=profile.pk, profile_category_id=self.profile_category.pk, geography_code=geography.code, extra={'format': 'json'})
+        self.assert_http_200_ok()
 
-class TestThemeView:
+class TestThemeView(APITestCase):
+
+    def setUp(self):
+        self.profile = ProfileFactory()
+
     def test_reverse_url(self):
-        url = reverse("points-themes", kwargs={"profile_id": 1})
-        assert url == "/api/v1/profile/1/points/themes/"
+        self.get("points-themes", profile_id=self.profile.pk)
+        self.assert_http_200_ok()
 

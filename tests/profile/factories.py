@@ -1,6 +1,6 @@
 import factory
 
-from tests.datasets import factoryboy as datasets_factoryboy
+from tests.datasets import factories as datasets_factoryboy
 from wazimap_ng.profile import models
 
 

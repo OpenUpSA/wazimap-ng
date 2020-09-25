@@ -7,8 +7,8 @@ from unittest.mock import patch
 import pytest
 from django.core.cache import cache as django_cache
 
-from tests.datasets import factoryboy as datasets_factoryboy
-from tests.profile import factoryboy as profile_factoryboy
+from tests.datasets import factories as datasets_factoryboy
+from tests.profile import factories as profile_factoryboy
 from wazimap_ng import cache
 
 
