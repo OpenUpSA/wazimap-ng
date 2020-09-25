@@ -1,3 +1,5 @@
+import logging
+
 from collections import defaultdict
 
 from django.views.decorators.http import condition
@@ -23,6 +25,8 @@ from . import models
 from . import serializers
 from ..cache import etag_point_updated, last_modified_point_updated
 from ..boundaries.models import GeographyBoundary
+
+logger = logging.getLogger(__name__)
 
 
 class CategoryList(generics.ListAPIView):
@@ -61,8 +65,9 @@ class LocationList(generics.ListAPIView):
             serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
             return Response(data)
-        except ObjectDoesNotExist:
             raise Http404
+        except ObjectDoesNotExist as e:
+            logger.exception(e)
 
     @method_decorator(condition(etag_func=etag_point_updated, last_modified_func=last_modified_point_updated))
     def dispatch(self, *args, **kwargs):
