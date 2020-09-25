@@ -1,6 +1,8 @@
 from test_plus import APITestCase
 import pytest
 
+from django.contrib.gis.geos import Point
+
 from tests.profile.factories import ProfileFactory
 from tests.points.factories import (
     ProfileCategoryFactory, ThemeFactory, CategoryFactory, LocationFactory
@@ -8,7 +10,6 @@ from tests.points.factories import (
 from tests.datasets.factories import GeographyFactory, GeographyHierarchyFactory
 from tests.boundaries.factories import GeographyBoundaryFactory
 
-from django.contrib.gis.geos import Point
 
 class TestCategoryView(APITestCase):
 
@@ -55,7 +56,6 @@ class TestLocationView(APITestCase):
         )
         GeographyBoundaryFactory(geography=geography)
         return geography
-
 
     def test_nonexisting_profile(self):
         """
