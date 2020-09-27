@@ -16,8 +16,8 @@ The main new features are:
 * Point data is now fully integrated as a first-class spatial object. 
 * Choropleths built into the main view. These were hidden behind multiple clicks in the previous version.
 * One platform can host multiple profiles off the same database.
-* The Rich data view allows richer dissaggration of indicators.
-* The administrator can configure the view to use custom basemaps, colours, and other default settings.
+* The Rich data view allows richer disaggregation of indicators.
+* The administrator can configure the view to use custom basemaps, colours, and other UI settings.
 * Arbitrary spatial boundaries and hierarchies can be loaded onto the same server.
 * Toggling of overlapping boundary layers such as switching between wards and mainplaces which typically cover the same areas.
 * Integration into third-party data sources for realtime data feeds.
@@ -55,6 +55,15 @@ If this is the first time you're running this, bring the containers down, then u
 docker-compose down
 docker-compose up
 ```
+
+# Documentation
+These are works in progress:
+
+* [Technical manual](https://openup.gitbook.io/wazi-ng-technical/)
+* [Administrator manual](https://openup.gitbook.io/wazimap-ng/)
+
+# Contributions
+Contributions are welcome - we are working towards making this process easier.
 
 # Shoulders of giants
 This project is the next iteration of a number of excellent projects starting with [CensusReporter](https://censusreporter.org/) and [Wazimap](http://www.wazimap.co.za) that followed it. Special thanks to William Bird from [Media Monitoring Africa](https://mediamonitoringafrica.org) whose initial idea (and funding) it was to build a tool to help journalists better understand areas they were reporting on. Also thanks to Chris Berens from [VPUU](vpuu.org.za) who directed funding to help kickstart this new build. Finally, all of the amazing spatial software and tools developed by one of the most dedicated open source communities out there.
