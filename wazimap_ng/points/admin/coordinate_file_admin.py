@@ -3,6 +3,7 @@ import pandas as pd
 from .. import models
 from django.contrib import admin
 from django.urls import reverse
+from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
 
@@ -56,11 +57,10 @@ class CoordinateFileAdmin(BaseAdminModel):
     def get_errors(self, obj):
         if obj.task and not obj.task.success:
             result = obj.task.result
-            if "CustomDataParsingExecption" in result:
+            if "CustomDataParsingException" in result:
                 logdir = settings.MEDIA_ROOT + "/logs/points/"
                 filename = "%s_%d_log.csv" % ("point_file", obj.id)
                 download_url = settings.MEDIA_URL + "logs/points/"
-
                 df = pd.read_csv(logdir+filename, header=None, sep=",", nrows=10, skiprows=1)
                 error_list = df.values.tolist()
 
