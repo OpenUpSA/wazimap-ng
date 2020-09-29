@@ -94,18 +94,52 @@ def expected_subindicators():
 
 @pytest.fixture
 def expected_groups():
+    return [
+        {
+            "group2": OrderedDict(
+                    g2s2=OrderedDict(g1s3=6, g1s2=5, g1s1=4),
+                    g2s1=OrderedDict(g1s3=3, g1s2=2, g1s1=1),
+                    g2s3=OrderedDict(g1s3=9, g1s2=8, g1s1=7),
+                ),
+        },
+        {
+            "group2": OrderedDict(
+                g2s2=OrderedDict(g1s3=60, g1s2=50, g1s1=40),
+                g2s1=OrderedDict(g1s3=30, g1s2=20, g1s1=10),
+                g2s3=OrderedDict(g1s3=90, g1s2=80, g1s1=70),
+            )
+        }
+    ]
+    return {
+        "group2": [
+            OrderedDict(
+                g2s2=OrderedDict(g1s3=6, g1s2=5, g1s1=4),
+                g2s1=OrderedDict(g1s3=3, g1s2=2, g1s1=1),
+                g2s3=OrderedDict(g1s3=9, g1s2=8, g1s1=7),
+            ),
+            OrderedDict(
+                g2s2=OrderedDict(g1s3=60, g1s2=50, g1s1=40),
+                g2s1=OrderedDict(g1s3=30, g1s2=20, g1s1=10),
+                g2s3=OrderedDict(g1s3=90, g1s2=80, g1s1=70),
+            )
+        ]
+    }
+    
+
+@pytest.fixture
+def alternative_expected_groups():
     return [{
         "group2": {
-            "g2s2": OrderedDict(g1s3=6, g1s2=5, g1s1=4),
             "g2s1": OrderedDict(g1s3=3, g1s2=2, g1s1=1),
             "g2s3": OrderedDict(g1s3=9, g1s2=8, g1s1=7),
+            "g2s2": OrderedDict(g1s3=6, g1s2=5, g1s1=4),
         }
     },
     {
         "group2": {
-            "g2s2": OrderedDict(g1s3=60, g1s2=50, g1s1=40),
             "g2s1": OrderedDict(g1s3=30, g1s2=20, g1s1=10),
             "g2s3": OrderedDict(g1s3=90, g1s2=80, g1s1=70),
+            "g2s2": OrderedDict(g1s3=60, g1s2=50, g1s1=40),
         }
     }]
 

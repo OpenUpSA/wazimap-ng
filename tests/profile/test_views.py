@@ -69,7 +69,7 @@ class TestProfileGeographyData:
         response = api_client.get(url, format='json')
         groups = response.data.get('profile_data').get('Category').get('subcategories').get('Subcategory').get('indicators').get('Indicator').get('groups')
         age_group = groups.get('age group')
-        assert age_group != expected_age_groups
+        assert age_group == expected_age_groups
 
     def test_profile_geography_data_ordering_is_correct_order(self, api_client, profile, indicator_data_items_data):
         dataset = datasets_factoryboy.DatasetFactory(geography_hierarchy=profile.geography_hierarchy, groups=["age group", "gender"])

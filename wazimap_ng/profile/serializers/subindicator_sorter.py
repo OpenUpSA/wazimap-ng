@@ -20,9 +20,9 @@ class SubindicatorSorter:
         return sorted_dict
 
     def sort_groups(self, groups, primary_group):
-        new_dict = {}
+        new_dict = OrderedDict()
         for group, group_subindicators in groups.items():
-            sorted_group_subindicators = dict(self.sort_subindicators(group_subindicators, group))
+            sorted_group_subindicators = OrderedDict(self.sort_subindicators(group_subindicators, group))
 
             for group_subindicator, subindicators in sorted_group_subindicators.items():
                 sorted_group_subindicators[group_subindicator] = self.sort_subindicators(subindicators, primary_group)

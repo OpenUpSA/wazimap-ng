@@ -34,6 +34,17 @@ def sorter():
 
     return sorter
 
+@pytest.fixture
+def alternative_sorter():
+    group_orders = {
+        "group1": ["c", "a", "b"],
+        "group2": ["x", "z", "y"],
+        "group3": ["c3", "c1", "c2"],
+    }
+    sorter = SubindicatorSorter(group_orders)
+
+    return sorter
+
 class TestSubindicatorSorter:
     def test_subindicator_sort(self, sorter, subindicators):
         sort_order = ["b", "c", "a"]
@@ -82,6 +93,7 @@ class TestSubindicatorSorter:
         sorted_group2 = sorted_groups["group2"]
 
         assert list(sorted_group1.keys()) == ["b", "c", "a"]
+        assert isinstance(sorted_group1, OrderedDict)
 
         sorted_group1_group3 = list(sorted_group1.values())
         assert sorted_group1_group3[0] == OrderedDict(c2=200, c3=300, c1=100)
@@ -89,10 +101,33 @@ class TestSubindicatorSorter:
         assert sorted_group1_group3[2] == OrderedDict(c2=20, c3=30, c1=10)
 
         assert list(sorted_group2.keys()) == ["z", "y", "x"]
+        assert isinstance(sorted_group2, OrderedDict)
         sorted_group2_group3 = list(sorted_group2.values())
         assert sorted_group2_group3[0] == OrderedDict(c2=5000, c3=6000, c1=4000)
         assert sorted_group2_group3[1] == OrderedDict(c2=500, c3=600, c1=400)
         assert sorted_group2_group3[2] == OrderedDict(c2=50, c3=60, c1=40)
+
+    def test_alternative_group_sort(self, alternative_sorter, group_subindicators):
+        sorter = alternative_sorter
+        sorted_groups = sorter.sort_groups(group_subindicators, "group3")
+        sorted_group1 = sorted_groups["group1"]
+        sorted_group2 = sorted_groups["group2"]
+
+        assert list(sorted_group1.keys()) == ["c", "a", "b"]
+        assert isinstance(sorted_group1, OrderedDict)
+
+        sorted_group1_group3 = list(sorted_group1.values())
+        assert sorted_group1_group3[0] == OrderedDict(c3=3000, c1=1000, c2=2000)
+        assert sorted_group1_group3[1] == OrderedDict(c3=30, c1=10, c2=20)
+        assert sorted_group1_group3[2] == OrderedDict(c3=300, c1=100, c2=200)
+
+        assert list(sorted_group2.keys()) == ["x", "z", "y"]
+        assert isinstance(sorted_group2, OrderedDict)
+        
+        sorted_group2_group3 = list(sorted_group2.values())
+        assert sorted_group2_group3[0] == OrderedDict(c3=60, c1=40, c2=50)
+        assert sorted_group2_group3[1] == OrderedDict(c3=6000, c1=4000, c2=5000)
+        assert sorted_group2_group3[2] == OrderedDict(c3=600, c1=400, c2=500)
 
     def test_group_subset(self, sorter, group_subindicators):
         del group_subindicators["group1"]
