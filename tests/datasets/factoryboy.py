@@ -42,6 +42,14 @@ class IndicatorFactory(factory.django.DjangoModelFactory):
     universe = factory.SubFactory(UniverseFactory)
 
 
+class IndicatorDataFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.IndicatorData
+
+    indicator = factory.SubFactory(IndicatorFactory)
+    geography = factory.SubFactory(GeographyFactory)
+
+
 class GroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Group
