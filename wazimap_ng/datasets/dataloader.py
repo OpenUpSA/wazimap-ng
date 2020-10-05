@@ -17,6 +17,7 @@ def load_geography(geo_code, version):
     geography = models.Geography.objects.get(code=geo_code, version=version)
     return geography
 
+
 def create_groups(dataset, group_names):
     groups = []
     for g in group_names:
@@ -25,8 +26,9 @@ def create_groups(dataset, group_names):
         groups.append(group)
     return groups
 
+
 @transaction.atomic
-def loaddata(dataset, iterable, row_number):  
+def loaddata(dataset, iterable, row_number):
     datarows = []
     errors = []
     warnings = []
@@ -37,20 +39,23 @@ def loaddata(dataset, iterable, row_number):
     for idx, row in enumerate(iterable):
         groups |= set(x for x in row.keys())
         geo_code = row["geography"]
+        line_no = row_number+idx+1
+        error_lines = []
         try:
             geography = load_geography(geo_code, version)
         except models.Geography.DoesNotExist:
             warnings.append(list(row.values()))
             continue
 
-
         try:
             count = float(row["count"])
             if math.isnan(count):
-                errors.append([row_number+idx, "count", "Missing data for count"])
-                continue
+                error_lines.append([line_no, "count", "Missing data for count"])
         except (TypeError, ValueError):
-            errors.append([row_number+idx, "count", f"""Expected a number in the 'count' column, received '{row["count"]}'"""])
+            error_lines.append([line_no, "count", f"""Expected a number in the 'count' column, received '{row["count"]}'"""])
+
+        if error_lines:
+            errors.append([error_lines, list(row.values())])
             continue
 
         del row["geography"]

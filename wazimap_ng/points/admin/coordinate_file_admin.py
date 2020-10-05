@@ -55,20 +55,22 @@ class CoordinateFileAdmin(BaseAdminModel):
     get_task_link.short_description = 'Task Link'
 
     def get_errors(self, obj):
-        if obj.task and not obj.task.success:
+        if obj.task:
             result = obj.task.result
-            if "CustomDataParsingException" in result:
-                logdir = settings.MEDIA_ROOT + "/logs/points/"
-                filename = "%s_%d_log.csv" % ("point_file", obj.id)
-                download_url = settings.MEDIA_URL + "logs/points/"
-                df = pd.read_csv(logdir+filename, header=None, sep=",", nrows=10, skiprows=1)
+            if not obj.task.success:
+                return obj.task.result
+            elif result["error_log"]:
+                download_url = result["error_log"].replace("/app", "")
+                incorrect_csv = result["incorrect_rows_log"].replace("/app", "")
+                df = pd.read_csv(result["error_log"], header=None, sep=",", nrows=10, skiprows=1)
                 error_list = df.values.tolist()
-
                 result = render_to_string(
-                    'custom/render_task_errors.html', { 'errors': error_list, 'download_url': download_url + filename}
+                    'custom/variable_task_errors.html', {
+                        'errors': error_list,'download_url': download_url,
+                        'incorrect_csv': incorrect_csv
+                    }
                 )
-
-            return mark_safe(result)
+                return mark_safe(result)
         return "None"
 
     get_errors.short_description = 'Errors'
