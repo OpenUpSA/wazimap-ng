@@ -8,8 +8,8 @@ def get_log_filename(name, type, file_id):
     return F"{name}_{file_id}_{type}_log.csv"
 
 
-def write_csv(logs, logfile, headers):
-    df = pd.DataFrame(logs)
+def write_csv(log, logfile, headers):
+    df = pd.DataFrame(log, columns=headers)
     df.to_csv(logfile, header=headers, index=False)
     return logfile
 
@@ -19,24 +19,25 @@ def csv_error_logger(logdir, target_name, target_id, logs, headers):
     incorrect_rows = []
 
     for idx, log in enumerate(logs):
-        errors = errors + [[idx+1] + error for error in log[0]]
-        incorrect_rows.append(log[1])
+        line_no = idx + 1
+        for error in log["line_error"]:
+            error["Error Line Number"] = line_no
+            errors.append(error)
+        incorrect_rows.append(log["values"])
 
     error_file_name = get_log_filename(target_name, "errors", target_id)
+    error_headers = ['Error Line Number', 'CSV Line Number', 'Field Name', 'Error Details']
     error_file_log = write_csv(
-        errors, F"{logdir}/{error_file_name}", [
-            "Error file line no.", "Actual csv line no.", "Field Name",
-            "Error Details"
-        ]
+        errors, F"{logdir}/{error_file_name}", error_headers
     )
+
     incorrect_file_name = get_log_filename(
         target_name, "incorrect_rows", target_id
     )
     incorrect_file_log = write_csv(
         incorrect_rows, F"{logdir}/{incorrect_file_name}", headers
     )
-
-    return error_file_log, incorrect_file_log
+    return [error_file_log, incorrect_file_log]
 
 
 def csv_logger(target_obj, file_obj, type, logs, headers):

@@ -50,12 +50,24 @@ def loaddata(dataset, iterable, row_number):
         try:
             count = float(row["count"])
             if math.isnan(count):
-                error_lines.append([line_no, "count", "Missing data for count"])
+                error_lines.append({
+                    "CSV Line Number": line_no,
+                    "Field Name": "count",
+                    "Error Details": "Missing data for count"
+                })
+
         except (TypeError, ValueError):
-            error_lines.append([line_no, "count", f"""Expected a number in the 'count' column, received '{row["count"]}'"""])
+            error_lines.append({
+                "CSV Line Number": line_no,
+                "Field Name": "count",
+                "Error Details": f"Expected a number in the 'count' column, received {row['count']}"
+            })
 
         if error_lines:
-            errors.append([error_lines, list(row.values())])
+            errors.append({
+                "line_error": error_lines,
+                "values": list(row.values())
+            })
             continue
 
         del row["geography"]
