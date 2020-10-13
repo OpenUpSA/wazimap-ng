@@ -5,7 +5,7 @@ from adminsortable2.admin import SortableAdminMixin
 from ... import models
 from ..forms import ProfileIndicatorAdminForm
 
-from wazimap_ng.general.widgets import customTitledFilter, description, SortableWidget
+from wazimap_ng.general.widgets import customTitledFilter, description
 from wazimap_ng.datasets.models import Indicator, Dataset
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.admin import filters
@@ -42,15 +42,15 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
         }),
         ("Subindicators", {
           'fields': ('subindicators',)
+        }),
+        ("Charts", {
+          'fields': ('chart_configuration',)
         })
     )
     search_fields = ("label", )
 
     form = ProfileIndicatorAdminForm
 
-    formfield_overrides = {
-        fields.JSONField: {"widget": SortableWidget},
-    }
     help_texts = ["choropleth_method", ]
 
     def get_readonly_fields(self, request, obj=None):

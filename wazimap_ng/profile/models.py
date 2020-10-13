@@ -107,6 +107,7 @@ class ProfileIndicator(BaseModel):
     subindicators = JSONField(default=list, blank=True)
     choropleth_method = models.ForeignKey(ChoroplethMethod, null=False, on_delete=models.CASCADE)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
+    chart_configuration = JSONField(default=dict, blank=True)
 
     def __str__(self):
         return f"{self.profile.name} -> {self.label}"
