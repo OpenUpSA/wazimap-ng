@@ -84,8 +84,10 @@ class DatasetFileAdmin(BaseAdminModel):
     get_dataset_name.short_description = 'Dataset'
 
     def get_document(self, obj):
+        file_extension = obj.document.name.split(".")[-1]
+        doc_name = f'{obj.name}-{obj.id}.{file_extension}'
         return mark_safe(
-            f'<a href="{obj.document.url}" download="{obj.name}-{obj.id}.csv">{obj.name}-{obj.id}.csv</a>'
+            f'<a href="{obj.document.url}" download="{doc_name}">{doc_name}</a>'
         )
 
     get_document.short_description = 'Document'
@@ -166,4 +168,3 @@ class DatasetFileAdmin(BaseAdminModel):
 
     def has_change_permission(self, request, obj=None):
         return False
-
