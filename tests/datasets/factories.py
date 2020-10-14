@@ -77,3 +77,6 @@ class DatasetDataFactory(factory.django.DjangoModelFactory):
     data = {}
 
 
+class DatasetFileFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.DatasetFile

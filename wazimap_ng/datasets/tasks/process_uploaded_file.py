@@ -15,6 +15,7 @@ from .. import models
 
 logger = logging.getLogger(__name__)
 
+
 def detect_encoding(buffer):
     detector = UniversalDetector()
     for line in buffer:
@@ -23,10 +24,27 @@ def detect_encoding(buffer):
     detector.close()
     return detector.result["encoding"]
 
+
+def process_headers(df):
+    old_columns = df.columns.str.lower().str.strip()
+    df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
+    new_columns = df.columns.str.lower().str.strip()
+    return old_columns, new_columns
+
+
+def process_df(df, old_columns, new_columns):
+    df.dropna(how='all', axis='index', inplace=True)
+    df.columns = old_columns
+    df = df.loc[:, new_columns]
+    df.fillna('', inplace=True)
+    return df
+
+
 def process_file_data(df, dataset, row_number):
-    df = df.applymap(lambda s:s.strip() if type(s) == str else s)
+    df = df.applymap(lambda s: s.strip().capitalize() if type(s) == str else s)
     datasource = (dict(d[1]) for d in df.iterrows())
     return loaddata(dataset, datasource, row_number)
+
 
 def process_csv(dataset, buffer, chunksize=1000000):
     encoding = detect_encoding(buffer)
@@ -37,14 +55,13 @@ def process_csv(dataset, buffer, chunksize=1000000):
     row_number = 1
     df = pd.read_csv(wrapper_file, nrows=1, dtype=str, sep=",", encoding=encoding)
     df.dropna(how='all', axis='columns', inplace=True)
-    columns = df.columns.str.lower()
-    error_logs = [];
-    warning_logs = [];
+    old_columns, new_columns = process_headers(df)
+    error_logs = []
+    warning_logs = []
 
     wrapper_file.seek(0)
     for df in pd.read_csv(wrapper_file, chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1, encoding=encoding):
-        df.dropna(how='all', axis='columns', inplace=True)
-        df.columns = columns
+        df = process_df(df, old_columns, new_columns)
         errors, warnings = process_file_data(df, dataset, row_number)
         error_logs = error_logs + errors
         warning_logs = warning_logs + warnings
@@ -53,7 +70,7 @@ def process_csv(dataset, buffer, chunksize=1000000):
     return {
         "error_logs": error_logs,
         "warning_logs": warning_logs,
-        "columns": columns
+        "columns": new_columns
     }
 
 
@@ -73,7 +90,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
     logger.debug(f"Processing: {filename}")
 
-    columns = None
+    new_columns = None
     error_logs = []
     warning_logs = []
     row_number = 1
@@ -89,26 +106,30 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
         skiprows = 1
         i_chunk = 0
         df = pd.read_excel(dataset_file.document.open(), nrows=1, dtype=str)
-        df.dropna(how='any', axis='columns', inplace=True)
-        columns = df.columns.str.lower()
+        old_columns = df.columns.str.lower().str.strip()
+        df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
+        new_columns = df.columns.str.lower().str.strip()
         while True:
             df = pd.read_excel(
-                dataset_file.document.open(), nrows=chunksize, skiprows=skiprows, header=None
+                dataset_file.document.open(), nrows=chunksize, skiprows=skiprows, header=None,
+                dtype=str
             )
             skiprows += chunksize
             # When there is no data, we know we can break out of the loop.
             if not df.shape[0]:
                 break
             else:
-                df.dropna(how='any', axis='columns', inplace=True)
-                df.columns = columns
+                df.dropna(how='all', axis='index', inplace=True)
+                df.columns = old_columns
+                df = df.loc[:, new_columns]
+                df.fillna('', inplace=True)
                 errors, warnings = process_file_data(df, dataset, row_number)
                 error_logs = error_logs + errors
                 warning_logs = warning_logs + warnings
                 row_number = row_number + chunksize
             i_chunk += 1
 
-    groups = [group for group in columns.to_list() if group not in ["geography", "count"]]
+    groups = [group for group in new_columns.to_list() if group not in ["geography", "count"]]
 
     dataset.groups = list(set(groups + dataset.groups))
     dataset.save()
