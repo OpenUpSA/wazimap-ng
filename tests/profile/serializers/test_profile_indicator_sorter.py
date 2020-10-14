@@ -2,20 +2,21 @@ import pytest
 import unittest
 from collections import OrderedDict
 
-from tests.profile import factoryboy as profile_factoryboy
-from tests.datasets import factoryboy as datasets_factoryboy
+from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
+
+from tests.datasets.factories import GroupFactory
 
 from wazimap_ng.profile.serializers.profile_indicator_sorter import ProfileIndicatorSorter
 
 @pytest.fixture
 def profile():
-    return profile_factoryboy.ProfileFactory()
+    return ProfileFactory()
 
 @pytest.fixture
 def profile_indicators(profile):
-    profile_indicator1 = profile_factoryboy.ProfileIndicatorFactory(profile=profile)
-    profile_indicator2 = profile_factoryboy.ProfileIndicatorFactory(profile=profile)
-    profile_indicator3 = profile_factoryboy.ProfileIndicatorFactory()
+    profile_indicator1 = ProfileIndicatorFactory(profile=profile)
+    profile_indicator2 = ProfileIndicatorFactory(profile=profile)
+    profile_indicator3 = ProfileIndicatorFactory()
 
     return [profile_indicator1, profile_indicator2, profile_indicator3]
 
@@ -35,10 +36,10 @@ def groups(datasets):
     subindicators4 = ["a", "b"]
 
     return [
-        datasets_factoryboy.GroupFactory(name="group1", dataset=datasets[0], subindicators=subindicators1),
-        datasets_factoryboy.GroupFactory(name="group2", dataset=datasets[0], subindicators=subindicators2),
-        datasets_factoryboy.GroupFactory(name="group3", dataset=datasets[1], subindicators=subindicators3),
-        datasets_factoryboy.GroupFactory(name="unrelated group", dataset=datasets[2], subindicators=subindicators4),
+        GroupFactory(name="group1", dataset=datasets[0], subindicators=subindicators1),
+        GroupFactory(name="group2", dataset=datasets[0], subindicators=subindicators2),
+        GroupFactory(name="group3", dataset=datasets[1], subindicators=subindicators3),
+        GroupFactory(name="unrelated group", dataset=datasets[2], subindicators=subindicators4),
     ]
 
 

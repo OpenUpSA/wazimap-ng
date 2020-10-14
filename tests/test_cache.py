@@ -7,8 +7,8 @@ from unittest.mock import patch
 import pytest
 from django.core.cache import cache as django_cache
 
-from tests.datasets import factoryboy as datasets_factoryboy
-from tests.profile import factoryboy as profile_factoryboy
+from tests.profile.factories import ProfileIndicatorFactory, ProfileKeyMetricsFactory, ProfileHighlightFactory
+from tests.datasets.factories import  IndicatorFactory
 from wazimap_ng import cache
 
 
@@ -130,25 +130,25 @@ def test_update_point_cache_signal(mock_datetime):
 class TestCache(unittest.TestCase):
     @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
     def test_invalidate_profile_cache_for_indicator_no_update(self, mock_update_profile_cache):
-        indicator_obj = datasets_factoryboy.IndicatorFactory()
-        indicator_obj_2 = datasets_factoryboy.IndicatorFactory()
-        profile_factoryboy.ProfileIndicatorFactory(indicator=indicator_obj)
-        profile_factoryboy.ProfileKeyMetricsFactory(variable=indicator_obj)
-        profile_factoryboy.ProfileHighlightFactory(indicator=indicator_obj)
+        indicator_obj = IndicatorFactory()
+        indicator_obj_2 = IndicatorFactory()
+        ProfileIndicatorFactory(indicator=indicator_obj)
+        ProfileKeyMetricsFactory(variable=indicator_obj)
+        ProfileHighlightFactory(indicator=indicator_obj)
         mock_update_profile_cache.reset_mock()
         cache.indicator_updated(None, indicator_obj_2)
         self.assertEqual(mock_update_profile_cache.call_count, 0)
 
     @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
     def test_invalidate_profile_cache_for_indicator_update(self, mock_update_profile_cache):
-        indicator_obj = datasets_factoryboy.IndicatorFactory()
-        profile_indicator_obj = profile_factoryboy.ProfileIndicatorFactory(indicator=indicator_obj)
-        profilekey_metrics_obj = profile_factoryboy.ProfileKeyMetricsFactory(variable=indicator_obj)
-        profile_highlights_obj = profile_factoryboy.ProfileHighlightFactory(indicator=indicator_obj)
-        indicator_obj_2 = datasets_factoryboy.IndicatorFactory()
-        profile_factoryboy.ProfileIndicatorFactory(indicator=indicator_obj_2)
-        profile_factoryboy.ProfileKeyMetricsFactory(variable=indicator_obj_2)
-        profile_factoryboy.ProfileHighlightFactory(indicator=indicator_obj_2)
+        indicator_obj = IndicatorFactory()
+        profile_indicator_obj = ProfileIndicatorFactory(indicator=indicator_obj)
+        profilekey_metrics_obj = ProfileKeyMetricsFactory(variable=indicator_obj)
+        profile_highlights_obj = ProfileHighlightFactory(indicator=indicator_obj)
+        indicator_obj_2 = IndicatorFactory()
+        ProfileIndicatorFactory(indicator=indicator_obj_2)
+        ProfileKeyMetricsFactory(variable=indicator_obj_2)
+        ProfileHighlightFactory(indicator=indicator_obj_2)
         mock_update_profile_cache.reset_mock()
         cache.indicator_updated(None, indicator_obj)
         self.assertEqual(mock_update_profile_cache.call_count, 3)
