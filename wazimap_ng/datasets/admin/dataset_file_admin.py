@@ -150,10 +150,14 @@ class DatasetFileAdmin(BaseAdminModel):
                 return obj.task.result
             elif result["error_log"]:
                 download_url = result["error_log"].replace("/app", "")
+                incorrect_csv = result["incorrect_rows_log"].replace("/app", "")
                 df = pd.read_csv(result["error_log"], header=None, sep=",", nrows=10, skiprows=1)
                 error_list = df.values.tolist()
                 result = render_to_string(
-                    'custom/variable_task_errors.html', { 'errors': error_list,'download_url': download_url}
+                    'custom/variable_task_errors.html', {
+                        'errors': error_list,'download_url': download_url,
+                        'incorrect_csv': incorrect_csv
+                    }
                 )
                 return mark_safe(result)
         return "None"

@@ -9,6 +9,7 @@ from ..dataloader import loaddata
 from .. import models
 
 from wazimap_ng.general.services.permissions import assign_perms_to_group
+from wazimap_ng.general.services.csv_helpers import csv_logger
 
 logger = logging.getLogger(__name__)
 
@@ -77,33 +78,26 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     groups = [group for group in columns.to_list() if group not in ["geography", "count"]]
 
-    dataset.groups =  list(set(groups + dataset.groups))
+    dataset.groups = list(set(groups + dataset.groups))
     dataset.save()
 
+    error_file_log = incorrect_file_log = None
     if error_logs:
-        logger.error(error_logs)
-        logdir = settings.MEDIA_ROOT + "/logs/dataset/errors/"
-        if not os.path.exists(logdir):
-            os.makedirs(logdir)
-        logfile = logdir + "%s_%d_error_log.csv" % (dataset.name.replace(" ", "_"), dataset_file.id)
-        df = pd.DataFrame(error_logs)
-        df.to_csv(logfile, header=["Line Number", "Field Name", "Error Details"], index=False)
-        error_logs = logfile
+        error_file_log, incorrect_file_log = csv_logger(
+            dataset, dataset_file, "error", error_logs, columns
+        )
 
     if warning_logs:
-        logdir = settings.MEDIA_ROOT + "/logs/dataset/warnings/"
-        if not os.path.exists(logdir):
-            os.makedirs(logdir)
-        logfile = logdir + "%s_%d_warnings.csv" % (dataset.name.replace(" ", "_"), dataset.id)
-        df = pd.DataFrame(warning_logs)
-        df.to_csv(logfile, header=columns, index=False)
-        warning_logs = logfile
+        warning_logs, = csv_logger(
+            dataset, dataset_file, "warning", warning_logs, columns
+        )
 
     return {
         "model": "datasetfile",
         "name": dataset.name,
         "id": dataset_file.id,
         "dataset_id": dataset.id,
-        "error_log": error_logs or None,
+        "error_log": error_file_log,
+        "incorrect_rows_log": incorrect_file_log,
         "warning_log": warning_logs or None
     }
