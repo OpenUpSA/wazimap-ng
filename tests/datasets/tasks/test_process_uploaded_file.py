@@ -7,8 +7,8 @@ import pytest
 from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv
 from tests.datasets.factories import DatasetFactory, GeographyFactory, GeographyHierarchyFactory
 
-def generate_file(data):
-    fp = tempfile.NamedTemporaryFile("w", delete=False)
+def generate_file(data, encoding="utf8"):
+    fp = tempfile.NamedTemporaryFile("w", delete=False, encoding=encoding)
     writer = csv.writer(fp)
     writer.writerow(["Geography", "field1", "field2", "count"])
     writer.writerows(data)
@@ -45,7 +45,12 @@ data_with_different_case = [
     ("GEOCODE_2", "F1_value_2", "f2_valUE_2", 222),
 ]
 
-@pytest.fixture(params=[good_data, data_with_different_case])
+data_with_different_encodings = [
+    ("GEOCODE_1", "‘F1_value_1", "F2_value_1’", 111),
+    ("GEOCODE_2", "€ŠF1_value_2", "F2_value_2®®", 222),
+]
+
+@pytest.fixture(params=[good_data, data_with_different_case, data_with_different_encodings])
 def data(request):
     return request.param
 

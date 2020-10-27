@@ -1,9 +1,10 @@
 import os
-import pandas as pd
 import logging
 
 from django.db import transaction
 from django.conf import settings
+from chardet.universaldetector import UniversalDetector
+import pandas as pd
 
 from ..dataloader import loaddata
 from .. import models
@@ -13,20 +14,32 @@ from wazimap_ng.general.services.csv_helpers import csv_logger
 
 logger = logging.getLogger(__name__)
 
+def detect_encoding(filename):
+    detector = UniversalDetector()
+    with open(filename, "rb") as fp:
+        for line in fp:
+            detector.feed(line)
+            if detector.done: break
+    detector.close()
+    print(detector.result)
+    return detector.result
+
 def process_file_data(df, dataset, row_number):
     df = df.applymap(lambda s:s.strip() if type(s) == str else s)
     datasource = (dict(d[1]) for d in df.iterrows())
     return loaddata(dataset, datasource, row_number)
 
 def process_csv(dataset, filename, chunksize=1000000):
+    encoding_guess = detect_encoding(filename)
+    encoding = encoding_guess["encoding"]
     row_number = 1
-    df = pd.read_csv(filename, nrows=1, dtype=str, sep=",")
+    df = pd.read_csv(filename, nrows=1, dtype=str, sep=",", encoding=encoding)
     df.dropna(how='all', axis='columns', inplace=True)
     columns = df.columns.str.lower()
     error_logs = [];
     warning_logs = [];
 
-    for df in pd.read_csv(filename, chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1):
+    for df in pd.read_csv(filename, chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1, encoding=encoding):
         df.dropna(how='all', axis='columns', inplace=True)
         df.columns = columns
         errors, warnings = process_file_data(df, dataset, row_number)
