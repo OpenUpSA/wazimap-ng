@@ -1,5 +1,6 @@
 from unittest.mock import patch
 import csv
+from pathlib import Path
 import tempfile
 
 import pytest
@@ -70,3 +71,9 @@ class TestUploadFile:
             assert dd.data["field1"] == ed[1]
             assert dd.data["field2"] == ed[2]
             assert dd.data["count"] == str(ed[3])
+
+        path = Path(filename)
+        if path.exists():
+            path.unlink()
+
+
