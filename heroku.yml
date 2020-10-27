@@ -16,5 +16,10 @@ build:
     web: Dockerfile
     worker: Dockerfile
 run:
-  web: scripts/django/web.sh
+  web: gunicorn wazimap_ng.wsgi --workers=2 --forwarded-allow-ips="*"  --reload  --timeout=300
   worker: scripts/django/django_q.sh
+
+release:
+  image: web
+  command:
+    - python manage.py migrate
