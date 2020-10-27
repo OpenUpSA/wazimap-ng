@@ -3,5 +3,22 @@
     "dokku": {
       "predeploy": "/app/scripts/django/predeploy.sh"
     }
-  }
+  },
+	"formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    },
+    "worker": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+	"stack": "container",
+  "addons": ["heroku-postgresql:hobby-dev"],
+  "environments": {
+    "review": {
+      "addons": ["heroku-postgresql:hobby-dev"]
+    }
+	}
 }
