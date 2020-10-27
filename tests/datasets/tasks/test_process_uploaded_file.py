@@ -48,8 +48,8 @@ class TestUploadFile:
         dd1 = datasetdata[0]
         dd2 = datasetdata[1]
 
-        assert dd1.geography.code == geographies[0].code
-        assert dd2.geography.code == geographies[1].code
+        assert dd1.geography == geographies[0]
+        assert dd2.geography == geographies[1]
 
 
         assert dd1.data["field1"] == "F1_value_1"
