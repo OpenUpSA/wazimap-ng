@@ -21,7 +21,7 @@ def detect_encoding(filename):
             detector.feed(line)
             if detector.done: break
     detector.close()
-    return detector.result
+    return detector.result["encoding"]
 
 def process_file_data(df, dataset, row_number):
     df = df.applymap(lambda s:s.strip() if type(s) == str else s)
@@ -29,8 +29,7 @@ def process_file_data(df, dataset, row_number):
     return loaddata(dataset, datasource, row_number)
 
 def process_csv(dataset, filename, chunksize=1000000):
-    encoding_guess = detect_encoding(filename)
-    encoding = encoding_guess["encoding"]
+    encoding = detect_encoding(filename)
     row_number = 1
     df = pd.read_csv(filename, nrows=1, dtype=str, sep=",", encoding=encoding)
     df.dropna(how='all', axis='columns', inplace=True)
