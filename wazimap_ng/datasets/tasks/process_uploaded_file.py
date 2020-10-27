@@ -21,7 +21,6 @@ def detect_encoding(filename):
             detector.feed(line)
             if detector.done: break
     detector.close()
-    print(detector.result)
     return detector.result
 
 def process_file_data(df, dataset, row_number):
