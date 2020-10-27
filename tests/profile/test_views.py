@@ -12,7 +12,10 @@ class TestProfileGeographyData(APITestCase):
 
     def setUp(self):
         self.profile = ProfileFactory()
-        dataset = DatasetFactory(geography_hierarchy=self.profile.geography_hierarchy, groups=["age group", "gender"])
+        dataset = DatasetFactory(
+            geography_hierarchy=self.profile.geography_hierarchy, groups=["age group", "gender"],
+            profile=self.profile
+        )
         indicator = IndicatorFactory(name="Age by Gender", dataset=dataset, groups=["gender"])
 
         category = IndicatorCategoryFactory(name="Category", profile=self.profile)
@@ -76,4 +79,3 @@ class TestProfileGeographyData(APITestCase):
         age_group = groups.get('age group')
 
         assert age_group != wrong_order
-
