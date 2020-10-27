@@ -35,25 +35,32 @@ def geographies(geography_hierarchy):
 def dataset(geography_hierarchy):
     return DatasetFactory(geography_hierarchy=geography_hierarchy)
 
-@pytest.fixture
-def good_data(geographies):
-    return [
-        (geographies[0].code, "F1_value_1", "F2_value_1", 111),
-        (geographies[1].code, "F1_value_2", "F2_value_2", 222),
-    ]
+good_data = [
+    ("GEOCODE_1", "F1_value_1", "F2_value_1", 111),
+    ("GEOCODE_2", "F1_value_2", "F2_value_2", 222),
+]
+
+data_with_different_case = [
+    ("GEOCODE_1", "f1_VALue_1", "F2_value_1", 111),
+    ("GEOCODE_2", "F1_value_2", "f2_valUE_2", 222),
+]
+
+@pytest.fixture(params=[good_data, data_with_different_case])
+def data(request):
+    return request.param
+
 
 @pytest.mark.django_db
 class TestUploadFile:
-
-    def test_process_csv(self, dataset, good_data, geographies):
-        filename = generate_file(good_data)
+    def test_process_csv(self, dataset, data, geographies):
+        filename = generate_file(data)
         process_csv(dataset, filename)
 
         datasetdata = dataset.datasetdata_set.all()
 
-        assert len(datasetdata) == len(good_data)
+        assert len(datasetdata) == len(data)
 
-        for dd, ed in zip(datasetdata, good_data):
+        for dd, ed in zip(datasetdata, data):
             assert dd.geography.code == ed[0]
             assert dd.data["field1"] == ed[1]
             assert dd.data["field2"] == ed[2]

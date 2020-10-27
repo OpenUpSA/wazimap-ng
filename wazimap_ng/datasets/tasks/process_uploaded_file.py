@@ -14,7 +14,7 @@ from wazimap_ng.general.services.csv_helpers import csv_logger
 logger = logging.getLogger(__name__)
 
 def process_file_data(df, dataset, row_number):
-    df = df.applymap(lambda s:s.capitalize().strip() if type(s) == str else s)
+    df = df.applymap(lambda s:s.strip() if type(s) == str else s)
     datasource = (dict(d[1]) for d in df.iterrows())
     return loaddata(dataset, datasource, row_number)
 
