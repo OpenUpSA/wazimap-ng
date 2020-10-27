@@ -56,3 +56,14 @@ class GroupFactory(factory.django.DjangoModelFactory):
         model = models.Group
 
     dataset = factory.SubFactory(DatasetFactory)
+
+
+class DatasetDataFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.DatasetData
+
+    geography = factory.SubFactory(GeographyFactory)
+    dataset = factory.SubFactory(DatasetFactory)
+    data = {}
+
+

@@ -8,7 +8,7 @@ import pytest
 from django.core.cache import cache as django_cache
 
 from tests.profile.factories import ProfileIndicatorFactory, ProfileKeyMetricsFactory, ProfileHighlightFactory
-from tests.datasets.factories import  IndicatorFactory
+from tests.datasets.factories import  IndicatorFactory, GeographyFactory, DatasetDataFactory, GroupFactory
 from wazimap_ng import cache
 
 
@@ -158,3 +158,25 @@ class TestCache(unittest.TestCase):
             call(profile_indicator_obj.profile)
         ]
         mock_update_profile_cache.assert_has_calls(calls, any_order=True)
+
+    @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
+    def test_invalidate_profile_cache_for_geography_udpate(self, mock_update_profile_cache):
+        mock_update_profile_cache.reset_mock()
+        geography = GeographyFactory()
+        datasetdata = DatasetDataFactory(geography=geography)
+        self.assertEqual(mock_update_profile_cache.call_count, 1)
+        calls = [
+            call(datasetdata.dataset.profile),
+        ]
+        mock_update_profile_cache.assert_has_calls(calls, any_order=True)
+
+    @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
+    def test_invalidate_profile_cache_for_group_udpate(self, mock_update_profile_cache):
+        mock_update_profile_cache.reset_mock()
+        group = GroupFactory()
+        self.assertEqual(mock_update_profile_cache.call_count, 2)
+        calls = [
+            call(group.dataset.profile),
+        ]
+        mock_update_profile_cache.assert_has_calls(calls, any_order=True)
+
