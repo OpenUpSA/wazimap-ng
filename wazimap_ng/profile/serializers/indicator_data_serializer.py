@@ -10,11 +10,11 @@ from .profile_indicator_sorter import ProfileIndicatorSorter
 
 logger = logging.getLogger(__name__)
 
-def get_indicator_data(profile, geography):
+def _get_indicator_data(profile, geographies):
     data = (IndicatorData.objects
         .filter(
             indicator__in=profile.indicators.all(),
-            geography=geography
+            geography_id__in=geographies
         )
         .values(
             jsdata=F("data"),
@@ -37,35 +37,11 @@ def get_indicator_data(profile, geography):
 
     return data
 
+def get_indicator_data(profile, geography):
+    return _get_indicator_data(profile, [geography])
+
 def get_child_indicator_data(profile, geography):
-    children_profiles = (IndicatorData.objects
-        .filter(
-            indicator__in=profile.indicators.all(),
-            geography_id__in=geography.get_children()
-        )
-        .values(
-            jsdata=F("data"),
-            description=F("indicator__profileindicator__description"),
-            indicator_name=F("indicator__name"),
-            indicator_group=F("indicator__groups"),
-            profile_indicator_label=F("indicator__profileindicator__label"),
-            subcategory=F("indicator__profileindicator__subcategory__name"),
-            category=F("indicator__profileindicator__subcategory__category__name"),
-            choropleth_method=F("indicator__profileindicator__choropleth_method__name"),
-            dataset=F("indicator__dataset"),
-            metadata_source=F("indicator__dataset__metadata__source"),
-            metadata_description=F("indicator__dataset__metadata__description"),
-            licence_url=F("indicator__dataset__metadata__licence__url"),
-            licence_name=F("indicator__dataset__metadata__licence__name"),
-            indicator_chart_configuration=F("indicator__profileindicator__chart_configuration"),
-
-
-
-            geography_code=F("geography__code"),
-        )
-    )
-
-    return children_profiles
+    return _get_indicator_data(profile, geography.get_children())
 
 def rearrange_group(data):
     for row in data:

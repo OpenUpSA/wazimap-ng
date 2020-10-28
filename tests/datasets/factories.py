@@ -7,10 +7,10 @@ class GeographyFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Geography
 
-    depth = factory.Sequence(lambda n: '%d' % n)
-    path = factory.Sequence(lambda n: 'path_%d' % n)
+    depth = factory.Sequence(lambda n: 0)
     version = factory.Sequence(lambda n: 'version_%d' % n)
     code = factory.Sequence(lambda n: 'code_%d' % n)
+    level = factory.Sequence(lambda n: 'level_%d' % n)
 
 
 class GeographyHierarchyFactory(factory.django.DjangoModelFactory):
