@@ -1,22 +1,32 @@
-from unittest.mock import patch
 import csv
-from pathlib import Path
-import tempfile
+import codecs
+from io import BytesIO
 
 import pytest
 
-from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv
-from tests.datasets.factories import DatasetFactory, GeographyFactory, GeographyHierarchyFactory
+from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv, detect_encoding
+from tests.datasets.factories import DatasetFactory, GeographyFactory, GeographyHierarchyFactory, DatasetFileFactory
 
 def generate_file(data, encoding="utf8"):
-    fp = tempfile.NamedTemporaryFile("w", delete=False, encoding=encoding)
-    writer = csv.writer(fp)
+    buffer = BytesIO()
+    StreamWriter = codecs.getwriter(encoding)
+    text_buffer = StreamWriter(buffer)
+
+    writer = csv.writer(text_buffer)
     writer.writerow(["Geography", "field1", "field2", "count"])
     writer.writerows(data)
-    filename = fp.name
+
+    buffer.seek(0)
+    return buffer
+
+def create_datasetfile(csv_data, encoding):
+    datasetfile = DatasetFileFactory()
+    buffer = generate_file(csv_data, encoding)
+    fp = datasetfile.document.open("wb")
+    fp.write(buffer.read())
     fp.close()
 
-    return filename
+    return datasetfile
 
 
 @pytest.fixture
@@ -51,29 +61,29 @@ data_with_different_encodings = [
     ("GEOCODE_2", "€ŠF1_value_2", "F2_value_2®®", 222),
 ]
 
-@pytest.fixture(params=[good_data, data_with_different_case, data_with_different_encodings])
+@pytest.fixture(params=[(good_data, "utf8"), (data_with_different_case, "utf8"), (data_with_different_encodings, "Windows-1252")])
 def data(request):
     return request.param
 
+def test_detect_encoding():
+    buffer = generate_file(data_with_different_encodings, "Windows-1252")
+    encoding = detect_encoding(buffer)
+    assert encoding == "Windows-1252"
 
 @pytest.mark.django_db
 class TestUploadFile:
-    def test_process_csv(self, dataset, data, geographies):
-        filename = generate_file(data)
-        process_csv(dataset, filename)
 
+    def test_process_csv(self, dataset, data, geographies):
+        csv_data, encoding = data
+        datasetfile = create_datasetfile(csv_data, encoding)
+
+        process_csv(dataset, datasetfile.document)
         datasetdata = dataset.datasetdata_set.all()
 
-        assert len(datasetdata) == len(data)
+        assert len(datasetdata) == len(csv_data)
 
-        for dd, ed in zip(datasetdata, data):
+        for dd, ed in zip(datasetdata, csv_data):
             assert dd.geography.code == ed[0]
             assert dd.data["field1"] == ed[1]
             assert dd.data["field2"] == ed[2]
             assert dd.data["count"] == str(ed[3])
-
-        path = Path(filename)
-        if path.exists():
-            path.unlink()
-
-
