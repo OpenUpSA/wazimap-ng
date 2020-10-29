@@ -19,12 +19,12 @@ class TestProfileGeographyData(APITestCase):
         indicator = IndicatorFactory(name="Age by Gender", dataset=dataset, groups=["gender"])
 
         category = IndicatorCategoryFactory(name="Category", profile=self.profile)
-        subcategory = IndicatorSubcategoryFactory(category=category, name="Subcategory")
-        ProfileIndicatorFactory(label="Indicator", profile=self.profile, indicator=indicator, subcategory=subcategory)
+        self.subcategory = IndicatorSubcategoryFactory(category=category, name="Subcategory")
+        ProfileIndicatorFactory(label="Indicator", profile=self.profile, indicator=indicator, subcategory=self.subcategory)
 
         GroupFactory(name="age group", dataset=dataset, subindicators=["15-19", "20-24"]),
         GroupFactory(name="gender", dataset=dataset, subindicators=["M", "F"]),
-        indicator_data_items_data = {
+        self.indicator_data_items_data = {
             "groups": {
                 "age group": {
                     "20-24": [
@@ -47,7 +47,7 @@ class TestProfileGeographyData(APITestCase):
                 },
             "subindicators": { "M": 52.34565, "F": 56.0179 }
             }
-        IndicatorDataFactory(indicator=indicator, geography=self.profile.geography_hierarchy.root_geography, data=indicator_data_items_data)
+        IndicatorDataFactory(indicator=indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
 
     def test_profile_geography_data_ordering_is_correct(self):
         expected_age_groups = OrderedDict([
@@ -79,3 +79,38 @@ class TestProfileGeographyData(APITestCase):
         age_group = groups.get('age group')
 
         assert age_group != wrong_order
+
+
+    def test_profile_geography_data_indicator_ordering_is_correct(self):
+        pi1 = ProfileIndicatorFactory(label="Indicator", order=2, profile=self.profile, subcategory=self.subcategory)
+        pi2 = ProfileIndicatorFactory(label="Indicator 2", order=1, profile=self.profile, subcategory=self.subcategory)
+
+        GroupFactory(name="age group", dataset=pi1.indicator.dataset, subindicators=["15-19", "20-24"]),
+        GroupFactory(name="gender", dataset=pi2.indicator.dataset, subindicators=["M", "F"]),
+
+        IndicatorDataFactory(indicator=pi1.indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
+        IndicatorDataFactory(indicator=pi2.indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
+
+        response = self.get('profile-geography-data', profile_id=self.profile.pk, geography_code=self.profile.geography_hierarchy.root_geography.code, extra={'format': 'json'})
+        indicators = response.data.get('profile_data').get('Category').get('subcategories').get('Subcategory').get('indicators')
+        indicator_list = list(indicators.items())
+
+        assert len(indicators) == 2
+        assert indicator_list[0][0] == 'Indicator 2'
+
+    def test_profile_geography_data_indicator_default_ordering_is_correct(self):
+        pi1 = ProfileIndicatorFactory(label="Indicator", profile=self.profile, subcategory=self.subcategory)
+        pi2 = ProfileIndicatorFactory(label="Indicator 2", profile=self.profile, subcategory=self.subcategory)
+
+        GroupFactory(name="age group", dataset=pi1.indicator.dataset, subindicators=["15-19", "20-24"]),
+        GroupFactory(name="gender", dataset=pi2.indicator.dataset, subindicators=["M", "F"]),
+
+        IndicatorDataFactory(indicator=pi1.indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
+        IndicatorDataFactory(indicator=pi2.indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
+
+        response = self.get('profile-geography-data', profile_id=self.profile.pk, geography_code=self.profile.geography_hierarchy.root_geography.code, extra={'format': 'json'})
+        indicators = response.data.get('profile_data').get('Category').get('subcategories').get('Subcategory').get('indicators')
+        indicator_list = list(indicators.items())
+
+        assert len(indicators) == 2
+        assert indicator_list[0][0] == 'Indicator'

@@ -26,6 +26,7 @@ class DatasetFactory(factory.django.DjangoModelFactory):
 
     profile = factory.SubFactory("tests.profile.factories.ProfileFactory")
     geography_hierarchy = factory.SelfAttribute('profile.geography_hierarchy')
+    groups = ["age group"]
 
 
 class UniverseFactory(factory.django.DjangoModelFactory):
@@ -41,6 +42,7 @@ class IndicatorFactory(factory.django.DjangoModelFactory):
 
     dataset = factory.SubFactory(DatasetFactory)
     universe = factory.SubFactory(UniverseFactory)
+    groups = factory.SelfAttribute('dataset.groups')
 
 
 class IndicatorDataFactory(factory.django.DjangoModelFactory):

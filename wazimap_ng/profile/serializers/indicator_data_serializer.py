@@ -31,7 +31,9 @@ def get_indicator_data(profile, geography):
             licence_url=F("indicator__dataset__metadata__licence__url"),
             licence_name=F("indicator__dataset__metadata__licence__name"),
             indicator_chart_configuration=F("indicator__profileindicator__chart_configuration"),
-        ))
+        )
+        .order_by("indicator__profileindicator__order")
+    )
 
     return data
 
