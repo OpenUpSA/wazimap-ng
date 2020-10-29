@@ -1,3 +1,4 @@
+import codecs
 import os
 import logging
 
@@ -6,20 +7,19 @@ from django.conf import settings
 from chardet.universaldetector import UniversalDetector
 import pandas as pd
 
-from ..dataloader import loaddata
-from .. import models
-
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.services.csv_helpers import csv_logger
 
+from ..dataloader import loaddata
+from .. import models
+
 logger = logging.getLogger(__name__)
 
-def detect_encoding(filename):
+def detect_encoding(buffer):
     detector = UniversalDetector()
-    with open(filename, "rb") as fp:
-        for line in fp:
-            detector.feed(line)
-            if detector.done: break
+    for line in buffer:
+        detector.feed(line)
+        if detector.done: break
     detector.close()
     return detector.result["encoding"]
 
@@ -28,16 +28,21 @@ def process_file_data(df, dataset, row_number):
     datasource = (dict(d[1]) for d in df.iterrows())
     return loaddata(dataset, datasource, row_number)
 
-def process_csv(dataset, filename, chunksize=1000000):
-    encoding = detect_encoding(filename)
+def process_csv(dataset, buffer, chunksize=1000000):
+    encoding = detect_encoding(buffer.open("rb"))
+    StreamReader = codecs.getreader(encoding)
+    wrapper_file = StreamReader(buffer)
+    wrapper_file.seek(0)
+
     row_number = 1
-    df = pd.read_csv(filename, nrows=1, dtype=str, sep=",", encoding=encoding)
+    df = pd.read_csv(wrapper_file, nrows=1, dtype=str, sep=",", encoding=encoding)
     df.dropna(how='all', axis='columns', inplace=True)
     columns = df.columns.str.lower()
     error_logs = [];
     warning_logs = [];
 
-    for df in pd.read_csv(filename, chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1, encoding=encoding):
+    wrapper_file.seek(0)
+    for df in pd.read_csv(wrapper_file, chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1, encoding=encoding):
         df.dropna(how='all', axis='columns', inplace=True)
         df.columns = columns
         errors, warnings = process_file_data(df, dataset, row_number)

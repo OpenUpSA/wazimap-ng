@@ -1,4 +1,5 @@
 import factory
+from factory.django import FileField
 
 from wazimap_ng.datasets import models
 
@@ -55,4 +56,11 @@ class GroupFactory(factory.django.DjangoModelFactory):
         model = models.Group
 
     dataset = factory.SubFactory(DatasetFactory)
+
+class DatasetFileFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.DatasetFile
+
+
+    document = factory.django.FileField()
 
