@@ -12,7 +12,10 @@ class TestProfileGeographyData(APITestCase):
 
     def setUp(self):
         self.profile = ProfileFactory()
-        dataset = DatasetFactory(geography_hierarchy=self.profile.geography_hierarchy, groups=["age group", "gender"], profile=self.profile)
+        dataset = DatasetFactory(
+            geography_hierarchy=self.profile.geography_hierarchy, groups=["age group", "gender"],
+            profile=self.profile
+        )
         indicator = IndicatorFactory(name="Age by Gender", dataset=dataset, groups=["gender"])
 
         category = IndicatorCategoryFactory(name="Category", profile=self.profile)
@@ -77,6 +80,7 @@ class TestProfileGeographyData(APITestCase):
 
         assert age_group != wrong_order
 
+
     def test_profile_geography_data_indicator_ordering_is_correct(self):
         pi1 = ProfileIndicatorFactory(label="Indicator", order=2, profile=self.profile, subcategory=self.subcategory)
         pi2 = ProfileIndicatorFactory(label="Indicator 2", order=1, profile=self.profile, subcategory=self.subcategory)
@@ -110,4 +114,3 @@ class TestProfileGeographyData(APITestCase):
 
         assert len(indicators) == 2
         assert indicator_list[0][0] == 'Indicator'
-

@@ -24,7 +24,8 @@ class DatasetFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Dataset
 
-    geography_hierarchy = factory.SubFactory(GeographyHierarchyFactory)
+    profile = factory.SubFactory("tests.profile.factories.ProfileFactory")
+    geography_hierarchy = factory.SelfAttribute('profile.geography_hierarchy')
     groups = ["age group"]
 
 
@@ -57,4 +58,14 @@ class GroupFactory(factory.django.DjangoModelFactory):
         model = models.Group
 
     dataset = factory.SubFactory(DatasetFactory)
+
+
+class DatasetDataFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.DatasetData
+
+    geography = factory.SubFactory(GeographyFactory)
+    dataset = factory.SubFactory(DatasetFactory)
+    data = {}
+
 
