@@ -77,7 +77,7 @@ class TestUploadFile:
         csv_data, encoding = data
         datasetfile = create_datasetfile(csv_data, encoding)
 
-        process_csv(dataset, datasetfile.document)
+        process_csv(dataset, datasetfile.document.open("rb"))
         datasetdata = dataset.datasetdata_set.all()
 
         assert len(datasetdata) == len(csv_data)

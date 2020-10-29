@@ -29,7 +29,7 @@ def process_file_data(df, dataset, row_number):
     return loaddata(dataset, datasource, row_number)
 
 def process_csv(dataset, buffer, chunksize=1000000):
-    encoding = detect_encoding(buffer.open("rb"))
+    encoding = detect_encoding(buffer)
     StreamReader = codecs.getreader(encoding)
     wrapper_file = StreamReader(buffer)
     wrapper_file.seek(0)
@@ -80,7 +80,8 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     if ".csv" in filename:
         logger.debug(f"Processing as csv")
-        csv_output = process_csv(dataset, dataset_file.document.name, chunksize)
+        buffer = dataset_file.document.open("rb")
+        csv_output = process_csv(dataset, buffer, chunksize)
         error_logs = csv_output["error_logs"]
         warning_logs = csv_output["warning_logs"]
         columns = csv_output["columns"]
