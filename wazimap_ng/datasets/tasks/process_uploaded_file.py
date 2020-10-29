@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 def detect_encoding(buffer):
     detector = UniversalDetector()
-    # with open(filename, "rb") as fp:
     for line in buffer:
         detector.feed(line)
         if detector.done: break
