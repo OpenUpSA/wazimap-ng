@@ -1,9 +1,10 @@
 import os
-import pandas as pd
 import logging
 
 from django.db import transaction
 from django.conf import settings
+from chardet.universaldetector import UniversalDetector
+import pandas as pd
 
 from ..dataloader import loaddata
 from .. import models
@@ -12,6 +13,43 @@ from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.services.csv_helpers import csv_logger
 
 logger = logging.getLogger(__name__)
+
+def detect_encoding(filename):
+    detector = UniversalDetector()
+    with open(filename, "rb") as fp:
+        for line in fp:
+            detector.feed(line)
+            if detector.done: break
+    detector.close()
+    return detector.result["encoding"]
+
+def process_file_data(df, dataset, row_number):
+    df = df.applymap(lambda s:s.strip() if type(s) == str else s)
+    datasource = (dict(d[1]) for d in df.iterrows())
+    return loaddata(dataset, datasource, row_number)
+
+def process_csv(dataset, filename, chunksize=1000000):
+    encoding = detect_encoding(filename)
+    row_number = 1
+    df = pd.read_csv(filename, nrows=1, dtype=str, sep=",", encoding=encoding)
+    df.dropna(how='all', axis='columns', inplace=True)
+    columns = df.columns.str.lower()
+    error_logs = [];
+    warning_logs = [];
+
+    for df in pd.read_csv(filename, chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1, encoding=encoding):
+        df.dropna(how='all', axis='columns', inplace=True)
+        df.columns = columns
+        errors, warnings = process_file_data(df, dataset, row_number)
+        error_logs = error_logs + errors
+        warning_logs = warning_logs + warnings
+        row_number = row_number + chunksize
+
+    return {
+        "error_logs": error_logs,
+        "warning_logs": warning_logs,
+        "columns": columns
+    }
 
 
 @transaction.atomic
@@ -25,10 +63,6 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     Get header index for geography & count and create Result objects.
     """
-    def process_file_data(df, dataset, row_number):
-        df = df.applymap(lambda s:s.capitalize().strip() if type(s) == str else s)
-        datasource = (dict(d[1]) for d in df.iterrows())
-        return loaddata(dataset, datasource, row_number)
 
     filename = dataset_file.document.name
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
@@ -41,17 +75,10 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     if ".csv" in filename:
         logger.debug(f"Processing as csv")
-        df = pd.read_csv(dataset_file.document.open(), nrows=1, dtype=str, sep=",")
-        df.dropna(how='all', axis='columns', inplace=True)
-        columns = df.columns.str.lower()
-
-        for df in pd.read_csv(dataset_file.document.open(), chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1):
-            df.dropna(how='all', axis='columns', inplace=True)
-            df.columns = columns
-            errors, warnings = process_file_data(df, dataset, row_number)
-            error_logs = error_logs + errors
-            warning_logs = warning_logs + warnings
-            row_number = row_number + chunksize
+        csv_output = process_csv(dataset, dataset_file.document.name, chunksize)
+        error_logs = csv_output["error_logs"]
+        warning_logs = csv_output["warning_logs"]
+        columns = csv_output["columns"]
     else:
         logger.debug("Process as other filetype")
         skiprows = 1
