@@ -39,6 +39,7 @@ class ProfileIndicatorFactory(factory.django.DjangoModelFactory):
     subcategory = factory.SubFactory(IndicatorSubcategoryFactory)
     choropleth_method = factory.SubFactory(ChoroplethMethodFactory)
     subindicators = []
+    order = factory.Sequence(lambda n: n)
 
 
 class ProfileKeyMetricsFactory(factory.django.DjangoModelFactory):
