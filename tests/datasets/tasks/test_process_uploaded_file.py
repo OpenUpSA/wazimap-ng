@@ -19,14 +19,10 @@ def generate_file(data, encoding="utf8"):
     buffer.seek(0)
     return buffer
 
-def create_datasetfile(csv_data, encoding):
-    datasetfile = DatasetFileFactory()
-    buffer = generate_file(csv_data, encoding)
-    fp = datasetfile.document.open("wb")
-    fp.write(buffer.read())
-    fp.close()
 
-    return datasetfile
+def create_datasetfile(csv_data, encoding):
+    buffer = generate_file(csv_data, encoding)
+    return DatasetFileFactory(document__data=buffer.read())
 
 
 @pytest.fixture
