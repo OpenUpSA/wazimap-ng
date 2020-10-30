@@ -51,10 +51,8 @@ def process_csv(dataset, buffer, chunksize=1000000):
     StreamReader = codecs.getreader(encoding)
     wrapper_file = StreamReader(buffer)
     wrapper_file.seek(0)
-
     row_number = 1
     df = pd.read_csv(wrapper_file, nrows=1, dtype=str, sep=",", encoding=encoding)
-    df.dropna(how='all', axis='columns', inplace=True)
     old_columns, new_columns = process_headers(df)
     error_logs = []
     warning_logs = []
@@ -66,6 +64,40 @@ def process_csv(dataset, buffer, chunksize=1000000):
         error_logs = error_logs + errors
         warning_logs = warning_logs + warnings
         row_number = row_number + chunksize
+
+    return {
+        "error_logs": error_logs,
+        "warning_logs": warning_logs,
+        "columns": new_columns
+    }
+
+
+def process_xls(dataset, document, chunksize=1000000):
+    skiprows = 1
+    i_chunk = 0
+    error_logs = []
+    warning_logs = []
+    row_number = 1
+
+    df = pd.read_excel(document.open(), nrows=1, dtype=str)
+    old_columns, new_columns = process_headers(df)
+    while True:
+
+        df = pd.read_excel(
+            document.open(), nrows=chunksize, skiprows=skiprows,
+            header=None, dtype=str
+        )
+        skiprows += chunksize
+        # When there is no data, we know we can break out of the loop.
+        if not df.shape[0]:
+            break
+        else:
+            df = process_df(df, old_columns, new_columns)
+            errors, warnings = process_file_data(df, dataset, row_number)
+            error_logs = error_logs + errors
+            warning_logs = warning_logs + warnings
+            row_number = row_number + chunksize
+        i_chunk += 1
 
     return {
         "error_logs": error_logs,
@@ -87,13 +119,13 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
     """
 
     filename = dataset_file.document.name
+
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
     logger.debug(f"Processing: {filename}")
 
-    new_columns = None
+    columns = None
     error_logs = []
     warning_logs = []
-    row_number = 1
 
     if ".csv" in filename:
         logger.debug(f"Processing as csv")
@@ -103,34 +135,13 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
         columns = csv_output["columns"]
     else:
         logger.debug("Process as other filetype")
-        skiprows = 1
-        i_chunk = 0
-        df = pd.read_excel(dataset_file.document.open(), nrows=1, dtype=str)
-        old_columns = df.columns.str.lower().str.strip()
-        df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
-        new_columns = df.columns.str.lower().str.strip()
-        while True:
-            df = pd.read_excel(
-                dataset_file.document.open(), nrows=chunksize, skiprows=skiprows, header=None,
-                dtype=str
-            )
-            skiprows += chunksize
-            # When there is no data, we know we can break out of the loop.
-            if not df.shape[0]:
-                break
-            else:
-                df.dropna(how='all', axis='index', inplace=True)
-                df.columns = old_columns
-                df = df.loc[:, new_columns]
-                df.fillna('', inplace=True)
-                errors, warnings = process_file_data(df, dataset, row_number)
-                error_logs = error_logs + errors
-                warning_logs = warning_logs + warnings
-                row_number = row_number + chunksize
-            i_chunk += 1
+        xls_output = process_xls(dataset, dataset_file.document, chunksize)
+        error_logs = xls_output["error_logs"]
+        warning_logs = xls_output["warning_logs"]
+        columns = xls_output["columns"]
 
     if len(dataset.groups) == 0:
-        groups = [group for group in new_columns.to_list() if group not in ["geography", "count"]]
+        groups = [group for group in columns.to_list() if group not in ["geography", "count"]]
         dataset.groups = list(set(groups + dataset.groups))
         dataset.save()
 
