@@ -7,8 +7,12 @@ from unittest.mock import patch
 import pytest
 from django.core.cache import cache as django_cache
 
-from tests.profile.factories import ProfileIndicatorFactory, ProfileKeyMetricsFactory, ProfileHighlightFactory
-from tests.datasets.factories import  IndicatorFactory, GeographyFactory, DatasetDataFactory, GroupFactory
+from tests.profile.factories import (
+    ProfileIndicatorFactory, ProfileKeyMetricsFactory, ProfileHighlightFactory,
+    ProfileFactory
+)
+from tests.datasets.factories import IndicatorFactory, GeographyFactory, DatasetDataFactory, GroupFactory
+
 from wazimap_ng import cache
 
 
@@ -180,3 +184,21 @@ class TestCache(unittest.TestCase):
         ]
         mock_update_profile_cache.assert_has_calls(calls, any_order=True)
 
+    @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
+    def test_invalidate_profile_cache_for_geography_hierarchy_udpate(self, mock_update_profile_cache):
+        mock_update_profile_cache.reset_mock()
+        profile1 = ProfileFactory()
+        hierarchy = profile1.geography_hierarchy
+        profile2 = ProfileFactory(geography_hierarchy=hierarchy)
+        profile3 = ProfileFactory()
+        assert hierarchy != profile3.geography_hierarchy
+
+        mock_update_profile_cache.reset_mock()
+        hierarchy.description = "updated hierarchy"
+        hierarchy.save()
+        self.assertEqual(mock_update_profile_cache.call_count, 2)
+        calls = [
+            call(profile1),
+            call(profile2),
+        ]
+        mock_update_profile_cache.assert_has_calls(calls, any_order=True)

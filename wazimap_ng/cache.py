@@ -9,7 +9,7 @@ from django.http import Http404
 from django.views.decorators.cache import cache_control
 from django.views.decorators.vary import vary_on_headers
 
-from wazimap_ng.datasets.models import Group, Geography, DatasetData
+from wazimap_ng.datasets.models import Group, Geography, DatasetData, GeographyHierarchy
 from wazimap_ng.points.models import Location, Category
 from wazimap_ng.profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, \
     ProfileKeyMetrics, Profile, Indicator
@@ -153,6 +153,13 @@ def geography_updated(sender, instance, **kwargs):
     ).order_by("dataset_id").distinct("dataset_id")
     for data in datasetdata_objs:
         update_profile_cache(data.dataset.profile)
+
+
+@receiver(post_save, sender=GeographyHierarchy)
+def geography_hierarchy_updated(sender, instance, **kwargs):
+
+    for profile in instance.profile_set.all():
+        update_profile_cache(profile)
 
 
 def cache_headers(func):
