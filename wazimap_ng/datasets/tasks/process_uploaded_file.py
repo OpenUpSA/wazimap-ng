@@ -80,8 +80,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     if ".csv" in filename:
         logger.debug(f"Processing as csv")
-        buffer = dataset_file.document.open("rb")
-        csv_output = process_csv(dataset, buffer, chunksize)
+        csv_output = process_csv(dataset, dataset_file.document.open("rb"), chunksize)
         error_logs = csv_output["error_logs"]
         warning_logs = csv_output["warning_logs"]
         columns = csv_output["columns"]
