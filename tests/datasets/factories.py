@@ -80,3 +80,4 @@ class DatasetDataFactory(factory.django.DjangoModelFactory):
 class DatasetFileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.DatasetFile
+

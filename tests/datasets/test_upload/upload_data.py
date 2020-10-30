@@ -72,3 +72,14 @@ default_result_set = [
     {'age': '05 - 09', 'race': 'Black african', 'count': '7', 'gender': 'Female', 'income': 'No income'},
     {'age': '05 - 09', 'race': 'Black african', 'count': '58', 'gender': 'Male', 'income': 'No income'}
 ]
+
+required_headers = {
+    "Geography": [
+        ["x", "y", "count"],
+        ["a", "b", "33"]
+    ],
+    "Count": [
+        ["geography", "x", "y"],
+        ["ZA", "a", "b"]
+    ]
+}
