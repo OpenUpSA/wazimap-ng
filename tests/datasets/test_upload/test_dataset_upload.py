@@ -105,7 +105,7 @@ class TestSuccessfulDatasetUpload(TestBaseDatasetUpload):
         dataset = self.create_dataset()
 
         dataset_file = self.create_dataset_file(
-            csv_data["rows"], dataset.id
+            csv_data["rows"], dataset.id, groups=[]
         )
         assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 0
         self.process_upload_with_asserts(dataset_file, dataset, result_set)
