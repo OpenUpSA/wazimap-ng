@@ -38,7 +38,7 @@ class DatasetFile(BaseModel):
             file_size
         ],
         help_text=f"""
-            Uploaded document should be less than {max_filesize / (1024 * 1024)} MiB in size and 
+            Uploaded document should be less than {max_filesize / (1024 * 1024)} MiB in size and
             file extensions should be one of {", ".join(allowed_file_extensions)}.
         """
     )
@@ -46,9 +46,21 @@ class DatasetFile(BaseModel):
     name = name = models.CharField(max_length=60)
     dataset_id = models.PositiveSmallIntegerField(null=True, blank=True)
 
-
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def get_required_headers(self):
+        is_new = True
+        required_headers = ["geography", "count"]
+        dataset = Dataset.objects.filter(id=self.dataset_id).first()
+        if dataset and dataset.groups:
+            is_new = False
+            required_headers = required_headers + dataset.groups
+        return is_new, required_headers
 
     def clean(self):
         """
@@ -60,9 +72,10 @@ class DatasetFile(BaseModel):
         try:
             if "xls" in document_name or "xlsx" in document_name:
                 book = xlrd.open_workbook(file_contents=self.document.read())
-                headers = pd.read_excel(book, nrows=1, dtype=str).columns.str.lower()
+                headers = pd.read_excel(book, nrows=1, dtype=str)
             elif "csv" in document_name:
-                headers = pd.read_csv(BytesIO(self.document.read()), nrows=1, dtype=str).columns.str.lower()
+                headers = pd.read_csv(BytesIO(self.document.read()), nrows=1, dtype=str)
+            headers = headers.columns.str.lower().str.strip()
         except pd.errors.ParserError as e:
             raise ValidationError(
                 "Not able to parse passed file. Error while reading file: %s" % str(e)
@@ -72,10 +85,17 @@ class DatasetFile(BaseModel):
                 "File seems to be empty. Error while reading file: %s" % str(e)
             )
 
-        required_headers = ["geography", "count"]
+        is_new_upload, required_headers = self.get_required_headers()
+
+        if not is_new_upload:
+            extra_headers = list(set(headers) - set(required_headers))
+            if extra_headers:
+                raise ValidationError(
+                    "Invalid File passed for re-upload. We found extra headers in uploaded file : %s" % ",".join(extra_headers)
+                )
 
         for required_header in required_headers:
             if required_header not in headers:
                 raise ValidationError(
-                    "Invalid File passed. We were not able to find Required header : %s " % required_header.capitalize()
+                    "Invalid File passed. We were not able to find Required header : %s" % required_header.capitalize()
                 )
