@@ -7,8 +7,10 @@ import numpy
 from django.db import transaction
 
 from . import models
+from .tasks import indicator_data_extraction as indicator_task
 
 logger = logging.getLogger(__name__)
+
 
 # TODO should add a memoize decorator here
 @functools.lru_cache()
@@ -21,10 +23,28 @@ def load_geography(geo_code, version):
 def create_groups(dataset, group_names):
     groups = []
     for g in group_names:
-        subindicators = list(models.DatasetData.objects.get_unique_subindicators(g))
-        group = models.Group.objects.create(name=g, dataset=dataset, subindicators=subindicators)
+        subindicators = list(
+            models.DatasetData.objects.get_unique_subindicators(g)
+        )
+        group = models.Group.objects.create(
+            name=g, dataset=dataset, subindicators=subindicators
+        )
         groups.append(group)
     return groups
+
+
+def update_groups(dataset):
+    for group in dataset.group_set.all():
+        subindicators = list(
+            models.DatasetData.objects.get_unique_subindicators(group.name.lower())
+        )
+        group.subindicators = subindicators
+        group.save()
+
+
+def reload_indicators(dataset):
+    for indicator in dataset.indicator_set.all():
+        indicator_task.indicator_data_extraction(indicator)
 
 
 @transaction.atomic
@@ -33,6 +53,7 @@ def loaddata(dataset, iterable, row_number):
     errors = []
     warnings = []
     groups = set()
+    is_reupload = len(dataset.groups) > 0
 
     version = dataset.geography_hierarchy.version
 
@@ -72,6 +93,15 @@ def loaddata(dataset, iterable, row_number):
 
         del row["geography"]
 
+        if is_reupload:
+            # If reupload check if dataset data alreadt contains rows
+            # If yes delete existing dataset data object and create new
+            test_rows = row.copy()
+            test_rows.pop("count")
+            models.DatasetData.objects.filter(
+                dataset=dataset, geography=geography, data__contains=test_rows
+            ).delete()
+
         dd = models.DatasetData(dataset=dataset, geography=geography, data=row)
         datarows.append(dd)
 
@@ -80,8 +110,13 @@ def loaddata(dataset, iterable, row_number):
             datarows = []
     models.DatasetData.objects.bulk_create(datarows, 1000)
 
-    group_list = sorted(g for g in groups if g.lower() not in ("count", "geography"))
-
-    create_groups(dataset, group_list)
+    if is_reupload:
+        update_groups(dataset)
+        reload_indicators(dataset)
+    else:
+        group_list = sorted(
+            g for g in groups if g.lower() not in ("count", "geography")
+        )
+        create_groups(dataset, group_list)
 
     return [errors, warnings]

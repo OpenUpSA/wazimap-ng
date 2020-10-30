@@ -129,10 +129,10 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
                 row_number = row_number + chunksize
             i_chunk += 1
 
-    groups = [group for group in new_columns.to_list() if group not in ["geography", "count"]]
-
-    dataset.groups = list(set(groups + dataset.groups))
-    dataset.save()
+    if len(dataset.groups) == 0:
+        groups = [group for group in new_columns.to_list() if group not in ["geography", "count"]]
+        dataset.groups = list(set(groups + dataset.groups))
+        dataset.save()
 
     error_file_log = incorrect_file_log = None
     if error_logs:
