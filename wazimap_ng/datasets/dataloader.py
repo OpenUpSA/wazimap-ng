@@ -7,7 +7,7 @@ import numpy
 from django.db import transaction
 
 from . import models
-from .tasks import indicator_data_extraction as indicator_task
+from . import tasks as indicator_task
 
 logger = logging.getLogger(__name__)
 

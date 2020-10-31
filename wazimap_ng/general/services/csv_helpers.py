@@ -1,7 +1,9 @@
+import codecs
 import os
 
 import pandas as pd
 from django.conf import settings
+from chardet.universaldetector import UniversalDetector
 
 
 def get_log_filename(name, type, file_id):
@@ -56,3 +58,21 @@ def csv_logger(target_obj, file_obj, type, logs, headers):
         file_log = write_csv(logs, F"{logdir}/{log_file_name}", headers)
         results.append(file_log)
     return results
+
+
+def detect_encoding(buffer):
+    detector = UniversalDetector()
+    for line in buffer:
+        detector.feed(line)
+        if detector.done: break
+    detector.close()
+    return detector.result["encoding"]
+
+
+def get_csv_header(buffer):
+    encoding = detect_encoding(buffer)
+    StreamReader = codecs.getreader(encoding)
+    wrapper_file = StreamReader(buffer)
+    wrapper_file.seek(0)
+    df = pd.read_csv(wrapper_file, nrows=1, dtype=str, sep=",", encoding=encoding)
+    return df.columns.str.lower().str.strip()

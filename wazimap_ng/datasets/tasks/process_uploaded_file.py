@@ -4,30 +4,20 @@ import logging
 
 from django.db import transaction
 from django.conf import settings
-from chardet.universaldetector import UniversalDetector
 import pandas as pd
 
 from wazimap_ng.general.services.permissions import assign_perms_to_group
-from wazimap_ng.general.services.csv_helpers import csv_logger
+from wazimap_ng.general.services.csv_helpers import csv_logger, detect_encoding
 
-from ..dataloader import loaddata
+from .. import dataloader
 from .. import models
 
 logger = logging.getLogger(__name__)
 
 
-def detect_encoding(buffer):
-    detector = UniversalDetector()
-    for line in buffer:
-        detector.feed(line)
-        if detector.done: break
-    detector.close()
-    return detector.result["encoding"]
-
-
 def process_headers(df):
     old_columns = df.columns.str.lower().str.strip()
-    df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
+    df.drop(df.columns[df.columns.str.contains('unnamed', case=False)],axis=1, inplace=True)
     new_columns = df.columns.str.lower().str.strip()
     return old_columns, new_columns
 
@@ -41,9 +31,9 @@ def process_df(df, old_columns, new_columns):
 
 
 def process_file_data(df, dataset, row_number):
-    df = df.applymap(lambda s: s.strip().capitalize() if type(s) == str else s)
+    df = df.applymap(lambda s: s.strip() if type(s) == str else s)
     datasource = (dict(d[1]) for d in df.iterrows())
-    return loaddata(dataset, datasource, row_number)
+    return dataloader.loaddata(dataset, datasource, row_number)
 
 
 def process_csv(dataset, buffer, chunksize=1000000):

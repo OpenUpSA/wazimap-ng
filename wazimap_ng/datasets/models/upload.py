@@ -17,6 +17,7 @@ from .dataset import Dataset
 
 from wazimap_ng import utils
 from wazimap_ng.general.models import BaseModel
+from wazimap_ng.general.services.csv_helpers import get_csv_header
 
 
 max_filesize = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
@@ -72,10 +73,11 @@ class DatasetFile(BaseModel):
         try:
             if "xls" in document_name or "xlsx" in document_name:
                 book = xlrd.open_workbook(file_contents=self.document.read())
-                headers = pd.read_excel(book, nrows=1, dtype=str)
+                headers = pd.read_excel(
+                    book, nrows=1, dtype=str
+                ).columns.str.lower().str.strip()
             elif "csv" in document_name:
-                headers = pd.read_csv(BytesIO(self.document.read()), nrows=1, dtype=str)
-            headers = headers.columns.str.lower().str.strip()
+                headers = get_csv_header(self.document.open("rb"))
         except pd.errors.ParserError as e:
             raise ValidationError(
                 "Not able to parse passed file. Error while reading file: %s" % str(e)
