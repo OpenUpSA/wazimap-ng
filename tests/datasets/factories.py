@@ -64,8 +64,8 @@ class DatasetFileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.DatasetFile
 
-
-    document = factory.django.FileField()
+    name = "test upload"
+    document = factory.django.FileField(filename="test_upload.csv")
 
 
 class DatasetDataFactory(factory.django.DjangoModelFactory):
@@ -75,9 +75,3 @@ class DatasetDataFactory(factory.django.DjangoModelFactory):
     geography = factory.SubFactory(GeographyFactory)
     dataset = factory.SubFactory(DatasetFactory)
     data = {}
-
-
-class DatasetFileFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.DatasetFile
-
