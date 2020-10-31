@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock
 
 from django_mock_queries.query import MockSet, MockModel
 import pytest
@@ -21,7 +21,7 @@ def test_correct_geography_cache(mock_objects):
 
     p = ("X", "Z")
     assert  dataloader.load_geography(*p) == p
-    
+
     q = ("Z", "Y")
     assert  dataloader.load_geography(*q) == q
 
@@ -47,7 +47,7 @@ class TestLoadData:
     @patch('wazimap_ng.datasets.models.DatasetData')
     @patch('wazimap_ng.datasets.dataloader.load_geography')
     def test_bulk_create_lt_10000(self, load_geography, MockDatasetData, good_input):
-        dataset = Mock()
+        dataset = MagicMock()
         dataset.geography_hierarchy.version = 9999
 
         dataloader.loaddata(dataset, good_input, 0)
@@ -58,7 +58,7 @@ class TestLoadData:
     @patch('wazimap_ng.datasets.models.DatasetData')
     @patch('wazimap_ng.datasets.dataloader.load_geography')
     def test_bulk_create_gt_10000(self, load_geography, MockDatasetData, good_input):
-        dataset = Mock()
+        dataset = MagicMock()
         load_geography.return_value = "XXX"
 
         input_data = [dict(good_input[0]) for i in range(20001)]
@@ -70,7 +70,7 @@ class TestLoadData:
     @patch('wazimap_ng.datasets.models.DatasetData')
     @patch('wazimap_ng.datasets.dataloader.load_geography')
     def test_bulk_check_load_geography_call(self, load_geography, MockDatasetData, good_input):
-        dataset = Mock()
+        dataset = MagicMock()
         dataset.geography_hierarchy.version = 9999
         load_geography.return_value = "XXX"
 
@@ -82,7 +82,7 @@ class TestLoadData:
     @patch('wazimap_ng.datasets.models.DatasetData')
     @patch('wazimap_ng.datasets.dataloader.load_geography')
     def test_missing_geography(self, load_geography, MockDatasetData, good_input):
-        dataset = Mock()
+        dataset = MagicMock()
         load_geography.side_effect = models.Geography.DoesNotExist()
 
         try:
@@ -97,7 +97,7 @@ class TestLoadData:
 
     @patch('wazimap_ng.datasets.dataloader.load_geography')
     def test_bad_count(self, load_geography):
-        dataset = Mock()
+        dataset = MagicMock()
         input_data = [{"geography": "XXX", "count": ""}]
 
         (errors, warnings) = dataloader.loaddata(dataset, input_data, 0)
@@ -109,7 +109,7 @@ class TestLoadData:
     @patch('wazimap_ng.datasets.dataloader.load_geography')
     def test_datasetdata_created(self, load_geography, MockDatasetData, group_objects, good_input_with_groups):
         data = good_input_with_groups
-        dataset = Mock(spec=models.Dataset)
+        dataset = MagicMock(spec=models.Dataset)
 
         dataloader.loaddata(dataset, data, 0)
 
@@ -126,7 +126,7 @@ class TestLoadData:
     @patch('wazimap_ng.datasets.dataloader.create_groups')
     def test_create_groups_called(self, create_groups, load_geography, MockDatasetData, good_input_with_groups):
         data = good_input_with_groups
-        dataset = Mock(spec=models.Dataset)
+        dataset = MagicMock(spec=models.Dataset)
 
         dataloader.loaddata(dataset, data, 0)
 
@@ -141,7 +141,7 @@ class TestCreateGroups:
     @patch('wazimap_ng.datasets.models.Group.objects')
     @patch('wazimap_ng.datasets.models.DatasetData.objects')
     def test_create_groups(self, mock_datasetdata_objects, mock_objects):
-        dataset = Mock(spec=models.Dataset)
+        dataset = MagicMock(spec=models.Dataset)
 
         dataloader.create_groups(dataset, ["group1", "group2"])
 
@@ -155,7 +155,7 @@ class TestCreateGroups:
 
     @patch("wazimap_ng.datasets.models.Group.objects")
     def test_returns_groups(self, mock_objects):
-        dataset = Mock(spec=models.Dataset)
+        dataset = MagicMock(spec=models.Dataset)
 
         mock_objects.create.side_effect = lambda **kwargs: MockModel(**kwargs)
 
@@ -167,7 +167,7 @@ class TestCreateGroups:
     @patch("wazimap_ng.datasets.models.Group.objects")
     @patch("wazimap_ng.datasets.models.DatasetData.objects")
     def test_populates_subindicators(self, mock_datasetdata_objects, mock_group_objects):
-        dataset = Mock(spec=models.Dataset)
+        dataset = MagicMock(spec=models.Dataset)
 
         mock_group_objects.create.side_effect = lambda **kwargs: MockModel(**kwargs)
         mock_datasetdata_objects.get_unique_subindicators.side_effect = lambda group_name: {"group1": ["A", "B"], "group2": ["X"]}[group_name]
