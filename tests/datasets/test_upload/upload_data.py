@@ -26,6 +26,12 @@ dataset_upload_data = {
             ["ZA","05 - 09","BLACK African","Female","No income","7"],
             ["za","05 - 09","Black African","MALE","No income","58"]
         ],
+        "results":[
+            {'age': '05 - 09', 'race': 'Black African', 'count': '181', 'gender': 'FemaLe', 'income': 'No inCome'},
+            {'age': '05 - 09', 'race': 'Black African', 'count': '278', 'gender': 'Male', 'income': 'No INCOME'},
+            {'age': '05 - 09', 'race': 'BLACK African', 'count': '7', 'gender': 'Female', 'income': 'No income'},
+            {'age': '05 - 09', 'race': 'Black African', 'count': '58', 'gender': 'MALE', 'income': 'No income'}
+        ]
     },
 
     "empty_col": {
@@ -58,19 +64,19 @@ dataset_upload_data = {
             ["ZA","05 - 09","Black African","Male","No income","58", ""],
         ],
         "results":[
-            {'age': '05 - 09', 'race': 'Black african', 'count': '181', 'gender': 'Female', 'income': 'No income', 'test': ''},
-            {'age': '05 - 09', 'race': 'Black african', 'count': '278', 'gender': 'Male', 'income': 'No income', 'test': ''},
-            {'age': '05 - 09', 'race': 'Black african', 'count': '7', 'gender': 'Female', 'income': 'No income', 'test': ''},
-            {'age': '05 - 09', 'race': 'Black african', 'count': '58', 'gender': 'Male', 'income': 'No income', 'test': ''}
+            {'age': '05 - 09', 'race': 'Black African', 'count': '181', 'gender': 'Female', 'income': 'No income', 'test': ''},
+            {'age': '05 - 09', 'race': 'Black African', 'count': '278', 'gender': 'Male', 'income': 'No income', 'test': ''},
+            {'age': '05 - 09', 'race': 'Black African', 'count': '7', 'gender': 'Female', 'income': 'No income', 'test': ''},
+            {'age': '05 - 09', 'race': 'Black African', 'count': '58', 'gender': 'Male', 'income': 'No income', 'test': ''}
         ]
     }
 }
 
 default_result_set = [
-    {'age': '05 - 09', 'race': 'Black african', 'count': '181', 'gender': 'Female', 'income': 'No income'},
-    {'age': '05 - 09', 'race': 'Black african', 'count': '278', 'gender': 'Male', 'income': 'No income'},
-    {'age': '05 - 09', 'race': 'Black african', 'count': '7', 'gender': 'Female', 'income': 'No income'},
-    {'age': '05 - 09', 'race': 'Black african', 'count': '58', 'gender': 'Male', 'income': 'No income'}
+    {'age': '05 - 09', 'race': 'Black African', 'count': '181', 'gender': 'Female', 'income': 'No income'},
+    {'age': '05 - 09', 'race': 'Black African', 'count': '278', 'gender': 'Male', 'income': 'No income'},
+    {'age': '05 - 09', 'race': 'Black African', 'count': '7', 'gender': 'Female', 'income': 'No income'},
+    {'age': '05 - 09', 'race': 'Black African', 'count': '58', 'gender': 'Male', 'income': 'No income'}
 ]
 
 required_headers = {

@@ -166,7 +166,7 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
         for group in dataset.groups:
 
             subindicators = [
-                F"{group}{i}".capitalize() for i in range(1, data_count+1)
+                F"{group}{i}" for i in range(1, data_count+1)
             ]
             GroupFactory(
                 name=group, dataset=dataset, subindicators=subindicators
@@ -175,7 +175,7 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
     def setUpData(self, data_count=1, create_indicators=False):
         dataset = self.create_dataset()
         for i in range(1, data_count+1):
-            data = {"x": F"X{i}", "y": F"Y{i}", "count": F"{i}{i}"}
+            data = {"x": F"x{i}", "y": F"y{i}", "count": F"{i}{i}"}
             DatasetDataFactory(
                 dataset=dataset, geography=self.ZA_geo, data=data
             )
@@ -264,8 +264,8 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
         response = list(DatasetData.objects.filter(
             dataset_id=dataset.id
         ).values_list("data", flat=True))
-        assert response[0] == {'x': 'X1', 'y': 'Y1', 'count': '11'}
-        assert response[1] == {'x': 'X2', 'y': 'Y2', 'count': '22'}
+        assert response[0] == {'x': 'x1', 'y': 'y1', 'count': '11'}
+        assert response[1] == {'x': 'x2', 'y': 'y2', 'count': '22'}
 
         # overwrite dataset data using same subindicators but different count
         data = [
@@ -282,8 +282,8 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
         response = list(DatasetData.objects.filter(
             dataset_id=dataset.id
         ).values_list("data", flat=True))
-        assert response[0] == {'x': 'X1', 'y': 'Y1', 'count': '11'}
-        assert response[1] == {'x': 'X2', 'y': 'Y2', 'count': '55'}
+        assert response[0] == {'x': 'x1', 'y': 'y1', 'count': '11'}
+        assert response[1] == {'x': 'x2', 'y': 'y2', 'count': '55'}
 
     def test_group_updates_after_reupload(self):
         def assert_subindicators(group_name, expected):
@@ -294,8 +294,8 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
         dataset = self.setUpData(data_count=2)
         groups = dataset.group_set.all()
         assert groups.count() == 2
-        assert_subindicators("x", ["X1", "X2"])
-        assert_subindicators("y", ["Y1", "Y2"])
+        assert_subindicators("x", ["x1", "x2"])
+        assert_subindicators("y", ["y1", "y2"])
 
         # Assert when reuploaded with new data
         data = [
@@ -311,20 +311,20 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
         # assert groups
         groups = dataset.group_set.all()
         assert groups.count() == 2
-        assert_subindicators("x", ["X1", "X2", "X3"])
-        assert_subindicators("y", ["Y1", "Y2", "Y3"])
+        assert_subindicators("x", ["x1", "x2", "x3"])
+        assert_subindicators("y", ["y1", "y2", "y3"])
 
     def test_variable_updates_after_reupload(self):
         dataset = self.setUpData(create_indicators=True)
         indicator_x = dataset.indicator_set.get(name="indicator-x")
         indicator_y = dataset.indicator_set.get(name="indicator-y")
         indicator_data_x = indicator_x.indicatordata_set.first().data
-        assert indicator_data_x["groups"] == {'y': {'Y1': [{'x': 'X1', 'count': 11.0}]}}
-        assert indicator_data_x["subindicators"] == {'X1': 11.0}
+        assert indicator_data_x["groups"] == {'y': {'y1': [{'x': 'x1', 'count': 11.0}]}}
+        assert indicator_data_x["subindicators"] == {'x1': 11.0}
 
         indicator_data_y = indicator_y.indicatordata_set.first().data
-        assert indicator_data_y["groups"] == {'x': {'X1': [{'y': 'Y1', 'count': 11.0}]}}
-        assert indicator_data_y["subindicators"] == {'Y1': 11.0}
+        assert indicator_data_y["groups"] == {'x': {'x1': [{'y': 'y1', 'count': 11.0}]}}
+        assert indicator_data_y["subindicators"] == {'y1': 11.0}
 
         # Assert when reuploaded with new data
         data = [
@@ -339,13 +339,13 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
         indicator_x = dataset.indicator_set.get(name="indicator-x")
         indicator_y = dataset.indicator_set.get(name="indicator-y")
         indicator_data_x = indicator_x.indicatordata_set.first().data
-        assert indicator_data_x["groups"] == {'y': {'Y1': [{'x': 'X1', 'count': 11.0}], 'Y2': [{'x': 'X2', 'count': 22.0}]}}
-        assert indicator_data_x["subindicators"] == {'X1': 11.0, 'X2': 22.0}
+        assert indicator_data_x["groups"] == {'y': {'y1': [{'x': 'x1', 'count': 11.0}], 'y2': [{'x': 'x2', 'count': 22.0}]}}
+        assert indicator_data_x["subindicators"] == {'x1': 11.0, 'x2': 22.0}
 
         indicator_data_y = indicator_y.indicatordata_set.first().data
 
-        assert indicator_data_y["groups"] == {'x': {'X1': [{'y': 'Y1', 'count': 11.0}], 'X2': [{'y': 'Y2', 'count': 22.0}]}}
-        assert indicator_data_y["subindicators"] == {'Y1': 11.0, 'Y2': 22.0}
+        assert indicator_data_y["groups"] == {'x': {'x1': [{'y': 'y1', 'count': 11.0}], 'x2': [{'y': 'y2', 'count': 22.0}]}}
+        assert indicator_data_y["subindicators"] == {'y1': 11.0, 'y2': 22.0}
 
         # Assert when reupload changes dataset count for duplicte line
         data = [
@@ -360,9 +360,9 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
         indicator_x = dataset.indicator_set.get(name="indicator-x")
         indicator_y = dataset.indicator_set.get(name="indicator-y")
         indicator_data_x = indicator_x.indicatordata_set.first().data
-        assert indicator_data_x["groups"] == {'y': {'Y1': [{'x': 'X1', 'count': 11.0}], 'Y2': [{'x': 'X2', 'count': 33.0}]}}
-        assert indicator_data_x["subindicators"] == {'X1': 11.0, 'X2': 33.0}
+        assert indicator_data_x["groups"] == {'y': {'y1': [{'x': 'x1', 'count': 11.0}], 'y2': [{'x': 'x2', 'count': 33.0}]}}
+        assert indicator_data_x["subindicators"] == {'x1': 11.0, 'x2': 33.0}
 
         indicator_data_y = indicator_y.indicatordata_set.first().data
-        assert indicator_data_y["groups"] == {'x': {'X1': [{'y': 'Y1', 'count': 11.0}], 'X2': [{'y': 'Y2', 'count': 33.0}]}}
-        assert indicator_data_y["subindicators"] == {'Y1': 11.0, 'Y2': 33.0}
+        assert indicator_data_y["groups"] == {'x': {'x1': [{'y': 'y1', 'count': 11.0}], 'x2': [{'y': 'y2', 'count': 33.0}]}}
+        assert indicator_data_y["subindicators"] == {'y1': 11.0, 'y2': 33.0}
