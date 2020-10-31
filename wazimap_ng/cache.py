@@ -121,7 +121,16 @@ def profile_updated(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Group)
 def subindicator_group_update(sender, instance, **kwargs):
-    update_profile_cache(instance.dataset.profile)
+    indicator_ids = instance.dataset.indicator_set.values_list("id", flat=True)
+    profiles_to_invalidate_cache = Profile.objects.filter(
+        Q(id=instance.dataset.profile_id)
+        | Q(profileindicator__indicator_id__in=indicator_ids)
+        | Q(profilekeymetrics__variable_id__in=indicator_ids)
+        | Q(profilehighlight__indicator_id__in=indicator_ids)
+    ).distinct()
+    for profile_obj in profiles_to_invalidate_cache:
+        update_profile_cache(profile_obj)
+
 
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
@@ -157,7 +166,6 @@ def geography_updated(sender, instance, **kwargs):
 
 @receiver(post_save, sender=GeographyHierarchy)
 def geography_hierarchy_updated(sender, instance, **kwargs):
-
     for profile in instance.profile_set.all():
         update_profile_cache(profile)
 

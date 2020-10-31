@@ -184,6 +184,29 @@ class TestCache(unittest.TestCase):
         ]
         mock_update_profile_cache.assert_has_calls(calls, any_order=True)
 
+        indicator = IndicatorFactory(dataset=group.dataset)
+        profile_indicator = ProfileIndicatorFactory(indicator=indicator)
+        key_metrics = ProfileKeyMetricsFactory(variable=indicator)
+        highlight = ProfileHighlightFactory(indicator=indicator)
+
+        assert group.dataset.profile != profile_indicator.profile
+        assert group.dataset.profile != key_metrics.profile
+        assert group.dataset.profile != highlight.profile
+
+        mock_update_profile_cache.reset_mock()
+
+        # update group
+        group.name = "changed"
+        group.save()
+        self.assertEqual(mock_update_profile_cache.call_count, 4)
+        calls = [
+            call(group.dataset.profile),
+            call(profile_indicator.profile),
+            call(key_metrics.profile),
+            call(highlight.profile),
+        ]
+        mock_update_profile_cache.assert_has_calls(calls, any_order=True)
+
     @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
     def test_invalidate_profile_cache_for_geography_hierarchy_udpate(self, mock_update_profile_cache):
         mock_update_profile_cache.reset_mock()
