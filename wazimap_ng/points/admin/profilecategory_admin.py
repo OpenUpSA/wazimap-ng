@@ -70,3 +70,9 @@ class ProfileCategoryAdmin(BaseAdminModel):
         form.base_fields["theme"].queryset = qs
 
         return form
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        field = super().formfield_for_foreignkey(db_field, request, **kwargs)
+        if db_field.name == "category":
+            field.queryset = field.queryset.order_by("name")
+        return field
