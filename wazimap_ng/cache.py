@@ -9,6 +9,7 @@ from django.http import Http404
 from django.views.decorators.cache import cache_control
 from django.views.decorators.vary import vary_on_headers
 
+from wazimap_ng.datasets.models import Group, Geography, DatasetData
 from wazimap_ng.points.models import Location, Category
 from wazimap_ng.profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, \
     ProfileKeyMetrics, Profile, Indicator
@@ -115,9 +116,12 @@ def profile_keymetrics_updated(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Profile)
-def profile_indicator_updated(sender, instance, **kwargs):
+def profile_updated(sender, instance, **kwargs):
     update_profile_cache(instance)
 
+@receiver(post_save, sender=Group)
+def subindicator_group_update(sender, instance, **kwargs):
+    update_profile_cache(instance.dataset.profile)
 
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
@@ -139,6 +143,16 @@ def indicator_updated(sender, instance, **kwargs):
     ).distinct()
     for profile_obj in profiles_to_invalidate_cache:
         update_profile_cache(profile_obj)
+
+
+@receiver(post_save, sender=Geography)
+def geography_updated(sender, instance, **kwargs):
+
+    datasetdata_objs = DatasetData.objects.filter(
+        geography=instance
+    ).order_by("dataset_id").distinct("dataset_id")
+    for data in datasetdata_objs:
+        update_profile_cache(data.dataset.profile)
 
 
 def cache_headers(func):

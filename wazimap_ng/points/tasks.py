@@ -16,11 +16,10 @@ from operator import itemgetter
 import pandas as pd
 from django_q.models import Task
 from wazimap_ng.general.services.permissions import assign_perms_to_group
+from wazimap_ng.general.services.csv_helpers import csv_logger
+
 logger = logging.getLogger(__name__)
 
-
-class CustomDataParsingException(Exception):
-    pass
 
 @transaction.atomic
 def process_uploaded_file(point_file, subtheme, **kwargs):
@@ -53,15 +52,14 @@ def process_uploaded_file(point_file, subtheme, **kwargs):
         logger.info(logs)
         row_number = row_number + chunksize
 
+    error_file_log = incorrect_file_log = None
     if error_logs:
-        logdir = settings.MEDIA_ROOT + "/logs/points/"
-        if not os.path.exists(logdir):
-            os.makedirs(logdir)
-        logfile = logdir + "%s_%d_log.csv" % ("point_file", point_file.id)
-        df = pd.DataFrame(error_logs)
-        df.to_csv(logfile, header=["Line Number", "Field Name", "Error Details"], index=False)
-        raise CustomDataParsingException('Problem while parsing data.')
+        error_file_log, incorrect_file_log = csv_logger(
+            subtheme, point_file, "error", error_logs, new_columns
+        )
 
     return {
-        "category_id": subtheme.id
+        "category_id": subtheme.id,
+        "error_log": error_file_log,
+        "incorrect_rows_log": incorrect_file_log,
     }

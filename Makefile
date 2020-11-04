@@ -6,6 +6,9 @@ all:
 test:
 	docker-compose exec -e DJANGO_CONFIGURATION=Test web pytest /app/tests
 
+test_focus:
+	docker-compose exec -e DJANGO_CONFIGURATION=Test web pytest -m focus /app/tests
+
 run:
 	docker-compose up
 

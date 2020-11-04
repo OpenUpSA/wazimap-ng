@@ -1,6 +1,6 @@
 import factory
 
-from tests.datasets import factoryboy as datasets_factoryboy
+from tests.datasets import factories as datasets_factoryboy
 from wazimap_ng.profile import models
 
 
@@ -39,6 +39,7 @@ class ProfileIndicatorFactory(factory.django.DjangoModelFactory):
     subcategory = factory.SubFactory(IndicatorSubcategoryFactory)
     choropleth_method = factory.SubFactory(ChoroplethMethodFactory)
     subindicators = []
+    order = factory.Sequence(lambda n: n)
 
 
 class ProfileKeyMetricsFactory(factory.django.DjangoModelFactory):
