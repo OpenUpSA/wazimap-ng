@@ -12,22 +12,6 @@ from django_q.tasks import async_task
 from wazimap_ng.datasets.models import Dataset, DatasetFile
 from wazimap_ng.profile.models import Profile
 
-# with atomic():
-#     profile = Profile.objects.get(name=profile_name)
-#     dataset = Dataset.objects.create(profile=profile, name=dataset_name, geography_hierarchy=profile.geography_hierarchy)
-
-#     df = DatasetFile.objects.create(name=dataset_name, dataset_id=dataset.pk, document=File(open(filename, "rb")))
-
-
-#     task = async_task(
-#         "wazimap_ng.datasets.tasks.process_uploaded_file",
-#         df, dataset,
-#         task_name=f"Uploading data: {dataset.name}",
-#         hook="wazimap_ng.datasets.hooks.process_task_info",
-#         key="A key",
-#         type="upload", assign=True, notify=True
-#     )
-
 class Command(BaseCommand):
     help = 'Uploads a dataset from the command line. '
 
