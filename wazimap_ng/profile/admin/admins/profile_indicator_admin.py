@@ -40,9 +40,6 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'description', 'choropleth_method')
         }),
-        ("Subindicators", {
-          'fields': ('subindicators',)
-        }),
         ("Charts", {
           'fields': ('chart_configuration',)
         })
