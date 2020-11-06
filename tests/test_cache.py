@@ -11,7 +11,10 @@ from tests.profile.factories import (
     ProfileIndicatorFactory, ProfileKeyMetricsFactory, ProfileHighlightFactory,
     ProfileFactory
 )
-from tests.datasets.factories import IndicatorFactory, GeographyFactory, DatasetDataFactory, GroupFactory
+from tests.datasets.factories import (
+    IndicatorFactory, GeographyFactory, DatasetDataFactory, GroupFactory,
+    GeographyHierarchyFactory, IndicatorDataFactory
+)
 
 from wazimap_ng import cache
 
@@ -168,9 +171,19 @@ class TestCache(unittest.TestCase):
         mock_update_profile_cache.reset_mock()
         geography = GeographyFactory()
         datasetdata = DatasetDataFactory(geography=geography)
-        self.assertEqual(mock_update_profile_cache.call_count, 1)
+        geography_hierarchy = GeographyHierarchyFactory(root_geography=geography)
+
+        # multiple profiles linked to same hierarchy
+        profile1 = ProfileFactory(geography_hierarchy=geography_hierarchy)
+        profile2 = ProfileFactory(geography_hierarchy=geography_hierarchy)
+        indicator_data = IndicatorDataFactory(geography=geography)
+
+        self.assertEqual(mock_update_profile_cache.call_count, 4)
         calls = [
             call(datasetdata.dataset.profile),
+            call(profile1),
+            call(profile2),
+            call(indicator_data.indicator.dataset.profile),
         ]
         mock_update_profile_cache.assert_has_calls(calls, any_order=True)
 

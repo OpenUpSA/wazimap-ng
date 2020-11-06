@@ -157,11 +157,26 @@ def indicator_updated(sender, instance, **kwargs):
 @receiver(post_save, sender=Geography)
 def geography_updated(sender, instance, **kwargs):
 
-    datasetdata_objs = DatasetData.objects.filter(
-        geography=instance
-    ).order_by("dataset_id").distinct("dataset_id")
-    for data in datasetdata_objs:
-        update_profile_cache(data.dataset.profile)
+    # dataset data objs
+    dataset_data_profile_ids = list(instance.datasetdata_set.values_list(
+        "dataset__profile", flat=True
+    ).order_by("dataset__profile").distinct())
+
+    # indicator data objs
+    indicator_data_profile_ids = list(instance.indicatordata_set.values_list(
+        "indicator__dataset__profile", flat=True
+    ).order_by("indicator__dataset__profile").distinct())
+
+    # Get hierarchy profile linked to 
+    hierarchy_profile_ids = list(instance.geographyhierarchy_set.values_list(
+        "profile", flat=True
+    ).order_by("profile").distinct())
+    print(hierarchy_profile_ids)
+
+
+    profile_ids = set(dataset_data_profile_ids + indicator_data_profile_ids + hierarchy_profile_ids)
+    for profile in Profile.objects.filter(id__in=set(profile_ids)):
+        update_profile_cache(profile)
 
 
 @receiver(post_save, sender=GeographyHierarchy)
