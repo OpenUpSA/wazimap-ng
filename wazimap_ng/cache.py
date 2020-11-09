@@ -171,8 +171,6 @@ def geography_updated(sender, instance, **kwargs):
     hierarchy_profile_ids = list(instance.geographyhierarchy_set.values_list(
         "profile", flat=True
     ).order_by("profile").distinct())
-    print(hierarchy_profile_ids)
-
 
     profile_ids = set(dataset_data_profile_ids + indicator_data_profile_ids + hierarchy_profile_ids)
     for profile in Profile.objects.filter(id__in=set(profile_ids)):
