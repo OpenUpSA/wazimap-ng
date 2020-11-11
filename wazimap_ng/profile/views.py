@@ -78,7 +78,9 @@ class ProfileCategoriesList(generics.ListAPIView):
         serializer = self.get_serializer_class()(queryset, many=True)
         return Response(serializer.data)
 
-class ProfileSubcategoriesList(generics.ListAPIView):
+class ProfileSubcategoriesByCategoryList(generics.ListAPIView):
+    """Load subcategories for specific profile and category"""
+
     queryset = models.IndicatorSubcategory.objects.all()
     serializer_class = serializers.IndicatorSubcategorySerializer
 
@@ -86,6 +88,20 @@ class ProfileSubcategoriesList(generics.ListAPIView):
         profile = get_object_or_404(models.Profile, pk=profile_id)
         category = get_object_or_404(models.IndicatorCategory, pk=category_id)
         queryset = self.get_queryset().filter(category__profile=profile, category=category)
+
+        serializer = self.get_serializer_class()(queryset, many=True)
+        return Response(serializer.data)
+
+
+class ProfileSubcategoriesList(generics.ListAPIView):
+    """Load subcategories for specific profile"""
+
+    queryset = models.IndicatorSubcategory.objects.all()
+    serializer_class = serializers.IndicatorSubcategorySerializer
+
+    def get(self, request, profile_id):
+        profile = get_object_or_404(models.Profile, pk=profile_id)
+        queryset = self.get_queryset().filter(category__profile=profile)
 
         serializer = self.get_serializer_class()(queryset, many=True)
         return Response(serializer.data)
