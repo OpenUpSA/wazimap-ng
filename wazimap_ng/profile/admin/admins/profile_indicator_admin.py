@@ -51,6 +51,9 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
 
     help_texts = ["choropleth_method", ]
 
+    class Media:
+        js = ("/static/js/profile-indicator-admin.js",)
+
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
             return ("profile",) + self.readonly_fields
