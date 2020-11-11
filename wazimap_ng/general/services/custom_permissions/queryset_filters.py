@@ -72,7 +72,6 @@ class CustomQuerySet(models.QuerySet):
 	# Points
 	def get_points_category_queryset(self, user):
 		profiles = permissions.get_objects_for_user(user, Profile)
-
 		return permissions.get_objects_for_user(
 			user, Category, queryset=self.filter(profile__in=profiles)
 		)
@@ -97,6 +96,4 @@ class CustomQuerySet(models.QuerySet):
 		profiles = permissions.get_objects_for_user(
 		    user, Profile
 		)
-		return permissions.get_objects_for_user(
-		    user, ProfileCategory
-		).filter(profile__in=profiles)
+		return self.filter(profile__in=profiles)
