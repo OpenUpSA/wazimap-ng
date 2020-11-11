@@ -1,4 +1,4 @@
-dataset_upload_data = {
+dataset_upload_data_fixture_data = {
     "accurate": {
         "rows": [
             ["Geography","Age","Race","Gender","Income","Count"],
@@ -79,7 +79,7 @@ default_result_set = [
     {'age': '05 - 09', 'race': 'Black African', 'count': '58', 'gender': 'Male', 'income': 'No income'}
 ]
 
-required_headers = {
+required_headers_fixture_data = {
     "Geography": [
         ["x", "y", "count"],
         ["a", "b", "33"]

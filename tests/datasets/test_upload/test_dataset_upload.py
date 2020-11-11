@@ -1,4 +1,3 @@
-
 import csv
 import pytest
 import pandas as pd
@@ -15,145 +14,91 @@ from wazimap_ng.datasets.models import DatasetData, Group
 from wazimap_ng.datasets.tasks import process_uploaded_file, indicator_data_extraction
 
 from .upload_data import (
-    dataset_upload_data, default_result_set, required_headers
+    dataset_upload_data_fixture_data, default_result_set, required_headers_fixture_data
 )
 
 
-@pytest.mark.django_db
-class TestBaseDatasetUpload:
-    @pytest.fixture(autouse=True)
-    def setUp(self):
-        self.ZA_geo = GeographyFactory(code="ZA")
-        self.hierarchy = GeographyHierarchyFactory(root_geography=self.ZA_geo)
-        self.profile = ProfileFactory(geography_hierarchy=self.hierarchy)
+@pytest.fixture
+def geography():
+    return GeographyFactory(code="ZA")
 
-    def setup_data(self):
-        result = []
-        for name, value in dataset_upload_data.items():
-            rows, result_set = self.get_data(name)
-            result.append([name, row, result_set])
-        return result
 
-    def get_data(self, name):
-        data = dataset_upload_data[name]
-        result_set = data.get("results", default_result_set)
-        return data, result_set
+@pytest.fixture
+def geography_hierarchy(geography):
+    return GeographyHierarchyFactory(root_geography=geography)
 
-    def process_upload_with_asserts(self, dataset_file, dataset, result_set):
-        data = process_uploaded_file(dataset_file, dataset)
-        assert data["model"] == "datasetfile"
-        assert data["name"] == dataset.name
-        assert data["dataset_id"] == dataset.id
-        assert data["error_log"] == None
-        assert data["warning_log"] == None
-        data_objs = DatasetData.objects.filter(dataset_id=dataset.id)
-        assert data_objs.count() == len(result_set)
 
-        for idx, obj in enumerate(data_objs):
-            assert obj.geography.code == "ZA"
-            assert obj.data == result_set[idx]
+@pytest.fixture
+def profile(geography_hierarchy):
+    return ProfileFactory(geography_hierarchy=geography_hierarchy)
 
-    def create_dataset(
-        self, profile=None, hierarchy=None, name="TestDataset"
-    ):
-        if not profile:
-            profile = self.profile
-        if not hierarchy:
-            hierarchy = self.hierarchy
 
+@pytest.fixture
+def create_dataset(profile, geography_hierarchy):
+    def _make_dataset_record(profile=profile, hierarchy=geography_hierarchy, name="TestDataset", groups=[]):
         return DatasetFactory(
-            profile=profile, name="TestDataset",
-            geography_hierarchy=hierarchy, groups=[]
+            profile=profile, name=name,
+            geography_hierarchy=geography_hierarchy, groups=groups
         )
+    return _make_dataset_record
 
-    def create_csv_file(self, data):
-        csvfile = StringIO()
-        csv.writer(csvfile).writerows(data)
-        return csvfile.getvalue()
 
-    def create_xls_file(self, data):
-        output = BytesIO()
-        writer = pd.ExcelWriter(output)
-        pd.DataFrame(data).to_excel(writer, index=False, header=False)
-        writer.save()
-        return output.getvalue()
+def create_csv_file(data):
+    csvfile = StringIO()
+    csv.writer(csvfile).writerows(data)
+    return csvfile.getvalue()
 
-    def create_dataset_file(
-        self, data, dataset_id, test_type="csv", name='test'
-    ):
+
+def create_xls_file(data):
+    output = BytesIO()
+    writer = pd.ExcelWriter(output)
+    pd.DataFrame(data).to_excel(writer, index=False, header=False)
+    writer.save()
+    return output.getvalue()
+
+
+@pytest.fixture
+def create_dataset_file():
+    def _make_datasetfile_record(data, dataset_id, test_type="csv", name='test'):
         content = None
         if test_type == "csv":
-            content = self.create_csv_file(data).encode("utf-8")
+            content = create_csv_file(data).encode("utf-8")
         elif test_type == "xls":
-            content = self.create_xls_file(data)
-
+            content = create_xls_file(data)
         return DatasetFileFactory(
             name=name, dataset_id=dataset_id,
             document=SimpleUploadedFile(
                 name=F"{name}.{test_type}", content=content
             )
         )
-
-@pytest.mark.django_db
-class TestSuccessfulDatasetUpload(TestBaseDatasetUpload):
-
-    @pytest.mark.parametrize(
-        ["name"], [(name,) for name in dataset_upload_data.keys()]
-    )
-    def test_upload_csv(self, name):
-        csv_data, result_set = self.get_data(name)
-        dataset = self.create_dataset()
-
-        dataset_file = self.create_dataset_file(
-            csv_data["rows"], dataset.id
-        )
-        assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 0
-        self.process_upload_with_asserts(dataset_file, dataset, result_set)
-
-    @pytest.mark.parametrize(
-        ["name"], [(name,) for name in dataset_upload_data.keys()]
-    )
-    def test_upload_xls(self, name):
-        csv_data, result_set = self.get_data(name)
-        dataset = self.create_dataset()
-
-        dataset_file = self.create_dataset_file(
-            csv_data["rows"], dataset.id, test_type="xls"
-        )
-        assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 0
-        self.process_upload_with_asserts(dataset_file, dataset, result_set)
+    return _make_datasetfile_record
 
 
-@pytest.mark.django_db
-class TestRequiredHeaders(TestBaseDatasetUpload):
-
-    @pytest.mark.parametrize(
-        ["name"], [(name,) for name in required_headers.keys()]
-    )
-    def test_required_headers_for_csv_upload(self, name):
-        data = required_headers[name]
-        dataset = self.create_dataset()
-        error_msg = F"Invalid File passed. We were not able to find Required header : {name}"
-        with pytest.raises(ValidationError) as excinfo:
-            self.create_dataset_file(data, dataset.id)
-            assert str(excinfo.value) == error_msg
-
-    @pytest.mark.parametrize(
-        ["name"], [(name,) for name in required_headers.keys()]
-    )
-    def test_required_headers_for_xls_upload(self, name):
-        data = required_headers[name]
-        dataset = self.create_dataset()
-        error_msg = F"Invalid File passed. We were not able to find Required header : {name}"
-        with pytest.raises(ValidationError) as excinfo:
-            self.create_dataset_file(data, dataset.id, test_type="xls")
-            assert str(excinfo.value) == error_msg
+@pytest.fixture
+def create_datasetdata(geography):
+    def _make_datasetdata_records(dataset, geography=geography, data_count=1):
+        for i in range(1, data_count+1):
+            data = {"x": F"x{i}", "y": F"y{i}", "count": F"{i}{i}"}
+            DatasetDataFactory(
+                dataset=dataset, geography=geography, data=data
+            )
+    return _make_datasetdata_records
 
 
-@pytest.mark.django_db
-class TestDatasetReUpload(TestBaseDatasetUpload):
+@pytest.fixture
+def create_groups():
+    def _make_group_records(dataset, data_count=1):
+        for group in dataset.groups:
+            subindicators = [F"{group}{i}" for i in range(1, data_count+1)]
+            GroupFactory(
+                name=group, dataset=dataset, subindicators=subindicators
+            )
+    return _make_group_records
 
-    def create_indicators(self, dataset):
+
+@pytest.fixture
+def create_indicators():
+    def _make_indicator_records(dataset):
         for group in dataset.groups:
             indicator = IndicatorFactory(
                 name=F"indicator-{group}", dataset=dataset, groups=[group]
@@ -161,79 +106,169 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
             assert indicator.indicatordata_set.all().count() == 0
             indicator_data_extraction(indicator)
             assert indicator.indicatordata_set.all().count() == 1
+    return _make_indicator_records
 
-    def create_groups(self, dataset, data_count=1):
-        for group in dataset.groups:
 
-            subindicators = [
-                F"{group}{i}" for i in range(1, data_count+1)
-            ]
-            GroupFactory(
-                name=group, dataset=dataset, subindicators=subindicators
-            )
+@pytest.fixture(params=dataset_upload_data_fixture_data)
+def dataset_fixture_key(request):
+    return request.param
 
-    def setUpData(self, data_count=1, create_indicators=False):
-        dataset = self.create_dataset()
-        for i in range(1, data_count+1):
-            data = {"x": F"x{i}", "y": F"y{i}", "count": F"{i}{i}"}
-            DatasetDataFactory(
-                dataset=dataset, geography=self.ZA_geo, data=data
-            )
-        dataset.groups = ["x", "y"]
-        dataset.save()
-        self.create_groups(dataset, data_count)
 
-        if create_indicators:
-            self.create_indicators(dataset)
-        return dataset
+@pytest.fixture
+def test_data(dataset_fixture_key):
+    dataset = dataset_upload_data_fixture_data[dataset_fixture_key]
+    return dataset["rows"]
 
-    def test_required_header_geography(self):
-        dataset = self.setUpData()
+
+@pytest.fixture
+def expected_result(dataset_fixture_key):
+    dataset = dataset_upload_data_fixture_data[dataset_fixture_key]
+    return dataset.get("results", default_result_set)
+
+
+@pytest.mark.django_db
+class TestSuccessfulDatasetUpload:
+
+    def test_upload_csv(self, test_data, expected_result, create_dataset, create_dataset_file):
+        dataset = create_dataset()
+        dataset_file = create_dataset_file(test_data, dataset.id)
+
+        # assert that dataset does not have dataset data objs
+        assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 0
+
+        # process dataset file
+        data = process_uploaded_file(dataset_file, dataset)
+
+        # Asserts
+        assert data["model"] == "datasetfile"
+        assert data["name"] == dataset.name
+        assert data["dataset_id"] == dataset.id
+        assert data["error_log"] == None
+        assert data["warning_log"] == None
+        data_objs = DatasetData.objects.filter(dataset_id=dataset.id)
+        assert data_objs.count() == len(expected_result)
+
+        for idx, obj in enumerate(data_objs):
+            assert obj.geography.code == "ZA"
+            assert obj.data == expected_result[idx]
+
+
+    def test_upload_xls(self, test_data, expected_result, create_dataset, create_dataset_file):
+        dataset = create_dataset()
+        dataset_file = create_dataset_file(
+            test_data, dataset.id, test_type="xls"
+        )
+
+        # assert that dataset does not have dataset data objs
+        assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 0
+
+        # process dataset file
+        data = process_uploaded_file(dataset_file, dataset)
+
+        # Asserts
+        assert data["model"] == "datasetfile"
+        assert data["name"] == dataset.name
+        assert data["dataset_id"] == dataset.id
+        assert data["error_log"] == None
+        assert data["warning_log"] == None
+        data_objs = DatasetData.objects.filter(dataset_id=dataset.id)
+        assert data_objs.count() == len(expected_result)
+
+        for idx, obj in enumerate(data_objs):
+            assert obj.geography.code == "ZA"
+            assert obj.data == expected_result[idx]
+
+
+@pytest.fixture(params=required_headers_fixture_data)
+def required_headers_fixture_key(request):
+    return request.param
+
+
+@pytest.fixture
+def test_headers_data(required_headers_fixture_key):
+    return required_headers_fixture_data[required_headers_fixture_key]
+
+
+@pytest.mark.django_db
+class TestRequiredHeaders:
+
+    def test_required_headers_for_csv_upload(self, test_headers_data, required_headers_fixture_key, create_dataset, create_dataset_file):
+        dataset = create_dataset()
+        error_msg = F"Invalid File passed. We were not able to find Required header : {required_headers_fixture_key}"
+        with pytest.raises(ValidationError) as excinfo:
+            create_dataset_file(test_headers_data, dataset.id)
+            assert str(excinfo.value) == error_msg
+
+
+    def test_required_headers_for_xls_upload(self, test_headers_data, required_headers_fixture_key, create_dataset, create_dataset_file):
+        dataset = create_dataset()
+        error_msg = F"Invalid File passed. We were not able to find Required header : {required_headers_fixture_key}"
+        with pytest.raises(ValidationError) as excinfo:
+            create_dataset_file(test_headers_data, dataset.id, test_type="xls")
+            assert str(excinfo.value) == error_msg
+
+
+@pytest.mark.django_db
+class TestDatasetReUpload:
+
+    def test_required_header_geography(self, create_dataset, create_groups, create_datasetdata, create_dataset_file):
+        dataset = create_dataset(groups=["x", "y"])
+        create_datasetdata(dataset)
+        create_groups(dataset)
+
         data = [
             ["x", "y", "Count"],
             ["x2", "y2", "22"]
         ]
         error_msg = F"Invalid File passed. We were not able to find Required header : Geography"
         with pytest.raises(ValidationError) as excinfo:
-            self.create_dataset_file(data, dataset.id)
+            create_dataset_file(data, dataset.id)
             assert str(excinfo.value) == error_msg
 
         with pytest.raises(ValidationError) as excinfo:
-            self.create_dataset_file(data, dataset.id, test_type="xls")
+            create_dataset_file(data, dataset.id, test_type="xls")
             assert str(excinfo.value) == error_msg
 
-    def test_required_header_count(self):
-        dataset = self.setUpData()
+    def test_required_header_count(self, create_dataset, create_groups, create_datasetdata, create_dataset_file):
+        dataset = create_dataset(groups=["x", "y"])
+        create_datasetdata(dataset)
+        create_groups(dataset)
+
         data = [
             ["Geography", "x", "y"],
             ["ZA", "x2", "y2"]
         ]
         error_msg = F"Invalid File passed. We were not able to find Required header : Count"
         with pytest.raises(ValidationError) as excinfo:
-            self.create_dataset_file(data, dataset.id)
+            create_dataset_file(data, dataset.id)
             assert str(excinfo.value) == error_msg
 
         with pytest.raises(ValidationError) as excinfo:
-            self.create_dataset_file(data, dataset.id, test_type="xls")
+            create_dataset_file(data, dataset.id, test_type="xls")
             assert str(excinfo.value) == error_msg
 
-    def test_required_header_groups(self):
-        dataset = self.setUpData()
+    def test_required_header_groups(self, create_dataset, create_groups, create_datasetdata, create_dataset_file):
+        dataset = create_dataset(groups=["x", "y"])
+        create_datasetdata(dataset)
+        create_groups(dataset)
+
         data = [
             ["Geography", "x", "Count"],
             ["ZA", "x2", "22"]
         ]
         error_msg = F"Invalid File passed. We were not able to find Required header : Y"
         with pytest.raises(ValidationError) as excinfo:
-            self.create_dataset_file(data, dataset.id)
+            create_dataset_file(data, dataset.id)
             assert str(excinfo.value) == error_msg
 
         with pytest.raises(ValidationError) as excinfo:
-            self.create_dataset_file(data, dataset.id)
+            create_dataset_file(data, dataset.id)
             assert str(excinfo.value) == error_msg
 
-    def test_required_extra_added_groups(self):
-        dataset = self.setUpData()
+    def test_required_extra_added_groups(self, create_dataset, create_groups, create_datasetdata, create_dataset_file):
+        dataset = create_dataset(groups=["x", "y"])
+        create_datasetdata(dataset)
+        create_groups(dataset)
 
         data = [
             ["Geography", "x", "Y", "Z", "Count"],
@@ -241,20 +276,22 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
         ]
         error_msg = "Invalid File passed for re-upload. We found extra headers in uploaded file : y,z"
         with pytest.raises(ValidationError) as excinfo:
-            self.create_dataset_file(data, dataset.id)
+            create_dataset_file(data, dataset.id)
             assert str(excinfo.value) == error_msg
 
         with pytest.raises(ValidationError) as excinfo:
-            self.create_dataset_file(data, dataset.id)
+            create_dataset_file(data, dataset.id)
             assert str(excinfo.value) == error_msg
 
-    def test_successful_reupload(self):
-        dataset = self.setUpData()
+    def test_successful_reupload(self, create_dataset, create_groups, create_datasetdata, create_dataset_file):
+        dataset = create_dataset(groups=["x", "y"])
+        create_datasetdata(dataset)
+        create_groups(dataset)
         data = [
             ["Geography", "x", "y", "Count"],
             ["ZA", "x2", "y2", "22"]
         ]
-        dataset_file = self.create_dataset_file(
+        dataset_file = create_dataset_file(
             data, dataset.id
         )
         assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 1
@@ -273,7 +310,7 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
             ["ZA", "x2", "y2", "55"]
         ]
 
-        dataset_file = self.create_dataset_file(data, dataset.id)
+        dataset_file = create_dataset_file(data, dataset.id)
 
         assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 2
         process_uploaded_file(dataset_file, dataset)
@@ -285,13 +322,16 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
         assert response[0] == {'x': 'x1', 'y': 'y1', 'count': '11'}
         assert response[1] == {'x': 'x2', 'y': 'y2', 'count': '55'}
 
-    def test_group_updates_after_reupload(self):
+    def test_group_updates_after_reupload(self, create_dataset, create_groups, create_datasetdata, create_dataset_file):
         def assert_subindicators(group_name, expected):
             assert groups.filter(name=group_name).count() == 1
             actual = groups.filter(name=group_name).first().subindicators
             assert set(actual) == set(expected)
 
-        dataset = self.setUpData(data_count=2)
+        dataset = create_dataset(groups=["x", "y"])
+        create_datasetdata(dataset, data_count=2)
+        create_groups(dataset, data_count=2)
+
         groups = dataset.group_set.all()
         assert groups.count() == 2
         assert_subindicators("x", ["x1", "x2"])
@@ -302,7 +342,7 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
             ["Geography", "x", "y", "Count"],
             ["ZA", "x3", "y3", "33"]
         ]
-        dataset_file = self.create_dataset_file(data, dataset.id)
+        dataset_file = create_dataset_file(data, dataset.id)
 
         assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 2
         process_uploaded_file(dataset_file, dataset)
@@ -314,8 +354,12 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
         assert_subindicators("x", ["x1", "x2", "x3"])
         assert_subindicators("y", ["y1", "y2", "y3"])
 
-    def test_variable_updates_after_reupload(self):
-        dataset = self.setUpData(create_indicators=True)
+    def test_variable_updates_after_reupload(self, create_dataset, create_groups, create_datasetdata, create_indicators, create_dataset_file):
+        dataset = create_dataset(groups=["x", "y"])
+        create_datasetdata(dataset)
+        create_groups(dataset)
+        create_indicators(dataset)
+
         indicator_x = dataset.indicator_set.get(name="indicator-x")
         indicator_y = dataset.indicator_set.get(name="indicator-y")
         indicator_data_x = indicator_x.indicatordata_set.first().data
@@ -331,7 +375,7 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
             ["Geography", "x", "y", "Count"],
             ["ZA", "x2", "y2", "22"]
         ]
-        dataset_file = self.create_dataset_file(data, dataset.id)
+        dataset_file = create_dataset_file(data, dataset.id)
         assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 1
         process_uploaded_file(dataset_file, dataset)
         assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 2
@@ -352,7 +396,7 @@ class TestDatasetReUpload(TestBaseDatasetUpload):
             ["Geography", "x", "y", "Count"],
             ["ZA", "x2", "y2", "33"]
         ]
-        dataset_file = self.create_dataset_file(data, dataset.id)
+        dataset_file = create_dataset_file(data, dataset.id)
         assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 2
         process_uploaded_file(dataset_file, dataset)
         assert DatasetData.objects.filter(dataset_id=dataset.id).count() == 2
