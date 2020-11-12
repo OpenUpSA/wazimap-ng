@@ -3,7 +3,7 @@
         const $profileEl = $(document).find("#id_profile");
         const $subcategoryEl = $(document).find("#id_subcategory");
 
-        $(document).find("#id_profile").on('change', function (e) {
+        $profileEl.on('change', function (e) {
             // trigger "loadSubcategory" func only when it was manually changed
             if (e.originalEvent !== undefined) {
                 // load subcategories based on selected profile
