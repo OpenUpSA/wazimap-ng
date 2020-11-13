@@ -37,7 +37,7 @@ def process_csv(dataset, buffer, chunksize=1000000):
     row_number = 1
     df = pd.read_csv(wrapper_file, nrows=1, dtype=str, sep=",", encoding=encoding)
     df.dropna(how='all', axis='columns', inplace=True)
-    columns = df.columns.str.lower()
+    columns = df.columns.str.lower().str.strip()
     error_logs = [];
     warning_logs = [];
 
@@ -90,7 +90,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
         i_chunk = 0
         df = pd.read_excel(dataset_file.document.open(), nrows=1, dtype=str)
         df.dropna(how='any', axis='columns', inplace=True)
-        columns = df.columns.str.lower()
+        columns = df.columns.str.lower().str.strip()
         while True:
             df = pd.read_excel(
                 dataset_file.document.open(), nrows=chunksize, skiprows=skiprows, header=None
