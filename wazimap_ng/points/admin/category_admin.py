@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from django_q.tasks import async_task
+from notifications.signals import notify
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.services.permissions import assign_perms_to_group
@@ -10,7 +11,6 @@ from wazimap_ng.general.admin import filters
 
 from .. import models
 from .forms import CategoryAdminForm
-from wazimap_ng.datasets import hooks
 
 
 @admin.register(models.Category)
@@ -83,14 +83,15 @@ class CategoryAdmin(BaseAdminModel):
                 task_name=f"Uploading data: {obj}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
-                type="upload", assign=True, notify=True
+                type="upload",
+                assign=True,
+                notify=True,
             )
-            hooks.add_to_task_list(request.session, task)
-            hooks.custom_admin_notification(
-                request.session,
-                "info",
-                "Data upload for %s started. We will let you know when process is done." % (
-                    obj.name
-                )
+            notify.send(
+                request.user, recipient=request.user,
+                verb='Started a new upload for points',
+                action_object=obj, target=collection_obj,
+                task_id=task, level="in_progress", profile=obj.profile,
+                type="upload"
             )
         return obj
