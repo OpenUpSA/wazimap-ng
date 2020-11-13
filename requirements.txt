@@ -79,3 +79,6 @@ django-guardian==2.2.0
 django-mock-queries==2.1.5
 lorem==0.1.1
 chardet==3.0.4
+
+# notifications
+django-notifications-hq==1.6.0

@@ -1,8 +1,10 @@
+import notifications.urls
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, re_path
-from django.conf.urls import include
+from django.conf.urls import include, url
 
 from django.views.generic.base import RedirectView
 from rest_framework.decorators import api_view
@@ -16,7 +18,10 @@ from .boundaries import views as boundaries_views
 from .general import views as general_views
 from .cache import cache_headers as cache
 
-from wazimap_ng.general.views import logout_view, notifications_view
+
+@api_view()
+def version(*args, **kwargs):
+    return Response(settings.VERSION)
 
 def trigger_error(request):
     division_by_zero = 1 / 0
@@ -25,7 +30,8 @@ urlpatterns = [
 
     # Admin
     path("admin/", admin.site.urls),
-    path("admin/notifications", notifications_view, name="notifications"),
+
+    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
 
     # Api
     path("api/v1/rest-auth/", include("rest_auth.urls")),
