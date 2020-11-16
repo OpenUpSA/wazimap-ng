@@ -29,11 +29,13 @@ def delete_selected_data(modeladmin, request, queryset):
 
             task = async_task(
                 'wazimap_ng.datasets.tasks.delete_data',
-                queryset, objects_name,
+                queryset,
+                objects_name,
                 task_name=f"Deleting data: {objects_name}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
-                type="delete"
+                type="delete",
+                notify=True,
             )
             notify.send(
                 request.user,
@@ -101,11 +103,13 @@ class DatasetBaseAdminModel(BaseAdminModel):
             self.log_deletion(request, obj, obj_display)
             task = async_task(
                 "wazimap_ng.datasets.tasks.delete_data",
-                obj, object_name,
+                obj,
+                object_name,
                 task_name=f"Deleting data: {obj.name}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
-                type="delete", notify=True
+                type="delete",
+                notify=True
             )
             notify.send(
                 request.user, recipient=request.user,

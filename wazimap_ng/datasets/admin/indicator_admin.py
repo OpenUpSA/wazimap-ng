@@ -89,7 +89,9 @@ class IndicatorAdmin(DatasetBaseAdminModel):
                 task_name=f"Data Extraction: {obj.name}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
-                type="data_extraction", assign=False, notify=True
+                type="data_extraction",
+                assign=False,
+                notify=True
             )
             notify.send(
                 request.user, recipient=request.user,

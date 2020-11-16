@@ -1,4 +1,5 @@
-<li class="dropmic-menu__listItem" role="menuitem" data-id="{{ notification.id }}" data-slug="{{ notification.slug }}">
+<li class="dropmic-menu__listItem" role="menuitem" data-id="{{ notification.id }}"
+    data-slug="{{ notification.slug }}">
   <span class="dropmic-menu__listContent cross" data-unread="{{ notification.unread }}">
       <span class="fa-stack fa-lg {{ notification.data.type }} {{ notification.level }}">
         <i class="fa fa-circle fa-stack-2x"></i>
@@ -14,26 +15,25 @@
               {{ notification.data.name }}
             {% endif %}
           {% else %}
-            {{ notification.verb }} for {{ notification.target_content_type }}
-          {% if notification.data.dataset_id %}
-            <a href="{% url 'admin:datasets_dataset_change' notification.data.dataset_id %}" >{{ notification.action_object }}</a>
-            {% else %}
-                      {{ notification.action_object }}
-          {% endif %}
-            on {{ notification.action_object_content_type }}
-          {% if notification.data.datasetfile_id %}
-            <a href="{% url 'admin:datasets_datasetfile_change' notification.data.datasetfile_id %}">{{ notification.target }}</a>
-                      {% else %}
+              {{ notification.verb }} for {{ notification.target_content_type }}
+              {% if notification.data.dataset_id %}
+                <a href="{% url 'admin:datasets_dataset_change' notification.data.dataset_id %}">{{ notification.action_object }}</a>
+              {% else %}
+                {{ notification.action_object }}
+              {% endif %}
+                on {{ notification.action_object_content_type }}
 
-            {{ notification.target }}
-                    {% endif %}
-
+              {% if notification.data.datasetfile_id %}
+                <a href="{% url 'admin:datasets_datasetfile_change' notification.data.datasetfile_id %}">{{ notification.target }}</a>
+              {% else %}
+                {{ notification.target }}
+              {% endif %}
           {% endif %}
       <span class="time"> -- {{notification.timesince}} ago..</span>
       </span>
   </span>
-  <span class="delete-notification" onclick="delete_notification()"><i class="far fa-times-circle"></i></span>
-  {% if notification.unread %}
-    <span class="unread"> <i class="dot"></i></span>
-  {% endif %}
+    <span class="delete-notification"><i class="far fa-times-circle"></i></span>
+    {% if notification.unread %}
+        <span class="unread"> <i class="dot"></i></span>
+    {% endif %}
 </li>

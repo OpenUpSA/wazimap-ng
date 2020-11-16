@@ -12,7 +12,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .datasets import views as dataset_views
-from .general.views import unread_notifications, notifications_delete_all
+from .general.views import active_notifications, notifications_delete_all
 from .points import views as points_views
 from .profile import views as profile_views
 from .boundaries import views as boundaries_views
@@ -33,7 +33,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 
     url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
-    path("inbox/notifications/unread_notifications/", unread_notifications, name='unread-extra'),
+    path("inbox/notifications/active_notifications/", active_notifications, name='active_notifications'),
     path("inbox/notifications/delete/all/", notifications_delete_all, name='delete-all'),
 
     # Api

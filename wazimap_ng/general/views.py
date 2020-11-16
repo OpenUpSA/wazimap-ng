@@ -88,13 +88,23 @@ def notifications_delete_all(request):
 
 @user_passes_test(authenticate_admin)
 @never_cache
-def unread_notifications(request):
-    data = []
-    for notification in request.user.notifications.unread():
+def active_notifications(request):
+    data = {"in_progress": [], "completed": []}
+    for notification in request.user.notifications.filter(level="in_progress").active():
         html = render_to_string(
             "admin/subtemplate/notification_msg.html", {"notification": notification}
         )
-        data.append(
-            {"id": notification.id, "html": html, "level": notification.level,}
+        data["in_progress"].append({"id": notification.id, "html": html})
+    for notification in request.user.notifications.exclude(
+        level="in_progress"
+    ).active():
+        html = render_to_string(
+            "admin/subtemplate/notification_msg.html", {"notification": notification}
         )
-    return JsonResponse({"results": data})
+        data["completed"].append({"id": notification.id, "html": html})
+    unread = len(request.user.notifications.active().unread().all())
+    data["count"] = unread
+    data["in_progress_count"] = len(data["in_progress"])
+    data["completed_count"] = len(data["completed"])
+    data["total_active_count"] = data["in_progress_count"] + data["completed_count"]
+    return JsonResponse(data)
