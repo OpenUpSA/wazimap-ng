@@ -55,6 +55,20 @@ class SubCategoryFilter(DynamicBaseFilter):
     model_class = IndicatorSubcategory
 
 
+class ThemeFilter(DynamicBaseFilter):
+    title = "Theme"
+    parameter_name = 'theme_id'
+    model_class = Theme
+
+    def lookups(self, request, model_admin):
+        profiles = permissions.get_objects_for_user(
+            request.user, Profile, include_public=True
+        )
+        return [(theme.id, theme) for theme in self.model_class.objects.filter(
+            profile__in=profiles
+        )]
+
+
 # Datasets App Filters
 class GeographyHierarchyFilter(DynamicBaseFilter):
     title = 'Geography Hierarchy'
@@ -86,20 +100,6 @@ class IndicatorFilter(DynamicBaseFilter):
     parameter_name = 'indicator__id'
     model_class = Indicator
 
-
-# Points app
-class ThemeFilter(DynamicBaseFilter):
-    title = "Theme"
-    parameter_name = 'profilecategory__theme_id'
-    model_class = Theme
-
-    def lookups(self, request, model_admin):
-        profiles = permissions.get_objects_for_user(
-            request.user, Profile, include_public=True
-        )
-        return [(theme.id, theme) for theme in self.model_class.objects.filter(
-            profile__in=profiles
-        )]
 
 class CollectionFilter(DynamicBaseFilter):
     title = 'Collection'
