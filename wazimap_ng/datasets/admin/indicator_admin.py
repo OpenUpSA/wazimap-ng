@@ -94,9 +94,12 @@ class IndicatorAdmin(DatasetBaseAdminModel):
             notify.send(
                 request.user, recipient=request.user,
                 verb='Started data extraction',
-                action_object=obj, target=obj.dataset,
-                task_id=task_id, level="in_progress",
-                profile=obj.dataset.profile, type="extraction"
+                action_object=obj,
+                target=obj.dataset,
+                task_id=task_id,
+                level="in_progress",
+                profile=obj.dataset.profile.id,
+                type="extraction"
             )
         return obj
 

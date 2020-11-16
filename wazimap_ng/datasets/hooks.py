@@ -38,7 +38,7 @@ def process_task_info(task):
     if notify:
         notification_type = "success" if task.success else "error"
         task_type = task.kwargs.get("type", False)
-        notification = Notification.objects.filter(task_id=task.id).first()
+        notification = Notification.objects.filter(data__icontains=task.id).first()
 
         if notification:
             notification.level = notification_type

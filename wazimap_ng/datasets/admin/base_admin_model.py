@@ -36,11 +36,15 @@ def delete_selected_data(modeladmin, request, queryset):
                 type="delete"
             )
             notify.send(
-                request.user, recipient=request.user,
+                request.user,
+                recipient=request.user,
                 verb=F"Initiating bulk delete process for",
-                task_id=task, level="in_progress",
-                type="delete", object_name=objects_name,
-                count=queryset.count(), bulk=True
+                task_id=task,
+                level="in_progress",
+                type="delete",
+                object_name=objects_name,
+                count=queryset.count(),
+                bulk=True
             )
         return None
 
@@ -106,9 +110,12 @@ class DatasetBaseAdminModel(BaseAdminModel):
             notify.send(
                 request.user, recipient=request.user,
                 verb="We run data deletion in background because of related data and caches. We will let you know when processing is done",
-                task_id=task, level="in_progress",
-                type="delete", object_name=object_name,
-                name=obj.name, bulk=False
+                task_id=task,
+                level="in_progress",
+                type="delete",
+                object_name=object_name,
+                name=obj.name,
+                bulk=False
             )
 
             return self.response_delete(request, obj_display, obj_id)

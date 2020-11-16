@@ -88,10 +88,14 @@ class CategoryAdmin(BaseAdminModel):
                 notify=True,
             )
             notify.send(
-                request.user, recipient=request.user,
+                request.user,
+                recipient=request.user,
                 verb='Started a new upload for points',
-                action_object=obj, target=collection_obj,
-                task_id=task, level="in_progress", profile=obj.profile,
+                action_object=obj,
+                target=collection_obj,
+                task_id=task,
+                level="in_progress",
+                profile=obj.profile.id,
                 type="upload"
             )
         return obj

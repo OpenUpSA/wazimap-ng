@@ -147,11 +147,17 @@ class DatasetAdmin(DatasetBaseAdminModel):
             )
 
             notify.send(
-                request.user, recipient=request.user,
+                request.user,
+                recipient=request.user,
                 verb=f"Data upload for {obj.name} started.",
-                action_object=obj, target=datasetfile_obj,
-                task_id=task, level="in_progress", profile=obj.profile,
-                type="upload"
+                action_object=obj,
+                target=datasetfile_obj,
+                level="in_progress",
+                task_id=task,
+                profile=obj.profile.id,
+                dataset_id=obj.id,
+                datasetfile_id=datasetfile_obj.id,
+                type="upload",
             )
 
         return obj

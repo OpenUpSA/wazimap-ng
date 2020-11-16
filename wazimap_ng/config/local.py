@@ -39,5 +39,6 @@ class Local(Common):
             'LOCATION': '/var/tmp/django_cache',
         }
     }
+    DJANGO_NOTIFICATIONS_CONFIG = {"USE_JSONFIELD": True, "SOFT_DELETE": True}
 
     FILE_SIZE_LIMIT = 3000 * 1024 * 1024
