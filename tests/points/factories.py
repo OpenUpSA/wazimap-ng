@@ -1,4 +1,5 @@
 import factory
+from django.contrib.auth import get_user_model
 
 from django.contrib.gis.geos import Point
 
@@ -40,3 +41,11 @@ class LocationFactory(factory.django.DjangoModelFactory):
     name = "Location"
     coordinates = Point(1.0, 1.0)
     data = {}
+
+
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = get_user_model()
+
+    username = factory.Sequence(lambda n: 'manager_%s' % n)
+    email = factory.LazyAttribute(lambda o: '%s@example.org' % o.username)
