@@ -3,9 +3,6 @@ import pytest
 from wazimap_ng.datasets.serializers import MetaDataSerializer
 from tests.datasets.factories import MetaDataFactory, LicenceFactory
 
-from unittest.mock import patch
-from unittest.mock import Mock
-
 @pytest.fixture
 def licence():
     return LicenceFactory(name="licence name", url="abc url")
