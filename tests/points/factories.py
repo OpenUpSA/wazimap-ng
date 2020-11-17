@@ -1,5 +1,5 @@
 import factory
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, models as auth_models
 
 from django.contrib.gis.geos import Point
 
@@ -49,3 +49,8 @@ class UserFactory(factory.django.DjangoModelFactory):
 
     username = factory.Sequence(lambda n: 'manager_%s' % n)
     email = factory.LazyAttribute(lambda o: '%s@example.org' % o.username)
+
+
+class AuthGroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = auth_models.Group

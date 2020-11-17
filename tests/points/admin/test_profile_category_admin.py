@@ -1,7 +1,6 @@
 import pytest
 
 from django.contrib.admin.sites import AdminSite
-from django.contrib.auth.models import Group
 from django.urls import reverse
 
 from wazimap_ng.config.common import PERMISSION_TYPES
@@ -9,7 +8,7 @@ from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.points.models import ProfileCategory
 from wazimap_ng.points.admin import ProfileCategoryAdmin
 
-from tests.points.factories import ProfileCategoryFactory, UserFactory
+from tests.points.factories import ProfileCategoryFactory, UserFactory, AuthGroupFactory
 
 
 @pytest.fixture
@@ -30,7 +29,7 @@ def staff_user():
 
 @pytest.fixture
 def profile_group(test_private_profile_category):
-    profile_group = Group.objects.create(
+    profile_group = AuthGroupFactory(
         name=test_private_profile_category.profile.name
     )
     assign_perms_to_group(
