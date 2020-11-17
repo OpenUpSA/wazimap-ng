@@ -180,6 +180,7 @@ def IndicatorDataSerializer(profile, geography):
             "metadata": {
                 "source": x["metadata_source"],
                 "description": x["metadata_description"],
+                "url": x["metadata_url"],
                 "licence": {
                     "name": x["licence_name"],
                     "url": x["licence_url"]
@@ -201,6 +202,7 @@ def IndicatorDataSerializer(profile, geography):
             "metadata": {
                 "source": x["metadata_source"],
                 "description": x["metadata_description"],
+                "url": x["metadata_url"],
                 "licence": {
                     "name": x["licence_name"],
                     "url": x["licence_url"]
