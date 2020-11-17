@@ -1,7 +1,7 @@
 import pytest
 
 from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
-from tests.datasets.factories import GeographyFactory, IndicatorDataFactory
+from tests.datasets.factories import GeographyFactory, IndicatorDataFactory, MetaDataFactory
 
 from wazimap_ng.profile.serializers.indicator_data_serializer import get_indicator_data
 
@@ -12,7 +12,6 @@ def profile():
 @pytest.fixture
 def geography():
     return GeographyFactory()
-
 
 @pytest.fixture
 def profile_indicators(profile):
@@ -33,6 +32,11 @@ def indicator_data(geography, profile_indicators):
 
 
     return idata
+
+@pytest.fixture
+def metadata(indicator_data):
+    dataset = indicator_data[0].indicator.dataset
+    return MetaDataFactory(source="A source", url="http://example.com", description="A description", dataset=dataset)
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("indicator_data")
@@ -59,3 +63,12 @@ def test_profile_indicator_order(geography, profile_indicators):
     output = get_indicator_data(profile, geography)
     assert output[0]["profile_indicator_label"] == "PI2"
     assert output[1]["profile_indicator_label"] == "PI1"
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("indicator_data")
+def test_profile_indicator_metadata(geography, profile_indicators, metadata):
+    profile = profile_indicators[0].profile
+    output = get_indicator_data(profile, geography)
+    assert output[0]["metadata_source"] == "A source"
+    assert output[0]["metadata_description"] == "A description"
+    assert output[0]["metadata_url"] == "http://example.com"
