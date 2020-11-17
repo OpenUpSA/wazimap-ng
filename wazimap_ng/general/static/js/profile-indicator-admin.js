@@ -2,6 +2,7 @@
     jQuery(document).ready(function ($) {
         const $profileEl = $(document).find("#id_profile");
         const $subcategoryEl = $(document).find("#id_subcategory");
+        const $emptyOptionEl = $("<option></option>");
 
         $profileEl.on('change', function (e) {
             // trigger "loadSubcategory" func only when it was manually changed
@@ -11,13 +12,16 @@
             }
         });
 
+        function appendOptionEl($outerEl, val, text){
+            $outerEl.append($emptyOptionEl.clone().attr("value", val).text(text));
+        }
+
         function clearSubcategories() {
             $subcategoryEl.empty();
-            $subcategoryEl.append($("<option></option>").attr("value", "").text("----------"));
+            appendOptionEl($subcategoryEl, "", "-----------")
         }
 
         function loadSubcategory(selectedProfile) {
-            console.log("selectedProfile", selectedProfile)
             if (selectedProfile) {
                 var url = `/api/v1/profiles/${selectedProfile}/subcategories/`;
                 $.ajax({
@@ -26,7 +30,7 @@
                         // clear it here to avoid "select" input flickering which appears during AJAX call
                         clearSubcategories();
                         $.each(data, function (key, value) {
-                            $subcategoryEl.append($("<option></option>").attr("value", value.id).text(value.name));
+                            appendOptionEl($subcategoryEl, value.id, value.name)
                         });
                     }
                 })
