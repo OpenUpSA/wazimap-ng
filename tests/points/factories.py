@@ -2,7 +2,7 @@ import factory
 
 from django.contrib.gis.geos import Point
 
-from wazimap_ng.points.models import Category, ProfileCategory, Theme, Location
+from wazimap_ng.points.models import Category, CoordinateFile, ProfileCategory, Theme, Location
 from tests.profile.factories import ProfileFactory
 
 
@@ -40,3 +40,10 @@ class LocationFactory(factory.django.DjangoModelFactory):
     name = "Location"
     coordinates = Point(1.0, 1.0)
     data = {}
+
+
+class CoordinateFileFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CoordinateFile
+
+    document = factory.django.FileField()
