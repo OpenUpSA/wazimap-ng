@@ -9,10 +9,17 @@ from django.http import Http404
 from django.views.decorators.cache import cache_control
 from django.views.decorators.vary import vary_on_headers
 
-from wazimap_ng.datasets.models import Group, Geography, DatasetData, GeographyHierarchy
-from wazimap_ng.points.models import Location, Category
-from wazimap_ng.profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, \
-    ProfileKeyMetrics, Profile, Indicator
+from wazimap_ng.datasets.models import Group, Geography, GeographyHierarchy
+from wazimap_ng.points.models import Category, Location, ProfileCategory, Theme
+from wazimap_ng.profile.models import (
+    ProfileIndicator,
+    ProfileHighlight,
+    IndicatorCategory,
+    IndicatorSubcategory,
+    ProfileKeyMetrics,
+    Profile,
+    Indicator,
+)
 from wazimap_ng.profile.services import authentication
 
 logger = logging.getLogger(__name__)
@@ -56,12 +63,18 @@ def last_modified_profile_updated(request, profile_id, geography_code):
     return last_modified(request, profile_id, key)
 
 
-def etag_point_updated(request, profile_id, profile_category_id=None, theme_id=None, geography_code=None):
-    last_modified = last_modified_point_updated(request, profile_id, profile_category_id, theme_id, geography_code)
+def etag_point_updated(
+    request, profile_id, profile_category_id=None, theme_id=None, geography_code=None
+):
+    last_modified = last_modified_point_updated(
+        request, profile_id, profile_category_id, theme_id, geography_code
+    )
     return str(last_modified)
 
 
-def last_modified_point_updated(request, profile_id, profile_category_id=None, theme_id=None, geography_code=None):
+def last_modified_point_updated(
+    request, profile_id, profile_category_id=None, theme_id=None, geography_code=None
+):
     if profile_category_id is not None:
         key = location_key % (profile_id, profile_category_id)
     elif theme_id is not None:
@@ -119,6 +132,7 @@ def profile_keymetrics_updated(sender, instance, **kwargs):
 def profile_updated(sender, instance, **kwargs):
     update_profile_cache(instance)
 
+
 @receiver(post_save, sender=Group)
 def subindicator_group_update(sender, instance, **kwargs):
     indicator_ids = instance.dataset.indicator_set.values_list("id", flat=True)
@@ -142,6 +156,16 @@ def point_updated_category(sender, instance, **kwargs):
     update_point_cache(instance)
 
 
+@receiver(post_save, sender=ProfileCategory)
+def point_updated_profile_category(sender, instance, **kwargs):
+    update_point_cache(instance.category)
+
+
+@receiver(post_save, sender=Theme)
+def point_updated_theme(sender, instance, **kwargs):
+    update_point_cache(instance)
+
+
 @receiver(post_save, sender=Indicator)
 def indicator_updated(sender, instance, **kwargs):
     indicator_id = instance.id
@@ -158,21 +182,29 @@ def indicator_updated(sender, instance, **kwargs):
 def geography_updated(sender, instance, **kwargs):
 
     # dataset data objs
-    dataset_data_profile_ids = list(instance.datasetdata_set.values_list(
-        "dataset__profile", flat=True
-    ).order_by("dataset__profile").distinct())
+    dataset_data_profile_ids = list(
+        instance.datasetdata_set.values_list("dataset__profile", flat=True)
+        .order_by("dataset__profile")
+        .distinct()
+    )
 
     # indicator data objs
-    indicator_data_profile_ids = list(instance.indicatordata_set.values_list(
-        "indicator__dataset__profile", flat=True
-    ).order_by("indicator__dataset__profile").distinct())
+    indicator_data_profile_ids = list(
+        instance.indicatordata_set.values_list("indicator__dataset__profile", flat=True)
+        .order_by("indicator__dataset__profile")
+        .distinct()
+    )
 
-    # Get hierarchy profile linked to 
-    hierarchy_profile_ids = list(instance.geographyhierarchy_set.values_list(
-        "profile", flat=True
-    ).order_by("profile").distinct())
+    # Get hierarchy profile linked to
+    hierarchy_profile_ids = list(
+        instance.geographyhierarchy_set.values_list("profile", flat=True)
+        .order_by("profile")
+        .distinct()
+    )
 
-    profile_ids = set(dataset_data_profile_ids + indicator_data_profile_ids + hierarchy_profile_ids)
+    profile_ids = set(
+        dataset_data_profile_ids + indicator_data_profile_ids + hierarchy_profile_ids
+    )
     for profile in Profile.objects.filter(id__in=set(profile_ids)):
         update_profile_cache(profile)
 
@@ -184,7 +216,9 @@ def geography_hierarchy_updated(sender, instance, **kwargs):
 
 
 def cache_headers(func):
-    return vary_on_headers("Authorization")(cache_control(max_age=0, public=True, must_revalidate=True)(func))
+    return vary_on_headers("Authorization")(
+        cache_control(max_age=0, public=True, must_revalidate=True)(func)
+    )
 
 
 def cache_decorator(key, expiry=60 * 60 * 24 * 365):

@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 from django.core.cache import cache as django_cache
 
+from tests.points.factories import ThemeFactory, LocationFactory, CategoryFactory, ProfileCategoryFactory
 from tests.profile.factories import (
     ProfileIndicatorFactory, ProfileKeyMetricsFactory, ProfileHighlightFactory,
     ProfileFactory
@@ -167,7 +168,7 @@ class TestCache(unittest.TestCase):
         mock_update_profile_cache.assert_has_calls(calls, any_order=True)
 
     @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
-    def test_invalidate_profile_cache_for_geography_udpate(self, mock_update_profile_cache):
+    def test_invalidate_profile_cache_for_geography_update(self, mock_update_profile_cache):
         mock_update_profile_cache.reset_mock()
         geography = GeographyFactory()
         datasetdata = DatasetDataFactory(geography=geography)
@@ -188,7 +189,7 @@ class TestCache(unittest.TestCase):
         mock_update_profile_cache.assert_has_calls(calls, any_order=True)
 
     @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
-    def test_invalidate_profile_cache_for_group_udpate(self, mock_update_profile_cache):
+    def test_invalidate_profile_cache_for_group_update(self, mock_update_profile_cache):
         mock_update_profile_cache.reset_mock()
         group = GroupFactory()
         self.assertEqual(mock_update_profile_cache.call_count, 2)
@@ -221,7 +222,7 @@ class TestCache(unittest.TestCase):
         mock_update_profile_cache.assert_has_calls(calls, any_order=True)
 
     @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
-    def test_invalidate_profile_cache_for_geography_hierarchy_udpate(self, mock_update_profile_cache):
+    def test_invalidate_profile_cache_for_geography_hierarchy_update(self, mock_update_profile_cache):
         mock_update_profile_cache.reset_mock()
         profile1 = ProfileFactory()
         hierarchy = profile1.geography_hierarchy
@@ -238,3 +239,28 @@ class TestCache(unittest.TestCase):
             call(profile2),
         ]
         mock_update_profile_cache.assert_has_calls(calls, any_order=True)
+
+
+invalidate_point_cache_for_update_values = (
+        (LocationFactory, "category"),
+        (CategoryFactory, None),
+        (ProfileCategoryFactory, "category"),
+        (ThemeFactory, None),
+    )
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("factory, category", invalidate_point_cache_for_update_values)
+@patch('wazimap_ng.cache.update_point_cache', autospec=True)
+def test_invalidate_point_cache_for_update(mock_update_point_cache, factory, category):
+    mock_update_point_cache.reset_mock()
+    factory_obj = factory()
+    assert mock_update_point_cache.call_count > 0
+    if category:
+        call_obj = getattr(factory_obj, category)
+    else:
+        call_obj = factory_obj
+    calls = [
+        call(call_obj),
+    ]
+    mock_update_point_cache.assert_has_calls(calls, any_order=True)
