@@ -146,6 +146,18 @@ def subindicator_group_update(sender, instance, **kwargs):
         update_profile_cache(profile_obj)
 
 
+@receiver(post_save, sender=ProfileCategory)
+def profile_category_updated(sender, instance, **kwargs):
+    profile_category_id = instance.id
+    profiles_to_invalidate_cache = Profile.objects.filter(
+        Q(theme__profile_categories__category_id=profile_category_id)
+        | Q(category__profilecategory__id=profile_category_id)
+        | Q(profilecategory__id=profile_category_id)
+    ).distinct()
+    for profile_obj in profiles_to_invalidate_cache:
+        update_profile_cache(profile_obj)
+
+
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
     update_point_cache(instance.category)
@@ -154,11 +166,6 @@ def point_updated_location(sender, instance, **kwargs):
 @receiver(post_save, sender=Category)
 def point_updated_category(sender, instance, **kwargs):
     update_point_cache(instance)
-
-
-@receiver(post_save, sender=ProfileCategory)
-def point_updated_profile_category(sender, instance, **kwargs):
-    update_point_cache(instance.category)
 
 
 @receiver(post_save, sender=Theme)

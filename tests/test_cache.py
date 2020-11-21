@@ -240,27 +240,21 @@ class TestCache(unittest.TestCase):
         ]
         mock_update_profile_cache.assert_has_calls(calls, any_order=True)
 
+    @pytest.mark.django_db
+    @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
+    def test_invalidate_profile_cache_for_profile_category_update(self, mock_update_profile_cache):
+        mock_update_profile_cache.reset_mock()
+        profile1 = ProfileFactory()
+        profile_category = ProfileCategoryFactory(profile=profile1)
+        assert profile_category not in profile1.profilecategory_set.values_list()
 
-invalidate_point_cache_for_update_values = (
-        (LocationFactory, "category"),
-        (CategoryFactory, None),
-        (ProfileCategoryFactory, "category"),
-        (ThemeFactory, None),
-    )
+        mock_update_profile_cache.reset_mock()
+        profile_category.save()
+        assert mock_update_profile_cache.call_count == 3
 
-
-@pytest.mark.django_db
-@pytest.mark.parametrize("factory, category", invalidate_point_cache_for_update_values)
-@patch('wazimap_ng.cache.update_point_cache', autospec=True)
-def test_invalidate_point_cache_for_update(mock_update_point_cache, factory, category):
-    mock_update_point_cache.reset_mock()
-    factory_obj = factory()
-    assert mock_update_point_cache.call_count > 0
-    if category:
-        call_obj = getattr(factory_obj, category)
-    else:
-        call_obj = factory_obj
-    calls = [
-        call(call_obj),
-    ]
-    mock_update_point_cache.assert_has_calls(calls, any_order=True)
+        calls = [
+            call(profile_category.profile),
+            call(profile_category.theme.profile),
+            call(profile_category.category.profile),
+        ]
+        mock_update_profile_cache.assert_has_calls(calls, any_order=True)
