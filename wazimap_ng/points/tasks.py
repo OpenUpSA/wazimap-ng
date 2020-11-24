@@ -1,4 +1,3 @@
-import codecs
 import logging
 
 from django.db import transaction
@@ -7,7 +6,7 @@ from django.conf import settings
 from .dataloader import loaddata
 import pandas as pd
 from wazimap_ng.general.services.csv_helpers import csv_logger
-from ..datasets.tasks.process_uploaded_file import detect_encoding
+from wazimap_ng.utils import get_encoding_and_wrapper_file
 
 logger = logging.getLogger(__name__)
 
@@ -21,21 +20,12 @@ def process_uploaded_file(point_file, subtheme, **kwargs):
     After reading data convert to list rather than using numpy array.
     """
     buffer = point_file.document.open("rb")
-    encoding = detect_encoding(buffer)
-    StreamReader = codecs.getreader(encoding)
-    wrapper_file = StreamReader(buffer)
-    wrapper_file.seek(0)
+    encoding, wrapper_file, old_columns, new_columns = get_encoding_and_wrapper_file(buffer)
 
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
     row_number = 1
     error_logs = []
 
-    df = pd.read_csv(wrapper_file, nrows=1, dtype=str, sep=",")
-    old_columns = df.columns.str.lower().str.strip()
-    df.dropna(how="all", axis="columns", inplace=True)
-    new_columns = df.columns.str.lower().str.strip()
-
-    wrapper_file.seek(0)
     for df in pd.read_csv(
         wrapper_file,
         chunksize=chunksize,

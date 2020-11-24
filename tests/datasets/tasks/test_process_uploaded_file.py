@@ -4,7 +4,7 @@ from io import BytesIO
 
 import pytest
 
-from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv, detect_encoding
+from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv
 from tests.datasets.factories import DatasetFactory, GeographyFactory, GeographyHierarchyFactory, DatasetFileFactory
 
 def generate_file(data, header, encoding="utf8"):
@@ -65,14 +65,9 @@ to_be_fixed_header = ["Geography", "field1", "field2", "count "]
 def data(request):
     return request.param
 
-def test_detect_encoding():
-    buffer = generate_file(data_with_different_encodings, good_header, "Windows-1252")
-    encoding = detect_encoding(buffer)
-    assert encoding == "Windows-1252"
 
 @pytest.mark.django_db
 class TestUploadFile:
-
     def test_process_csv(self, dataset, data, geographies):
         csv_data, header, encoding = data
         datasetfile = create_datasetfile(csv_data, encoding, header)

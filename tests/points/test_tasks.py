@@ -3,7 +3,6 @@ import codecs
 from io import BytesIO
 
 import pytest
-from django.contrib.gis.geos import Point
 
 from tests.points.factories import (
     CategoryFactory,
