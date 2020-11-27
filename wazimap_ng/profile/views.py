@@ -12,6 +12,7 @@ from django.views.decorators.cache import never_cache
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import NotFound
 
 
 from . import models
@@ -51,7 +52,7 @@ class ProfileByUrl(generics.RetrieveAPIView):
         qs = qs.filter(configuration__urls__contains=[hostname])
         if qs.count() == 0:
             logger.warning(f"Can't find a profile for {hostname} - returning 404 ")
-            raise Http404
+            raise NotFound(detail=f"Could not find matching profile with hostname: {hostname}. Check your profile configuration to ensure that it contains {hostname} in the urls array.")
 
         instance = qs.first()
         serializer = self.get_serializer(instance)
