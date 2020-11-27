@@ -77,3 +77,13 @@ class DatasetDataFactory(factory.django.DjangoModelFactory):
     data = {}
 
 
+class LicenceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Licence
+
+class MetaDataFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.MetaData
+
+    licence = factory.SubFactory(LicenceFactory)
+    dataset = factory.SubFactory(DatasetFactory)

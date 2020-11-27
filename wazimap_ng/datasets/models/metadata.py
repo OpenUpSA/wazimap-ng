@@ -6,6 +6,7 @@ from wazimap_ng.general.models import BaseModel
 
 class MetaData(BaseModel):
     source = models.CharField(max_length=60, null=False, blank=True)
+    url = models.URLField(null=True, blank=True)
     description = models.TextField(blank=True)
     licence = models.ForeignKey(
         Licence, null=True, blank=True, on_delete=models.SET_NULL,
