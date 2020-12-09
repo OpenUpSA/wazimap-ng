@@ -3,6 +3,8 @@ import os
 import pandas as pd
 from django.conf import settings
 
+from wazimap_ng.general.services.s3_helpers import upload_files_to_s3
+
 
 def get_log_filename(name, type, file_id):
     return F"{name}_{file_id}_{type}_log.csv"
@@ -55,4 +57,5 @@ def csv_logger(target_obj, file_obj, type, logs, headers):
         log_file_name = get_log_filename(target_name, type, target_id)
         file_log = write_csv(logs, F"{logdir}/{log_file_name}", headers)
         results.append(file_log)
+    upload_files_to_s3(results)
     return results
