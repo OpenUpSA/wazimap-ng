@@ -1,14 +1,14 @@
-import os
 import pandas as pd
 
 from .. import models
 from django.contrib import admin
 from django.urls import reverse
+from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
-
+from wazimap_ng.datasets import hooks
 
 @admin.register(models.CoordinateFile)
 class CoordinateFileAdmin(BaseAdminModel):
@@ -29,10 +29,8 @@ class CoordinateFileAdmin(BaseAdminModel):
     )
 
     def get_document(self, obj):
-        _, file_extension = os.path.splitext(obj.document.name)
-        doc_name = f'{obj.name}-{obj.id}{file_extension}'
         return mark_safe(
-            f'<a href="{obj.document.url}" download="{doc_name}">{doc_name}</a>'
+            f'<a href="{obj.document.url}" download="{obj.name}-{obj.id}.csv">{obj.name}-{obj.id}.csv</a>'
         )
     get_document.short_description = 'Document'
 

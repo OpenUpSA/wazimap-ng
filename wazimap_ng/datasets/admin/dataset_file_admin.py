@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 
 from .. import models
@@ -39,11 +38,9 @@ class CustomGeographyHierarchyFilter(filters.GeographyHierarchyFilter):
     def queryset(self, request, queryset):
         return filter_custom_queryset(self, request, queryset)
 
-
 class CustomProfileFilter(filters.ProfileFilter):
     def queryset(self, request, queryset):
         return filter_custom_queryset(self, request, queryset)
-
 
 class CustomMetadataFilter(filters.DatasetMetaDataFilter):
     def queryset(self, request, queryset):
@@ -87,8 +84,8 @@ class DatasetFileAdmin(BaseAdminModel):
     get_dataset_name.short_description = 'Dataset'
 
     def get_document(self, obj):
-        _, file_extension = os.path.splitext(obj.document.name)
-        doc_name = f'{obj.name}-{obj.id}{file_extension}'
+        file_extension = obj.document.name.split(".")[-1]
+        doc_name = f'{obj.name}-{obj.id}.{file_extension}'
         return mark_safe(
             f'<a href="{obj.document.url}" download="{doc_name}">{doc_name}</a>'
         )
