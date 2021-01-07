@@ -109,12 +109,17 @@ def boundary_point_count_helper(profile, geography):
             theme_dict[id] = theme
             res.append(theme)
         theme = theme_dict[id]
+
+        pc_icon = lc["category__profilecategory__icon"]
+        if not pc_icon or pc_icon == "None":
+            pc_icon = ""
+
         theme["subthemes"].append({
             "label": lc["category__profilecategory__label"],
             "id": lc["category__profilecategory__id"],
             "count": lc["count_category"],
             "color": lc["category__profilecategory__color"],
-            "icon": lc["category__profilecategory__icon"],
+            "icon": pc_icon,
             "metadata": {
                 "source": lc["category__metadata__source"],
                 "description": lc["category__metadata__description"],
