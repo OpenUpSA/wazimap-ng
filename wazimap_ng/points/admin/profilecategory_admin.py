@@ -25,8 +25,8 @@ class ProfileCategoryAdmin(BaseAdminModel):
         ("Database fields (can't change after being created)", {
             'fields': ('profile', 'theme', 'category',)
         }),
-        ("Profile Collection Icon", {
-            'fields': ('icon', )
+        ("Profile Collection Icon & Color", {
+            'fields': ('icon', 'color', )
 
         }),
         ("Point Collection description fields", {

@@ -14,6 +14,8 @@ from wazimap_ng import utils
 from wazimap_ng.datasets.models import Licence
 from wazimap_ng.general.models import BaseModel
 from wazimap_ng.config.common import PERMISSION_TYPES
+from colorfield.fields import ColorField
+
 
 def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)
@@ -68,6 +70,7 @@ class ProfileCategory(BaseModel):
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
     description = models.TextField(blank=True)
     icon = models.CharField(max_length=30, null=True, blank=True)
+    color = ColorField(blank=True)
 
     def __str__(self):
         return self.label
