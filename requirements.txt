@@ -68,6 +68,7 @@ xlrd==1.2.0
 django-import-export==2.0.2
 django-map-widgets==0.3.0
 django-material-icon-widget==0.1.2
+django-colorfield==0.3.2
 
 # amazon-s3
 django-storages==1.7.1
