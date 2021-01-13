@@ -69,6 +69,7 @@ class Common(QCluster, Configuration):
         "wazimap_ng.boundaries",
         "wazimap_ng.profile",
         "wazimap_ng.general",
+        "wazimap_ng.cms",
 
     ]
 
