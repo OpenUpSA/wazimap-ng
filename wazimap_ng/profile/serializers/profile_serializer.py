@@ -25,9 +25,11 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_configuration(self, obj):
         configs = obj.configuration
         for page in obj.page_set.all():
-            configs[page.api_mapping] = [
-                ContentSerializer(content).data for content in page.content_set.all()
-            ]
+            content_set = page.content_set.all()
+            if content_set.exists():
+                configs[page.api_mapping] = [
+                    ContentSerializer(content).data for content in content_set
+                ]
         return configs
 
     class Meta:
@@ -70,9 +72,11 @@ class FullProfileSerializer(serializers.ModelSerializer):
     def get_configuration(self, obj):
         configs = obj.configuration
         for page in obj.page_set.all():
-            configs[page.api_mapping] = [
-                ContentSerializer(content).data for content in page.content_set.all()
-            ]
+            content_set = page.content_set.all()
+            if content_set.exists():
+                configs[page.api_mapping] = [
+                    ContentSerializer(content).data for content in page.content_set.all()
+                ]
         return configs
 
     class Meta:
