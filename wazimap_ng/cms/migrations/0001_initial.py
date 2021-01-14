@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('profile', '0047_profileindicator_configuration'),
+        ('datasets', '0110_metadata_url'),
     ]
 
     operations = [
