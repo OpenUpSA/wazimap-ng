@@ -13,4 +13,4 @@ class PageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Page
-        fields = ("content_set", )
+        fields = ("content_set", "name", "api_mapping")
