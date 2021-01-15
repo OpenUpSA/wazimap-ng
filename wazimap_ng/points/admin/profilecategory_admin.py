@@ -1,3 +1,4 @@
+from adminsortable2.admin import SortableAdminMixin
 from django.contrib.gis import admin
 from django import forms
 
@@ -17,16 +18,16 @@ class ProfileCategoryAdminForm(forms.ModelForm):
 
 
 @admin.register(models.ProfileCategory)
-class ProfileCategoryAdmin(BaseAdminModel):
-    list_display = ("label", "theme", "category", "profile")
+class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel):
+    list_display = ("label", "theme", "order", "category", "profile")
     list_filter = (filters.ProfileFilter, filters.ThemeFilter, filters.CollectionFilter)
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
             'fields': ('profile', 'theme', 'category',)
         }),
-        ("Profile Collection Icon", {
-            'fields': ('icon', )
+        ("Profile Collection Icon & Color", {
+            'fields': ('icon', 'color', )
 
         }),
         ("Point Collection description fields", {
