@@ -6,7 +6,7 @@ from django.conf import settings
 from .dataloader import loaddata
 import pandas as pd
 from wazimap_ng.general.services.csv_helpers import csv_logger
-from wazimap_ng.utils import get_encoding_and_wrapper_file
+from wazimap_ng.utils import get_stream_reader, clean_columns
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,8 @@ def process_uploaded_file(point_file, subtheme, **kwargs):
     After reading data convert to list rather than using numpy array.
     """
     buffer = point_file.document.open("rb")
-    encoding, wrapper_file, old_columns, new_columns = get_encoding_and_wrapper_file(buffer)
+    encoding, wrapper_file = get_stream_reader(buffer)
+    old_columns, new_columns = clean_columns(wrapper_file)
 
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
     row_number = 1

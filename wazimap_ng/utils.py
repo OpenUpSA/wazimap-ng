@@ -599,16 +599,19 @@ def detect_encoding(buffer):
     return detector.result["encoding"]
 
 
-def get_encoding_and_wrapper_file(buffer):
-    encoding = detect_encoding(buffer)
+def get_stream_reader(buffer, encoding=None):
+    if not encoding:
+        encoding = detect_encoding(buffer)
     StreamReader = codecs.getreader(encoding)
     wrapper_file = StreamReader(buffer)
-    wrapper_file.seek(0)
+    return encoding, wrapper_file
 
-    df = pd.read_csv(wrapper_file, nrows=1, dtype=str, sep=",")
+
+def clean_columns(file):
+    file.seek(0)
+    df = pd.read_csv(file, nrows=1, dtype=str, sep=",")
     old_columns = df.columns.str.lower().str.strip()
     df.dropna(how="all", axis="columns", inplace=True)
     new_columns = df.columns.str.lower().str.strip()
-
-    wrapper_file.seek(0)
-    return encoding, wrapper_file, old_columns, new_columns
+    file.seek(0)
+    return old_columns, new_columns

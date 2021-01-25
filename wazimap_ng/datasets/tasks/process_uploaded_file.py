@@ -5,7 +5,7 @@ from django.conf import settings
 import pandas as pd
 
 from wazimap_ng.general.services.csv_helpers import csv_logger
-from wazimap_ng.utils import get_encoding_and_wrapper_file
+from wazimap_ng.utils import get_stream_reader, clean_columns
 
 from ..dataloader import loaddata
 
@@ -19,7 +19,8 @@ def process_file_data(df, dataset, row_number):
 
 
 def process_csv(dataset, buffer, chunksize=1000000):
-    encoding, wrapper_file, _, columns = get_encoding_and_wrapper_file(buffer)
+    encoding, wrapper_file = get_stream_reader(buffer)
+    _, columns = clean_columns(wrapper_file)
     row_number = 1
     error_logs = [];
     warning_logs = [];
