@@ -1,43 +1,27 @@
-import codecs
-import os
 import logging
 
 from django.db import transaction
 from django.conf import settings
-from chardet.universaldetector import UniversalDetector
 import pandas as pd
 
-from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.services.csv_helpers import csv_logger
+from wazimap_ng.utils import get_stream_reader, clean_columns
 
 from ..dataloader import loaddata
-from .. import models
 
 logger = logging.getLogger(__name__)
 
-def detect_encoding(buffer):
-    detector = UniversalDetector()
-    for line in buffer:
-        detector.feed(line)
-        if detector.done: break
-    detector.close()
-    return detector.result["encoding"]
 
 def process_file_data(df, dataset, row_number):
     df = df.applymap(lambda s:s.strip() if type(s) == str else s)
     datasource = (dict(d[1]) for d in df.iterrows())
     return loaddata(dataset, datasource, row_number)
 
-def process_csv(dataset, buffer, chunksize=1000000):
-    encoding = detect_encoding(buffer)
-    StreamReader = codecs.getreader(encoding)
-    wrapper_file = StreamReader(buffer)
-    wrapper_file.seek(0)
 
+def process_csv(dataset, buffer, chunksize=1000000):
+    encoding, wrapper_file = get_stream_reader(buffer)
+    _, columns = clean_columns(wrapper_file)
     row_number = 1
-    df = pd.read_csv(wrapper_file, nrows=1, dtype=str, sep=",", encoding=encoding)
-    df.dropna(how='all', axis='columns', inplace=True)
-    columns = df.columns.str.lower().str.strip()
     error_logs = [];
     warning_logs = [];
 
