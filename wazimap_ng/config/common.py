@@ -60,6 +60,7 @@ class Common(QCluster, Configuration):
         "mapwidgets",
         "guardian",
         "icon_picker_widget",
+        "colorfield",
 
         # Your apps
         "wazimap_ng.datasets",

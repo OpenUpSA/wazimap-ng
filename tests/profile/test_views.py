@@ -6,6 +6,7 @@ from test_plus import APITestCase
 from tests.profile.factories import ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory, ProfileIndicatorFactory
 from tests.datasets.factories import DatasetFactory, IndicatorFactory, IndicatorDataFactory, GroupFactory
 
+from wazimap_ng.profile.views import ProfileByUrl
 
 @pytest.mark.django_db
 class TestProfileGeographyData(APITestCase):
@@ -114,3 +115,27 @@ class TestProfileGeographyData(APITestCase):
 
         assert len(indicators) == 2
         assert indicator_list[0][0] == 'Indicator'
+
+
+@pytest.fixture
+def profile():
+    _profile = ProfileFactory()
+    _profile.configuration = {
+        "urls": ["some_domain.com"]
+    }
+
+    _profile.save()
+
+    return _profile
+
+@pytest.mark.django_db
+class TestProfileByUrl:
+    def test_missing_url(self, profile, rf):
+        request = rf.get("profile-by-url")
+        response = ProfileByUrl.as_view()(request)
+        assert response.status_code == 404
+
+    def test_matched_url(self, profile, rf):
+        request = rf.get("profile-by-url", HTTP_WM_HOSTNAME="some_domain.com")
+        response = ProfileByUrl.as_view()(request)
+        assert response.status_code == 200
