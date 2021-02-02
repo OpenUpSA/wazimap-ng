@@ -12,6 +12,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - run: docker-compose run --rm web scripts/wait-for-postgres.sh
       - name: Run tests
         run: docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
       - name: Start server
