@@ -21,12 +21,16 @@ class Common(QCluster, Configuration):
 
     SERVER_INSTANCE = os.environ.get("SERVER_INSTANCE", "Dev")
     RELEASE = f"{SERVER_INSTANCE}"
+    SENTRY_ENVIRONMENT = f"BE_{SERVER_INSTANCE}"
     SENTRY_DSN = os.environ.get("SENTRY_DSN", None)
+    SENTRY_PERF_SAMPLE_RATE = os.environ.get("SENTRY_PERF_SAMPLE_RATE", 0.1)
 
     if SENTRY_DSN:
         sentry_sdk.init(SENTRY_DSN,
             integrations=[DjangoIntegration(), RedisIntegration()],
             send_default_pii=True,
+            traces_sample_rate=SENTRY_PERF_SAMPLE_RATE,
+            environment=SENTRY_ENVIRONMENT,
             release=RELEASE
         )
 
