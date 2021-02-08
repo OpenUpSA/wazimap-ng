@@ -1,6 +1,6 @@
 import pytest
 
-from tests.datasets.factories import IndicatorFactory, DatasetFactory, DatasetDataFactory, GeographyFactory
+from tests.datasets.factories import IndicatorFactory, DatasetFactory, DatasetDataFactory, GeographyFactory, GroupFactory
 
 from wazimap_ng.datasets.tasks.indicator_data_extraction import indicator_data_extraction
 
@@ -23,8 +23,15 @@ def datasetdatas(dataset, geography):
         DatasetDataFactory(dataset=dataset, geography=geography, data={"age group": "25-29", "gender": "male", "count": 31}),
     ]
 
+@pytest.fixture
+def groups(dataset):
+    return [
+        GroupFactory(dataset=dataset, name="age group"),
+        GroupFactory(dataset=dataset, name="gender"),
+    ]
+
 @pytest.mark.django_db
-def test_indicator(dataset, datasetdatas):
+def test_indicator(dataset, datasetdatas, groups):
     indicator = IndicatorFactory()
     indicator.dataset = dataset
 

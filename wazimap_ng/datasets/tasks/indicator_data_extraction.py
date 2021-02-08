@@ -69,20 +69,19 @@ def indicator_data_extraction(indicator, **kwargs):
     primary_group = indicator.groups[0] # TODO ensure that we only ever have one primary group. Probably need to change the model
 
     models.IndicatorData.objects.filter(indicator=indicator).delete()
-    groups = ["data__" + i for i in indicator.dataset.groups]
 
-    for group in indicator.dataset.groups:
-        logger.debug(f"Extracting subindicators for: {group}")
-        qs = models.DatasetData.objects.filter(dataset=indicator.dataset, data__has_keys=[group])
-        if group != primary_group:
-            subindicators = qs.get_unique_subindicators(group)
+    for group in indicator.dataset.group_set.all():
+        logger.debug(f"Extracting subindicators for: {group.name}")
+        qs = models.DatasetData.objects.filter(dataset=indicator.dataset, data__has_keys=[group.name])
+        if group.name != primary_group:
+            subindicators = qs.get_unique_subindicators(group.name)
 
             for subindicator in subindicators:
-                logger.debug(f"Extracting subindicators for: {group} -> {subindicator}")
-                qs_subindicator = qs.filter(**{f"data__{group}": subindicator})
+                logger.debug(f"Extracting subindicators for: {group.name} -> {subindicator}")
+                qs_subindicator = qs.filter(**{f"data__{group.name}": subindicator})
 
                 counts = extract_counts(indicator, qs_subindicator)
-                sorter.add_data(group, subindicator, counts)
+                sorter.add_data(group.name, subindicator, counts)
         else:
             counts = extract_counts(indicator, qs)
             sorter.add_subindicator(counts)
