@@ -46,7 +46,7 @@ class GroupAdmin(DatasetBaseAdminModel):
 
     form = GroupAdminForm
 
-    list_filter = (GroupProfileFilter, GroupDatasetFilter,)
+    list_filter = (GroupProfileFilter, GroupDatasetFilter, "can_filter", "can_aggregate")
 
     formfield_overrides = {
         fields.JSONField: {"widget": SortableWidget},
@@ -57,7 +57,7 @@ class GroupAdmin(DatasetBaseAdminModel):
 
     fieldsets = (
         ("General", {
-            'fields': ('name', 'dataset')
+            'fields': ('name', 'dataset', "can_filter", "can_aggregate")
         }),
         ("Subindicators", {
           'fields': ('subindicators',)
