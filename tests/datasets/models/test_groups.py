@@ -22,3 +22,9 @@ class TestGroup:
 
     def test_str(self, dataset, group):
         assert str(group) == f"test dataset|Hello"
+
+    def test_can_filter_default(self, group):
+        assert group.can_filter == True
+
+    def test_can_aggregate_default(self, group):
+        assert group.can_aggregate == False

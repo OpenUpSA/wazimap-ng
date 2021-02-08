@@ -8,6 +8,8 @@ class Group(BaseModel):
     name = models.CharField(max_length=100, blank=False, null=False)
     dataset = models.ForeignKey(Dataset, null=True, on_delete=models.CASCADE)
     subindicators = JSONField(blank=True, default=list)
+    can_filter = models.BooleanField(default=True)
+    can_aggregate = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.dataset.name}|{self.name}"
