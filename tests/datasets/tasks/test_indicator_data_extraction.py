@@ -31,28 +31,30 @@ def groups(dataset):
     ]
 
 @pytest.mark.django_db
-def test_indicator(dataset, datasetdatas, groups):
-    indicator = IndicatorFactory()
-    indicator.dataset = dataset
+class TestIndicatorDataExtract:
 
-    indicator_data_extraction(indicator)
-    assert indicator.indicatordata_set.count() == 1
-    indicator_data = indicator.indicatordata_set.first()
+    def test_basic(self, dataset, datasetdatas, groups):
+        indicator = IndicatorFactory()
+        indicator.dataset = dataset
 
-    assert indicator_data.data == {
-        'groups': {
-            'gender': {
-                'male': [
-                    {'count': 11.0, 'age group': '15-19'},
-                    {'count': 21.0, 'age group': '20-24'},
-                    {'count': 31.0, 'age group': '25-29'}
-                ],
-                'female': [
-                    {'count': 10.0, 'age group': '15-19'},
-                    {'count': 20.0, 'age group': '20-24'},
-                    {'count': 30.0, 'age group': '25-29'}
-                ]
-            }
-        },
-        'subindicators': {'15-19': 21.0, '20-24': 41.0, '25-29': 61.0}
-    }
+        indicator_data_extraction(indicator)
+        assert indicator.indicatordata_set.count() == 1
+        indicator_data = indicator.indicatordata_set.first()
+
+        assert indicator_data.data == {
+            'groups': {
+                'gender': {
+                    'male': [
+                        {'count': 11.0, 'age group': '15-19'},
+                        {'count': 21.0, 'age group': '20-24'},
+                        {'count': 31.0, 'age group': '25-29'}
+                    ],
+                    'female': [
+                        {'count': 10.0, 'age group': '15-19'},
+                        {'count': 20.0, 'age group': '20-24'},
+                        {'count': 30.0, 'age group': '25-29'}
+                    ]
+                }
+            },
+            'subindicators': {'15-19': 21.0, '20-24': 41.0, '25-29': 61.0}
+        }
