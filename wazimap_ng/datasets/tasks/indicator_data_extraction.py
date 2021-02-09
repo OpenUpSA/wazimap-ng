@@ -143,11 +143,14 @@ def extract_counts(indicator, qs):
 
     So for Gender group object should look like : {"Gender": "Male", "count": 123, ...}
     """
-
+    ds_groups = indicator.dataset.group_set.all()
+    nonagg_groups = ds_groups.filter(can_aggregate=False)
+    nonagg_groups_names = [g.name for g in nonagg_groups]
+    in_groups = list(set(indicator.groups + nonagg_groups_names))
     if indicator.universe is not None:
         qs = qs.filter_by_universe(indicator.universe)
 
-    groups = ["data__" + i for i in indicator.groups]
+    groups = ["data__" + i for i in in_groups]
     c = Cast(KeyTextTransform("count", "data"), FloatField())
 
     qs = qs.exclude(data__count="")
