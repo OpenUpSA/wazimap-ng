@@ -23,7 +23,6 @@ class Indicator(BaseModel):
 
     def get_unique_subindicators(self):
         if self.primary_group is not None:
-            # TODO this model should be refactored to only allow one group
             subindicators = DatasetData.objects.filter(dataset=self.dataset).get_unique_subindicators(self.primary_group)
             return list(subindicators)
 
