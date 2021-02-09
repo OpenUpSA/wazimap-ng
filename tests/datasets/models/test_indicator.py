@@ -1,7 +1,26 @@
 from unittest.mock import patch
 from unittest.mock import Mock
+import pytest
 
 from wazimap_ng.datasets.models import Indicator, Dataset, DatasetData
+
+from tests.datasets.factories import IndicatorFactory
+
+
+
+@pytest.mark.django_db
+class TestIndicatorModel:
+    def test_primary_group(self):
+        indicator = IndicatorFactory()
+        indicator.groups = ["group1", "group2", "group3"]
+
+        assert indicator.primary_group == "group1"
+
+    def test_missing_primary_group(self):
+        indicator = IndicatorFactory()
+        indicator.groups = []
+
+        assert indicator.primary_group is None
 
 class TestIndicatorGetUniqueSubindicators:
     @patch("wazimap_ng.datasets.models.DatasetData.objects")

@@ -36,6 +36,14 @@ class Indicator(BaseModel):
             logger.debug(f"Updating subindicators for indicator: {self.name} ({self.id})")
             self.subindicators = self.get_unique_subindicators()
         super().save(*args, **kwargs)
+
+
+    @property
+    def primary_group(self):
+        if len(self.groups) > 0:
+            return self.groups[0]
+        return None
+    
         
 
     def __str__(self):
