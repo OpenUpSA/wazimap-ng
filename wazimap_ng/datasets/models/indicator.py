@@ -22,10 +22,9 @@ class Indicator(BaseModel):
     subindicators = JSONField(default=list, blank=True, null=True)
 
     def get_unique_subindicators(self):
-        if len(self.groups) > 0:
+        if self.primary_group is not None:
             # TODO this model should be refactored to only allow one group
-            group = self.groups[0]
-            subindicators = DatasetData.objects.filter(dataset=self.dataset).get_unique_subindicators(group)
+            subindicators = DatasetData.objects.filter(dataset=self.dataset).get_unique_subindicators(self.primary_group)
             return list(subindicators)
 
         return []
