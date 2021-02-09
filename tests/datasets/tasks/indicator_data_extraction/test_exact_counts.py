@@ -2,14 +2,14 @@ import pytest
 from wazimap_ng.datasets.tasks.indicator_data_extraction import extract_counts
 
 @pytest.mark.django_db
-def test_exact_counts(indicator, datasetdatas): 
+def test_exact_counts(indicator, datasetdatas, geography): 
 
     qs = indicator.dataset.datasetdata_set.all()
     counts = extract_counts(indicator, qs)
 
     assert counts == [
         {
-            "geography_id": 3,
+            "geography_id": geography.id,
             "data": [
                 {
                     "age group": "15-19",
@@ -32,7 +32,7 @@ def test_exact_counts(indicator, datasetdatas):
 
     assert counts == [
         {
-            "geography_id": 3,
+            "geography_id": geography.id,
             "data": [
                 {
                     "age group": "15-19",
@@ -52,7 +52,7 @@ def test_exact_counts(indicator, datasetdatas):
 
 
 @pytest.mark.django_db
-def test_exact_counts_with_non_agg_group(indicator, datasetdatas, groups): 
+def test_exact_counts_with_non_agg_group(indicator, datasetdatas, groups, geography): 
     groups = indicator.dataset.group_set.all()
     group = groups.last()
 
@@ -63,10 +63,11 @@ def test_exact_counts_with_non_agg_group(indicator, datasetdatas, groups):
 
     qs = indicator.dataset.datasetdata_set.all()
     counts = extract_counts(indicator, qs)
+    counts[0]["data"] = sorted(counts[0]["data"], key=lambda x: x["gender"] + x["age group"])
 
     assert counts == [
         {
-            "geography_id": 6,
+            "geography_id": geography.id,
             "data": [
                 {
                     "gender": "female",
