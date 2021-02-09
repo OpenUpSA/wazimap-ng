@@ -2,7 +2,7 @@ import pytest
 
 from tests.datasets.factories import IndicatorFactory, DatasetFactory, DatasetDataFactory, GeographyFactory, GroupFactory
 
-from wazimap_ng.datasets.tasks.indicator_data_extraction import indicator_data_extraction
+from wazimap_ng.datasets.tasks.indicator_data_extraction import indicator_data_extraction, extract_counts
 
 @pytest.fixture
 def geography():
@@ -24,11 +24,30 @@ def datasetdatas(dataset, geography):
     ]
 
 @pytest.fixture
+def indicator(dataset):
+    indicator = IndicatorFactory()
+    indicator.dataset = dataset
+    return indicator
+@pytest.fixture
 def groups(dataset):
     return [
         GroupFactory(dataset=dataset, name="age group"),
         GroupFactory(dataset=dataset, name="gender"),
     ]
+
+@pytest.mark.django_db
+def test_exact_counts(indicator, datasetdatas):
+
+    qs = indicator.dataset.datasetdata_set.all()
+    counts = extract_counts(indicator, qs)
+
+    assert counts == [{'geography_id': 3, 'data': [{'age group': '15-19', 'count': 21.0}, {'age group': '20-24', 'count': 41.0}, {'age group': '25-29', 'count': 61.0}]}]
+
+    qs_subindicator = qs.filter(**{f"data__gender": "male"})
+    counts = extract_counts(indicator, qs_subindicator)
+
+    assert counts == [{'geography_id': 3, 'data': [{'age group': '15-19', 'count': 11.0}, {'age group': '20-24', 'count': 21.0}, {'age group': '25-29', 'count': 31.0}]}]
+
 
 @pytest.mark.django_db
 class TestIndicatorDataExtract:
