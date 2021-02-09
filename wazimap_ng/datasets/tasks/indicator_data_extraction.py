@@ -38,6 +38,9 @@ class DataAccumulator:
 
         self.data["subindicators"] = subindicators
 
+    @property
+    def subindicators(self):
+        return self.data["subindicators"]
 class Sorter:
     def __init__(self):
         self.accumulators = {}
