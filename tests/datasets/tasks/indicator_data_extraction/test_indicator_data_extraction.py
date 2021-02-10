@@ -27,7 +27,11 @@ class TestIndicatorDataExtract:
                     ]
                 }
             },
-            'subindicators': {'15-19': 21.0, '20-24': 41.0, '25-29': 61.0}
+            "subindicators": [
+                {"count": 21.0, "subindicator": "15-19"},
+                {"count": 41.0, "subindicator": "20-24"},
+                {"count": 61.0, "subindicator": "25-29"},
+            ]
         }
 
     def test_non_aggregate_non_primary_group(self, dataset, datasetdatas, groups):
