@@ -37,18 +37,18 @@ def test_data_accumulator_with_primary_group():
     assert da.subindicators == [
         {
             "group": "male",
-            "values": {
-                "15-19": 20.0,
-                "20-24": 40.0,
-                "25-29": 60.0,
-            }
+            "values": [
+                {"subindicator": "15-19", "count": 20.0},
+                {"subindicator": "20-24", "count": 40.0},
+                {"subindicator": "25-29", "count": 60.0},
+            ]
         },
         {
             "group": "female",
-            "values": {
-                "15-19": 21.0,
-                "20-24": 41.0,
-                "25-29": 61.0,
-            }
+            "values": [
+                {"subindicator": "15-19", "count": 21.0},
+                {"subindicator": "20-24", "count": 41.0},
+                {"subindicator": "25-29", "count": 61.0},
+            ]
         }
     ]

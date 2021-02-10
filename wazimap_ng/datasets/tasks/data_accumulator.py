@@ -1,4 +1,7 @@
 from collections import defaultdict
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DataAccumulator:
     def __init__(self, geography_id, primary_group=None):
@@ -23,6 +26,29 @@ class DataAccumulator:
 
         return subindicators
 
+    def _subindicator_groups(self, data_blob):
+        subindicators = {}
+        subindicators_arr = []
+
+        for datum in data_blob:
+            count = datum.pop("count")
+            subindicator = datum.pop(self.primary_group)
+            values = list(datum.values())
+            if len(values) > 1:
+                logger.warning(f"Data cannot be grouped by more than one group. The first group will be selected.")
+            group2_subindicator = values[0]
+
+            group_data = subindicators.setdefault(subindicator, [])
+            group_data.append({"subindicator": group2_subindicator, "count": count})
+
+        for group_subindicator, values in subindicators.items():
+            subindicators_arr.append({
+                "group": group_subindicator,
+                "values": values
+            })
+
+        return subindicators_arr
+
     def add_subindicator(self, data_blob):
         subindicators = {}
         data_blob = list(data_blob)
@@ -37,22 +63,7 @@ class DataAccumulator:
         elif len(values) == 1:
             self.data["subindicators"] = self._subindicator_no_groups(data_blob)
         else:
-            for datum in data_blob:
-                count = datum.pop("count")
-                subindicator = datum.pop(self.primary_group)
-                values = list(datum.values())
-                group2_subindicator = values[0]
-
-                group_dict = subindicators.setdefault(subindicator, {})
-                group_dict[group2_subindicator] = count
-            subindicators_arr = []
-            for group_subindicator, values in subindicators.items():
-                subindicators_arr.append({
-                    "group": group_subindicator,
-                    "values": values
-                })
-
-            self.data["subindicators"] = subindicators_arr
+            self.data["subindicators"] = self._subindicator_groups(data_blob)
 
 
     @property
