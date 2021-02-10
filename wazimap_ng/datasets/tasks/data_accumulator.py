@@ -13,6 +13,16 @@ class DataAccumulator:
     def add_data(self, group, subindicator, data_blob):
         self.data["groups"][group][subindicator] = data_blob["data"]
 
+    def _subindicator_no_groups(self, data_blob):
+        subindicators = []
+        for datum in data_blob:
+            count = datum.pop("count")
+            values = list(datum.values())
+            subindicator = values[0]
+            subindicators.append({"subindicator": subindicator, "count": count})
+
+        return subindicators
+
     def add_subindicator(self, data_blob):
         subindicators = {}
         data_blob = list(data_blob)
@@ -25,12 +35,7 @@ class DataAccumulator:
         if len(values) == 0:
             raise Exception("Missing subindicator in datablob")
         elif len(values) == 1:
-            for datum in data_blob:
-                count = datum.pop("count")
-                values = list(datum.values())
-                subindicator = values[0]
-                subindicators[subindicator] = count
-            self.data["subindicators"] = subindicators
+            self.data["subindicators"] = self._subindicator_no_groups(data_blob)
         else:
             for datum in data_blob:
                 count = datum.pop("count")

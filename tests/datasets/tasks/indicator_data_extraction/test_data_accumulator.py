@@ -11,9 +11,14 @@ def test_data_accumulator():
         {"age group": "20-24", "count": 41.0},
         {"age group": "25-29", "count": 61.0}
     ]
+
     da.add_subindicator(data)
 
-    assert da.subindicators == {"15-19": 21.0, "20-24": 41.0, "25-29": 61.0}
+    assert da.subindicators == [
+        {"subindicator": "15-19", "count": 21.0},
+        {"subindicator": "20-24", "count": 41.0},
+        {"subindicator": "25-29", "count": 61.0},
+    ]
 
 def test_data_accumulator_with_primary_group():
     data = [
