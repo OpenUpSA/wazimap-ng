@@ -54,6 +54,48 @@ def test_subindicators_with_groups(data_accumulator):
         }
     ]
 
+def test_add_data(data_accumulator):
+    data = [
+        {"age group": "15-19", "gender": "male", "count": 20.0},
+        {"age group": "20-24", "gender": "male", "count": 40.0},
+        {"age group": "25-29", "gender": "male", "count": 60.0},
+        {"age group": "15-19", "gender": "female", "count": 21.0},
+        {"age group": "20-24", "gender": "female", "count": 41.0},
+        {"age group": "25-29", "gender": "female", "count": 61.0}
+    ]
+
+
+    assert len(data_accumulator.groups_data) == 0
+
+    data_accumulator.add_data("gender", "male", {"data": [
+        {"age group": "15-19", "count": 20},
+        {"age group": "20-24", "count": 40},
+        {"age group": "25-29", "count": 60},
+    ]})
+
+    assert len(data_accumulator.groups_data) == 1
+    assert len(data_accumulator.groups_data["gender"]) == 1
+    assert data_accumulator.groups_data["gender"]["male"] == [
+        {"age group": "15-19", "count": 20},
+        {"age group": "20-24", "count": 40},
+        {"age group": "25-29", "count": 60},
+    ]
+
+    data_accumulator.add_data("gender", "female", {"data": [
+        {"age group": "15-19", "count": 21},
+        {"age group": "20-24", "count": 41},
+        {"age group": "25-29", "count": 61},
+    ]})
+
+    assert len(data_accumulator.groups_data) == 1
+    assert len(data_accumulator.groups_data["gender"]) == 2
+    assert data_accumulator.groups_data["gender"]["female"] == [
+        {"age group": "15-19", "count": 21},
+        {"age group": "20-24", "count": 41},
+        {"age group": "25-29", "count": 61},
+    ]
+
+
 def test_get_groups(data_accumulator):
     data = [
         {"count": 23, "gender": "male", "age group": "15-19"},
