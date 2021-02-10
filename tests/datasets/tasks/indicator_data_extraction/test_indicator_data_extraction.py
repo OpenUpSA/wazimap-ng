@@ -16,14 +16,14 @@ class TestIndicatorDataExtract:
             "groups": {
                 "gender": {
                     "male": [
-                        {"count": 11.0, "age group": "15-19"},
-                        {"count": 21.0, "age group": "20-24"},
-                        {"count": 31.0, "age group": "25-29"}
+                        {"count": 11.0, "subindicator": "15-19"},
+                        {"count": 21.0, "subindicator": "20-24"},
+                        {"count": 31.0, "subindicator": "25-29"}
                     ],
                     "female": [
-                        {"count": 10.0, "age group": "15-19"},
-                        {"count": 20.0, "age group": "20-24"},
-                        {"count": 30.0, "age group": "25-29"}
+                        {"count": 10.0, "subindicator": "15-19"},
+                        {"count": 20.0, "subindicator": "20-24"},
+                        {"count": 30.0, "subindicator": "25-29"}
                     ]
                 }
             },

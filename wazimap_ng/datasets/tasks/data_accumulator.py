@@ -56,10 +56,14 @@ class DataAccumulator:
         return list(datum_copy.keys())
 
     def add_data(self, group, subindicator, data_blob):
+        new_data = []
+
         for datum in data_blob["data"]:
-            if self.primary_group in datum:
-                datum.pop(self.primary_group)
-        self.data["groups"][group][subindicator] = data_blob["data"]
+            count = datum.pop("count")
+            subindicator2 = list(datum.values())[0]
+            new_data.append({"count": count, "subindicator": subindicator2})
+
+        self.data["groups"][group][subindicator] = new_data
 
 
     def add_subindicator(self, data_blob):
