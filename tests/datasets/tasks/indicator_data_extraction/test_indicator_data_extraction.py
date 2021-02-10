@@ -13,17 +13,17 @@ class TestIndicatorDataExtract:
         indicator_data = indicator.indicatordata_set.first()
 
         assert indicator_data.data == {
-            'groups': {
-                'gender': {
-                    'male': [
-                        {'count': 11.0, 'age group': '15-19'},
-                        {'count': 21.0, 'age group': '20-24'},
-                        {'count': 31.0, 'age group': '25-29'}
+            "groups": {
+                "gender": {
+                    "male": [
+                        {"count": 11.0, "age group": "15-19"},
+                        {"count": 21.0, "age group": "20-24"},
+                        {"count": 31.0, "age group": "25-29"}
                     ],
-                    'female': [
-                        {'count': 10.0, 'age group': '15-19'},
-                        {'count': 20.0, 'age group': '20-24'},
-                        {'count': 30.0, 'age group': '25-29'}
+                    "female": [
+                        {"count": 10.0, "age group": "15-19"},
+                        {"count": 20.0, "age group": "20-24"},
+                        {"count": 30.0, "age group": "25-29"}
                     ]
                 }
             },
