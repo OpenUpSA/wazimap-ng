@@ -49,18 +49,21 @@ class DataAccumulator:
 
         return subindicators_arr
 
-    def add_subindicator(self, data_blob):
-        subindicators = {}
+    def get_groups(self, data_blob):
         data_blob = list(data_blob)
         if len(data_blob) == 0:
             return
 
         datum_copy = dict(data_blob[0])
         count = datum_copy.pop("count")
-        values = list(datum_copy.values())
-        if len(values) == 0:
+        return list(datum_copy.keys())
+
+    def add_subindicator(self, data_blob):
+        data_blob = list(data_blob)
+        groups = self.get_groups(data_blob)
+        if len(groups) == 0:
             raise Exception("Missing subindicator in datablob")
-        elif len(values) == 1:
+        elif len(groups) == 1:
             self.data["subindicators"] = self._subindicator_no_groups(data_blob)
         else:
             self.data["subindicators"] = self._subindicator_groups(data_blob)

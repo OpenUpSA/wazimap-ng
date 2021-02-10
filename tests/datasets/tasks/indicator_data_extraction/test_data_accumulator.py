@@ -2,8 +2,11 @@ import pytest
 
 from wazimap_ng.datasets.tasks.indicator_data_extraction import DataAccumulator
 
-def test_data_accumulator():
-    geography_id = 4
+@pytest.fixture
+def geography_id():
+    return 4
+
+def test_data_accumulator(geography_id):
     da = DataAccumulator(geography_id)
 
     data = [
@@ -20,7 +23,7 @@ def test_data_accumulator():
         {"subindicator": "25-29", "count": 61.0},
     ]
 
-def test_data_accumulator_with_primary_group():
+def test_data_accumulator_with_primary_group(geography_id):
     data = [
         {"age group": "15-19", "gender": "male", "count": 20.0},
         {"age group": "20-24", "gender": "male", "count": 40.0},
@@ -29,7 +32,6 @@ def test_data_accumulator_with_primary_group():
         {"age group": "20-24", "gender": "female", "count": 41.0},
         {"age group": "25-29", "gender": "female", "count": 61.0}
     ]
-    geography_id = 4
 
     da = DataAccumulator(geography_id, primary_group="gender")
     da.add_subindicator(data)
@@ -52,3 +54,17 @@ def test_data_accumulator_with_primary_group():
             ]
         }
     ]
+
+def test_get_groups(geography_id):
+    data = [
+        {"count": 23, "gender": "male", "age group": "15-19"},
+        {"count": 46, "gender": "male", "age group": "20-24"},
+        {"count": 23, "gender": "female", "age group": "15-19"},
+    ]
+
+    da = DataAccumulator(geography_id, primary_group="gender")
+    groups = da.get_groups(data)
+
+    assert len(groups) == 2
+    assert "gender" in groups
+    assert "age group" in groups
