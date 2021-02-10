@@ -16,7 +16,7 @@ def test_subindicators_no_groups(data_accumulator):
 
     data_accumulator.add_subindicator_data(data)
 
-    assert data_accumulator.subindicators == [
+    assert data_accumulator.subindicators_data == [
         {"subindicator": "15-19", "count": 21.0},
         {"subindicator": "20-24", "count": 41.0},
         {"subindicator": "25-29", "count": 61.0},
@@ -35,7 +35,7 @@ def test_subindicators_with_groups(data_accumulator):
     data_accumulator.primary_group = "gender"
     data_accumulator.add_subindicator_data(data)
 
-    assert data_accumulator.subindicators == [
+    assert data_accumulator.subindicators_data == [
         {
             "group": "male",
             "values": [

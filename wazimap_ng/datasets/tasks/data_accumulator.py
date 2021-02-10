@@ -78,7 +78,7 @@ class DataAccumulator:
 
 
     @property
-    def subindicators(self):
+    def subindicators_data(self):
         return self.data["subindicators"]
 
     @property
