@@ -6,7 +6,7 @@ from wazimap_ng.datasets.tasks.indicator_data_extraction import DataAccumulator
 def geography_id():
     return 4
 
-def test_data_accumulator(geography_id):
+def test_subindicators_no_groups(geography_id):
     da = DataAccumulator(geography_id)
 
     data = [
@@ -23,7 +23,7 @@ def test_data_accumulator(geography_id):
         {"subindicator": "25-29", "count": 61.0},
     ]
 
-def test_data_accumulator_with_primary_group(geography_id):
+def test_subindicators_with_groups(geography_id):
     data = [
         {"age group": "15-19", "gender": "male", "count": 20.0},
         {"age group": "20-24", "gender": "male", "count": 40.0},
