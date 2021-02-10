@@ -34,15 +34,12 @@ class TestIndicatorDataExtract:
             ]
         }
 
-    def test_non_aggregate_non_primary_group(self, dataset, datasetdatas, groups):
-        return True
+    def test_non_aggregate_non_primary_group(self, indicator, datasetdatas, groups):
         g = groups[-1]
+        assert g.name == "gender"
         g.can_aggregate = False
         g.save()
 
-
-        indicator = IndicatorFactory()
-        indicator.dataset = dataset
 
         indicator_data_extraction(indicator)
         indicator_data = indicator.indicatordata_set.first()
@@ -51,14 +48,14 @@ class TestIndicatorDataExtract:
             "groups": {
                 "gender": {
                     "male": [
-                        {"count": 11.0, "age group": "15-19"},
-                        {"count": 21.0, "age group": "20-24"},
-                        {"count": 31.0, "age group": "25-29"}
+                        {"count": 11.0, "subindicator": "15-19"},
+                        {"count": 21.0, "subindicator": "20-24"},
+                        {"count": 31.0, "subindicator": "25-29"}
                     ],
                     "female": [
-                        {"count": 10.0, "age group": "15-19"},
-                        {"count": 20.0, "age group": "20-24"},
-                        {"count": 30.0, "age group": "25-29"}
+                        {"count": 10.0, "subindicator": "15-19"},
+                        {"count": 20.0, "subindicator": "20-24"},
+                        {"count": 30.0, "subindicator": "25-29"}
                     ]
                 }
             },
@@ -66,22 +63,22 @@ class TestIndicatorDataExtract:
                 {
                     "group": "15-19",
                     "values": [
-                        {"count": 10.0, "gender": "male"},
-                        {"count": 20.0, "gender": "female"}
+                        {"count": 10.0, "subindicator": "female"},
+                        {"count": 11.0, "subindicator": "male"},
                     ]
                 },
                 {
                     "group": "20-24",
                     "values": [
-                        {"count": 11.0, "gender": "male"},
-                        {"count": 21.0, "gender": "female"}
+                        {"count": 20.0, "subindicator": "female"},
+                        {"count": 21.0, "subindicator": "male"},
                     ]
                 },
                 {
                     "group": "25-29",
                     "values": [
-                        {"count": 12.0, "gender": "male"},
-                        {"count": 22.0, "gender": "female"}
+                        {"count": 30.0, "subindicator": "female"},
+                        {"count": 31.0, "subindicator": "male"},
                     ]
                 }
             ]

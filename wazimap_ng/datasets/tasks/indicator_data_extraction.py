@@ -42,7 +42,7 @@ class Sorter:
 
 @transaction.atomic
 def indicator_data_extraction(indicator, **kwargs):
-    sorter = Sorter()
+    sorter = Sorter(primary_group=indicator.primary_group)
 
     models.IndicatorData.objects.filter(indicator=indicator).delete()
 
