@@ -55,7 +55,7 @@ class DataAccumulator:
         count = datum_copy.pop("count")
         return list(datum_copy.keys())
 
-    def add_data(self, group, subindicator, data_blob):
+    def add_groups_data(self, group, subindicator, data_blob):
         new_data = []
 
         for datum in data_blob["data"]:
@@ -66,7 +66,7 @@ class DataAccumulator:
         self.data["groups"][group][subindicator] = new_data
 
 
-    def add_subindicator(self, data_blob):
+    def add_subindicator_data(self, data_blob):
         data_blob = list(data_blob)
         groups = self.get_groups(data_blob)
         if len(groups) == 0:

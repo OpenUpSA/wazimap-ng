@@ -26,18 +26,18 @@ class Sorter:
         accumulator = self.accumulators[geography_id]
         return accumulator
 
-    def add_data(self, group, subindicator, data_blob):
+    def add_groups_data(self, group, subindicator, data_blob):
         for datum in data_blob:
             geography_id = datum["geography_id"]
             accumulator = self.get_accumulator(geography_id)
 
-            accumulator.add_data(group, subindicator, datum)
+            accumulator.add_groups_data(group, subindicator, datum)
 
-    def add_subindicator(self, data_blob):
+    def add_subindicator_data(self, data_blob):
         for datum in data_blob:
             geography_id = datum["geography_id"]
             accumulator = self.get_accumulator(geography_id)
-            accumulator.add_subindicator(datum["data"])
+            accumulator.add_subindicator_data(datum["data"])
 
 
 @transaction.atomic
@@ -57,10 +57,10 @@ def indicator_data_extraction(indicator, **kwargs):
                 qs_subindicator = qs.filter(**{f"data__{group.name}": subindicator})
 
                 counts = extract_counts(indicator, qs_subindicator)
-                sorter.add_data(group.name, subindicator, counts)
+                sorter.add_groups_data(group.name, subindicator, counts)
         else:
             counts = extract_counts(indicator, qs)
-            sorter.add_subindicator(counts)
+            sorter.add_subindicator_data(counts)
 
 
     datarows = []
