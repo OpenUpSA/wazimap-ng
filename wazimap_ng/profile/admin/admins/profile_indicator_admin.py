@@ -64,6 +64,23 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
             obj.subindicators = obj.indicator.subindicators
         super().save_model(request, obj, form, change)
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        qs = form.base_fields["subcategory"].queryset
+        if obj:
+            profile_id = obj.profile_id
+            if request.method == "POST":
+                profile_id = request.POST.get("profile", profile_id)
+            qs = models.IndicatorSubcategory.objects.filter(
+                category__profile_id=profile_id
+            )
+        elif not obj and request.method == "GET":
+             qs = qs = models.IndicatorSubcategory.objects.none()
+
+        form.base_fields["subcategory"].queryset = qs
+
+        return form
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         field = super().formfield_for_foreignkey(db_field, request, **kwargs)
         if db_field.name == "indicator":
