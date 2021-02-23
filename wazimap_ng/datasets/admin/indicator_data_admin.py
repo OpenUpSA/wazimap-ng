@@ -39,6 +39,9 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
 
     search_fields = ["geography__name"]
 
+    class Media:
+        js = ("/static/js/indicatordata-admin.js",)
+
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
             return ("geography", "indicator") + self.readonly_fields
