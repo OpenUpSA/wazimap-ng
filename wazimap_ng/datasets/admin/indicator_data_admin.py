@@ -11,6 +11,7 @@ from wazimap_ng.general.admin import filters
 
 @admin.register(models.IndicatorData)
 class IndicatorDataAdmin(DatasetBaseAdminModel):
+    add_form_template = 'admin/indicatordata_change_list.html'
 
     def indicator__name(self, obj):
         return obj.indicator.name
@@ -39,8 +40,8 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
 
     search_fields = ["geography__name"]
 
-    class Media:
-        js = ("/static/js/indicatordata-admin.js",)
+    # class Media:
+    #     js = ("/static/js/indicatordata-admin.js",)
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
