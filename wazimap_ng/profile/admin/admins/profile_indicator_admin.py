@@ -1,15 +1,16 @@
+from adminsortable2.admin import SortableAdminMixin
 from django.contrib.gis import admin
 from django.contrib.postgres import fields
-from adminsortable2.admin import SortableAdminMixin
+from django.db.models.functions import Concat
+
+from wazimap_ng.datasets.models import Dataset, Indicator
+from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.widgets import customTitledFilter, description
 
 from ... import models
 from ..forms import ProfileIndicatorAdminForm
 
-from wazimap_ng.general.widgets import customTitledFilter, description
-from wazimap_ng.datasets.models import Indicator, Dataset
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
-from wazimap_ng.general.admin import filters
-from django.db.models.functions import Concat
 
 class CategoryIndicatorFilter(filters.CategoryFilter):
     parameter_name = 'subcategory__category__id'
@@ -25,8 +26,8 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
     exclude_common_list_display = True
     list_display = (
         "profile",
-        "label", 
-        description("Indicator", lambda x: x.indicator.name), 
+        "label",
+        description("Indicator", lambda x: x.indicator.name),
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
         "created",

@@ -13,7 +13,7 @@ You can find the backend code in this repository. The frontend is available here
 The main new features are:
 
 * Admins now have more flexibility when it comes to loading data. This includes uploading massive datasets and then slicing and dicing in the backend rather than pre-preparing datasets beforehand.
-* Point data is now fully integrated as a first-class spatial object. 
+* Point data is now fully integrated as a first-class spatial object.
 * Choropleths built into the main view. These were hidden behind multiple clicks in the previous version.
 * One platform can host multiple profiles off the same database.
 * The Rich data view allows richer disaggregation of indicators.

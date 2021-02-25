@@ -2,9 +2,10 @@ import logging
 
 from django import forms
 
-from ... import models
 from wazimap_ng.datasets.models import Indicator
 from wazimap_ng.general.widgets import VariableFilterWidget
+
+from ... import models
 
 logger = logging.getLogger(__name__)
 

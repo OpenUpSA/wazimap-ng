@@ -2,7 +2,7 @@
 
 # from django.contrib.gis.db import models
 # from fields import CachedMultiPolygonField
-# 
+#
 #
 # class MyGeography(models.model):
 #     name = models.CharField(max_length=128)

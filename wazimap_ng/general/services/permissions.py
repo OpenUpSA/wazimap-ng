@@ -1,17 +1,16 @@
 from django.contrib.auth import get_permission_codename
 from django.contrib.auth.models import Group
+from guardian.shortcuts import assign_perm, get_groups_with_perms
+from guardian.shortcuts import \
+    get_objects_for_user as guardian_objects_for_user
+from guardian.shortcuts import get_perms_for_model, remove_perm
 
-from guardian.shortcuts import (
-    get_perms_for_model, assign_perm, remove_perm,
-    get_objects_for_user as guardian_objects_for_user,
-    get_groups_with_perms
-)
-
-from .custom_permissions import fk_queryset_filter, custom_permissions
-
-from .custom_permissions.queryset_filters import CustomQuerySet
-from .custom_permissions.fk_queryset_filter import CustomFKQuerySet
 from wazimap_ng.config.common import STAFF_GROUPS
+
+from .custom_permissions import custom_permissions, fk_queryset_filter
+from .custom_permissions.fk_queryset_filter import CustomFKQuerySet
+from .custom_permissions.queryset_filters import CustomQuerySet
+
 
 def get_user_group(user):
     return user.groups.all().exclude(

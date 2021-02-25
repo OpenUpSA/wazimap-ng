@@ -1,14 +1,16 @@
 import os
+
 import pandas as pd
+from django.contrib import admin
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+
+from wazimap_ng.general.admin import filters
+from wazimap_ng.general.services import permissions
 
 from .. import models
 from .base_admin_model import BaseAdminModel
-from django.contrib import admin
-from django.urls import reverse
-from django.utils.safestring import mark_safe
-from django.template.loader import render_to_string
-from wazimap_ng.general.services import permissions
-from wazimap_ng.general.admin import filters
 
 
 # Filters

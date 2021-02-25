@@ -1,9 +1,15 @@
 import pytest
 
+from tests.datasets.factories import (
+    GeographyFactory,
+    IndicatorDataFactory,
+    MetaDataFactory
+)
 from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
-from tests.datasets.factories import GeographyFactory, IndicatorDataFactory, MetaDataFactory
+from wazimap_ng.profile.serializers.indicator_data_serializer import (
+    get_indicator_data
+)
 
-from wazimap_ng.profile.serializers.indicator_data_serializer import get_indicator_data
 
 @pytest.fixture
 def profile():

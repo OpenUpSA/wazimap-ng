@@ -1,9 +1,8 @@
+import json
 import logging
 
 from django.contrib.sessions.models import Session
 from django.urls import reverse
-
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +123,7 @@ def custom_admin_notification(session, notification_type, message, task_id=None)
     notifications are stored in session and show to user when user refreshes page.
 
     A valid session object must be passed to this function with notification type and message
-    
+
     Type of notifications:
         * success
         * info

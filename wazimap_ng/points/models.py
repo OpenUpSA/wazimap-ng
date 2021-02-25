@@ -1,19 +1,18 @@
 import os
-
-from django.contrib.gis.db import models
-from django.contrib.postgres.fields import JSONField
-from django.core.validators import FileExtensionValidator
-from django.core.exceptions import ValidationError
+from io import BytesIO
 
 import pandas as pd
-from io import BytesIO
-from wazimap_ng.profile.models import Profile
-from django_q.models import Task
-from wazimap_ng import utils
-from wazimap_ng.general.models import BaseModel
-from wazimap_ng.config.common import PERMISSION_TYPES
 from colorfield.fields import ColorField
+from django.contrib.gis.db import models
+from django.contrib.postgres.fields import JSONField
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
+from django_q.models import Task
 
+from wazimap_ng import utils
+from wazimap_ng.config.common import PERMISSION_TYPES
+from wazimap_ng.general.models import BaseModel
+from wazimap_ng.profile.models import Profile
 
 
 def get_file_path(instance, filename):

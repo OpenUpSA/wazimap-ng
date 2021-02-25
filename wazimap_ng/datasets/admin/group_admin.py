@@ -1,15 +1,18 @@
+from adminsortable2.admin import SortableAdminMixin
 from django import forms
 from django.contrib import admin
-
 from django.contrib.postgres import fields
-from adminsortable2.admin import SortableAdminMixin
 
-from wazimap_ng.general.widgets import customTitledFilter, description, SortableWidget
 from wazimap_ng.general.admin import filters
+from wazimap_ng.general.widgets import (
+    SortableWidget,
+    customTitledFilter,
+    description
+)
+
 from .. import models
 from .base_admin_model import DatasetBaseAdminModel
 
-from wazimap_ng.general.admin import filters
 
 class GroupDatasetFilter(filters.DatasetFilter):
     parameter_name = 'dataset__name'
@@ -40,8 +43,8 @@ class GroupAdminForm(forms.ModelForm):
 class GroupAdmin(DatasetBaseAdminModel):
     list_display = (
         "name",
-        "dataset", 
-        description("Profile", lambda x: x.dataset.profile), 
+        "dataset",
+        description("Profile", lambda x: x.dataset.profile),
     )
 
     form = GroupAdminForm

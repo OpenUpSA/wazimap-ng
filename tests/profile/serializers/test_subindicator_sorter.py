@@ -2,7 +2,10 @@ from collections import OrderedDict
 
 import pytest
 
-from wazimap_ng.profile.serializers.subindicator_sorter import SubindicatorSorter
+from wazimap_ng.profile.serializers.subindicator_sorter import (
+    SubindicatorSorter
+)
+
 
 @pytest.fixture
 def subindicators():
@@ -123,7 +126,7 @@ class TestSubindicatorSorter:
 
         assert list(sorted_group2.keys()) == ["x", "z", "y"]
         assert isinstance(sorted_group2, OrderedDict)
-        
+
         sorted_group2_group3 = list(sorted_group2.values())
         assert sorted_group2_group3[0] == OrderedDict(c3=60, c1=40, c2=50)
         assert sorted_group2_group3[1] == OrderedDict(c3=6000, c1=4000, c2=5000)

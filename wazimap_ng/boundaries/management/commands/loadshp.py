@@ -1,15 +1,14 @@
-import os
 import logging
-
-from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-
-from wazimap_ng.datasets.models import Geography
-from wazimap_ng.boundaries.models import GeographyBoundary
+import os
 
 import fiona
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 from shapely.geometry import shape as shapely_shape
+
+from wazimap_ng.boundaries.models import GeographyBoundary
+from wazimap_ng.datasets.models import Geography
 
 logger = logging.getLogger(__name__)
 
@@ -112,4 +111,3 @@ class Command(BaseCommand):
             self.process_shape(s, field_map, level, version)
 
         print(f"{idx + 1} geographies successfully loaded")
-

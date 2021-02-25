@@ -1,16 +1,15 @@
 from django.contrib.gis import admin
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-
 from django_q.tasks import async_task
 
+from wazimap_ng.datasets import hooks
+from wazimap_ng.general.admin import filters
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.services.permissions import assign_perms_to_group
-from wazimap_ng.general.admin import filters
 
 from .. import models
 from .forms import CategoryAdminForm
-from wazimap_ng.datasets import hooks
 
 
 @admin.register(models.Category)

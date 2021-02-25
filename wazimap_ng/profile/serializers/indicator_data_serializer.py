@@ -2,8 +2,8 @@ import logging
 
 from django.db.models import F
 
-from wazimap_ng.datasets.models import IndicatorData 
-from wazimap_ng.utils import qsdict, mergedict, expand_nested_list, pivot
+from wazimap_ng.datasets.models import IndicatorData
+from wazimap_ng.utils import expand_nested_list, mergedict, pivot, qsdict
 
 from .. import models
 from .profile_indicator_sorter import ProfileIndicatorSorter

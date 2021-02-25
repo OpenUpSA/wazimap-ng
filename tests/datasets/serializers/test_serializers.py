@@ -1,7 +1,8 @@
 import pytest
 
+from tests.datasets.factories import LicenceFactory, MetaDataFactory
 from wazimap_ng.datasets.serializers import MetaDataSerializer
-from tests.datasets.factories import MetaDataFactory, LicenceFactory
+
 
 @pytest.fixture
 def licence():
@@ -21,4 +22,3 @@ class TestMetaDataSerializer:
                 "name": "licence name", "url": "abc url"
             }
         }
-

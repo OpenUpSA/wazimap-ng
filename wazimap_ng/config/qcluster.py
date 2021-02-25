@@ -1,4 +1,5 @@
 import os
+
 from wazimap_ng.utils import int_or_none, truthy
 
 

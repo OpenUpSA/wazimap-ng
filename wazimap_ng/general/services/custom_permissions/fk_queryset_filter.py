@@ -1,10 +1,11 @@
 from django.db import models
 
-from .. import permissions
-from wazimap_ng.profile.models import Profile
-from wazimap_ng.points.models import Category
-from wazimap_ng.datasets.models import Dataset
 from wazimap_ng.cms.models import Page
+from wazimap_ng.datasets.models import Dataset
+from wazimap_ng.points.models import Category
+from wazimap_ng.profile.models import Profile
+
+from .. import permissions
 
 
 class CustomFKQuerySet(models.QuerySet):

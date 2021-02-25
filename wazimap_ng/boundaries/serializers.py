@@ -1,13 +1,14 @@
-from rest_framework_gis.serializers import GeoFeatureModelSerializer
-from rest_framework_gis.fields import GeometrySerializerMethodField 
-from rest_framework import serializers
-from . import models
-from ..datasets.models import Geography
-from ..points.models import Location
+from itertools import groupby
 
 from django.core.serializers import serialize
-from itertools import groupby
 from django.db.models import Count
+from rest_framework import serializers
+from rest_framework_gis.fields import GeometrySerializerMethodField
+from rest_framework_gis.serializers import GeoFeatureModelSerializer
+
+from ..datasets.models import Geography
+from ..points.models import Location
+from . import models
 
 
 class GeographySerializer(GeoFeatureModelSerializer):

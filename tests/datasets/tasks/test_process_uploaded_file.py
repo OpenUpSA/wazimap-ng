@@ -1,11 +1,17 @@
-import csv
 import codecs
+import csv
 from io import BytesIO
 
 import pytest
 
+from tests.datasets.factories import (
+    DatasetFactory,
+    DatasetFileFactory,
+    GeographyFactory,
+    GeographyHierarchyFactory
+)
 from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv
-from tests.datasets.factories import DatasetFactory, GeographyFactory, GeographyHierarchyFactory, DatasetFileFactory
+
 
 def generate_file(data, header, encoding="utf8"):
     buffer = BytesIO()

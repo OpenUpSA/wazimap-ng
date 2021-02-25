@@ -1,12 +1,11 @@
 from django.contrib import admin
 from django.contrib.postgres import fields
-
 from django_json_widget.widgets import JSONEditorWidget
 
-from .base_admin_model import DatasetBaseAdminModel
-from .. import models
-
 from wazimap_ng.general.admin import filters
+
+from .. import models
+from .base_admin_model import DatasetBaseAdminModel
 
 
 @admin.register(models.IndicatorData)

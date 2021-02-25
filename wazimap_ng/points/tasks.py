@@ -1,12 +1,13 @@
 import logging
 
-from django.db import transaction
+import pandas as pd
 from django.conf import settings
+from django.db import transaction
+
+from wazimap_ng.general.services.csv_helpers import csv_logger
+from wazimap_ng.utils import clean_columns, get_stream_reader
 
 from .dataloader import loaddata
-import pandas as pd
-from wazimap_ng.general.services.csv_helpers import csv_logger
-from wazimap_ng.utils import get_stream_reader, clean_columns
 
 logger = logging.getLogger(__name__)
 

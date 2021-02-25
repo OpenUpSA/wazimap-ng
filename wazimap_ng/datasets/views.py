@@ -1,25 +1,26 @@
 import operator
 from functools import reduce
 
-from django.http import Http404
-from django.views.decorators.http import condition
-from django.shortcuts import get_object_or_404
 from django.conf import settings
-from django.forms.models import model_to_dict
-from django.db.models import Q, CharField
+from django.db.models import CharField, Q
 from django.db.models.functions import Cast
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework_csv import renderers as r
+from django.forms.models import model_to_dict
+from django.http import Http404
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import condition
 from rest_framework import generics, viewsets
-from .serializers import AncestorGeographySerializer
-from . import serializers
-from . import models
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework_csv import renderers as r
+
+from wazimap_ng.profile.models import Profile
+
 from ..cache import etag_profile_updated, last_modified_profile_updated
 from ..profile.models import Logo
 from ..utils import truthy
+from . import models, serializers
+from .serializers import AncestorGeographySerializer
 
-from wazimap_ng.profile.models import Profile
 
 class DatasetList(generics.ListAPIView):
     queryset = models.Dataset.objects.all()
@@ -67,7 +68,7 @@ class DatasetIndicatorsList(generics.ListAPIView):
 
     def get(self, request, dataset_id):
         if models.Dataset.objects.filter(id=dataset_id).count() == 0:
-            raise Http404 
+            raise Http404
 
         queryset = self.get_queryset().filter(dataset=dataset_id)
         queryset = self.paginate_queryset(queryset)
@@ -92,16 +93,16 @@ class GeographyHierarchyViewset(viewsets.ReadOnlyModelViewSet):
 def search_geography(request, profile_id):
     """
     Search autocompletion - provides recommendations from place names
-    Prioritises higher-level geographies in the results, e.g. 
-    Provinces of Municipalities. 
+    Prioritises higher-level geographies in the results, e.g.
+    Provinces of Municipalities.
 
     Querystring parameters
     q - search string
-    max-results number of results to be returned [default is 30] 
+    max-results number of results to be returned [default is 30]
     """
     profile = get_object_or_404(Profile, pk=profile_id)
     version = profile.geography_hierarchy.root_geography.version
-    
+
     default_results = 30
     max_results = request.GET.get("max_results", default_results)
     try:
@@ -121,7 +122,7 @@ def search_geography(request, profile_id):
             return 0
 
         else:
-            # TODO South Africa specific geography 
+            # TODO South Africa specific geography
             return {
                 "province": 1,
                 "district": 2,
@@ -144,7 +145,7 @@ def geography_ancestors(request, geography_code, version):
     """
     geos = models.Geography.objects.filter(code=geography_code, version=version)
     if geos.count() == 0:
-        raise Http404 
+        raise Http404
 
     geography = geos.first()
     geo_js = AncestorGeographySerializer().to_representation(geography)

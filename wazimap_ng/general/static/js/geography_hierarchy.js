@@ -50,7 +50,7 @@
                     success: function(data) {
 
                         var hierarchyID = data.geography_hierarchy.id;
-                        
+
                         if (hierarchyID != geographyHierarchyID){
                             $(document).find("#id_geography_hierarchy").val(hierarchyID);
                             if ($help_div.length){
@@ -62,7 +62,7 @@
                             let description = data.geography_hierarchy.description.length ? data.geography_hierarchy.description : "Description not Provided for this hierarchy."
                             $help_div.append(data.name + " : " + description);
                         }
-                        
+
                     }
                 })
             } else {

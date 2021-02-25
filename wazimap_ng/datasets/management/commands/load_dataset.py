@@ -1,16 +1,16 @@
-import sys
 import os
+import sys
 from pathlib import Path
 
 import django
+from django.core.files import File
 from django.core.management.base import BaseCommand, CommandError
 from django.db.transaction import atomic
-from django.core.files import File
-
 from django_q.tasks import async_task
 
 from wazimap_ng.datasets.models import Dataset, DatasetFile
 from wazimap_ng.profile.models import Profile
+
 
 class Command(BaseCommand):
     help = 'Uploads a dataset from the command line. '

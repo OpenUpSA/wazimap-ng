@@ -1,13 +1,14 @@
 import logging
 import operator
 
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
-from django.contrib.postgres.fields import JSONField, ArrayField
+
+from wazimap_ng.general.models import BaseModel
 
 from .dataset import Dataset
 from .datasetdata import DatasetData
 from .universe import Universe
-from wazimap_ng.general.models import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class Indicator(BaseModel):
             logger.debug(f"Updating subindicators for indicator: {self.name} ({self.id})")
             self.subindicators = self.get_unique_subindicators()
         super().save(*args, **kwargs)
-        
+
 
     def __str__(self):
         return f"{self.dataset.name} -> {self.name}"

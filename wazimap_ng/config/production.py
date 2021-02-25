@@ -1,6 +1,9 @@
 import os
-from .common import Common
+
 from configurations import Configuration, values
+
+from .common import Common
+
 
 class Production(Common):
 
@@ -12,7 +15,7 @@ class Production(Common):
     INSTALLED_APPS += ("gunicorn", )
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
+
 
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/2.0/howto/static-files/

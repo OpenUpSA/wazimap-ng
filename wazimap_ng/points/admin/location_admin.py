@@ -1,18 +1,18 @@
-from django.contrib.postgres import fields
+from django.contrib import messages
 from django.contrib.gis import admin
 from django.contrib.gis.db.models import PointField
-from django.contrib import messages
-
-from import_export.admin import ExportMixin
-from import_export import resources
-from import_export.fields import Field
-
+from django.contrib.postgres import fields
 from django_json_widget.widgets import JSONEditorWidget
+from import_export import resources
+from import_export.admin import ExportMixin
+from import_export.fields import Field
 from mapwidgets.widgets import GooglePointFieldWidget
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
+
 from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
 
 from .. import models
+
 
 def assign_to_category_action(category):
     def assign_to_category(modeladmin, request, queryset):

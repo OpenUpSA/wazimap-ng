@@ -1,8 +1,8 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django_json_widget.widgets import JSONEditorWidget
 
 from wazimap_ng.general.widgets import VariableFilterWidget
-from django_json_widget.widgets import JSONEditorWidget
 
 from ... import models
 

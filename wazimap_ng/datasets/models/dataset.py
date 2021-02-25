@@ -1,10 +1,10 @@
-from django.db import models
 from django.contrib.postgres.fields import ArrayField
-
-from .geography import Geography, GeographyHierarchy
-from wazimap_ng.general.models import BaseModel
+from django.db import models
 
 from wazimap_ng.config.common import PERMISSION_TYPES
+from wazimap_ng.general.models import BaseModel
+
+from .geography import Geography, GeographyHierarchy
 
 
 class DatasetQuerySet(models.QuerySet):

@@ -3,7 +3,7 @@
 
 {% block content %}
     <p>Are you sure you want to delete the {{ object_name }} ? All of the following related items will be deleted:</p>
-    
+
     <h2>Summary</h2>
 	<ul>
 	    <li>{{ object_name|capfirst }}: {{ obj.name }}</li>
@@ -15,7 +15,7 @@
 	    	<li>{{ field.name|capfirst }}: {{ field.count }}</li>
 		{% endfor %}
 	</ul>
-    
+
     <form method="post">{% csrf_token %}
     <div>
     <input type="hidden" name="post" value="yes">

@@ -1,8 +1,8 @@
-import csv
 import codecs
+import csv
 from io import BytesIO
 
-from wazimap_ng.utils import sort_list_using_order, detect_encoding
+from wazimap_ng.utils import detect_encoding, sort_list_using_order
 
 
 def test_empty_sort_using_order():

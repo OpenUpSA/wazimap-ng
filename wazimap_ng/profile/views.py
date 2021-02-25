@@ -1,25 +1,20 @@
 import logging
-
 from urllib.parse import urlparse
 
-from django.shortcuts import get_object_or_404
 from django.http import Http404
-from django.views.decorators.http import condition
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
-
-
+from django.views.decorators.http import condition
 from rest_framework import generics
-from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound
-
-
-from . import models
-from . import serializers
-from ..cache import etag_profile_updated, last_modified_profile_updated
+from rest_framework.response import Response
 
 from wazimap_ng.datasets.models import Geography
+
+from ..cache import etag_profile_updated, last_modified_profile_updated
+from . import models, serializers
 
 logger = logging.getLogger(__name__)
 

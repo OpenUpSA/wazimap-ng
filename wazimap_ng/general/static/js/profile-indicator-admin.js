@@ -40,4 +40,3 @@
         }
     });
 })(django.jQuery);
-

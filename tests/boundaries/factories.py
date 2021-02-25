@@ -1,5 +1,5 @@
 import factory
-from django.contrib.gis.geos import Polygon, MultiPolygon
+from django.contrib.gis.geos import MultiPolygon, Polygon
 
 from wazimap_ng.boundaries.models import GeographyBoundary
 

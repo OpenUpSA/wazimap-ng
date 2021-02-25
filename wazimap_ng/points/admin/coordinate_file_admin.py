@@ -1,13 +1,14 @@
 import os
-import pandas as pd
 
-from .. import models
+import pandas as pd
 from django.contrib import admin
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from django.template.loader import render_to_string
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
+
+from .. import models
 
 
 @admin.register(models.CoordinateFile)

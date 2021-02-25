@@ -1,7 +1,8 @@
-from wazimap_ng.datasets.models import Group 
+from wazimap_ng.datasets.models import Group
 from wazimap_ng.utils import qsdict
 
 from .subindicator_sorter import SubindicatorSorter
+
 
 class ProfileIndicatorSorter:
     def __init__(self, profile):

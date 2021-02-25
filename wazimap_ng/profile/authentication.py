@@ -3,11 +3,10 @@ import logging
 
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
-
 from rest_framework.permissions import BasePermission
 
-from .services import authentication
 from .models import Profile
+from .services import authentication
 
 logger = logging.getLogger(__name__)
 

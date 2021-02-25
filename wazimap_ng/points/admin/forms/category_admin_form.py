@@ -2,6 +2,7 @@ from django import forms
 
 from wazimap_ng.datasets.models import Licence
 from wazimap_ng.general.models import MetaData
+
 from ... import models
 
 

@@ -32,7 +32,7 @@
                 $el.append($("<option></option>").attr("value", "").text("----------"));
             }
         }
-        
+
         function loadSubindicators() {
             var indicatorId = $(this).val();
             var $el = $("#id_subindicator");
@@ -48,7 +48,7 @@
                         $.each(subindicators, function(key, value) {
                             $el.append($("<option></option>").attr("value", key).text(value));
                         });
-                        
+
                     }
                 });
             } else {

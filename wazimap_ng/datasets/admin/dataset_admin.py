@@ -1,22 +1,20 @@
 import json
 import logging
 
-from django.contrib import admin
 from django import forms
+from django.contrib import admin
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-
 from django_q.tasks import async_task
 
-from .base_admin_model import DatasetBaseAdminModel, delete_selected_data
-from .. import models
-from .. import hooks
-from .views import MetaDataInline
-from .forms import DatasetAdminForm
+from wazimap_ng.general.admin import filters
+from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.widgets import description
 
-from wazimap_ng.general.services.permissions import assign_perms_to_group
-from wazimap_ng.general.admin import filters
+from .. import hooks, models
+from .base_admin_model import DatasetBaseAdminModel, delete_selected_data
+from .forms import DatasetAdminForm
+from .views import MetaDataInline
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +28,7 @@ def set_to_private(modeladmin, request, queryset):
 def get_source(dataset):
     if hasattr(dataset, "metadata"):
         return dataset.metadata.source
-    return None 
+    return None
 
 class PermissionTypeFilter(filters.DatasetFilter):
     title = "Permission Type"
@@ -123,7 +121,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
                 document=dataset_import_file,
                 dataset_id=obj.id
             )
-            logger.debug(f"""Starting async task: 
+            logger.debug(f"""Starting async task:
                 Task name: wazimap_ng.datasets.tasks.process_uploaded_file
                 Datasetfile_obj: {datasetfile_obj}
                 Object: {obj}
@@ -166,4 +164,3 @@ class DatasetAdmin(DatasetBaseAdminModel):
             #queryset = queryset.exclude(id__in=in_progress_uploads)
 
         return queryset, use_distinct
-        

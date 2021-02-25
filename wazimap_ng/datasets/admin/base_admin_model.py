@@ -1,17 +1,15 @@
 from django.contrib import admin, messages
+from django.contrib.admin import helpers
 from django.contrib.admin.options import DisallowedModelAdminToField
-from django.contrib.admin.utils import unquote
+from django.contrib.admin.utils import model_ngettext, unquote
 from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
-from django.contrib.admin.utils import model_ngettext, unquote
-from django.contrib.admin import helpers
-
 from django_q.tasks import async_task
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 
-
 from .. import hooks
+
 
 def delete_selected_data(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):

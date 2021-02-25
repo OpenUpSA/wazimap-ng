@@ -1,13 +1,12 @@
 from adminsortable2.admin import SortableAdminMixin
-
-from django.contrib.gis import admin
 from django import forms
+from django.contrib.gis import admin
+from icon_picker_widget.widgets import IconPickerWidget
+
+from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
 
 from ... import models
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
-from wazimap_ng.general.admin import filters
-
-from icon_picker_widget.widgets import IconPickerWidget
 
 
 class IndicatorCategoryAdminForm(forms.ModelForm):
@@ -25,4 +24,3 @@ class IndicatorCategoryAdmin(SortableAdminMixin, BaseAdminModel):
         css = {
              'all': ('/static/css/admin-custom.css',)
         }
-

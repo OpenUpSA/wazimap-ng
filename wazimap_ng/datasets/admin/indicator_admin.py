@@ -2,20 +2,19 @@ import operator
 from functools import reduce
 
 from django.contrib import admin
-from django.db.models import Q, CharField
 from django.contrib.postgres import fields
-from django.db.models.functions import Cast
 from django.db import transaction
-
+from django.db.models import CharField, Q
+from django.db.models.functions import Cast
 from django_q.tasks import async_task
 
-from .. import models
-from .. import hooks
-from .forms import IndicatorAdminForm
-from .base_admin_model import DatasetBaseAdminModel
+from wazimap_ng.general.admin import filters
 from wazimap_ng.general.services import permissions
 from wazimap_ng.general.widgets import description
-from wazimap_ng.general.admin import filters
+
+from .. import hooks, models
+from .base_admin_model import DatasetBaseAdminModel
+from .forms import IndicatorAdminForm
 
 
 def get_source(indicator):
@@ -84,7 +83,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
 
         with transaction.atomic():
             super().save_model(request, obj, form, change)
-        
+
         if run_task:
             task = async_task(
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",

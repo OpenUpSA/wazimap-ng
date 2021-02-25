@@ -1,5 +1,6 @@
 from django.contrib.postgres.indexes import GinIndex
 
+
 class GinTrgmIndex(GinIndex):
     """ GIN index from the pg_trgm extension.
     NOTE: before adding this index, be sure to have the `pg_trgm` extension installed.  This can be

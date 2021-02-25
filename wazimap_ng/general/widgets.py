@@ -1,13 +1,16 @@
 import json
 
-from django.forms.widgets import Widget
-from django.contrib import admin
-from guardian.shortcuts import (
-    get_group_perms, get_perms_for_model, get_groups_with_perms
-)
 from django import forms
+from django.contrib import admin
+from django.forms.widgets import Widget
+from guardian.shortcuts import (
+    get_group_perms,
+    get_groups_with_perms,
+    get_perms_for_model
+)
 
 from wazimap_ng.general.services import permissions
+
 
 def customTitledFilter(title):
     class Wrapper(admin.FieldListFilter):
@@ -16,7 +19,7 @@ def customTitledFilter(title):
             instance.title = title
             return instance
     return Wrapper
-    
+
 def description(description, func):
     func.short_description = description
     return func

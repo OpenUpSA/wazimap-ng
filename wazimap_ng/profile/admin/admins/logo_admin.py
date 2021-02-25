@@ -1,9 +1,11 @@
 from django.contrib.gis import admin
 
-from ... import models
-from wazimap_ng.general.services import permissions
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.services import permissions
+
+from ... import models
+
 
 @admin.register(models.Logo)
 class LogoAdmin(BaseAdminModel):

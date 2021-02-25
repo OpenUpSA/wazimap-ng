@@ -1,7 +1,7 @@
-from unittest.mock import patch
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
-from wazimap_ng.datasets.models import Indicator, Dataset, DatasetData
+from wazimap_ng.datasets.models import Dataset, DatasetData, Indicator
+
 
 class TestIndicatorGetUniqueSubindicators:
     @patch("wazimap_ng.datasets.models.DatasetData.objects")

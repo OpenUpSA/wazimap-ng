@@ -1,13 +1,22 @@
 from rest_framework import serializers
 
-from wazimap_ng.utils import mergedict 
-from wazimap_ng.datasets.serializers import AncestorGeographySerializer
-
-from wazimap_ng.datasets.serializers import GeographyHierarchySerializer
 from wazimap_ng.cms.serializers import ContentSerializer
+from wazimap_ng.datasets.serializers import (
+    AncestorGeographySerializer,
+    GeographyHierarchySerializer
+)
+from wazimap_ng.utils import mergedict
+
 from .. import models
-from . import IndicatorDataSerializer, MetricsSerializer, ProfileLogoSerializer, HighlightsSerializer, OverviewSerializer
-from . import ProfileIndicatorSerializer
+from . import (
+    HighlightsSerializer,
+    IndicatorDataSerializer,
+    MetricsSerializer,
+    OverviewSerializer,
+    ProfileIndicatorSerializer,
+    ProfileLogoSerializer
+)
+
 
 class SimpleProfileSerializer(serializers.ModelSerializer):
     class Meta:

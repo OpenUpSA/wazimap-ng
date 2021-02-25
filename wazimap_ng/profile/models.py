@@ -1,10 +1,11 @@
-from django.contrib.gis.db import models
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField, ArrayField
+from django.contrib.gis.db import models
+from django.contrib.postgres.fields import ArrayField, JSONField
 
-from wazimap_ng.datasets.models import Indicator, GeographyHierarchy
-from wazimap_ng.general.models import BaseModel
 from wazimap_ng.config.common import DENOMINATOR_CHOICES, PERMISSION_TYPES
+from wazimap_ng.datasets.models import GeographyHierarchy, Indicator
+from wazimap_ng.general.models import BaseModel
+
 
 class Profile(BaseModel):
     name = models.CharField(max_length=50)
@@ -74,7 +75,7 @@ class ProfileKeyMetrics(BaseModel):
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32, help_text="Method for calculating the denominator that will normalise this value.")
     label = models.CharField(max_length=255, help_text="Text used for display to users.")
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
-    
+
     def __str__(self):
         return f"{self.label}"
 
@@ -93,7 +94,7 @@ class ProfileHighlight(BaseModel):
 
     def __str__(self):
         return f"Highlight: {self.label}"
-        
+
     class Meta:
         ordering = ["order"]
 
@@ -114,4 +115,3 @@ class ProfileIndicator(BaseModel):
 
     class Meta:
         ordering = ["order"]
-

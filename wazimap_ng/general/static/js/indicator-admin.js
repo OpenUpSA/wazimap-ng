@@ -55,4 +55,3 @@
         }
     });
 })(django.jQuery);
-

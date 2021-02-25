@@ -1,23 +1,22 @@
 import csv
 import os
+import pathlib
 import uuid
 from io import BytesIO
-import pathlib
 
 import pandas as pd
 import xlrd
-
-from django.db import models
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
-from django.contrib.postgres.fields import JSONField
+from django.db import models
 from django_q.models import Task
-from .dataset import Dataset
 
 from wazimap_ng import utils
 from wazimap_ng.general.models import BaseModel
 
+from .dataset import Dataset
 
 max_filesize = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
 allowed_file_extensions = getattr(settings, "ALLOWED_FILE_EXTENSIONS", ["xls", "xlsx", "csv"])
@@ -38,7 +37,7 @@ class DatasetFile(BaseModel):
             file_size
         ],
         help_text=f"""
-            Uploaded document should be less than {max_filesize / (1024 * 1024)} MiB in size and 
+            Uploaded document should be less than {max_filesize / (1024 * 1024)} MiB in size and
             file extensions should be one of {", ".join(allowed_file_extensions)}.
         """
     )

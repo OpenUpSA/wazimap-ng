@@ -1,14 +1,19 @@
-from test_plus import APITestCase
 import pytest
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from test_plus import APITestCase
 
-from django.contrib.gis.geos import Point, Polygon, MultiPolygon
-
-from tests.profile.factories import ProfileFactory
-from tests.points.factories import (
-    ProfileCategoryFactory, ThemeFactory, CategoryFactory, LocationFactory
-)
-from tests.datasets.factories import GeographyFactory, GeographyHierarchyFactory
 from tests.boundaries.factories import GeographyBoundaryFactory
+from tests.datasets.factories import (
+    GeographyFactory,
+    GeographyHierarchyFactory
+)
+from tests.points.factories import (
+    CategoryFactory,
+    LocationFactory,
+    ProfileCategoryFactory,
+    ThemeFactory
+)
+from tests.profile.factories import ProfileFactory
 
 
 class TestCategoryView(APITestCase):
@@ -115,7 +120,7 @@ class TestLocationView(APITestCase):
 
     def test_category_points_no_locations(self):
         """
-        category-points returns no locations when there are no locations 
+        category-points returns no locations when there are no locations
         linked to category of profile category
         """
         profile = ProfileFactory()

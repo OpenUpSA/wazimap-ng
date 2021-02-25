@@ -1,11 +1,9 @@
-from unittest.mock import patch
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
-from django_mock_queries.query import MockSet, MockModel
 import pytest
+from django_mock_queries.query import MockModel, MockSet
 
-from wazimap_ng.datasets import dataloader
-from wazimap_ng.datasets import models
+from wazimap_ng.datasets import dataloader, models
 
 pytestmark = pytest.mark.django_db
 
@@ -21,7 +19,7 @@ def test_correct_geography_cache(mock_objects):
 
     p = ("X", "Z")
     assert  dataloader.load_geography(*p) == p
-    
+
     q = ("Z", "Y")
     assert  dataloader.load_geography(*q) == q
 

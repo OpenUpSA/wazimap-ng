@@ -1,13 +1,13 @@
-from django.contrib.gis import admin
 from adminsortable2.admin import SortableAdminMixin
+from django.contrib.gis import admin
+
+from wazimap_ng.datasets.models import Dataset, Indicator
+from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.widgets import customTitledFilter, description
 
 from ... import models
 from ..forms import ProfileKeyMetricsForm
-from wazimap_ng.general.widgets import customTitledFilter, description
-from wazimap_ng.datasets.models import Indicator, Dataset
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
-from wazimap_ng.general.admin import filters
-
 
 
 class CategoryMetricsFilter(filters.CategoryFilter):

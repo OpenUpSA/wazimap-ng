@@ -1,12 +1,14 @@
-import pytest
 import unittest
 from collections import OrderedDict
 
-from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
+import pytest
 
 from tests.datasets.factories import GroupFactory
+from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
+from wazimap_ng.profile.serializers.profile_indicator_sorter import (
+    ProfileIndicatorSorter
+)
 
-from wazimap_ng.profile.serializers.profile_indicator_sorter import ProfileIndicatorSorter
 
 @pytest.fixture
 def profile():
@@ -84,7 +86,7 @@ def test_data(datasets):
         }
     }]
 
-    return data 
+    return data
 
 @pytest.fixture
 def expected_subindicators():
@@ -125,7 +127,7 @@ def expected_groups():
             )
         ]
     }
-    
+
 
 @pytest.fixture
 def alternative_expected_groups():

@@ -1,7 +1,7 @@
 import pytest
 
-from wazimap_ng.cms.serializers import PageSerializer, ContentSerializer
-from tests.cms.factories import PageFactory, ContentFactory
+from tests.cms.factories import ContentFactory, PageFactory
+from wazimap_ng.cms.serializers import ContentSerializer, PageSerializer
 
 
 @pytest.fixture
@@ -38,4 +38,3 @@ class TestContentSerializer:
                 'text': 'Text for 1st content page',
                 'image':  None
             }
-

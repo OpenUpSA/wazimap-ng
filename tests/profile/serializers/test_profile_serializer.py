@@ -1,8 +1,11 @@
 import pytest
 
-from wazimap_ng.profile.serializers import ProfileSerializer, FullProfileSerializer
-from tests.cms.factories import PageFactory, ContentFactory
+from tests.cms.factories import ContentFactory, PageFactory
 from tests.profile.factories import ProfileFactory
+from wazimap_ng.profile.serializers import (
+    FullProfileSerializer,
+    ProfileSerializer
+)
 
 
 @pytest.fixture

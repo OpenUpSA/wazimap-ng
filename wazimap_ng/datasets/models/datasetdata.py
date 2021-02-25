@@ -1,13 +1,13 @@
-from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db import models
+from django.db.models import FloatField, Sum
+from django.db.models.functions import Cast
+
+from wazimap_ng.general.models import BaseModel
 
 from .dataset import Dataset
 from .geography import Geography
-from wazimap_ng.general.models import BaseModel
-
-from django.db.models import Sum, FloatField
-from django.db.models.functions import Cast
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
 
 
 class DatasetDataQuerySet(models.QuerySet):

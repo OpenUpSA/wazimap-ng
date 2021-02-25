@@ -1,9 +1,8 @@
-import math
 import functools
 import logging
+import math
 
 import numpy
-
 from django.db import transaction
 
 from . import models

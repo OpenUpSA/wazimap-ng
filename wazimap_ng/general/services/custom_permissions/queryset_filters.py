@@ -1,9 +1,11 @@
 from django.db import models
 
-from .. import permissions
-from wazimap_ng.profile.models import Profile
 from wazimap_ng.datasets.models import Dataset, Indicator
 from wazimap_ng.points.models import Category, ProfileCategory
+from wazimap_ng.profile.models import Profile
+
+from .. import permissions
+
 
 class CustomQuerySet(models.QuerySet):
 

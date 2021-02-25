@@ -1,10 +1,16 @@
-from rest_framework_gis.serializers import GeoFeatureModelSerializer
-from rest_framework import serializers
 from django.core.serializers import serialize
+from rest_framework import serializers
+from rest_framework_gis.serializers import GeoFeatureModelSerializer
+
+from wazimap_ng.general.serializers import (
+    LicenceSerializer,
+    MetaDataSerializer
+)
+from wazimap_ng.profile.serializers import \
+    SimpleProfileSerializer as ProfileSerializer
 
 from . import models
-from wazimap_ng.general.serializers import LicenceSerializer, MetaDataSerializer
-from wazimap_ng.profile.serializers import SimpleProfileSerializer as ProfileSerializer
+
 
 class SimpleThemeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,4 +75,3 @@ class ThemeSerializer(serializers.ModelSerializer):
         if not obj.icon:
             representation["icon"] = ""
         return representation
-

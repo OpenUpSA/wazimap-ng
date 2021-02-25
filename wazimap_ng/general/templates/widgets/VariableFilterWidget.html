@@ -4,7 +4,7 @@
 <select id="id_indicator" required name="{{name}}">
 <option value=''>-------------</option>
 {% for choice in choices %}
-	<option 
+	<option
 		value="{{ choice.id }}"
 		data-type="{{ choice.dataset.permission_type }}"
 		class="{% if permission_type != choice.dataset.permission_type %} hidden {% endif %}"

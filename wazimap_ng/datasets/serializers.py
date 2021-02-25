@@ -1,6 +1,8 @@
 from rest_framework import serializers
-from .models.geography import Geography
+
 from . import models
+from .models.geography import Geography
+
 
 class GeographySerializer(serializers.ModelSerializer):
     class Meta:

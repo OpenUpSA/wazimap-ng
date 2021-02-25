@@ -1,7 +1,8 @@
-from collections import Counter, OrderedDict
 import operator
+from collections import Counter, OrderedDict
 
 from wazimap_ng.utils import sort_list_using_order
+
 
 class SubindicatorSorter:
     def __init__(self, group_orders):

@@ -1,14 +1,14 @@
 import json
 import logging
 from collections import defaultdict
+from itertools import groupby
 
-from django.db import transaction
-from django.db.models import Sum, FloatField
-from django.db.models.functions import Cast
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db import transaction
+from django.db.models import FloatField, Sum
+from django.db.models.functions import Cast
 
 from .. import models
-from itertools import groupby
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class DataAccumulator:
                     logger.warn(f"Expected a single group when creating a subindicator - found {len(values)}!")
                 subindicator = values[0]
                 subindicators[subindicator] = count
-            else: 
+            else:
                 raise Exception("Missing subindicator in datablob")
 
         self.data["subindicators"] = subindicators
@@ -101,7 +101,7 @@ def indicator_data_extraction(indicator, **kwargs):
         "model": "indicator",
         "name": indicator.name,
         "id": indicator.id,
-    }           
+    }
 
 def extract_counts(indicator, qs):
     """

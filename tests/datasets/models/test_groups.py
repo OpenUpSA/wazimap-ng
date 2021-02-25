@@ -1,7 +1,7 @@
-from wazimap_ng.datasets.models import Indicator, Dataset, DatasetData, Group
+from unittest.mock import Mock, patch
 
-from unittest.mock import patch
-from unittest.mock import Mock
+from wazimap_ng.datasets.models import Dataset, DatasetData, Group, Indicator
+
 
 class TestGroup:
     def test_create_group(self):

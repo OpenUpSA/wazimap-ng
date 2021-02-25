@@ -1,10 +1,8 @@
-from django.db import models
 from django.contrib.postgres.indexes import GinIndex
-
-from treebeard.mp_tree import MP_Node
-from treebeard.mp_tree import MP_NodeManager, MP_NodeQuerySet
-
 from django.contrib.postgres.search import TrigramSimilarity
+from django.db import models
+from treebeard.mp_tree import MP_Node, MP_NodeManager, MP_NodeQuerySet
+
 from wazimap_ng.extensions.index import GinTrgmIndex
 from wazimap_ng.general.models import BaseModel
 
@@ -80,7 +78,7 @@ class GeographyHierarchy(BaseModel):
 
     def help_text(self):
         return f"{self.name} : {self.description}"
-    
+
 
     def __str__(self):
         return f"{self.name}"

@@ -1,6 +1,9 @@
 import os
-from .common import Common
+
 from configurations import Configuration, values
+
+from .common import Common
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 

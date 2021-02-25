@@ -1,12 +1,22 @@
-import pytest
 from collections import OrderedDict
 
+import pytest
 from test_plus import APITestCase
 
-from tests.profile.factories import ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory, ProfileIndicatorFactory
-from tests.datasets.factories import DatasetFactory, IndicatorFactory, IndicatorDataFactory, GroupFactory
-
+from tests.datasets.factories import (
+    DatasetFactory,
+    GroupFactory,
+    IndicatorDataFactory,
+    IndicatorFactory
+)
+from tests.profile.factories import (
+    IndicatorCategoryFactory,
+    IndicatorSubcategoryFactory,
+    ProfileFactory,
+    ProfileIndicatorFactory
+)
 from wazimap_ng.profile.views import ProfileByUrl
+
 
 @pytest.mark.django_db
 class TestProfileGeographyData(APITestCase):

@@ -1,15 +1,12 @@
-import csv
 import codecs
+import csv
 from io import BytesIO
 
 import pytest
 
-from tests.points.factories import (
-    CategoryFactory,
-    CoordinateFileFactory,
-)
-from wazimap_ng.points.tasks import process_uploaded_file
+from tests.points.factories import CategoryFactory, CoordinateFileFactory
 from wazimap_ng.points.models import CoordinateFile, Location
+from wazimap_ng.points.tasks import process_uploaded_file
 
 
 def generate_file(data, header, encoding="utf8"):

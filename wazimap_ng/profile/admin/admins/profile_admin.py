@@ -1,13 +1,13 @@
 from django.contrib.gis import admin
 from django.contrib.postgres import fields
-
 from django_json_widget.widgets import JSONEditorWidget
+
+from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.services.permissions import assign_perms_to_group
 
 from ... import models
 
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
-from wazimap_ng.general.services.permissions import assign_perms_to_group
-from wazimap_ng.general.admin import filters
 
 @admin.register(models.Profile)
 class ProfileAdmin(BaseAdminModel):

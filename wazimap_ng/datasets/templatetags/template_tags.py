@@ -1,7 +1,7 @@
+import json
 import logging
 
 from django import template
-import json
 
 logger = logging.getLogger(__name__)
 

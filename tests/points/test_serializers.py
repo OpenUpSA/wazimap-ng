@@ -1,15 +1,14 @@
-from unittest.mock import patch
-from unittest.mock import Mock
+from pydoc import locate
+from unittest.mock import Mock, patch
+
+import pytest
+from django.db.models import ImageField
+from django_mock_queries.asserts import SerializerAssert
+from django_mock_queries.query import MockModel, MockSet
 from mock import Mock
 
-from django_mock_queries.query import MockSet, MockModel
-from django_mock_queries.asserts import SerializerAssert
-from django.db.models import ImageField
-import pytest
-from pydoc import locate
-
+from wazimap_ng.points.models import Category, Location
 from wazimap_ng.points.serializers import LocationSerializer
-from wazimap_ng.points.models import Location, Category
 from wazimap_ng.profile.models import Profile
 
 SkipField = locate("rest_framework.fields.SkipField")

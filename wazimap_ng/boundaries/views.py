@@ -1,19 +1,15 @@
-from django.http import Http404
-from django.shortcuts import render
 from django.core.serializers import serialize
+from django.http import Http404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import condition
-from django.shortcuts import get_object_or_404
-
-
-from rest_framework import generics
+from rest_framework import generics, serializers
 from rest_framework.decorators import api_view
-from rest_framework import serializers
 from rest_framework.response import Response
 
-from . import models
-from . import serializers
-from ..datasets.models import Geography
 from ..cache import cache_decorator
+from ..datasets.models import Geography
+from . import models, serializers
+
 
 class GeographySwitchMixin(object):
     def _get_classes(self, geo_type):

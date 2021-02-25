@@ -1,5 +1,7 @@
 from django import forms
+
 from ... import models
+
 
 class IndicatorAdminForm(forms.ModelForm):
     groups = forms.ChoiceField(required=True)

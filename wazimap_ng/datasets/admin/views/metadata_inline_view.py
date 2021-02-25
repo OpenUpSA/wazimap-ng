@@ -1,6 +1,5 @@
-from django.contrib import admin
-
 import lorem
+from django.contrib import admin
 
 from ... import models
 

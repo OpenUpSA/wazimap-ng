@@ -1,11 +1,16 @@
 from django.contrib import admin
 
-from ..services import permissions
-
-from wazimap_ng.profile.models import Profile, IndicatorCategory, IndicatorSubcategory
-from wazimap_ng.points.models import Theme, Category
-from wazimap_ng.datasets.models import GeographyHierarchy, Dataset, MetaData as DatasetMetaData, Indicator
 from wazimap_ng.cms.models import Page
+from wazimap_ng.datasets.models import Dataset, GeographyHierarchy, Indicator
+from wazimap_ng.datasets.models import MetaData as DatasetMetaData
+from wazimap_ng.points.models import Category, Theme
+from wazimap_ng.profile.models import (
+    IndicatorCategory,
+    IndicatorSubcategory,
+    Profile
+)
+
+from ..services import permissions
 
 
 class DynamicBaseFilter(admin.SimpleListFilter):
@@ -124,4 +129,3 @@ class PageFilter(DynamicBaseFilter):
             permissions, "get_custom_fk_queryset"
         )(request.user, self.model_class)
         return list(set(choices.values_list(*self.lookup_fields)))
-

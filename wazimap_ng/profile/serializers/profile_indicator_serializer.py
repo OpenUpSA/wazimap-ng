@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .. import models
 
+
 class ProfileIndicatorSerializer(serializers.ModelSerializer):
   subcategory = serializers.SerializerMethodField()
   category = serializers.SerializerMethodField()
@@ -15,6 +16,4 @@ class ProfileIndicatorSerializer(serializers.ModelSerializer):
   class Meta:
       model = models.ProfileIndicator
       exclude = ["profile", "id"]
-      depth = 2        
-
-
+      depth = 2

@@ -1,21 +1,25 @@
 import unittest
 from collections import namedtuple
 from datetime import datetime
-from unittest.mock import call
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import pytest
 from django.core.cache import cache as django_cache
 
-from tests.profile.factories import (
-    ProfileIndicatorFactory, ProfileKeyMetricsFactory, ProfileHighlightFactory,
-    ProfileFactory
-)
 from tests.datasets.factories import (
-    IndicatorFactory, GeographyFactory, DatasetDataFactory, GroupFactory,
-    GeographyHierarchyFactory, IndicatorDataFactory
+    DatasetDataFactory,
+    GeographyFactory,
+    GeographyHierarchyFactory,
+    GroupFactory,
+    IndicatorDataFactory,
+    IndicatorFactory
 )
-
+from tests.profile.factories import (
+    ProfileFactory,
+    ProfileHighlightFactory,
+    ProfileIndicatorFactory,
+    ProfileKeyMetricsFactory
+)
 from wazimap_ng import cache
 
 

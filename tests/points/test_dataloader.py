@@ -1,9 +1,9 @@
 import pytest
 
 from tests.points.factories import CategoryFactory
-
-from wazimap_ng.points.models import Location
 from wazimap_ng.points.dataloader import loaddata
+from wazimap_ng.points.models import Location
+
 
 @pytest.fixture
 def category():
@@ -51,10 +51,9 @@ def test_basic(category, location_data):
     assert location1.data[0]["value"] == "myfield1"
     assert location1.data[1]["key"] == "field2"
     assert location1.data[1]["value"] == "myfield2"
-    
+
     assert len(location2.data) == 2
     assert location2.data[0]["key"] == "field1"
     assert location2.data[0]["value"] == "myfield3"
     assert location2.data[1]["key"] == "field2"
     assert location2.data[1]["value"] == "myfield4"
-

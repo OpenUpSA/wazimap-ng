@@ -1,12 +1,11 @@
 import pytest
-
 from django.contrib.admin.sites import AdminSite
 from django.contrib.gis.geos import Point
 
-from wazimap_ng.points.models import Location
-from wazimap_ng.points.admin import LocationAdmin
-
 from tests.points.factories import LocationFactory
+from wazimap_ng.points.admin import LocationAdmin
+from wazimap_ng.points.models import Location
+
 
 @pytest.fixture()
 def test_location():
@@ -14,6 +13,8 @@ def test_location():
     return LocationFactory(name="Test Location", coordinates=point)
 
 from django.urls import reverse
+
+
 def test(admin_user, rf, test_location):
     url = reverse("admin:points_location_add")
     request = rf.get(url)

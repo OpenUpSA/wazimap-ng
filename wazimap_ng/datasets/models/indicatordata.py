@@ -1,9 +1,11 @@
-from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.db import models
 
-from .indicator import Indicator
-from .geography import Geography
 from wazimap_ng.general.models import BaseModel
+
+from .geography import Geography
+from .indicator import Indicator
+
 
 class IndicatorData(BaseModel):
     """
@@ -19,5 +21,3 @@ class IndicatorData(BaseModel):
 
     class Meta:
         verbose_name_plural = "Indicator Data items"
-
-

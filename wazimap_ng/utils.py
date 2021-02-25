@@ -1,9 +1,9 @@
 import codecs
-import uuid
-import pandas as pd
-from collections import OrderedDict, defaultdict, Mapping
 import logging
+import uuid
+from collections import Mapping, OrderedDict, defaultdict
 
+import pandas as pd
 from chardet import UniversalDetector
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ def int_or_none(i):
     if noney(i):
         return None
 
-    return int(i) 
+    return int(i)
 
 def sort_list_using_order(lst, order, key_func=lambda x: x):
     if len(lst) == 0:
@@ -123,7 +123,7 @@ def qsdict(qs, *args):
                 arr = value
                 for el in arr:
                     current_dict[el] = v(q, args[-1]) # need to handle a tuple as well
-                
+
             else:
                 if type(args[-1]) == tuple:
                     current_dict[v(q, args[-2])] = [v(q, el) for el in args[-1]]
@@ -294,7 +294,7 @@ def test_long_input():
                 3: {
                     4: 5,
                     7: 8
-                } 
+                }
             }
         }
     }
@@ -418,13 +418,13 @@ def test_array_at_second_last_position():
         1: {
             3: {
                 "x": 5,
-                "y": 5 
+                "y": 5
             }
         },
         2: {
             4: {
                 "x": 6,
-                "y": 6 
+                "y": 6
             }
         },
     }
@@ -454,7 +454,7 @@ def flatten_dict(d):
     ]
 
     used as a component of the pivot function
-    
+
     """
     if not isinstance(d, Mapping):
         return [[d]]
@@ -512,7 +512,7 @@ def nest(arrays, root=None):
             elif len(tail) > 1:
                 d[head] = nest([tail], d[head])
     return d
-        
+
 def pivot(d, order):
     """
     Pivots an array by a list of keys
@@ -548,10 +548,10 @@ def pivot(d, order):
         },
     }
 
-    pivot(d, [2, 1, 0]) 
+    pivot(d, [2, 1, 0])
 
     becomes:
-    
+
     d = {
     "X": {
         "Category1": {

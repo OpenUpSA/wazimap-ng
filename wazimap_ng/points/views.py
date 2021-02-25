@@ -1,30 +1,26 @@
 import logging
-
 from collections import defaultdict
 
-from django.views.decorators.http import condition
-from django.utils.decorators import method_decorator
-from django.http import Http404
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count
 from django.forms.models import model_to_dict
 from django.http import Http404
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
-
+from django.utils.decorators import method_decorator
+from django.views.decorators.http import condition
+from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework_gis.pagination import GeoJsonPagination
-from rest_framework import generics
 
-from wazimap_ng.profile.models import Profile
 from wazimap_ng.datasets.models import Geography
-from wazimap_ng.points.services.locations import get_locations
 from wazimap_ng.general.serializers import MetaDataSerializer
+from wazimap_ng.points.services.locations import get_locations
+from wazimap_ng.profile.models import Profile
 
-from . import models
-from . import serializers
-from ..cache import etag_point_updated, last_modified_point_updated
 from ..boundaries.models import GeographyBoundary
+from ..cache import etag_point_updated, last_modified_point_updated
+from . import models, serializers
 
 logger = logging.getLogger(__name__)
 

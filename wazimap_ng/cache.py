@@ -9,10 +9,22 @@ from django.http import Http404
 from django.views.decorators.cache import cache_control
 from django.views.decorators.vary import vary_on_headers
 
-from wazimap_ng.datasets.models import Group, Geography, DatasetData, GeographyHierarchy
-from wazimap_ng.points.models import Location, Category
-from wazimap_ng.profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, \
-    ProfileKeyMetrics, Profile, Indicator
+from wazimap_ng.datasets.models import (
+    DatasetData,
+    Geography,
+    GeographyHierarchy,
+    Group
+)
+from wazimap_ng.points.models import Category, Location
+from wazimap_ng.profile.models import (
+    Indicator,
+    IndicatorCategory,
+    IndicatorSubcategory,
+    Profile,
+    ProfileHighlight,
+    ProfileIndicator,
+    ProfileKeyMetrics
+)
 from wazimap_ng.profile.services import authentication
 
 logger = logging.getLogger(__name__)
@@ -167,7 +179,7 @@ def geography_updated(sender, instance, **kwargs):
         "indicator__dataset__profile", flat=True
     ).order_by("indicator__dataset__profile").distinct())
 
-    # Get hierarchy profile linked to 
+    # Get hierarchy profile linked to
     hierarchy_profile_ids = list(instance.geographyhierarchy_set.values_list(
         "profile", flat=True
     ).order_by("profile").distinct())

@@ -1,16 +1,17 @@
 import os
 import sys
-from os.path import join
 from distutils.util import strtobool
+from os.path import join
 
-from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
+import sentry_sdk
 from configurations import Configuration
+from django.core.exceptions import ImproperlyConfigured
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
-import sentry_sdk
 
-from wazimap_ng.utils import truthy, int_or_none
+from wazimap_ng.utils import int_or_none, truthy
+
 from .qcluster import QCluster
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

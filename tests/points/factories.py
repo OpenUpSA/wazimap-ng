@@ -1,9 +1,14 @@
 import factory
-
 from django.contrib.gis.geos import Point
 
-from wazimap_ng.points.models import Category, CoordinateFile, ProfileCategory, Theme, Location
 from tests.profile.factories import ProfileFactory
+from wazimap_ng.points.models import (
+    Category,
+    CoordinateFile,
+    Location,
+    ProfileCategory,
+    Theme
+)
 
 
 class ThemeFactory(factory.django.DjangoModelFactory):

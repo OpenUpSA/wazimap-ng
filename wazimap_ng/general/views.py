@@ -1,21 +1,21 @@
-from django.views.decorators.http import condition
-from django.views.decorators.cache import never_cache
-from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
-
-from rest_framework.response import Response
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import condition
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
-from ..profile import models as profile_models
-from ..profile import serializers as profile_serializers
-from ..datasets import models as dataset_models
-from ..datasets import views as dataset_views
 from ..boundaries import models as boundaries_models
 from ..boundaries import views as boundaries_views
 from ..cache import etag_profile_updated, last_modified_profile_updated
-from ..points import views as point_views
+from ..datasets import models as dataset_models
+from ..datasets import views as dataset_views
 from ..points import models as point_models
+from ..points import views as point_views
+from ..profile import models as profile_models
+from ..profile import serializers as profile_serializers
+
 
 def consolidated_profile_helper(profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
@@ -56,6 +56,8 @@ def consolidated_profile_test(request, profile_id, geography_code):
     return Response("test2")
 
 from django.contrib.auth import logout
+
+
 def logout_view(request):
     logout(request)
     return redirect("version")
@@ -69,7 +71,7 @@ def authenticate_admin(user):
 def notifications_view(request):
     messages = request.session.pop("notifications", [])
     task_list = request.session.get("task_list", [])
-    
+
     if messages and task_list:
         for message in messages:
             if "task_id" in message:

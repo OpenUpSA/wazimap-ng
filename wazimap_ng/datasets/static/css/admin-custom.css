@@ -5,9 +5,9 @@
 #coordinatefile_set-group>.module>h2 { display: none }
 #metadata-group>.module>#metadata-0>h3 { visibility: hidden; }
 .field-icon>div { display: flex; }
-#content> h1 { 
+#content> h1 {
 	margin: 0 0 20px !important;
 	font-weight: 300 !important;
 	font-size: 20px !important;
-	color: #666 !important; 
+	color: #666 !important;
 }
