@@ -5,10 +5,11 @@ from adminsortable2.admin import SortableAdminMixin
 from ... import models
 from ..forms import ProfileIndicatorAdminForm
 
-from wazimap_ng.general.widgets import customTitledFilter, description, SortableWidget
+from wazimap_ng.general.widgets import customTitledFilter, description
 from wazimap_ng.datasets.models import Indicator, Dataset
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.admin import filters
+from django.db.models.functions import Concat
 
 class CategoryIndicatorFilter(filters.CategoryFilter):
     parameter_name = 'subcategory__category__id'
@@ -40,18 +41,18 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'description', 'choropleth_method')
         }),
-        ("Subindicators", {
-          'fields': ('subindicators',)
+        ("Charts", {
+          'fields': ('chart_configuration',)
         })
     )
     search_fields = ("label", )
 
     form = ProfileIndicatorAdminForm
 
-    formfield_overrides = {
-        fields.JSONField: {"widget": SortableWidget},
-    }
     help_texts = ["choropleth_method", ]
+
+    class Media:
+        js = ("/static/js/profile-indicator-admin.js",)
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
@@ -62,3 +63,12 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
         if not change:
             obj.subindicators = obj.indicator.subindicators
         super().save_model(request, obj, form, change)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        field = super().formfield_for_foreignkey(db_field, request, **kwargs)
+        if db_field.name == "indicator":
+            qs = field.queryset.annotate(
+                display_name=Concat('dataset__name', 'name')
+            ).order_by("display_name")
+            field.queryset = qs
+        return field

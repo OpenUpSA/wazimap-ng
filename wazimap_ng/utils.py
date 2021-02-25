@@ -1,8 +1,10 @@
+import codecs
 import uuid
-import pathlib
-import os
+import pandas as pd
 from collections import OrderedDict, defaultdict, Mapping
 import logging
+
+from chardet import UniversalDetector
 
 logger = logging.getLogger(__name__)
 
@@ -586,3 +588,30 @@ def pivot(d, order):
     nested = nest(rearranged)
 
     return nested
+
+
+def detect_encoding(buffer):
+    detector = UniversalDetector()
+    for line in buffer:
+        detector.feed(line)
+        if detector.done: break
+    detector.close()
+    return detector.result["encoding"]
+
+
+def get_stream_reader(buffer, encoding=None):
+    if not encoding:
+        encoding = detect_encoding(buffer)
+    StreamReader = codecs.getreader(encoding)
+    wrapper_file = StreamReader(buffer)
+    return encoding, wrapper_file
+
+
+def clean_columns(file):
+    file.seek(0)
+    df = pd.read_csv(file, nrows=1, dtype=str, sep=",")
+    old_columns = df.columns.str.lower().str.strip()
+    df.dropna(how="all", axis="columns", inplace=True)
+    new_columns = df.columns.str.lower().str.strip()
+    file.seek(0)
+    return old_columns, new_columns

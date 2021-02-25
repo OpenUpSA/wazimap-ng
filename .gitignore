@@ -111,6 +111,9 @@ venv.bak/
 staticfiles
 .DS_Store
 
+# IDE
+.idea
+
 data/
 
 wazimap-ng.sublime-project

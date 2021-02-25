@@ -3,10 +3,11 @@
 	<p>Sample Error: </p>
       <ul style="margin-left: 20px;">
         {% for error in errors %}
-            <li>Error : {{error.2}} on line {{ error.0 }} </li>
+            <li>Error : {{error.2}} on line {{ error.1 }} </li>
           {% empty %}
             <p>Empty error log</p>
           {% endfor %}
       </ul>
       <p>For more info on errors by lines : <a href="{{ download_url }}">Error Log File</a></p>
+      <p>To get all the incorrect rows please download : <a href="{{ incorrect_csv }}">Incorrect Rows CSV</a></p>
 </div>

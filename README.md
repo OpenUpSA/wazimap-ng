@@ -1,3 +1,41 @@
+# Introduction
+Wazimap-NG is the next version of [Wazimap](http://www.wazimap.co.za). It provides a platform for users to bind tabular data to spatial boundaries in order create curated views of datasets. Yes - that's probably too vague a description to understand what it is. Hopefully the images below provide a better description:
+
+<a href="https://postimg.cc/G8XkZRhV" target="_blank"><img src="https://i.postimg.cc/G8XkZRhV/Screen-Shot-2020-09-27-at-09-50-00.png" alt="Screen-Shot-2020-09-27-at-09-50-00"/></a> <a href="https://postimg.cc/MM67PHx1" target="_blank"><img src="https://i.postimg.cc/MM67PHx1/Screen-Shot-2020-09-27-at-09-50-33.png" alt="Screen-Shot-2020-09-27-at-09-50-33"/></a><br/><br/>
+<a href="https://postimg.cc/4HnzG0Yd" target="_blank"><img src="https://i.postimg.cc/4HnzG0Yd/Screen-Shot-2020-09-27-at-09-50-50.png" alt="Screen-Shot-2020-09-27-at-09-50-50"/></a> <a href="https://postimg.cc/MXsDL7nH" target="_blank"><img src="https://i.postimg.cc/MXsDL7nH/Screen-Shot-2020-09-27-at-09-51-30.png" alt="Screen-Shot-2020-09-27-at-09-51-30"/></a><br/><br/>
+
+See a link to the beta site here: [https://beta.youthexplorer.org.za](https://beta.youthexplorer.org.za).
+
+You can find the backend code in this repository. The frontend is available here: [https://github.com/openupsa/wazimap-ng-ui](https://github.com/openupsa/wazimap-ng-ui).
+
+# New features
+
+The main new features are:
+
+* Admins now have more flexibility when it comes to loading data. This includes uploading massive datasets and then slicing and dicing in the backend rather than pre-preparing datasets beforehand.
+* Point data is now fully integrated as a first-class spatial object. 
+* Choropleths built into the main view. These were hidden behind multiple clicks in the previous version.
+* One platform can host multiple profiles off the same database.
+* The Rich data view allows richer disaggregation of indicators.
+* The administrator can configure the view to use custom basemaps, colours, and other UI settings.
+* Arbitrary spatial boundaries and hierarchies can be loaded onto the same server.
+* Toggling of overlapping boundary layers such as switching between wards and mainplaces which typically cover the same areas.
+* Integration into third-party data sources for realtime data feeds.
+
+# Related software
+There is no shortage of mapping software available, both commerical and open-source. Wazimap focuses on providing a platform for data custodians to showcase their datasets and mashing them up with public data. The most similar tool that we have found is the excellent [GeoNode](https://geonode.org/). We feel that approach to publishing data is significantly different enough to warrant a separate project.
+
+# Roadmap
+Version 0.8 is due soon and will fix bugs that currently don't have workarounds. We'll publish the 1.0 roadmap soon.
+
+# Future features
+* WFS endpoint for publishing data to other GIS software
+* Pluggable data visualisations
+* Better handling of geography hierarchies.
+* Improved handling of temporal and other types of non-census-like data.
+* Speed improvements
+* A large standard database of public datasets.
+
 # Prerequisites
 
 - [Docker](https://docs.docker.com/docker-for-mac/install/)
@@ -18,58 +56,15 @@ docker-compose down
 docker-compose up
 ```
 
-# Production
-To build a new image:
+# Documentation
+These are works in progress:
 
-```bash
-./scripts/docker_build.sh
-```
+* [Technical manual](https://openup.gitbook.io/wazi-ng-technical/)
+* [Administrator manual](https://openup.gitbook.io/wazimap-ng/)
 
-Note, this currently logs into adieyal on docker-hub. This will be moved to the OpenUp account in future.
-
-<!-- Set the environment variables
-export DATABASE_URL=postgis://wazimap_ng:wazimap_ng@localhost:5432/wazimap_ng
-export DJANGO_SECRET_KEY=ffsrwerefdsfweffs
- -->
-<!-- # Install GDAL for geodjango
-On a mac
-```bash
-brew install gdal
- -->```
-
-<!-- or some variation of apt-get for Ubuntu
-
-then
-
-```bash
-pip install pygdal==$(gdal-config --version)
-```
-
-Note: you may get an error that says
-
-Could not find a version that satisfies the requirement pygdal==1.11.3 (from versions: 1.8.1.0, 1.8.1.1, 1.8.1.2, 1.8.1.3, 1.9.2.0, 1.9.2.1, 1.9.2.3, 1.10.0.0, 1.10.0.1, 1.10.0.3, 1.10.1.0, 1.10.1.1, 1.10.1.3, 1.11.0.0, 1.11.0.1, 1.11.0.3, 1.11.1.0, 1.11.1.1, 1.11.1.3, 1.11.2.1, 1.11.2.3, 1.11.3.3, 1.11.4.3, 2.1.0.3) No matching distribution found for pygdal==1.11.3
-If that happens, run the pip install again but with the highest version that still matches. e.g. in this case you would run pip install pygdal==1.11.3.3
+# Contributions
+Contributions are welcome - we are working towards making this process easier. New development takes place in the [staging branch](https://github.com/OpenUpSA/wazimap-ng/tree/staging)
 
 
-GDAL installation errors are generally a result of mismatched versions between the python library and the system libraries. Ensure that you are installing the correct versions. If you are using dokku/heroku with the heroku geo buildpack, you should consult https://github.com/heroku/heroku-geo-buildpack - the default version of gdal is 2.4.0 at the time of writing.
-
-## Note when installing with the Heroku geo buildpack
-
-The Heroku geo buildpack installs the library in /app/.heroku-geo-buildpack/vendor. In order for pygdal to find it, you need to set the follow environment variables
-
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/app/.heroku-geo-buildpack/vendor/bin/
-GDALHOME=/app/.heroku-geo-buildpack/vendor/
-
-On dokku you would run the following
-```bash
-dokku config:set wazimap-ng --no-restart PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/app/.heroku-geo-buildpack/vendor/bin/
-dokku config:set wazimap-ng --no-restart GDALHOME=/app/.heroku-geo-buildpack/vendor/ -->
-
-
-
-
-Some notes for database migration - will turn this into proper documentation in the future
-
-SELECT 'ALTER TABLE '|| schemaname || '.' || tablename ||' OWNER TO wazimap_ng;'
-FROM pg_tables WHERE NOT schemaname IN ('pg_catalog', 'information_schema')
-ORDER BY schemaname, tablename;
+# Shoulders of giants
+This project is the next iteration of a number of excellent projects starting with [CensusReporter](https://censusreporter.org/) and [Wazimap](http://www.wazimap.co.za) that followed it. Special thanks to William Bird from [Media Monitoring Africa](https://mediamonitoringafrica.org) whose initial idea (and funding) it was to build a tool to help journalists better understand areas they were reporting on. Also thanks to Chris Berens from [VPUU](vpuu.org.za) who directed funding to help kickstart this new build. Finally, all of the amazing spatial software and tools developed by one of the most dedicated open source communities out there.
