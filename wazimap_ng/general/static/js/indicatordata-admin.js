@@ -1,59 +1,30 @@
 (function($) {
     jQuery(document).ready(function($) {
-
-        changeElDisplay("indicatordata_form", "none")
-        createSelectOption();
+        //check if add_method exist
+        var el = document.getElementById("add_method_div");
+        if (el) {
+            var sel = document.getElementById("add_method");
+            sel.onchange = function() { selectOnChange(this.value)};
+            
+            //hide indicator form
+            showNode("indicatordata_form", "none");
+        }
 
         function selectOnChange(val) {
-            if (val == "2") {
-                changeElDisplay("indicatordata_form", "block");
-                changeElDisplay("add_method__div", "none");
-            } else {
-                changeElDisplay("indicatordata_form", "none");
-            }
+            if (val == "1") {
+                showNode("indicatordata_form", "none");
+                var link = '{% url upload_indicator_director %}';
+                window.location.href = link;
+            } else if (val == "2") {
+                showNode("indicatordata_form", "block");
+                //showNode("add_method_div", "none");
+            } 
         }
 
 
-        function changeElDisplay(id, display) {
+        function showNode(id, display) {
             var el = document.getElementById(id);
             el.style.display = display;
-        }
-        
-        function createSelectOption() {
-            var selDiv = document.createElement("div");
-            selDiv.setAttribute("class", "form-row aligned");
-            selDiv.setAttribute("id","add_method__div");
-    
-            var sel = document.createElement("select");
-            sel.setAttribute("id","add_method");
-            sel.onchange = function() { selectOnChange(this.value)};
-    
-            var selLabel = document.createElement("Label");
-            selLabel.setAttribute("for", "add_method");
-            selLabel.setAttribute("class", "required")
-            selLabel.innerHTML = "Choose add method";
-    
-            var optionValues = {
-                0:"----------------------", 
-                1:"Upload an indicator director",
-                2:"Create from dataset"
-            }
-            for (key in optionValues) {
-                var opt = document.createElement("option");
-                if (key == "0") {
-                    opt.value = ""
-                } else {
-                    opt.value = key;
-                }
-                opt.text = optionValues[key];
-                sel.add(opt)
-            }
-    
-            var content = document.getElementById("content-main");
-            selDiv.appendChild(selLabel);
-            selDiv.appendChild(sel);
-            content.appendChild(selDiv);
-
         }
 
     });
