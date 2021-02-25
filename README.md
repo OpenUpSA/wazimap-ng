@@ -38,11 +38,11 @@ Version 0.8 is due soon and will fix bugs that currently don't have workarounds.
 
 # Prerequisites
 
-- [Docker](https://docs.docker.com/docker-for-mac/install/)  
+- [Docker](https://docs.docker.com/docker-for-mac/install/)
 
 # Local Development
 
-Start the dev server for local development. Before you've created your database, the webserver will break because it can't find the database. 
+Start the dev server for local development. Before you've created your database, the webserver will break because it can't find the database.
 ```bash
 docker-compose up
 ```
@@ -64,6 +64,7 @@ These are works in progress:
 
 # Contributions
 Contributions are welcome - we are working towards making this process easier. New development takes place in the [staging branch](https://github.com/OpenUpSA/wazimap-ng/tree/staging)
+
 
 # Shoulders of giants
 This project is the next iteration of a number of excellent projects starting with [CensusReporter](https://censusreporter.org/) and [Wazimap](http://www.wazimap.co.za) that followed it. Special thanks to William Bird from [Media Monitoring Africa](https://mediamonitoringafrica.org) whose initial idea (and funding) it was to build a tool to help journalists better understand areas they were reporting on. Also thanks to Chris Berens from [VPUU](vpuu.org.za) who directed funding to help kickstart this new build. Finally, all of the amazing spatial software and tools developed by one of the most dedicated open source communities out there.
