@@ -4,11 +4,11 @@ services:
   redis:
     image: redis:latest
     ports:
-      - "63791:6379"
+      - "6379:6379"
   db:
     image: kartoza/postgis:12.0
     ports:
-      - "54321:5432"
+      - "5432:5432"
     volumes:
       - "wazimap-data:/var/lib/postgresql/"
     environment:
@@ -37,10 +37,6 @@ services:
       - AWS_S3_REGION_NAME
       - DATABASE_URL
       - DJANGO_CONFIGURATION
-      - PGHOST=db
-      - PGDATABASE=wazimap_ng
-      - PGUSER=wazimap_ng
-      - PGPASSWORD=wazimap_ng
   queue:
     build: .
     command: /app/scripts/django/django_q.sh
