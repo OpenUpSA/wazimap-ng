@@ -13,7 +13,7 @@
         function selectOnChange(val) {
             if (val == "1") {
                 showNode("indicatordata_form", "none");
-                var link = '{% url upload_indicator_director %}';
+                var link = '/admin/datasets/indicatordata/upload';
                 window.location.href = link;
             } else if (val == "2") {
                 showNode("indicatordata_form", "block");
