@@ -11,11 +11,6 @@ repos:
         exclude: Pipfile.lock
       - id: trailing-whitespace
         exclude: (^.*\b(migrations)\b.*$|^.*\b(__init__)\b.*$)
-  - repo: https://github.com/psf/black
-    rev: 19.3b0
-    hooks:
-      - id: black
-        exclude: (^.*\b(migrations)\b.*$|^.*\b(__init__)\b.*$)
   - repo: https://github.com/PyCQA/isort
     rev: 5.5.2
     hooks:
