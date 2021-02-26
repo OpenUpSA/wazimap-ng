@@ -2,10 +2,10 @@ from django import forms
 from ... import models
 
 class IndicatorDirectorForm(forms.Form):
-    dataset = forms.ModelChoiceField(queryset=models.Dataset.objects.all(), required=True)
-    json_data = forms.FileField(required=False)
+    datasetfile = forms.ModelChoiceField(queryset=models.DatasetFile.objects.all(), required=True)
+    indicator_director_file = forms.FileField(required=True)
 
-    def process_json(self, dataset, json_data):
+    def process_json(self, datasetfile, indicator_director_file):
         pass
         # reader = csv.DictReader(StringIO(csv_data.read().decode('utf-8')), delimiter=';')
         # bulk_create_manager = BulkCreateManager(chunk_size=500)

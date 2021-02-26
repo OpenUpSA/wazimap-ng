@@ -1,15 +1,20 @@
+import logging
+
 from django.contrib import admin
 from django.contrib.postgres import fields
 from django.urls import path
+from django.shortcuts import redirect
 
 from django_json_widget.widgets import JSONEditorWidget
+from django.template.response import TemplateResponse
 
 from .base_admin_model import DatasetBaseAdminModel
 from .. import models
-from .views.indicator_director_view import IndicatorDirectorAdminView
+from .forms import IndicatorDirectorForm
 
 from wazimap_ng.general.admin import filters
 
+logger = logging.getLogger(__name__)
 
 @admin.register(models.IndicatorData)
 class IndicatorDataAdmin(DatasetBaseAdminModel):
@@ -53,8 +58,37 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
     def get_urls(self):
         urls = super(IndicatorDataAdmin, self).get_urls()
         my_urls = [
-            path("upload/", IndicatorDirectorAdminView.as_view(), name="upload_indicator_director"),
+            path("upload/", self.upload_indicator_director),
         ]
         return my_urls + urls
+
+    def upload_indicator_director(self, request):
+
+        if request.POST:
+            indicator_director_file = request.POST.get("indicator_director_file", None)
+
+            logger.debug(f"Indicator director file")
+            #reader = csv.reader(csv_file)
+            # Create Hero objects from passed in data
+            # ...
+           # self.message_user(request, "Your csv file has been imported")
+            return redirect("/admin/datasets/indicatordata/")
+
+        context = {
+            **self.admin_site.each_context(request),
+            'opts': self.model._meta,
+            'app_label': self.model._meta.app_label,
+            'title': "Upload JSON Indicator Director File",
+            'add': False,
+            'change': False,
+            'original': "Upload Indicator",
+            'form': IndicatorDirectorForm(),
+        }
+
+        return TemplateResponse(
+            request, 
+            "admin/indicatordata_upload_director.html", 
+            context,
+        )
 
 
