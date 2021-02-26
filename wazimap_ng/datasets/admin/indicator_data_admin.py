@@ -3,7 +3,7 @@ import logging
 from django.contrib import admin
 from django.contrib.postgres import fields
 from django.urls import path
-from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
 
 from django_json_widget.widgets import JSONEditorWidget
 from django.template.response import TemplateResponse
@@ -64,15 +64,15 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
 
     def upload_indicator_director(self, request):
 
-        if request.POST:
-            indicator_director_file = request.POST.get("indicator_director_file", None)
+        if request.method == 'POST':
+            form = IndicatorDirectorForm(request.POST, request.FILES)
+            if form.is_valid():
+                indicator_director_file = request.FILES["indicator_director_file"]
+                datasetfile = form.cleaned_data["datasetfile"]
+                logger.debug(f" Uploaded Indicator director file: {indicator_director_file}")
 
-            logger.debug(f"Indicator director file")
-            #reader = csv.reader(csv_file)
-            # Create Hero objects from passed in data
-            # ...
-           # self.message_user(request, "Your csv file has been imported")
-            return redirect("/admin/datasets/indicatordata/")
+                #task to process director file comes here
+                return HttpResponseRedirect("/admin/datasets/indicatordata/")
 
         context = {
             **self.admin_site.each_context(request),
