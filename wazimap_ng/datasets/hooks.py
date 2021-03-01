@@ -18,10 +18,13 @@ class Notify:
             "success": "Imported File successfully for %s",
             "error": "Error in uploading file for %s.",
         },
-
         "data_extraction" : {
             "success": "Data extraction successful for %s",
             "error": "Data extraction failed for %s.",
+        },
+        "indicator_director": {
+            "success": "Indicator data creation successfil for %s",
+            "error": "Indicator data creation failed for %s",
         }
     }
 
