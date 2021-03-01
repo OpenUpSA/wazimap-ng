@@ -8,7 +8,10 @@ from django.http import HttpResponseRedirect
 from django_json_widget.widgets import JSONEditorWidget
 from django.template.response import TemplateResponse
 
+from django_q.tasks import async_task
+
 from .base_admin_model import DatasetBaseAdminModel
+from .. import hooks
 from .. import models
 from .forms import IndicatorDirectorForm
 
@@ -70,8 +73,38 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                 indicator_director_file = request.FILES["indicator_director_file"]
                 datasetfile = form.cleaned_data["datasetfile"]
                 logger.debug(f" Uploaded Indicator director file: {indicator_director_file}")
-
+                
+                indicator_indicator_json = indicator_director_file.read()
+                indicator_director_file.close()
                 #task to process director file comes here
+
+                if indicator_indicator_json:
+                    logger.debug(f"""Starting async task: 
+                        Task name: wazimap_ng.datasets.tasks.process_indicator_data_director
+                        Hook: wazimap_ng.datasets.hooks.process_task_info,
+                        key: {request.session.session_key},
+                        type: indicator_director,
+                        assign: True,
+                        notify: True
+                    """)
+
+
+                        task = async_task(
+                            "wazimap_ng.datasets.tasks.process_indicator_data_director",
+                            indicator_indicator_json, datasetfile,
+                            task_name=f"Creating Indicator data: {datasetfile}",
+                            hook="wazimap_ng.datasets.hooks.process_task_info",
+                            key=request.session.session_key,
+                            type="indicator_director", assign=True, notify=True
+                        )
+                        hooks.add_to_task_list(request.session, task)
+                        hooks.custom_admin_notification(
+                            request.session,
+                            "info",
+                            "Indicator data creation for data %s started. We will let you know when process is done." % (
+                                datasetfile
+                            )
+                        )
                 return HttpResponseRedirect("/admin/datasets/indicatordata/")
 
         context = {
