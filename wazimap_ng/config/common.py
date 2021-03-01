@@ -17,6 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 os.environ["GDAL_DATA"] = "/usr/share/gdal/"
 
+
 class Common(QCluster, Configuration):
 
     SERVER_INSTANCE = os.environ.get("SERVER_INSTANCE", "Dev")
@@ -275,7 +276,7 @@ class Common(QCluster, Configuration):
         "PAGE_SIZE": int(os.getenv("DJANGO_PAGINATION_LIMIT", 10)),
         "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%S%z",
         "DEFAULT_RENDERER_CLASSES": (
-            "rest_framework.renderers.JSONRenderer",
+            "wazimap_ng.renderer.CustomRenderer",
             "rest_framework.renderers.BrowsableAPIRenderer",
             "rest_framework_csv.renderers.PaginatedCSVRenderer",
         ),
