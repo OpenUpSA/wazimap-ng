@@ -17,7 +17,6 @@
                 window.location.href = link;
             } else if (val == "2") {
                 showNode("indicatordata_form", "block");
-                //showNode("add_method_div", "none");
             } 
         }
 
