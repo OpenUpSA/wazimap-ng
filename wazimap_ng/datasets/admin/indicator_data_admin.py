@@ -49,6 +49,11 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
     list_filter = (filters.IndicatorFilter,)
 
     search_fields = ["geography__name"]
+    
+    class Media:
+        css = {
+             'all': ('/static/css/admin-custom.css',)
+        }
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
