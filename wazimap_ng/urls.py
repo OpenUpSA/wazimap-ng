@@ -21,6 +21,7 @@ from wazimap_ng.general.views import logout_view, notifications_view
 def trigger_error(request):
     division_by_zero = 1 / 0
 
+
 urlpatterns = [
 
     # Admin

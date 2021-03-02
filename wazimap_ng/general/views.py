@@ -69,7 +69,7 @@ def authenticate_admin(user):
 def notifications_view(request):
     messages = request.session.pop("notifications", [])
     task_list = request.session.get("task_list", [])
-    
+
     if messages and task_list:
         for message in messages:
             if "task_id" in message:
