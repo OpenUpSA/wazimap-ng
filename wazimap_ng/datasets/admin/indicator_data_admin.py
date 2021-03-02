@@ -68,7 +68,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
             form = IndicatorDirectorForm(request.POST, request.FILES)
             if form.is_valid():
                 indicator_director_file = request.FILES["indicator_director_file"]
-                datasetfile = form.cleaned_data["datasetfile"]
+                dataset = form.cleaned_data["dataset"]
                 logger.debug(f" Uploaded Indicator director file: {indicator_director_file}")
                 
                 indicator_indicator_json = indicator_director_file.read()
@@ -87,8 +87,8 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                     
                     task = async_task(
                             "wazimap_ng.datasets.tasks.process_indicator_data_director",
-                            indicator_indicator_json, datasetfile,
-                            task_name=f"Creating Indicator data: {datasetfile}",
+                            indicator_indicator_json, dataset,
+                            task_name=f"Creating Indicator data: {dataset}",
                             hook="wazimap_ng.datasets.hooks.process_task_info",
                             key=request.session.session_key,
                             type="indicator_director", assign=True, notify=True
@@ -98,7 +98,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                             request.session,
                             "info",
                             "Indicator data creation for data %s started. We will let you know when process is done." % (
-                                datasetfile
+                                dataset
                             )
                         )
                 return HttpResponseRedirect("/admin/datasets/indicatordata/")
