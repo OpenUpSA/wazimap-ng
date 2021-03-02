@@ -1,0 +1,10 @@
+{% extends 'admin/change_form.html' %}
+{% load i18n admin_urls %}
+{% block object-tools %}
+    <ul class="object-tools">
+        <li>
+            <a href="/admin/datasets/indicatordata/upload/">Upload an Indicator Data Director</a>
+        </li>
+    </ul>
+    {{ block.super }}
+{% endblock %}

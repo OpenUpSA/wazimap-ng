@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 @admin.register(models.IndicatorData)
 class IndicatorDataAdmin(DatasetBaseAdminModel):
-    add_form_template = "admin/indicatordata_change_list.html"
+    add_form_template = "admin/indicatordata_change_form.html"
 
     def indicator__name(self, obj):
         return obj.indicator.name
@@ -49,9 +49,6 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
     list_filter = (filters.IndicatorFilter,)
 
     search_fields = ["geography__name"]
-
-    class Media:
-        js = ("/static/js/indicatordata-admin.js",)
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
