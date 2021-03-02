@@ -72,3 +72,17 @@ def test_profile_indicator_metadata(geography, profile_indicators, metadata):
     assert output[0]["metadata_source"] == "A source"
     assert output[0]["metadata_description"] == "A description"
     assert output[0]["metadata_url"] == "http://example.com"
+
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("indicator_data")
+def test_get_indicator_data(geography, profile_indicators):
+    
+    profile = profile_indicators[0].profile
+    pi1, pi2 = profile_indicators
+
+    profile2 = ProfileFactory()
+    pi3 = ProfileIndicatorFactory(indicator=pi1.indicator, label="PI3", profile=profile2)
+    results = get_indicator_data(profile, geography)
+    assert len(results) == 2
+
