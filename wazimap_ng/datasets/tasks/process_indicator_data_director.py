@@ -10,7 +10,7 @@ def process_indicator_data_director(indicator_indicator_json, **kwargs):
     logger.debug(f"process_uploaded director file: {indicator_indicator_json}")
 
 
-    # filename = indicator_director_file.document.name
+    # filename = indicator_director.document.name
     # if ".json" in filename:
         
     # sorter = Sorter()

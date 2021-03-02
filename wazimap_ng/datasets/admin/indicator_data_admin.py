@@ -72,12 +72,12 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
         if request.method == 'POST':
             form = IndicatorDirectorForm(request.POST, request.FILES)
             if form.is_valid():
-                indicator_director_file = request.FILES["indicator_director_file"]
+                indicator_director = request.FILES["indicator_director"]
                 dataset = form.cleaned_data["dataset"]
-                logger.debug(f" Uploaded Indicator director file: {indicator_director_file}")
+                logger.debug(f" Uploaded Indicator director file: {indicator_director}")
                 
-                indicator_indicator_json = indicator_director_file.read()
-                indicator_director_file.close()
+                indicator_indicator_json = indicator_director.read()
+                indicator_director.close()
                 #task to process director file comes here
 
                 if indicator_indicator_json:
