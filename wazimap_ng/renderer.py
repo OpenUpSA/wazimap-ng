@@ -17,9 +17,7 @@ class CustomRenderer(JSONRenderer):
 
         if response.status_code >= 400:
             type = data.get('detail', None)
-            if type:
-                type = type.code
-
+            type = getattr(type, 'code', None)
             data = self.error_data(data, type, response.status_code)
 
         return super().render(data, accepted_media_type, renderer_context)
