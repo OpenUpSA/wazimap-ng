@@ -23,8 +23,8 @@ class Notify:
             "error": "Data extraction failed for %s.",
         },
         "indicator_director": {
-            "success": "Indicator data creation successfil for %s",
-            "error": "Indicator data creation failed for %s",
+            "success": "Indicator data created for %s dataset",
+            "error": "Indicator data creation failed for %s dataset",
         }
     }
 

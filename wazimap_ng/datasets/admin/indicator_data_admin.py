@@ -102,7 +102,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                     hooks.custom_admin_notification(
                             request.session,
                             "info",
-                            "Indicator data creation for data %s started. We will let you know when process is done." % (
+                            "Indicator data creation for dataset %s started. We will let you know when process is done." % (
                                 dataset
                             )
                         )

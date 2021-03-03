@@ -6,8 +6,8 @@ from django.db import transaction
 logger = logging.getLogger(__name__)
 
 @transaction.atomic
-def process_indicator_data_director(indicator_indicator_json, **kwargs):
-    logger.debug(f"process_uploaded director file: {indicator_indicator_json}")
+def process_indicator_data_director(indicator_director_json, dataset, **kwargs):
+    logger.debug(f"process uploaded director file: {indicator_director_json}")
 
 
     # filename = indicator_director.document.name
