@@ -1,6 +1,9 @@
+import sys
 import codecs
 import uuid
 import pandas as pd
+from django.http import JsonResponse, HttpResponseServerError
+from django.views.defaults import server_error
 from collections import OrderedDict, defaultdict, Mapping
 import logging
 
@@ -615,3 +618,27 @@ def clean_columns(file):
     new_columns = df.columns.str.lower().str.strip()
     file.seek(0)
     return old_columns, new_columns
+
+
+def error_handler(request, **kwargs):
+
+    # _, value, _ = sys.exc_info()
+    # print(value, '\n\n')
+
+    if request.path.startswith('/api/v1'):
+
+        message = 'Server Error occurred.'
+        error_type = 'server_error'
+        code = 500
+
+        data = dict(
+            error={
+                'message': {'detail': message},
+                'type': error_type,
+                'code': code
+            }
+        )
+
+        return JsonResponse(data, status=500)
+
+    return server_error(request)
