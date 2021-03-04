@@ -13,7 +13,7 @@
 }
 #content> .upload-button { 
 	background: #417690;
-	border-radius: 2px;
+	border: 1px solid #417690;
 	overflow: hidden;
 	display: inherit;
 }
