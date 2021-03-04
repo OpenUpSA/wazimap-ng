@@ -79,9 +79,3 @@ def notifications_view(request):
         "task_list": task_list,
         "notifications": messages,
     })
-
-
-@api_view()
-def error_handler_test(request):
-    raise ValueError('Checking value error')
-    return Response(data=dict(error='None'))

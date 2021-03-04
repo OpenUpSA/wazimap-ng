@@ -143,7 +143,6 @@ urlpatterns = [
         cache(general_views.consolidated_profile_test),
         name="all-details-test"
     ),
-    path("api/v1/error_handler/test", cache(general_views.error_handler_test), name="error-handler-test"),
     path('sentry-debug/', trigger_error),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -16,17 +16,18 @@ class TestErrorResponseData(APITestCase):
 
         response = error_handler(request)
         status = response.status_code
+        content_type = response['Content-Type']
 
-        assert status == 500
+        assert status == 500 and content_type == 'application/json'
 
-    def test_view_exception(self):
+    def test_error_not_json(self):
+        factory = RequestFactory()
+        request = factory.get('/foo/bar')
 
-        from django.test import Client
+        response = error_handler(request)
+        content_type = response['Content-Type']
 
-        client = Client()
-
-        with pytest.raises(Exception):
-            client.get('/api/v1/error_handler/test')
+        assert content_type != 'application/json'
 
     def test_error_format(self):
         from wazimap_ng.renderer import CustomRenderer
