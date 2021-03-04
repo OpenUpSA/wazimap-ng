@@ -150,7 +150,7 @@ def IndicatorDataSerializer(profile, geography):
         lambda x: dict(x["jsdata"]["subindicators"]),
     )
 
-    d_subindicators = pivot(d_subindicators, [0, 1, 2, 3, 4, 5, 7, 6])
+    d_subindicators = pivot(d_subindicators, [0, 1, 2, 3, 4, 5, 7, 8, 6])
 
     d_children = qsdict(children_indicator_data,
         "category",
@@ -164,7 +164,7 @@ def IndicatorDataSerializer(profile, geography):
         lambda x: x["jsdata"]["subindicators"]
     )
 
-    d_children = pivot(d_children, [0, 1, 2, 3, 4, 5, 8, 7, 6])
+    d_children = pivot(d_children, [0, 1, 2, 3, 4, 5, 8, 9, 7, 6])
 
     # This is needed in additio to d3 in case the parent geography does not have this indicator
     # In which case it won't return metadata
@@ -211,6 +211,7 @@ def IndicatorDataSerializer(profile, geography):
             "chart_configuration": x["indicator_chart_configuration"],
         },
     )
+
 
 
     new_dict = {}

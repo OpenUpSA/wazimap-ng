@@ -4,11 +4,11 @@ services:
   redis:
     image: redis:latest
     ports:
-      - "6379:6379"
+      - "63791:6379"
   db:
     image: kartoza/postgis:12.0
     ports:
-      - "5432:5432"
+      - "54321:5432"
     volumes:
       - "wazimap-data:/var/lib/postgresql/"
     environment:
