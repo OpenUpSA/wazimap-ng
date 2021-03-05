@@ -64,4 +64,5 @@ def process_indicator_data_director(indicator_director, dataset, **kwargs):
             "id": indicator.id,
         }   
     else:
-        raise Exception("subindicators not in dataset groups")      
+        raise Exception("subindicators not in dataset groups")
+    

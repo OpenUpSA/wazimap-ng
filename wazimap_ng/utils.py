@@ -586,4 +586,3 @@ def pivot(d, order):
     nested = nest(rearranged)
 
     return nested
-    
