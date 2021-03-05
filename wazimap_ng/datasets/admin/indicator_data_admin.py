@@ -11,8 +11,7 @@ from django.template.response import TemplateResponse
 from django_q.tasks import async_task
 
 from .base_admin_model import DatasetBaseAdminModel
-from .. import hooks
-from .. import models
+from .. import hooks, models
 from .forms import IndicatorDirectorForm
 
 from wazimap_ng.general.admin import filters
