@@ -9,6 +9,7 @@ from django.contrib.postgres.fields.jsonb import KeyTextTransform
 
 from .. import models
 from itertools import groupby
+from wazimap_ng.utils import mergedict
 
 logger = logging.getLogger(__name__)
 
@@ -17,26 +18,27 @@ class DataAccumulator:
         self.geography_id = geography_id
         self.data = {
             "groups": defaultdict(dict),
-            "subindicators": {}
+            "subindicators": defaultdict(dict)
         }
 
     def add_data(self, group, subindicator, data_blob):
         self.data["groups"][group][subindicator] = data_blob["data"]
 
     def add_subindicator(self, data_blob):
-        subindicators = {}
         for datum in data_blob:
             count = datum.pop("count")
-            values = list(datum.values())
-            if len(values) > 0:
-                if len(values) > 1:
-                    logger.warn(f"Expected a single group when creating a subindicator - found {len(values)}!")
-                subindicator = values[0]
-                subindicators[subindicator] = count
+            values = list(datum.values()) 
+            values_length = len(values)
+            if values_length > 0:
+                subindicators = defaultdict(dict)
+                for x in range (values_length -1, -1, -1):
+                    if x == values_length -1:
+                        subindicators.update({values[x] : count })
+                    else:
+                        subindicators = ({ values[x] : subindicators})
+                mergedict(self.data["subindicators"], subindicators)
             else: 
                 raise Exception("Missing subindicator in datablob")
-
-        self.data["subindicators"] = subindicators
 
 class Sorter:
     def __init__(self):
