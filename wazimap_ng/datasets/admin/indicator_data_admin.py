@@ -76,7 +76,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                 dataset = form.cleaned_data["dataset"]
                 logger.debug(f" Uploaded Indicator director file: {indicator_director}")
                 
-                indicator_indicator_json = indicator_director.read()
+                indicator_director_json = indicator_director.read()
                 indicator_director.close()
                 #task to process director file comes here
 
@@ -124,5 +124,4 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
             "admin/indicatordata_upload_director.html", 
             context,
         )
-
 
