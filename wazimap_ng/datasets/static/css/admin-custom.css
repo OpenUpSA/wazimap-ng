@@ -1,36 +1,64 @@
-#datasetfile-group>.module>h2, #coordinatefile-group>.module>h2 { display: none }
-#datasetfile-group>.module>#datasetfile-0>h3 { display: none }
-.add-icon {background: url(../admin/img/icon-addlink.svg) 0 1px no-repeat; padding-left: 16px; font-size: 12px;}
-#coordinatefile_set-group>.module>#coordinatefile_set-0>h3 { visibility: hidden; }
-#coordinatefile_set-group>.module>h2 { display: none }
-#metadata-group>.module>#metadata-0>h3 { visibility: hidden; }
-.field-icon>div { display: flex; }
-#content> h1 { 
-	margin: 0 0 20px !important;
-	font-weight: 300 !important;
-	font-size: 20px !important;
-	color: #666 !important;
+#datasetfile-group>.module>h2,
+#coordinatefile-group>.module>h2 {
+    display: none
 }
-#content> .upload-button { 
-	background: #417690;
-	border: 1px solid #417690;
-	overflow: hidden;
-	display: inherit;
+
+#datasetfile-group>.module>#datasetfile-0>h3 {
+    display: none
 }
-.upload-button>a{
-	background: inherit;
-	color: #ffffff;
-	float: left;
-	border: none;
-	outline: none;
-	cursor: pointer;
-	padding: 8px 16px;
-	transition: 0.3s;
-	text-decoration: none;
+
+.add-icon {
+    background: url(../admin/img/icon-addlink.svg) 0 1px no-repeat;
+    padding-left: 16px;
+    font-size: 12px;
 }
+
+#coordinatefile_set-group>.module>#coordinatefile_set-0>h3 {
+    visibility: hidden;
+}
+
+#coordinatefile_set-group>.module>h2 {
+    display: none
+}
+
+#metadata-group>.module>#metadata-0>h3 {
+    visibility: hidden;
+}
+
+.field-icon>div {
+    display: flex;
+}
+
+#content>h1 {
+    margin: 0 0 20px !important;
+    font-weight: 300 !important;
+    font-size: 20px !important;
+    color: #666 !important;
+}
+
+#content>.upload-button {
+    background: #417690;
+    border: 1px solid #417690;
+    overflow: hidden;
+    display: inherit;
+}
+
+.upload-button>a {
+    background: inherit;
+    color: #ffffff;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 8px 16px;
+    transition: 0.3s;
+    text-decoration: none;
+}
+
 .upload-button>a:hover {
-	background: #c4dce8;
-  }
+    background: #c4dce8;
+}
+
 .upload-button>a.active {
-	background: #79aec8;
-  }
+    background: #79aec8;
+}
