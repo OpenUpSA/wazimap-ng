@@ -10,12 +10,14 @@ from .. import models
 from .profile_indicator_sorter import ProfileIndicatorSorter
 
 logger = logging.getLogger(__name__)
+def get_profile_data(profile, geographies):
+    return get_indicator_data(profile, profile.indicators.all(), geographies)
 
-def get_indicator_data(profile, geographies):
+def get_indicator_data(profile, indicators, geographies):
 
     data = (IndicatorData.objects
         .filter(
-            indicator__in=profile.indicators.all(),
+            indicator__in=indicators,
             geography__in=geographies
         )
         .values(
@@ -60,11 +62,11 @@ def IndicatorDataSerializer(profile, geography):
 
     sorters = ProfileIndicatorSorter(profile)
 
-    indicator_data = get_indicator_data(profile, [geography])
+    indicator_data = get_profile_data(profile, [geography])
     indicator_data = rearrange_group(indicator_data)
     indicator_data = sorters.sort(indicator_data)
 
-    children_indicator_data = get_indicator_data(profile, geography.get_children())
+    children_indicator_data = get_profile_data(profile, geography.get_children())
     children_indicator_data = rearrange_group(children_indicator_data)
     children_indicator_data = sorters.sort(children_indicator_data)
 
