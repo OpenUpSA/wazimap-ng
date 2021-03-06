@@ -4,9 +4,9 @@ from collections import OrderedDict
 from test_plus import APITestCase
 
 from tests.profile.factories import ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory, ProfileIndicatorFactory
-from tests.datasets.factories import DatasetFactory, IndicatorFactory, IndicatorDataFactory, GroupFactory
+from tests.datasets.factories import DatasetFactory, IndicatorFactory, IndicatorDataFactory, GroupFactory, GeographyFactory
 
-from wazimap_ng.profile.views import ProfileByUrl
+from wazimap_ng.profile.views import ProfileByUrl, profile_geography_indicator_data
 
 @pytest.mark.django_db
 class TestProfileGeographyData(APITestCase):
@@ -128,6 +128,14 @@ def profile():
 
     return _profile
 
+@pytest.fixture
+def profile_indicators(profile):
+    pi1 = ProfileIndicatorFactory(profile=profile, label="PI1")
+    pi2 = ProfileIndicatorFactory(profile=profile, label="PI2")
+    return [
+        pi1, pi2
+    ]
+
 @pytest.mark.django_db
 class TestProfileByUrl:
     def test_missing_url(self, profile, rf):
@@ -139,3 +147,14 @@ class TestProfileByUrl:
         request = rf.get("profile-by-url", HTTP_WM_HOSTNAME="some_domain.com")
         response = ProfileByUrl.as_view()(request)
         assert response.status_code == 200
+
+@pytest.mark.django_db
+def test_profile_indicator_data(profile, profile_indicators, rf):
+    geography = profile.geography_hierarchy.root_geography
+    pi = profile_indicators[0]
+    url = f"api/v1/profile/{profile.pk}/geography/{geography.code}/indicator/{pi.pk}/"
+    request = rf.get(url)
+    response = profile_geography_indicator_data(request, profile.pk, geography.code, pi.pk)
+
+    assert response.status_code == 200
+

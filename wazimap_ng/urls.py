@@ -92,6 +92,11 @@ urlpatterns = [
         cache(profile_views.profile_geography_data),
         name="profile-geography-data",
     ),
+    path(
+        "api/v1/profile/<int:profile_id>/geography/<str:geography_code>/indicator/<int:profile_indicator_id>/",
+        cache(profile_views.profile_geography_indicator_data),
+        name="profile-geography-indicator-data",
+    ),
     path("api/v1/geography/search/<str:profile_id>/", cache(dataset_views.search_geography)),
     path("api/v1/geography/ancestors/<str:geography_code>/<str:version>/", cache(dataset_views.geography_ancestors), name="geography-ancestors"),
 

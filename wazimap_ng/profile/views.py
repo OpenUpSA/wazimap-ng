@@ -68,6 +68,17 @@ def profile_geography_data(request, profile_id, geography_code):
     js = serializers.ExtendedProfileSerializer(profile, geography)
     return Response(js)
 
+@api_view()
+def profile_geography_indicator_data(request, profile_id, geography_code, profile_indicator_id):
+    profile = get_object_or_404(models.Profile, pk=profile_id)
+    version = profile.geography_hierarchy.root_geography.version
+    geography = get_object_or_404(Geography, code=geography_code, version=version)
+    
+    profile_indicator = get_object_or_404(models.ProfileIndicator, profile=profile, pk=profile_indicator_id)
+    js = serializers.ProfileIndicatorFullSerializer(profile_indicator, geography=geography).data
+    
+    return Response(js)
+
 class ProfileCategoriesList(generics.ListAPIView):
     queryset = models.IndicatorCategory.objects.all()
     serializer_class = serializers.IndicatorCategorySerializer
