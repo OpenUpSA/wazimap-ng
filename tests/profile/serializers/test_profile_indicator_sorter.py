@@ -9,10 +9,6 @@ from tests.datasets.factories import GroupFactory
 from wazimap_ng.profile.serializers.profile_indicator_sorter import ProfileIndicatorSorter
 
 @pytest.fixture
-def profile():
-    return ProfileFactory()
-
-@pytest.fixture
 def profile_indicators(profile):
     profile_indicator1 = ProfileIndicatorFactory(profile=profile)
     profile_indicator2 = ProfileIndicatorFactory(profile=profile)
