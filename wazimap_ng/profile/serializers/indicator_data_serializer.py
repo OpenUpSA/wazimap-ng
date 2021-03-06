@@ -11,14 +11,12 @@ from .profile_indicator_sorter import ProfileIndicatorSorter
 
 logger = logging.getLogger(__name__)
 
-def get_indicator_data(profile, geography):
-    if not isinstance(geography, Iterable):
-        geography = [geography]
+def get_indicator_data(profile, geographies):
 
     data = (IndicatorData.objects
         .filter(
             indicator__in=profile.indicators.all(),
-            geography__in=geography
+            geography__in=geographies
         )
         .values(
             jsdata=F("data"),
@@ -62,7 +60,7 @@ def IndicatorDataSerializer(profile, geography):
 
     sorters = ProfileIndicatorSorter(profile)
 
-    indicator_data = get_indicator_data(profile, geography)
+    indicator_data = get_indicator_data(profile, [geography])
     indicator_data = rearrange_group(indicator_data)
     indicator_data = sorters.sort(indicator_data)
 
