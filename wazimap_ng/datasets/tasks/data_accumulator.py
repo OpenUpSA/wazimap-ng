@@ -60,6 +60,8 @@ class DataAccumulator:
 
         for datum in data_blob["data"]:
             count = datum.pop("count")
+            if group in datum:
+                datum.pop(group)
             subindicator2 = list(datum.values())[0]
             new_data.append({"count": count, "subindicator": subindicator2})
 
