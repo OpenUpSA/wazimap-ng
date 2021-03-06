@@ -29,12 +29,34 @@ def profile_indicators(profile):
     ]
 
 @pytest.fixture
-def indicator_data(geography, profile_indicators):
+def indicator_data_json():
+    return [{
+        "subindicators": {"g1s1": "ABC", "g1s2": "DEF", "g1s3": "GHI"},
+        "groups": {
+            "group2": {
+                "g2s2": {"g1s1": 4, "g1s2": 5, "g1s3": 6},
+                "g2s1": {"g1s1": 1, "g1s2": 2, "g1s3": 3},
+                "g2s3": {"g1s1": 7, "g1s2": 8, "g1s3": 9},
+            }
+        }
+    }, {
+        "subindicators": {"g1s2": "123", "g1s1": "456", "g1s3": "789"},
+        "groups": {
+            "group2": {
+                "g2s2": {"g1s1": 40, "g1s2": 50, "g1s3": 60},
+                "g2s1": {"g1s1": 10, "g1s2": 20, "g1s3": 30},
+                "g2s3": {"g1s1": 70, "g1s2": 80, "g1s3": 90},
+            }
+        }
+    }]
+
+@pytest.fixture
+def indicator_data(geography, profile_indicators, indicator_data_json):
     idata = []
 
-    for pi in profile_indicators:
+    for (pi, js) in zip(profile_indicators, indicator_data_json):
         indicator = pi.indicator
-        idatum = IndicatorDataFactory(geography=geography, indicator=indicator)
+        idatum = IndicatorDataFactory(geography=geography, indicator=indicator, data=js)
         idata.append(idatum)
 
 
