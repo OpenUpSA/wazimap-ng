@@ -5,6 +5,7 @@ from ..services import permissions
 from wazimap_ng.profile.models import Profile, IndicatorCategory, IndicatorSubcategory
 from wazimap_ng.points.models import Theme, Category
 from wazimap_ng.datasets.models import GeographyHierarchy, Dataset, MetaData as DatasetMetaData, Indicator
+from wazimap_ng.cms.models import Page
 
 
 class DynamicBaseFilter(admin.SimpleListFilter):
@@ -111,4 +112,16 @@ class CollectionFilter(DynamicBaseFilter):
             permissions, "get_custom_queryset"
         )(self.model_class, request.user)
         return [(collection.id, collection) for collection in choices]
+
+# CMS
+class PageFilter(DynamicBaseFilter):
+    title = 'Page'
+    parameter_name = 'page_id'
+    model_class = Page
+
+    def lookups(self, request, model_admin):
+        choices = getattr(
+            permissions, "get_custom_fk_queryset"
+        )(request.user, self.model_class)
+        return list(set(choices.values_list(*self.lookup_fields)))
 
