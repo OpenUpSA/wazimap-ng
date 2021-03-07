@@ -116,26 +116,6 @@ class TestProfileGeographyData(APITestCase):
         assert len(indicators) == 2
         assert indicator_list[0][0] == 'Indicator'
 
-
-@pytest.fixture
-def profile():
-    _profile = ProfileFactory()
-    _profile.configuration = {
-        "urls": ["some_domain.com"]
-    }
-
-    _profile.save()
-
-    return _profile
-
-@pytest.fixture
-def profile_indicators(profile):
-    pi1 = ProfileIndicatorFactory(profile=profile, label="PI1")
-    pi2 = ProfileIndicatorFactory(profile=profile, label="PI2")
-    return [
-        pi1, pi2
-    ]
-
 @pytest.mark.django_db
 class TestProfileByUrl:
     def test_missing_url(self, profile, rf):

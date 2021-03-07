@@ -45,7 +45,6 @@ def indicator_data_extraction(indicator, **kwargs):
     sorter = Sorter(primary_group=indicator.primary_group)
 
     models.IndicatorData.objects.filter(indicator=indicator).delete()
-
     for group in indicator.dataset.group_set.all():
         logger.debug(f"Extracting subindicators for: {group.name}")
         qs = models.DatasetData.objects.filter(dataset=indicator.dataset, data__has_keys=[group.name])
@@ -56,10 +55,10 @@ def indicator_data_extraction(indicator, **kwargs):
                 logger.debug(f"Extracting subindicators for: {group.name} -> {subindicator}")
                 qs_subindicator = qs.filter(**{f"data__{group.name}": subindicator})
 
-                counts = extract_counts(indicator, qs_subindicator)
+                counts = extract_counts(indicator, qs_subindicator, indicator.primary_group)
                 sorter.add_groups_data(group.name, subindicator, counts)
         else:
-            counts = extract_counts(indicator, qs)
+            counts = extract_counts(indicator, qs, indicator.primary_group)
             sorter.add_subindicator_data(counts)
 
 
@@ -78,23 +77,13 @@ def indicator_data_extraction(indicator, **kwargs):
         "id": indicator.id,
     }           
 
-def extract_counts(indicator, qs):
-    """
-    Data extraction for indicator data object.
+def extract_counts(indicator, qs, primary_group):
 
-    Create Indicator data object for indicator object and all geography.
-
-    This task populates the Json field in indicator data object.
-
-    Data json field should be populated with json of group name in groups of indicator
-    and total count of that group according to geography.
-
-    So for Gender group object should look like : {"Gender": "Male", "count": 123, ...}
-    """
     ds_groups = indicator.dataset.group_set.all()
     nonagg_groups = ds_groups.filter(can_aggregate=False)
     nonagg_groups_names = [g.name for g in nonagg_groups]
-    in_groups = list(set(indicator.groups + nonagg_groups_names))
+    in_groups = list(set([primary_group] + nonagg_groups_names))
+    
     if indicator.universe is not None:
         qs = qs.filter_by_universe(indicator.universe)
 

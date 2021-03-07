@@ -42,8 +42,8 @@ class ProfileIndicatorFullSerializer(serializers.Serializer):
 
         d_subindicators = qsdict(indicator_data,
             lambda x: "subindicators",
-            lambda x: dict(x["jsdata"]["subindicators"]),
-      )
+            lambda x: x["jsdata"]["subindicators"],
+        )
 
         new_dict = {}
         mergedict(new_dict, d_groups)
