@@ -1,6 +1,9 @@
-import pytest
 from collections import OrderedDict
 
+from django.urls import reverse
+
+import pytest
+from pytest_drf import APIViewTest, Returns200, UsesGetMethod
 from test_plus import APITestCase
 
 from tests.profile.factories import ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory, ProfileIndicatorFactory
@@ -128,13 +131,26 @@ class TestProfileByUrl:
         response = ProfileByUrl.as_view()(request)
         assert response.status_code == 200
 
-@pytest.mark.django_db
-def test_profile_indicator_data(profile, profile_indicators, rf):
-    geography = profile.geography_hierarchy.root_geography
-    pi = profile_indicators[0]
-    url = f"api/v1/profile/{profile.pk}/geography/{geography.code}/indicator/{pi.pk}/"
-    request = rf.get(url)
-    response = profile_geography_indicator_data(request, profile.pk, geography.code, pi.pk)
 
-    assert response.status_code == 200
+@pytest.mark.django_db
+class TestProfileIndicatorData(
+    APIViewTest,
+    UsesGetMethod,
+    Returns200
+
+):
+
+    @pytest.fixture
+    def url(self, profile, geography, grouped_profile_indicator):
+        return reverse("profile-geography-indicator-data", kwargs={
+            "profile_id": profile.id,
+            "geography_code": geography.code,
+            "profile_indicator_id": grouped_profile_indicator.id
+        })
+
+    def test_get_indicator_data(self, indicator_data_json, json):
+        expected = indicator_data_json
+        actual = json["data"]
+
+        assert expected == actual
 
