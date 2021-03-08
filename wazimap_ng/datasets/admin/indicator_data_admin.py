@@ -1,4 +1,5 @@
 import logging
+import json
 
 from django.contrib import admin
 from django.contrib.postgres import fields
@@ -74,12 +75,18 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                 indicator_director = request.FILES["indicator_director"]
                 dataset = form.cleaned_data["dataset"]
                 logger.debug(f" Uploaded Indicator director file: {indicator_director}")
-                
-                indicator_director_json = indicator_director.read()
-                indicator_director.close()
-                #task to process director file comes here
 
-                if indicator_indicator_json:
+                with open('/tmp/indicator_director.json', 'wb+') as f:
+                    for chunk in indicator_director.chunks():
+                        f.write(chunk)
+
+                indicator_director.close()
+
+                with open('/tmp/indicator_director.json', 'r') as z:
+                    indicator_director_json = json.load(z)
+                        
+                #task to process director file comes here
+                if indicator_director_json:
                     logger.debug(f"""Starting async task: 
                         Task name: wazimap_ng.datasets.tasks.process_indicator_data_director
                         Hook: wazimap_ng.datasets.hooks.process_task_info,
@@ -91,7 +98,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                     
                     task = async_task(
                         "wazimap_ng.datasets.tasks.process_indicator_data_director",
-                        indicator_indicator_json, dataset,
+                        indicator_director_json, dataset,
                         task_name=f"Creating Indicator data: {dataset}",
                         hook="wazimap_ng.datasets.hooks.process_task_info",
                         key=request.session.session_key,

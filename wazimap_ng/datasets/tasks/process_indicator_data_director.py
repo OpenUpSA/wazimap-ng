@@ -17,12 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def process_indicator_data_director(indicator_director, dataset, **kwargs):
+def process_indicator_data_director(data, dataset, **kwargs):
     logger.debug(f"process uploaded director file: {dataset}")
 
     sorter = Sorter()
-    data = json.loads(indicator_director)
-
+    
     indicator_name = list(data)[0]
     primary_groups = data[indicator_name]["subindicators"]
 
