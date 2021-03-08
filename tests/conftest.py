@@ -66,7 +66,6 @@ def metadata(indicatordata):
 @pytest.fixture
 def indicator(datasetdata, dataset):
     dataset = datasetdata[0].dataset
-    # import pdb; pdb.set_trace()
     indicator = IndicatorFactory(name="test indicator", dataset=dataset)
     return indicator
 
