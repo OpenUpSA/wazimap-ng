@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.postgres import fields
 from django.urls import path
 from django.http import HttpResponseRedirect
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 
 from django_json_widget.widgets import JSONEditorWidget
 from django.template.response import TemplateResponse
@@ -68,8 +68,10 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
         ]
         return my_urls + urls
 
-    @login_required
     def upload_indicator_director(self, request):
+        if not request.user.is_authenticated:
+            return redirect('/admin/login?next=%s' % (request.path))
+
         if request.method == 'POST':
             form = IndicatorDirectorForm(request.POST, request.FILES)
             if form.is_valid():
@@ -120,8 +122,10 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
             'opts': self.model._meta,
             'app_label': self.model._meta.app_label,
             'title': "Upload JSON Indicator Director File",
+            'has_permission': True,
             'add': False,
             'change': False,
+            'user': request.user,
             'original': "Upload Indicator",
             'form': IndicatorDirectorForm(),
         }
