@@ -622,9 +622,6 @@ def clean_columns(file):
 
 def error_handler(request, **kwargs):
 
-    # _, value, _ = sys.exc_info()
-    # print(value, '\n\n')
-
     if request.path.startswith('/api/v1'):
 
         message = 'Server Error occurred.'

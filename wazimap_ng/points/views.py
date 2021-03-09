@@ -146,7 +146,6 @@ class ThemeList(generics.ListAPIView):
     serializer_class = serializers.ThemeSerializer
 
     def list(self, request, profile_id):
-        print('Entered list view')
         queryset = self.get_queryset().filter(profile_id=profile_id)
         serializer = self.get_serializer_class()(queryset, many=True)
         data = serializer.data
