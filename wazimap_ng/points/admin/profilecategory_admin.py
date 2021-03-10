@@ -1,7 +1,6 @@
 from adminsortable2.admin import SortableAdminMixin
 from django.contrib.gis import admin
 from django import forms
-from django.contrib.postgres import fields
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.services.permissions import assign_perms_to_group
@@ -10,7 +9,7 @@ from wazimap_ng.general.admin import filters
 from .. import models
 
 from icon_picker_widget.widgets import IconPickerWidget
-from django_json_widget.widgets import JSONEditorWidget
+from django_admin_json_editor import JSONEditorWidget
 
 
 class ProfileCategoryAdminForm(forms.ModelForm):
@@ -19,14 +18,23 @@ class ProfileCategoryAdminForm(forms.ModelForm):
         self.fields['icon'].widget = IconPickerWidget()
 
 
+DEFAULT_SCHEMA = {
+    'type': 'array',
+    'title': 'tags',
+    'items': {
+        'type': 'string',
+        'enum': []
+    }
+}
+def dynamic_schema(obj):
+    schema = DEFAULT_SCHEMA
+    schema['items']['enum'] = obj.location_attributes
+    return schema
+
 @admin.register(models.ProfileCategory)
 class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel):
     list_display = ("label", "theme", "order", "category", "profile")
     list_filter = (filters.ProfileFilter, filters.ThemeFilter, filters.CollectionFilter)
-
-    formfield_overrides = {
-        fields.JSONField: {"widget": JSONEditorWidget},
-    }
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
@@ -69,7 +77,11 @@ class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel):
         return obj
 
     def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
+        schema = DEFAULT_SCHEMA
+        if obj:
+            schema = dynamic_schema(obj)
+        widget = JSONEditorWidget(schema, False)
+        form = super().get_form(request, obj, widgets={'attributes': widget}, **kwargs)
 
         qs = form.base_fields["theme"].queryset
         if obj:

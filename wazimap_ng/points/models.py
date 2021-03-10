@@ -84,6 +84,11 @@ class ProfileCategory(BaseModel):
         verbose_name_plural = "Profile Collections"
         ordering = ["order"]
 
+    @property
+    def location_attributes(self):
+        locations = Location.objects.filter(category=self.category).values_list('data', flat=True)
+        f = [data.get('key') for location in locations for data in location]
+        return list(set(f))
 
 class CoordinateFile(BaseModel):
     document = models.FileField(
