@@ -30,6 +30,7 @@ class ProfileCategoryFactory(factory.django.DjangoModelFactory):
     category = factory.SubFactory(CategoryFactory)
     theme = factory.SubFactory(ThemeFactory)
     label = "Pc Label"
+    visible_tooltip_attributes = ['point_attribute']
 
 
 class LocationFactory(factory.django.DjangoModelFactory):

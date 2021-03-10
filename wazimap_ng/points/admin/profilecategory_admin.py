@@ -40,7 +40,7 @@ class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel):
           'fields': ('label', 'description',)
         }),
         ("Point Collection configuration", {
-            'fields': ('tool_tips',)
+            'fields': ('visible_tooltip_attributes',)
         }),
     )
     form = ProfileCategoryAdminForm
