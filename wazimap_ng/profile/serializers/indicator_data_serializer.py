@@ -16,6 +16,7 @@ def get_indicator_data(profile, geographies):
     data = (IndicatorData.objects
         .filter(
             indicator__in=profile.indicators.all(),
+            indicator__profileindicator__profile=profile,
             geography__in=geographies
         )
         .values(
