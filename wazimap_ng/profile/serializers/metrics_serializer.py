@@ -28,11 +28,20 @@ def sibling(profile_key_metric, geography):
     return None
 
 def absolute_value(profile_key_metric, geography):
-    indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography=geography)
+    indicator_data = IndicatorData.objects.filter(
+        indicator__profilekeymetrics=profile_key_metric, geography=geography
+    )
     if indicator_data.count() > 0:
         subindicator = get_subindicator(profile_key_metric)
-        data = indicator_data.first().data # TODO what to do with multiple results
-        return data["subindicators"][subindicator]
+        data = indicator_data.first().data  # TODO what to do with multiple results
+        subindicators_data = data.get("subindicators")
+        if subindicators_data:
+            absolute_value = subindicators_data.get(subindicator)
+            if absolute_value:
+                return absolute_value
+            # if the subindicator is missing
+            return "N/A"
+
     return None
 
 def subindicator(profile_key_metric, geography):
