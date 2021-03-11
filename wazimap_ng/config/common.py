@@ -269,7 +269,6 @@ class Common(QCluster, Configuration):
         }
     }
 
-
     # Django Rest Framework
     REST_FRAMEWORK = {
 
@@ -277,7 +276,7 @@ class Common(QCluster, Configuration):
         "PAGE_SIZE": int(os.getenv("DJANGO_PAGINATION_LIMIT", 10)),
         "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%S%z",
         "DEFAULT_RENDERER_CLASSES": (
-            "wazimap_ng.renderer.CustomRenderer",
+            "rest_framework.renderers.JSONRenderer",
             "rest_framework.renderers.BrowsableAPIRenderer",
             "rest_framework_csv.renderers.PaginatedCSVRenderer",
         ),
@@ -287,6 +286,7 @@ class Common(QCluster, Configuration):
         'DEFAULT_PERMISSION_CLASSES': [
             "wazimap_ng.profile.authentication.ProfilePermissions",
         ],
+        'EXCEPTION_HANDLER': 'wazimap_ng.utils.custom_exception_handler'
     }
 
     CORS_ORIGIN_ALLOW_ALL = True

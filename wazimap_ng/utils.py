@@ -1,9 +1,11 @@
-import sys
 import codecs
 import uuid
 import pandas as pd
-from django.http import JsonResponse, HttpResponseServerError
+from django.http import JsonResponse
 from django.views.defaults import server_error
+
+from rest_framework import status
+
 from collections import OrderedDict, defaultdict, Mapping
 import logging
 
@@ -620,22 +622,39 @@ def clean_columns(file):
     return old_columns, new_columns
 
 
-def error_handler(request, **kwargs):
+def error_handler(request, *args, **kwargs):
 
-    if request.path.startswith('/api/v1'):
+    message = 'Server Error occurred.'
+    error_type = 'server_error'
+    code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
-        message = 'Server Error occurred.'
-        error_type = 'server_error'
-        code = 500
+    data = {
+        'error': {
+            'message': {'detail': message},
+            'type': error_type,
+            'code': code
+        }
+    }
 
-        data = dict(
-            error={
-                'message': {'detail': message},
-                'type': error_type,
-                'code': code
+    return JsonResponse(
+        data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def custom_exception_handler(exc, context):
+    from rest_framework.views import exception_handler
+    response = exception_handler(exc, context)
+
+    if response is not None:
+        type = response.data.get('detail', None)
+        type = getattr(type, 'code', None)
+
+        data = {
+            'error': {
+                "message": response.data,
+                "type": type,
+                "code": response.status_code
             }
-        )
+        }
+        response.data = data
 
-        return JsonResponse(data, status=500)
-
-    return server_error(request)
+    return response

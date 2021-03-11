@@ -1,8 +1,17 @@
 import csv
 import codecs
+import pytest
+import json
 from io import BytesIO
 
-from wazimap_ng.utils import sort_list_using_order, detect_encoding
+from wazimap_ng.utils import (
+    sort_list_using_order, detect_encoding,
+    error_handler, custom_exception_handler
+)
+
+from rest_framework import status
+
+from test_plus import APITestCase
 
 
 def test_empty_sort_using_order():
@@ -66,3 +75,21 @@ def test_detect_encoding():
     buffer = generate_file(data_with_different_encodings, good_header, "Windows-1252")
     encoding = detect_encoding(buffer)
     assert encoding == "Windows-1252"
+
+
+class TestErrorHandling(APITestCase):
+
+    def test_error_handler_func(self):
+        fake_request = self.get('/api/fake-request')
+
+        response = error_handler(fake_request)
+        content_type = response['Content-Type']
+
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert content_type == 'application/json'
+
+    def test_custom_exception(self):
+        response = self.get('/api/v1/datasets/3452/')
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.data['error']['type'] == 'not_found'
