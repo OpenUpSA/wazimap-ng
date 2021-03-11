@@ -83,6 +83,6 @@ def test_get_indicator_data(geography, profile_indicators):
 
     profile2 = ProfileFactory()
     pi3 = ProfileIndicatorFactory(indicator=pi1.indicator, label="PI3", profile=profile2)
-    results = get_indicator_data(profile, geography)
+    results = get_indicator_data(profile, [geography])
     assert len(results) == 2
 
