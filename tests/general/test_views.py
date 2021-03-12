@@ -15,28 +15,29 @@ class TestConsolidatedProfileView(APITestCase):
         GeographyBoundaryFactory(geography=self.geography)
         self.hierarchy = GeographyHierarchyFactory(root_geography=self.geography)
         self.profile = ProfileFactory(geography_hierarchy=self.hierarchy)
-        self.theme1 = ThemeFactory(profile=self.profile, name="TH1")
-        self.theme2 = ThemeFactory(profile=self.profile, name="TH2")
         self.category = CategoryFactory(profile=self.profile)
         self.location = LocationFactory(category=self.category)
-        self.pc1_th1 = ProfileCategoryFactory(
-            profile=self.profile, category=self.category, theme=self.theme1,
-            label="PC1 TH1"
-        )
-        self.pc2_th1 = ProfileCategoryFactory(
-            profile=self.profile, category=self.category, theme=self.theme1,
-            label="PC2 TH1"
-        )
-        self.pc1_th2 = ProfileCategoryFactory(
-            profile=self.profile, category=self.category, theme=self.theme2,
-            label="PC1 TH2"
-        )
-        self.pc2_th2 = ProfileCategoryFactory(
-            profile=self.profile, category=self.category, theme=self.theme2,
-            label="PC2 TH2"
+
+    def create_pc(self, theme, order=0, label="pc label"):
+        return ProfileCategoryFactory(
+            profile=self.profile, category=self.category, theme=theme,
+            label=label, order=order
         )
 
+    def create_multiple_profile_categories(self, theme, count=2):
+        pcs = []
+        for i in range(0, count):
+            pcs.append(
+                self.create_pc(theme, i, F"pc{i}_{theme.name}")
+            )
+        return pcs
+
     def test_profile_theme_data(self):
+        theme1 = ThemeFactory(profile=self.profile, name="TH1", order=0)
+        theme2 = ThemeFactory(profile=self.profile, name="TH2", order=1)
+        pc1, pc2 = self.create_multiple_profile_categories(theme1)
+        pc3, pc4 = self.create_multiple_profile_categories(theme2)
+
         response = self.get(
             'all-details', profile_id=self.profile.pk,
             geography_code=self.geography.code, extra={'format': 'json'}
@@ -45,22 +46,21 @@ class TestConsolidatedProfileView(APITestCase):
 
         theme_data = response.data["themes"]
         assert len(theme_data) == 2
-        assert theme_data[0]["name"] == "TH1"
-        assert theme_data[1]["name"] == "TH2"
+        assert theme_data[0]["name"] == theme1.name
+        assert theme_data[1]["name"] == theme2.name
         assert len(theme_data[0]["subthemes"]) == 2
         assert len(theme_data[1]["subthemes"]) == 2
-        assert theme_data[0]["subthemes"][0]['label'] == "PC1 TH1"
-        assert theme_data[0]["subthemes"][1]['label'] == "PC2 TH1"
-        assert theme_data[1]["subthemes"][0]['label'] == "PC1 TH2"
-        assert theme_data[1]["subthemes"][1]['label'] == "PC2 TH2"
+        assert theme_data[0]["subthemes"][0]['label'] == pc1.label
+        assert theme_data[0]["subthemes"][1]['label'] == pc2.label
+        assert theme_data[1]["subthemes"][0]['label'] == pc3.label
+        assert theme_data[1]["subthemes"][1]['label'] == pc4.label
 
     def test_theme_reoder(self):
 
-        # Reorder themes
-        self.theme2.order = 0
-        self.theme2.save()
-        self.theme1.order = 1
-        self.theme1.save()
+        theme1 = ThemeFactory(profile=self.profile, name="TH1", order=1)
+        theme2 = ThemeFactory(profile=self.profile, name="TH2", order=0)
+        self.create_multiple_profile_categories(theme1)
+        self.create_multiple_profile_categories(theme2)
 
         response = self.get(
             'all-details', profile_id=self.profile.pk,
@@ -70,15 +70,17 @@ class TestConsolidatedProfileView(APITestCase):
 
         theme_data = response.data["themes"]
         assert len(theme_data) == 2
-        assert theme_data[0]["name"] == "TH2"
-        assert theme_data[1]["name"] == "TH1"
+        assert theme_data[0]["name"] == theme2.name
+        assert theme_data[1]["name"] == theme1.name
 
     def test_subtheme_reoder(self):
 
-        self.pc2_th1.order = 0
-        self.pc2_th1.save()
-        self.pc1_th1.order = 1
-        self.pc1_th1.save()
+        theme1 = ThemeFactory(profile=self.profile, name="TH1", order=0)
+        theme2 = ThemeFactory(profile=self.profile, name="TH2", order=1)
+        pc1 = self.create_pc(theme1, order=1, label=F"pc_{theme1.name}")
+        pc2 = self.create_pc(theme1, order=0, label=F"pc_{theme1.name}")
+        pc3 = self.create_pc(theme2, order=1, label=F"pc_{theme2.name}")
+        pc4 = self.create_pc(theme2, order=0, label=F"pc_{theme2.name}")
 
         response = self.get(
             'all-details', profile_id=self.profile.pk,
@@ -86,19 +88,16 @@ class TestConsolidatedProfileView(APITestCase):
         )
         self.assert_http_200_ok()
 
-        # Assert if TH1 subthemes have different ordering from initial and
-        # TH2 subthemes have same order
         theme_data = response.data["themes"]
-        assert theme_data[0]["subthemes"][0]['label'] == "PC2 TH1"
-        assert theme_data[0]["subthemes"][1]['label'] == "PC1 TH1"
-        assert theme_data[1]["subthemes"][0]['label'] == "PC1 TH2"
-        assert theme_data[1]["subthemes"][1]['label'] == "PC2 TH2"
+        assert theme_data[0]["subthemes"][0]['label'] == pc2.label
+        assert theme_data[0]["subthemes"][1]['label'] == pc1.label
+        assert theme_data[1]["subthemes"][0]['label'] == pc4.label
+        assert theme_data[1]["subthemes"][1]['label'] == pc3.label
 
-        # Change ordering of TH2 subthemes as well
-        self.pc2_th2.order = 0
-        self.pc2_th2.save()
-        self.pc1_th2.order = 1
-        self.pc1_th2.save()
+    def test_subtheme_reorder_after_new_data(self):
+        theme1 = ThemeFactory(profile=self.profile, name="TH1", order=0)
+        pc1 = self.create_pc(theme1, order=1, label=F"pc_{theme1.name}")
+        pc2 = self.create_pc(theme1, order=0, label=F"pc_{theme1.name}")
 
         response = self.get(
             'all-details', profile_id=self.profile.pk,
@@ -106,28 +105,17 @@ class TestConsolidatedProfileView(APITestCase):
         )
         self.assert_http_200_ok()
 
-        # Assert if TH1 subthemes have different ordering from initial and
-        # TH2 subthemes have same order
         theme_data = response.data["themes"]
-        assert theme_data[0]["subthemes"][0]['label'] == "PC2 TH1"
-        assert theme_data[0]["subthemes"][1]['label'] == "PC1 TH1"
-        assert theme_data[1]["subthemes"][0]['label'] == "PC2 TH2"
-        assert theme_data[1]["subthemes"][1]['label'] == "PC1 TH2"
+        subthemes = theme_data[0]["subthemes"]
+        assert subthemes[0]['label'] == pc2.label
+        assert subthemes[1]['label'] == pc1.label
 
-        # Create 2 new pc for TH1 and inster one is first place and another on last
-        ProfileCategoryFactory(
-            profile=self.profile, category=self.category, theme=self.theme1,
-            label="PC3 TH1", order=0
-        )
-        ProfileCategoryFactory(
-            profile=self.profile, category=self.category, theme=self.theme1,
-            label="PC4 TH1", order=3
-        )
-
-        self.pc2_th1.order = 1
-        self.pc2_th1.save()
-        self.pc1_th1.order = 2
-        self.pc1_th1.save()
+        pc3 = self.create_pc(theme1, order=0, label=F"pc_{theme1.name}")
+        pc4 = self.create_pc(theme1, order=2, label=F"pc_{theme1.name}")
+        pc1.order = 1
+        pc1.save()
+        pc2.order = 3
+        pc2.save()
 
         response = self.get(
             'all-details', profile_id=self.profile.pk,
@@ -135,10 +123,10 @@ class TestConsolidatedProfileView(APITestCase):
         )
         self.assert_http_200_ok()
 
-        # Assert if TH1 subthemes have different ordering from initial and
-        # TH2 subthemes have same order
         theme_data = response.data["themes"]
-        assert theme_data[0]["subthemes"][0]['label'] == "PC3 TH1"
-        assert theme_data[0]["subthemes"][1]['label'] == "PC2 TH1"
-        assert theme_data[0]["subthemes"][2]['label'] == "PC1 TH1"
-        assert theme_data[0]["subthemes"][3]['label'] == "PC4 TH1"
+        subthemes = theme_data[0]["subthemes"]
+        assert subthemes[0]['label'] == pc3.label
+        assert subthemes[1]['label'] == pc1.label
+        assert subthemes[2]['label'] == pc4.label
+        assert subthemes[3]['label'] == pc2.label
+
