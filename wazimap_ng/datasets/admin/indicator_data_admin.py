@@ -75,21 +75,16 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
         if request.method == 'POST':
             form = IndicatorDirectorForm(request.POST, request.FILES)
             if form.is_valid():
-                indicator_director = request.FILES["indicator_director"]
-                dataset = form.cleaned_data["dataset"]
-                logger.debug(f" Uploaded Indicator director file: {indicator_director}")
+                indicator_director = form.cleaned_data.get("indicator_director", None)
+                dataset_file = form.cleaned_data.get("dataset_file", None)
 
-                with open('/tmp/indicator_director.json', 'wb+') as f:
-                    for chunk in indicator_director.chunks():
-                        f.write(chunk)
+                if dataset_file and indicator_director:
+                    datasetfile_obj = models.DatasetFile.objects.create(
+                        name=dataset_file.name,
+                        document=dataset_file
+                    )
+                    indicator_director_json = indicator_director.read()
 
-                indicator_director.close()
-
-                with open('/tmp/indicator_director.json', 'r') as z:
-                    indicator_director_json = json.load(z)
-                        
-                #task to process director file comes here
-                if indicator_director_json:
                     logger.debug(f"""Starting async task: 
                         Task name: wazimap_ng.datasets.tasks.process_indicator_data_director
                         Hook: wazimap_ng.datasets.hooks.process_task_info,
@@ -101,7 +96,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                     
                     task = async_task(
                         "wazimap_ng.datasets.tasks.process_indicator_data_director",
-                        indicator_director_json, dataset,
+                        indicator_director_json, datasetfile_obj,
                         task_name=f"Creating Indicator data: {dataset}",
                         hook="wazimap_ng.datasets.hooks.process_task_info",
                         key=request.session.session_key,
