@@ -98,6 +98,7 @@ urlpatterns = [
     path("api/v1/profile/<int:profile_id>/points/themes/", cache(points_views.ThemeList.as_view()), name="points-themes"),
     path("api/v1/profile/<int:profile_id>/points/themes/categories/", cache(points_views.ProfileCategoryList.as_view())),
     path("api/v1/profile/<int:profile_id>/points/category/<int:profile_category_id>/points/", cache(points_views.LocationList.as_view()), name="category-points"),
+    path("api/v1/profile/<int:profile_id>/points/geography/<str:geography_code>/points/", cache(points_views.GeoLocationList.as_view()), name="geography-points"),
     path("api/v1/profile/<int:profile_id>/points/category/<int:profile_category_id>/geography/<str:geography_code>/points/", cache(points_views.LocationList.as_view()), name="category-points-geography"),
     path("api/v1/profile/<int:profile_id>/points/profile_categories/", cache(points_views.ProfileCategoryList.as_view()), name="profile-category"),
     path("api/v1/profile/<int:profile_id>/points/theme/<int:theme_id>/profile_categories/", cache(points_views.ProfileCategoryList.as_view()), name="profile-category-theme"),
