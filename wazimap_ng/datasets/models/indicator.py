@@ -23,9 +23,9 @@ class Indicator(BaseModel):
 
     def get_unique_subindicators(self):
         if len(self.groups) > 0:
-            # TODO this model should be refactored to only allow one group
-            group = self.groups[0]
-            subindicators = DatasetData.objects.filter(dataset=self.dataset).get_unique_subindicators(group)
+            # TODO allow not more than 2 groups for now
+            groups = self.groups[:2]
+            subindicators = DatasetData.objects.filter(dataset=self.dataset).get_unique_subindicators(groups)
             return list(subindicators)
 
         return []

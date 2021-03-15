@@ -69,7 +69,7 @@ class Sorter:
 @transaction.atomic
 def indicator_data_extraction(indicator, **kwargs):
     sorter = Sorter()
-    primary_group = indicator.groups[0] # TODO ensure that we only ever have one primary group. Probably need to change the model
+    primary_groups = indicator.groups[:2] # TODO not more than two primary groups. Probably need to change the model
 
     models.IndicatorData.objects.filter(indicator=indicator).delete()
     groups = ["data__" + i for i in indicator.dataset.groups]
@@ -77,7 +77,7 @@ def indicator_data_extraction(indicator, **kwargs):
     for group in indicator.dataset.groups:
         logger.debug(f"Extracting subindicators for: {group}")
         qs = models.DatasetData.objects.filter(dataset=indicator.dataset, data__has_keys=[group])
-        if group != primary_group:
+        if group not in primary_groups:
             subindicators = qs.get_unique_subindicators(group)
 
             for subindicator in subindicators:
@@ -86,9 +86,10 @@ def indicator_data_extraction(indicator, **kwargs):
 
                 counts = extract_counts(indicator, qs_subindicator)
                 sorter.add_data(group, subindicator, counts)
-        else:
-            counts = extract_counts(indicator, qs)
-            sorter.add_subindicator(counts)
+
+    qs = models.DatasetData.objects.filter(dataset=indicator.dataset, data__has_keys=primary_groups)
+    counts = extract_counts(indicator, qs)
+    sorter.add_subindicator(counts)
 
 
     datarows = []
