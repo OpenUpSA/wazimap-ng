@@ -79,12 +79,12 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                 dataset_file = form_data.get("dataset_file", None)
                 indicator_director_file = form_data.get("indicator_director_file", None)
 
-                if dataset_file and indicator_director:
+                if dataset_file and indicator_director_file:
                     dataset_file_obj = models.DatasetFile.objects.create(
                         name=dataset_file.name,
                         document=dataset_file
                     )
-                    indicator_director_json = json.loads(indicator_director.read())
+                    indicator_director_json = json.load(indicator_director_file)
 
                     logger.debug(f"""Starting async task: 
                         Task name: wazimap_ng.datasets.tasks.process_indicator_data_director
@@ -97,7 +97,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                     
                     task = async_task(
                         "wazimap_ng.datasets.tasks.process_indicator_data_director",
-                        indicator_director_json, datasetfile_obj,
+                        indicator_director_json, dataset_file_obj,
                         task_name=f"Creating Indicator data: {dataset_file.name}",
                         hook="wazimap_ng.datasets.hooks.process_task_info",
                         key=request.session.session_key,

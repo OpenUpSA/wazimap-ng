@@ -18,7 +18,7 @@ from .process_uploaded_file import process_uploaded_file
 
 logger = logging.getLogger(__name__)
 
-def process_dataset_file(data, datasetfile_obj, indicator_name):
+def process_dataset_file(data, dataset_file_obj, indicator_name):
     try:
         profile_id = int(data.get("profile"))
         geography_hierarchy_id = int(data.get("geography_hierarchy"))
@@ -31,14 +31,14 @@ def process_dataset_file(data, datasetfile_obj, indicator_name):
             profile=profile,
             geography_hierarchy=geography_hierarchy
         )
-        process_uploaded_file(datasetfile_obj, dataset_obj)
+        process_uploaded_file(dataset_file_obj, dataset_obj)
 
         return dataset_obj
     except(ValueError, TypeError) as e:
         logger.exception(e)
 
 @transaction.atomic
-def process_indicator_data_director(data, datasetfile_obj, **kwargs):
+def process_indicator_data_director(data, dataset_file_obj, **kwargs):
     sorter = Sorter()
     
     indicator_name = list(data)[0]
@@ -47,7 +47,7 @@ def process_indicator_data_director(data, datasetfile_obj, **kwargs):
     logger.debug(f"process uploaded director file: {data_obj}")
     primary_groups = data_obj["subindicators"]
 
-    dataset = process_dataset_file(data_obj, datasetfile_obj, indicator_name)
+    dataset = process_dataset_file(data_obj, dataset_file_obj, indicator_name)
     
     if not isinstance(primary_groups, list):
         primary_groups = [primary_groups]
