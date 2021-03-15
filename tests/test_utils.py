@@ -79,17 +79,30 @@ def test_detect_encoding():
 
 class TestErrorHandling(APITestCase):
 
-    def test_error_handler_func(self):
-        fake_request = self.get('/api/fake-request')
+    content_type = 'application/json'
 
-        response = error_handler(fake_request)
+    def test_error_handler_func(self):
+        fake_request = self.get(
+            '/api/fake-request')
+
+        fake_request.wsgi_request.content_type = self.content_type
+
+        response = error_handler(fake_request.wsgi_request)
         content_type = response['Content-Type']
 
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-        assert content_type == 'application/json'
+        assert content_type == self.content_type
 
-    def test_custom_exception(self):
-        response = self.get('/api/v1/datasets/3452/')
+    def test_error_json(self):
+        request = self.get('/foo/bar', content_type='application/json')
 
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-        assert response.data['error']['type'] == 'not_found'
+        request.wsgi_request.content_type = self.content_type
+
+        response = error_handler(request.wsgi_request)
+        content_type = response['Content-Type']
+
+        data = json.loads(response.content)
+
+        assert content_type == self.content_type
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert data['error']['type'] == 'server_error'

@@ -636,8 +636,11 @@ def error_handler(request, *args, **kwargs):
         }
     }
 
-    return JsonResponse(
-        data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    if request.content_type == 'application/json':
+        return JsonResponse(
+            data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return server_error(request, *args, **kwargs)
 
 
 def custom_exception_handler(exc, context):
