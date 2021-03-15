@@ -4,7 +4,7 @@ from ... import models
 from django.contrib.postgres.forms import SimpleArrayField
 
 class IndicatorAdminForm(forms.ModelForm):
-    groups = SimpleArrayField(forms.ChoiceField(required=True))
+    groups = forms.MultipleChoiceField(required=True)
     class Meta:
         model = models.Indicator
         fields = '__all__'
@@ -14,8 +14,3 @@ class IndicatorAdminForm(forms.ModelForm):
         if not self.instance.id:
             self.fields['groups'].choices = self.group_choices
             self.fields['universe'].queryset = self.universe_queryset
-
-    def clean(self,*args,**kwargs):
-        cleaned_data = super().clean(*args,**kwargs)
-        cleaned_data['groups'] = [cleaned_data.get("groups")]
-        return cleaned_data
