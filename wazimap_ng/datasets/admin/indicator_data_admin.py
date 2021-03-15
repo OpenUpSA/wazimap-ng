@@ -75,8 +75,9 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
         if request.method == 'POST':
             form = IndicatorDirectorForm(request.POST, request.FILES)
             if form.is_valid():
-                indicator_director = form.cleaned_data.get("indicator_director", None)
-                dataset_file = form.cleaned_data.get("dataset_file", None)
+                form_data = form.cleaned_data
+                dataset_file = form_data.get("dataset_file", None)
+                indicator_director_file = form_data.get("indicator_director_file", None)
 
                 if dataset_file and indicator_director:
                     datasetfile_obj = models.DatasetFile.objects.create(
@@ -130,4 +131,3 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
             "admin/indicatordata_upload_director.html", 
             context,
         )
-
