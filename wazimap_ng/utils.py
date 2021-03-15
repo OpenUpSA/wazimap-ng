@@ -489,7 +489,7 @@ def rearrange(in_arrs, order):
     """
     out_arrs = []
     for arr in in_arrs:
-        out_arrs += [[arr[idx] for idx in order] + [arr[-1]]]
+        out_arrs += [[arr[idx] for idx in order if arr[idx] != arr[-1]] + [arr[-1]]]
 
     return out_arrs
 
