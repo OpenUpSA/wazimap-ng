@@ -28,7 +28,7 @@ class DatasetDataQuerySet(models.QuerySet):
 
         groups = [f"data__{group}" if "data__" not in group else group for group in groups]
 
-        return self.order_by().values_list(*groups, flat=True).distinct()
+        return self.order_by().values_list(*groups).distinct()
 
 
     def grouped_totals_by_geography(self, groups):
