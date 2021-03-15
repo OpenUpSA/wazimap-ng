@@ -80,7 +80,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                 indicator_director_file = form_data.get("indicator_director_file", None)
 
                 if dataset_file and indicator_director:
-                    datasetfile_obj = models.DatasetFile.objects.create(
+                    dataset_file_obj = models.DatasetFile.objects.create(
                         name=dataset_file.name,
                         document=dataset_file
                     )
