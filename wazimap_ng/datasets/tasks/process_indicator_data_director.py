@@ -16,10 +16,7 @@ from .process_uploaded_file import process_uploaded_file
 
 logger = logging.getLogger(__name__)
 
-
-def process_dataset_file(datasetfile_obj, dataset_obj):
-
-def create_dataset(data, indicator_name):
+def process_dataset_file(data, datasetfile_obj, indicator_name):
     try:
         profile_id = int(data.get("profile"))
         geography_hierarchy_id = int(data.get("geography_hierarchy"))
@@ -32,6 +29,8 @@ def create_dataset(data, indicator_name):
             profile=profile,
             geography_hierarchy=geography_hierarchy
         )
+        process_uploaded_file(datasetfile_obj, dataset_obj)
+
         return dataset_obj
     except(ValueError, TypeError) as e:
         logger.exception(e)
@@ -46,8 +45,7 @@ def process_indicator_data_director(data, datasetfile_obj, **kwargs):
     data_obj = data[indicator_name]
     primary_groups = data_obj["subindicators"]
 
-    dataset_obj = create_dataset(data_obj, indicator_name)
-    process_uploaded_file(datasetfile_obj, dataset_obj)
+    dataset = process_dataset_file(data_obj, datasetfile_obj, indicator_name)
     
     if not isinstance(primary_groups, list):
         primary_groups = [primary_groups]
