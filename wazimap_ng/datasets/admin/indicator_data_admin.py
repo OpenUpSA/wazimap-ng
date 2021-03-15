@@ -83,7 +83,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                         name=dataset_file.name,
                         document=dataset_file
                     )
-                    indicator_director_json = indicator_director.read()
+                    indicator_director_json = json.loads(indicator_director.read())
 
                     logger.debug(f"""Starting async task: 
                         Task name: wazimap_ng.datasets.tasks.process_indicator_data_director

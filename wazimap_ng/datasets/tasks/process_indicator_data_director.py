@@ -7,7 +7,9 @@ from django.db.models import Sum, FloatField
 from django.db.models.functions import Cast
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 
-from .. import hooks, models, tasks
+from .. import models
+from wazimap_ng.profile.models import Profile
+
 from itertools import groupby
 from wazimap_ng.utils import mergedict
 
@@ -21,7 +23,7 @@ def process_dataset_file(data, datasetfile_obj, indicator_name):
         profile_id = int(data.get("profile"))
         geography_hierarchy_id = int(data.get("geography_hierarchy"))
 
-        profile = models.Profile.objects.get(pk=profile_id)
+        profile = Profile.objects.get(pk=profile_id)
         geography_hierarchy = models.GeographyHierarchy.objects.get(pk=geography_hierarchy_id)
     
         dataset_obj = models.Dataset.objects.create(
@@ -37,12 +39,12 @@ def process_dataset_file(data, datasetfile_obj, indicator_name):
 
 @transaction.atomic
 def process_indicator_data_director(data, datasetfile_obj, **kwargs):
-    logger.debug(f"process uploaded director file: {dataset}")
-
     sorter = Sorter()
     
     indicator_name = list(data)[0]
     data_obj = data[indicator_name]
+    print(data_obj)
+    logger.debug(f"process uploaded director file: {data_obj}")
     primary_groups = data_obj["subindicators"]
 
     dataset = process_dataset_file(data_obj, datasetfile_obj, indicator_name)
