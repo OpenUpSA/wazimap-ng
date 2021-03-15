@@ -72,7 +72,6 @@ def indicator_data_extraction(indicator, **kwargs):
     primary_groups = indicator.groups[:2] # TODO not more than two primary groups. Probably need to change the model
 
     models.IndicatorData.objects.filter(indicator=indicator).delete()
-    groups = ["data__" + i for i in indicator.dataset.groups]
 
     for group in indicator.dataset.groups:
         logger.debug(f"Extracting subindicators for: {group}")
