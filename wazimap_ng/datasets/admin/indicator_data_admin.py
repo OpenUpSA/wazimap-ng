@@ -97,7 +97,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                     task = async_task(
                         "wazimap_ng.datasets.tasks.process_indicator_data_director",
                         indicator_director_json, datasetfile_obj,
-                        task_name=f"Creating Indicator data: {dataset}",
+                        task_name=f"Creating Indicator data: {dataset_file.name}",
                         hook="wazimap_ng.datasets.hooks.process_task_info",
                         key=request.session.session_key,
                         type="indicator_director", assign=False, notify=True
@@ -106,8 +106,8 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                     hooks.custom_admin_notification(
                         request.session,
                         "info",
-                        "Indicator data creation for dataset %s started. We will let you know when process is done." % (
-                            dataset
+                        "Indicator data creation for dataset file %s started. We will let you know when process is done." % (
+                            dataset_file.name
                         )
                     )
                 return HttpResponseRedirect("/admin/datasets/indicatordata/")

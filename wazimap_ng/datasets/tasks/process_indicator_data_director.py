@@ -12,19 +12,42 @@ from itertools import groupby
 from wazimap_ng.utils import mergedict
 
 from .indicator_data_extraction import Sorter, extract_counts
+from .process_uploaded_file import process_uploaded_file
 
 logger = logging.getLogger(__name__)
 
 
+def process_dataset_file(datasetfile_obj, dataset_obj):
+
+def create_dataset(data, indicator_name):
+    try:
+        profile_id = int(data.get("profile"))
+        geography_hierarchy_id = int(data.get("geography_hierarchy"))
+
+        profile = models.Profile.objects.get(pk=profile_id)
+        geography_hierarchy = models.GeographyHierarchy.objects.get(pk=geography_hierarchy_id)
+    
+        dataset_obj = models.Dataset.objects.create(
+            name=indicator_name,
+            profile=profile,
+            geography_hierarchy=geography_hierarchy
+        )
+        return dataset_obj
+    except(ValueError, TypeError) as e:
+        logger.exception(e)
+
 @transaction.atomic
-def process_indicator_data_director(data, dataset, **kwargs):
+def process_indicator_data_director(data, datasetfile_obj, **kwargs):
     logger.debug(f"process uploaded director file: {dataset}")
 
     sorter = Sorter()
     
     indicator_name = list(data)[0]
-    primary_groups = data[indicator_name]["subindicators"]
+    data_obj = data[indicator_name]
+    primary_groups = data_obj["subindicators"]
 
+    dataset_obj = create_dataset(data_obj, indicator_name)
+    
     if not isinstance(primary_groups, list):
         primary_groups = [primary_groups]
 
