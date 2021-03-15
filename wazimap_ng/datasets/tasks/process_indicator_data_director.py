@@ -7,7 +7,7 @@ from django.db.models import Sum, FloatField
 from django.db.models.functions import Cast
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 
-from .. import models
+from .. import hooks, models, tasks
 from itertools import groupby
 from wazimap_ng.utils import mergedict
 
@@ -47,6 +47,7 @@ def process_indicator_data_director(data, datasetfile_obj, **kwargs):
     primary_groups = data_obj["subindicators"]
 
     dataset_obj = create_dataset(data_obj, indicator_name)
+    process_uploaded_file(datasetfile_obj, dataset_obj)
     
     if not isinstance(primary_groups, list):
         primary_groups = [primary_groups]
