@@ -4,6 +4,7 @@ from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
 from tests.datasets.factories import GeographyFactory, IndicatorDataFactory, MetaDataFactory
 
 from wazimap_ng.profile.serializers.indicator_data_serializer import get_indicator_data
+from wazimap_ng.profile.serializers.profile_indicator_serializer import FullProfileIndicatorSerializer
 
 @pytest.fixture
 def profile():
@@ -85,4 +86,13 @@ def test_get_indicator_data(geography, profile_indicators):
     pi3 = ProfileIndicatorFactory(indicator=pi1.indicator, label="PI3", profile=profile2)
     results = get_indicator_data(profile, [geography])
     assert len(results) == 2
+
+
+@pytest.mark.django_db
+def test_profile_indicator_serializer(profile_indicator, indicatordata_json):
+    indicator = profile_indicator.indicator
+    geography = indicator.indicatordata_set.first().geography
+    serializer = FullProfileIndicatorSerializer(geography=geography, instance=profile_indicator)
+    
+    assert serializer.data["data"] == indicatordata_json
 

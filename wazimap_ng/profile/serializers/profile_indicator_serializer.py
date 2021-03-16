@@ -17,4 +17,18 @@ class ProfileIndicatorSerializer(serializers.ModelSerializer):
       exclude = ["profile", "id"]
       depth = 2        
 
+class FullProfileIndicatorSerializer(serializers.Serializer):
+    data = serializers.SerializerMethodField()
+    
+    def __init__(self, *args, geography, **kwargs):
+        self.geography = geography
+        super(FullProfileIndicatorSerializer, self).__init__(*args, **kwargs)
+
+    
+    def get_data(self, obj):
+        profile = obj.profile
+        indicator = obj.indicator
+
+        return indicator.indicatordata_set.get(geography=self.geography).data      
+
 
