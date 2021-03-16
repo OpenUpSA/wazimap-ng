@@ -108,7 +108,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                     
                     task = async_task(
                         "wazimap_ng.datasets.tasks.process_indicator_data_director",
-                        indicator_director_json, dataset_file_obj, dataset_obj
+                        indicator_director_json, dataset_file_obj, dataset_obj,
                         task_name=f"Creating Indicator data: {dataset_file.name}",
                         hook="wazimap_ng.datasets.hooks.process_task_info",
                         key=request.session.session_key,

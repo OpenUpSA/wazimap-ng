@@ -1,5 +1,5 @@
 from django import forms
-from ... import models import GeographyHierarchy
+from ...models import GeographyHierarchy
 
 from wazimap_ng.profile.models import Profile
 
