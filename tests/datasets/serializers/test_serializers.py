@@ -1,15 +1,6 @@
 import pytest
 
 from wazimap_ng.datasets.serializers import MetaDataSerializer
-from tests.datasets.factories import MetaDataFactory, LicenceFactory
-
-@pytest.fixture
-def licence():
-    return LicenceFactory(name="licence name", url="abc url")
-
-@pytest.fixture
-def metadata(licence):
-    return MetaDataFactory(source="XYZ", url="http://example.com", description="ABC", licence=licence)
 
 @pytest.mark.django_db
 class TestMetaDataSerializer:
