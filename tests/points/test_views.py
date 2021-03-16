@@ -241,16 +241,17 @@ class TestLocationView(APITestCase):
         )
         data = response.data
 
-        assert len(data) == 2
+        results = data["results"]
+        assert data["count"] == 2
 
         # Assert self.category
-        assert data[0]["type"] == "FeatureCollection"
-        assert len(data[0]["features"]) == 1
-        assert data[0]["features"][0]["geometry"]["coordinates"] == [1.0, 1.0]
-        assert data[0]["category"] == "Pc Label"
+        assert results[0]["type"] == "FeatureCollection"
+        assert len(results[0]["features"]) == 1
+        assert results[0]["features"][0]["geometry"]["coordinates"] == [1.0, 1.0]
+        assert results[0]["category"] == "Pc Label"
 
         # Assert category
-        assert data[1]["type"] == "FeatureCollection"
-        assert len(data[1]["features"]) == 1
-        assert data[1]["features"][0]["geometry"]["coordinates"] == [2.0, 2.0]
-        assert data[1]["category"] == "Pc Label 2"
+        assert results[1]["type"] == "FeatureCollection"
+        assert len(results[1]["features"]) == 1
+        assert results[1]["features"][0]["geometry"]["coordinates"] == [2.0, 2.0]
+        assert results[1]["category"] == "Pc Label 2"
