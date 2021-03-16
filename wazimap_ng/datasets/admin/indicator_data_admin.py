@@ -78,11 +78,22 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                 form_data = form.cleaned_data
                 dataset_file = form_data.get("dataset_file", None)
                 indicator_director_file = form_data.get("indicator_director_file", None)
+                geography_hierarchy = form_data.get("geography_hierarchy", None)
+                profile = form_data.get("profile", None)
 
                 if dataset_file and indicator_director_file:
+                    #create dataset object
+                    dataset_obj = models.Dataset.objects.create(
+                        name=dataset_file.name.split(".")[0],
+                        profile=profile,
+                        geography_hierarchy=geography_hierarchy
+                    )
+
+                    #create dataset_file_obj
                     dataset_file_obj = models.DatasetFile.objects.create(
                         name=dataset_file.name,
-                        document=dataset_file
+                        document=dataset_file,
+                        dataset_id=dataset_obj.id
                     )
                     indicator_director_json = json.load(indicator_director_file)
 
@@ -97,7 +108,7 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                     
                     task = async_task(
                         "wazimap_ng.datasets.tasks.process_indicator_data_director",
-                        indicator_director_json, dataset_file_obj,
+                        indicator_director_json, dataset_file_obj, dataset_obj
                         task_name=f"Creating Indicator data: {dataset_file.name}",
                         hook="wazimap_ng.datasets.hooks.process_task_info",
                         key=request.session.session_key,

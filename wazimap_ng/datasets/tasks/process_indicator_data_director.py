@@ -8,7 +8,6 @@ from django.db.models.functions import Cast
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 
 from .. import models
-from wazimap_ng.profile.models import Profile
 
 from itertools import groupby
 from wazimap_ng.utils import mergedict
@@ -18,36 +17,17 @@ from .process_uploaded_file import process_uploaded_file
 
 logger = logging.getLogger(__name__)
 
-def process_dataset_file(data, dataset_file_obj, indicator_name):
-    try:
-        profile_id = int(data.get("profile"))
-        geography_hierarchy_id = int(data.get("geography_hierarchy"))
-
-        profile = Profile.objects.get(pk=profile_id)
-        geography_hierarchy = models.GeographyHierarchy.objects.get(pk=geography_hierarchy_id)
-    
-        dataset_obj = models.Dataset.objects.create(
-            name=indicator_name,
-            profile=profile,
-            geography_hierarchy=geography_hierarchy
-        )
-        process_uploaded_file(dataset_file_obj, dataset_obj)
-
-        return dataset_obj
-    except(ValueError, TypeError) as e:
-        logger.exception(e)
-
 @transaction.atomic
-def process_indicator_data_director(data, dataset_file_obj, **kwargs):
+def process_indicator_data_director(data, dataset_file, dataset, **kwargs):
     sorter = Sorter()
+
+    process_uploaded_file(dataset_file, dataset)
     
     indicator_name = list(data)[0]
     data_obj = data[indicator_name]
-    print(data_obj)
+
     logger.debug(f"process uploaded director file: {data_obj}")
     primary_groups = data_obj["subindicators"]
-
-    dataset = process_dataset_file(data_obj, dataset_file_obj, indicator_name)
     
     if not isinstance(primary_groups, list):
         primary_groups = [primary_groups]
