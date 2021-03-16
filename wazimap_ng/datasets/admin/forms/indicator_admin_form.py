@@ -1,8 +1,6 @@
 from django import forms
 from ... import models
 
-from django.contrib.postgres.forms import SimpleArrayField
-
 class IndicatorAdminForm(forms.ModelForm):
     groups = forms.MultipleChoiceField(required=True)
     class Meta:
