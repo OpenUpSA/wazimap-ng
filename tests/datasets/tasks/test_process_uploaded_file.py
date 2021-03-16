@@ -25,23 +25,6 @@ def create_datasetfile(csv_data, encoding, header):
     return DatasetFileFactory(document__data=buffer.read())
 
 
-@pytest.fixture
-def geography_hierarchy():
-    hierarchy = GeographyHierarchyFactory()
-
-    return hierarchy
-
-@pytest.fixture
-def geographies(geography_hierarchy):
-    geo1 = GeographyFactory(code="GEOCODE_1", version=geography_hierarchy.version)
-    geo2 = GeographyFactory(code="GEOCODE_2", version=geography_hierarchy.version)
-
-    return [geo1, geo2]
-
-@pytest.fixture
-def dataset(geography_hierarchy):
-    return DatasetFactory(geography_hierarchy=geography_hierarchy)
-
 good_data = [
     ("GEOCODE_1", "F1_value_1", "F2_value_1", 111),
     ("GEOCODE_2", "F1_value_2", "F2_value_2", 222),
