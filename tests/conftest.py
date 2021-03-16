@@ -1,16 +1,35 @@
 import pytest
 
-from tests.datasets.factories import MetaDataFactory, LicenceFactory
 from tests.datasets.factories import (
-    DatasetFactory,
     DatasetDataFactory,
+    DatasetFactory,
+    DatasetFileFactory,
     GeographyFactory,
     GeographyHierarchyFactory,
+    IndicatorDataFactory,
     IndicatorFactory,
-    DatasetFileFactory
+    LicenceFactory,
+    MetaDataFactory
 )
-
+from tests.profile.factories import (
+    IndicatorCategoryFactory,
+    IndicatorSubcategoryFactory,
+    ProfileFactory,
+    ProfileIndicatorFactory
+)
 from wazimap_ng.datasets.models import Geography, GeographyHierarchy
+
+
+@pytest.fixture
+def profile():
+    _profile = ProfileFactory()
+    _profile.configuration = {
+        "urls": ["some_domain.com"]
+    }
+
+    _profile.save()
+
+    return _profile
 
 @pytest.fixture
 def licence():
@@ -32,8 +51,8 @@ def geographies(dataset):
     return [geography_hierarchy.root_geography, geo1, geo2]
     
 @pytest.fixture
-def dataset():
-    return DatasetFactory()
+def dataset(profile):
+    return DatasetFactory(profile=profile)
 
 @pytest.fixture
 def indicator(dataset):
@@ -61,4 +80,38 @@ def datasetdata(indicator, geographies):
 @pytest.fixture
 def metadata(licence):
     return MetaDataFactory(source="XYZ", url="http://example.com", description="ABC", licence=licence)
+
+
+@pytest.fixture
+def indicatordata_json():
+    return [
+        {"gender": "male", "age": "15", "language": "isiXhosa", "count": 1},
+        {"gender": "male", "age": "15", "language": "isiZulu", "count": 2},
+        {"gender": "male", "age": "16", "language": "isiXhosa", "count": 3},
+        {"gender": "male", "age": "16", "language": "isiZulu", "count": 4},
+        {"gender": "male", "age": "17", "language": "isiXhosa", "count": 5},
+        {"gender": "male", "age": "17", "language": "isiZulu", "count": 6},
+        {"gender": "female", "age": "15", "language": "isiXhosa", "count": 7},
+        {"gender": "female", "age": "15", "language": "isiZulu", "count": 8},
+        {"gender": "female", "age": "16", "language": "isiXhosa", "count": 9},
+        {"gender": "female", "age": "16", "language": "isiZulu", "count": 10},
+        {"gender": "female", "age": "17", "language": "isiXhosa", "count": 11},
+        {"gender": "female", "age": "17", "language": "isiZulu", "count": 12},
+    ]
+
+
+@pytest.fixture
+def indicatordata(indicator, indicatordata_json, geographies):
+    geography = geographies[0]
+
+    return [
+        IndicatorDataFactory(indicator=indicator, geography=geography, data=indicatordata_json)
+    ]
+
+@pytest.fixture
+def profile_indicator(profile, indicatordata):
+    indicator = indicatordata[0].indicator
+    return ProfileIndicatorFactory(profile=profile, indicator=indicator)
+
+    
 
