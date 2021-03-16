@@ -174,7 +174,10 @@ class GeoLocationList(generics.ListAPIView):
                 location_data = serializer.data
                 location_data["category"] = profile_category.label
                 data.append(serializer.data)
-            return Response(data)
+            return Response({
+                "count": len(data),
+                "results": data
+            })
         except ObjectDoesNotExist as e:
             logger.exception(e)
             raise Http404
