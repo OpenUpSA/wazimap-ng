@@ -74,9 +74,7 @@ class TestIndicatorDataExtraction:
         geography = geographies[0]
         universe = {"data__gender": "female", "data__age__lt": "17"}
 
-        indicator_data_extraction(indicator, universe)
-        
-
+        indicator_data_extraction(indicator, universe=universe)
         indicator_data = IndicatorData.objects.get(geography=geography)
 
         assert indicator_data.data == [
