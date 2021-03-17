@@ -92,6 +92,11 @@ urlpatterns = [
         cache(profile_views.profile_geography_data),
         name="profile-geography-data",
     ),
+    path(
+        "api/v1/profile/<int:profile_id>/geography/<str:geography_code>/indicator/<int:profile_indicator_id>/",
+        profile_views.profile_geography_indicator_data,
+        name="profile-geography-indicator-data",
+    ),
     path("api/v1/geography/search/<str:profile_id>/", cache(dataset_views.search_geography)),
     path("api/v1/geography/ancestors/<str:geography_code>/<str:version>/", cache(dataset_views.geography_ancestors), name="geography-ancestors"),
 
@@ -105,6 +110,7 @@ urlpatterns = [
     re_path(r"^$", RedirectView.as_view(url="/api/v1/datasets/", permanent=False)),
     path("api/v1/data/points/collections/", cache(points_views.CategoryList.as_view())),
     path("api/v1/data/points/collections/profile/<int:profile_id>", cache(points_views.CategoryList.as_view())),
+    
 
     path(
         "api/v1/boundaries/",
