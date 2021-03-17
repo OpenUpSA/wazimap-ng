@@ -8,9 +8,8 @@ from .. import models
 logger = logging.getLogger(__name__)
 
 @transaction.atomic
-def indicator_data_extraction(indicator, universe=None):
+def indicator_data_extraction(indicator, *args, universe=None, **kwargs):
     data_rows = []
-
     datasetdata_qs = models.DatasetData.objects.filter(dataset=indicator.dataset).order_by("geography", "id")
 
     if universe is not None:
