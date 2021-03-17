@@ -7,10 +7,6 @@ from wazimap_ng.profile.serializers.indicator_data_serializer import get_indicat
 from wazimap_ng.profile.serializers.profile_indicator_serializer import FullProfileIndicatorSerializer
 
 @pytest.fixture
-def profile():
-    return ProfileFactory()
-
-@pytest.fixture
 def geography():
     return GeographyFactory()
 
