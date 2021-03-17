@@ -1,7 +1,8 @@
-import pytest
 from collections import OrderedDict
 
 from test_plus import APITestCase
+import pytest
+
 
 from tests.profile.factories import ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory, ProfileIndicatorFactory
 from tests.datasets.factories import DatasetFactory, IndicatorFactory, IndicatorDataFactory, GroupFactory
@@ -117,16 +118,6 @@ class TestProfileGeographyData(APITestCase):
         assert indicator_list[0][0] == 'Indicator'
 
 
-@pytest.fixture
-def profile():
-    _profile = ProfileFactory()
-    _profile.configuration = {
-        "urls": ["some_domain.com"]
-    }
-
-    _profile.save()
-
-    return _profile
 
 @pytest.mark.django_db
 class TestProfileByUrl:
@@ -139,3 +130,7 @@ class TestProfileByUrl:
         request = rf.get("profile-by-url", HTTP_WM_HOSTNAME="some_domain.com")
         response = ProfileByUrl.as_view()(request)
         assert response.status_code == 200
+
+
+
+
