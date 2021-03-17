@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from wazimap_ng.datasets.models import IndicatorData
 from .. import models
 
 class ProfileIndicatorSerializer(serializers.ModelSerializer):
@@ -29,6 +30,9 @@ class FullProfileIndicatorSerializer(serializers.Serializer):
         profile = obj.profile
         indicator = obj.indicator
 
-        return indicator.indicatordata_set.get(geography=self.geography).data      
+        try:
+            return indicator.indicatordata_set.get(geography=self.geography).data      
+        except IndicatorData.DoesNotExist:
+            return []
 
 

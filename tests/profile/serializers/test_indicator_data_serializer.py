@@ -89,10 +89,18 @@ def test_get_indicator_data(geography, profile_indicators):
 
 
 @pytest.mark.django_db
-def test_profile_indicator_serializer(profile_indicator, indicatordata_json):
-    indicator = profile_indicator.indicator
-    geography = indicator.indicatordata_set.first().geography
-    serializer = FullProfileIndicatorSerializer(geography=geography, instance=profile_indicator)
-    
-    assert serializer.data["data"] == indicatordata_json
+class TestFullProfileIndicatorSerializer:
+    def test_basic_serializer(self, profile_indicator, indicatordata_json):
+        indicator = profile_indicator.indicator
+        geography = indicator.indicatordata_set.first().geography
+        serializer = FullProfileIndicatorSerializer(geography=geography, instance=profile_indicator)
+        
+        assert serializer.data["data"] == indicatordata_json
+
+    def test_missing_data(self, profile_indicator, indicatordata_json):
+        indicator = profile_indicator.indicator
+        geography = GeographyFactory()
+        serializer = FullProfileIndicatorSerializer(geography=geography, instance=profile_indicator)
+        
+        assert serializer.data["data"] == []
 
