@@ -330,6 +330,7 @@ DENOMINATOR_CHOICES = (
 PERMISSION_TYPES = (
     ('private', 'Private'),
     ('public', 'Public'),
+    ('restricted', 'Restricted'),
 )
 
 STAFF_GROUPS = ["ProfileAdmin", "DataAdmin"]

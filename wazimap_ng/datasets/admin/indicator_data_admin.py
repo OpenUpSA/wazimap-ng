@@ -86,7 +86,8 @@ class IndicatorDataAdmin(DatasetBaseAdminModel):
                     dataset_obj = models.Dataset.objects.create(
                         name=dataset_file.name.split(".")[0],
                         profile=profile,
-                        geography_hierarchy=geography_hierarchy
+                        geography_hierarchy=geography_hierarchy,
+                        permission_type="restricted"
                     )
 
                     #create dataset_file_obj
