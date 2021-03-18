@@ -3,8 +3,9 @@ from rest_framework import serializers
 from django.core.serializers import serialize
 
 from . import models
-from wazimap_ng.general.serializers import LicenceSerializer, MetaDataSerializer
+from wazimap_ng.general.serializers import MetaDataSerializer
 from wazimap_ng.profile.serializers import SimpleProfileSerializer as ProfileSerializer
+from wazimap_ng.datasets.serializers import LicenceSerializer
 
 class SimpleThemeSerializer(serializers.ModelSerializer):
     class Meta:

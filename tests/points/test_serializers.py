@@ -8,7 +8,8 @@ from django.db.models import ImageField
 import pytest
 from pydoc import locate
 
-from wazimap_ng.points.serializers import LocationSerializer
+from wazimap_ng.points.serializers import LocationSerializer, ProfileCategorySerializer, InlineThemeSerializer
+from wazimap_ng.general.serializers import MetaDataSerializer
 from wazimap_ng.points.models import Location, Category
 from wazimap_ng.profile.models import Profile
 
@@ -47,6 +48,20 @@ class SerializerAssertWithContext(HasContext, Geoserializer, SerializerAssert):
 def assert_serializer(cls):
     return SerializerAssertWithContext(cls)
 
+@pytest.mark.django_db
+class TestProfileCollectionSerializer:
+    def test_basic_serialization(self, profile_category):
+        serializer = ProfileCategorySerializer(instance=profile_category)
+        theme_serializer = InlineThemeSerializer(instance=profile_category.theme)
+        metadata_serializer = MetaDataSerializer(instance=profile_category.category.metadata)
+        
+        assert serializer.data == {
+            "id": profile_category.id,
+            "name": profile_category.label,
+            "description": profile_category.description,
+            "theme": theme_serializer.data,
+            "metadata": metadata_serializer.data,
+        }
 
 class TestLocationSerializer:
 
