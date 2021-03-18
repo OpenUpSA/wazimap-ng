@@ -14,4 +14,4 @@ def theme():
 
 @pytest.fixture
 def profile_category(theme):
-    return ProfileCategoryFactory(theme=theme, label="profile category name", description="my test profile category")
+    return ProfileCategoryFactory(theme=theme, label="profile category name", description="my test profile category", color="red")

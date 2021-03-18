@@ -61,6 +61,7 @@ class TestProfileCollectionSerializer:
             "description": profile_category.description,
             "theme": theme_serializer.data,
             "metadata": metadata_serializer.data,
+            "color": "red"
         }
 
 class TestLocationSerializer:
