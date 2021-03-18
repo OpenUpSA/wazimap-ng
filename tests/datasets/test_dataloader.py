@@ -6,6 +6,8 @@ import pytest
 
 from wazimap_ng.datasets import dataloader
 from wazimap_ng.datasets import models
+from .factories import GroupFactory
+from tests.datasets.factories import DatasetFactory, DatasetDataFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -137,41 +139,109 @@ class TestLoadData:
     datasetdata_objects = patch('wazimap_ng.datasets.models.DatasetData.objects', datasetdata)
 
 
+@pytest.fixture
+def dataset():
+    return DatasetFactory()
+
+@pytest.fixture
+def datasetData(dataset):
+    DatasetDataFactory(
+        dataset=dataset,
+        data={
+            'group1': 'A', 'group2': 'X'
+        }
+    )
+    DatasetDataFactory(
+        dataset=dataset,
+        data={
+            'group1': 'B', 'group2': 'Y'
+        }
+    )
+
+@pytest.fixture
+def subindicatorGroup(dataset):
+    subindicators = {
+        "group1": ["A", "B"],
+        "group2": ["X", "Y"]
+    }
+    for name in ["group1", "group2"]:
+        GroupFactory(
+            dataset=dataset, name=name,
+            subindicators=subindicators[name]
+        )
+
+
+@pytest.mark.django_db
 class TestCreateGroups:
-    @patch('wazimap_ng.datasets.models.Group.objects')
-    @patch('wazimap_ng.datasets.models.DatasetData.objects')
-    def test_create_groups(self, mock_datasetdata_objects, mock_objects):
-        dataset = Mock(spec=models.Dataset)
+
+    def test_create_groups(self, dataset):
+        assert dataset.group_set.count() == 0
 
         dataloader.create_groups(dataset, ["group1", "group2"])
+        groups = dataset.group_set.all()
 
-        assert mock_objects.create.call_count == 2
-        args1 = mock_objects.create.call_args_list[0][1]
-        args2 = mock_objects.create.call_args_list[1][1]
-        assert args1["name"] == "group1"
-        assert args2["name"] == "group2"
-        assert args1["dataset"] == dataset
-        assert args2["dataset"] == dataset
+        assert groups.count() == 2
+        assert groups[0].name == "group1"
+        assert groups[0].dataset == dataset
+        assert groups[0].subindicators == []
+        assert groups[1].name == "group2"
+        assert groups[1].dataset == dataset
+        assert groups[1].subindicators == []
 
-    @patch("wazimap_ng.datasets.models.Group.objects")
-    def test_returns_groups(self, mock_objects):
-        dataset = Mock(spec=models.Dataset)
-
-        mock_objects.create.side_effect = lambda **kwargs: MockModel(**kwargs)
+    def test_return_groups(self, dataset):
 
         groups = dataloader.create_groups(dataset, ["group1", "group2"])
         assert len(groups) == 2
         assert groups[0].name == "group1"
         assert groups[1].name == "group2"
 
-    @patch("wazimap_ng.datasets.models.Group.objects")
-    @patch("wazimap_ng.datasets.models.DatasetData.objects")
-    def test_populates_subindicators(self, mock_datasetdata_objects, mock_group_objects):
-        dataset = Mock(spec=models.Dataset)
-
-        mock_group_objects.create.side_effect = lambda **kwargs: MockModel(**kwargs)
-        mock_datasetdata_objects.get_unique_subindicators.side_effect = lambda group_name: {"group1": ["A", "B"], "group2": ["X"]}[group_name]
+    def test_populates_subindicators(self, dataset, datasetData):
 
         groups = dataloader.create_groups(dataset, ["group1", "group2"])
+        assert len(groups) == 2
         assert groups[0].subindicators == ["A", "B"]
-        assert groups[1].subindicators == ["X"]
+        assert groups[1].subindicators == ["X", "Y"]
+
+    def test_duplicate_groups(self, dataset, subindicatorGroup):
+        assert dataset.group_set.count() == 2
+        groups = dataset.group_set.values_list("name", flat=True)
+        assert groups[0] == "group1"
+        assert groups[1] == "group2"
+
+        dataloader.create_groups(dataset, ["group1", "group2"])
+
+        assert dataset.group_set.count() == 2
+        groups = dataset.group_set.values_list("name", flat=True)
+        assert groups[0] == "group1"
+        assert groups[1] == "group2"
+
+    def test_duplicate_subindicators(self, dataset, datasetData, subindicatorGroup):
+        assert dataset.group_set.count() == 2
+
+        DatasetDataFactory(
+            dataset=dataset,
+            data={
+                'group1': 'A', 'group2': 'X'
+            }
+        )
+
+        groups = dataloader.create_groups(dataset, ["group1", "group2"])
+
+        assert len(groups) == 2
+        assert groups[0].subindicators == ["A", "B"]
+        assert groups[1].subindicators == ["X", "Y"]
+
+    def test_subindicators_update(self, dataset, datasetData, subindicatorGroup):
+        assert dataset.group_set.count() == 2
+
+        DatasetDataFactory(
+            dataset=dataset, data={
+                'group1': 'C', 'group2': 'X'
+            }
+        )
+
+        groups = dataloader.create_groups(dataset, ["group1", "group2"])
+
+        assert len(groups) == 2
+        assert groups[0].subindicators == ["A", "B", "C"]
+        assert groups[1].subindicators == ["X", "Y"]
