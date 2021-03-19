@@ -33,7 +33,7 @@ def HighlightsSerializer(profile, geography):
 
     for highlight in profile_highlights:
         denominator = highlight.denominator
-        method = MetricCalculator.get_algorithm(denominator, absolute_value)
+        method = algorithms.get(denominator, absolute_value)
         val = method(highlight, geography)
 
         if val is not None:

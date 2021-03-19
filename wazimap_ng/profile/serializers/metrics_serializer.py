@@ -24,6 +24,12 @@ def sibling(profile_key_metric, geography):
     data = get_indicator_data(profile_key_metric, siblings)
     return MetricCalculator.sibling(data, profile_key_metric, geography)
 
+algorithms = {
+    "absolute_value": absolute_value,
+    "sibling": sibling,
+    "subindicators": subindicator
+}
+
 def MetricsSerializer(profile, geography):
     out_js = {}
     profile_key_metrics = (models.ProfileKeyMetrics.objects
@@ -33,7 +39,7 @@ def MetricsSerializer(profile, geography):
     )
     for profile_key_metric in profile_key_metrics:
         denominator = profile_key_metric.denominator
-        method = MetricCalculator.get_algorithm(denominator, absolute_value)
+        method = algorithms.get(denominator, absolute_value)
         val = method(profile_key_metric, geography)
         if val is not None:
             js = {
