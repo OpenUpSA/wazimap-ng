@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch
-from wazimap_ng.profile.serializers.metrics_serializer import absolute_value, subindicator, sibling
+from wazimap_ng.profile.serializers.highlights_serializer import absolute_value, subindicator, sibling
 from tests.datasets.factories import IndicatorDataFactory
 
 @pytest.fixture
@@ -29,7 +29,6 @@ def indicatordata_json2(indicatordata_json):
         js.append(row)
 
     return js
-    
 
 @pytest.fixture
 def indicatordata(indicator, indicatordata_json, indicatordata_json2, geographies):
@@ -39,28 +38,26 @@ def indicatordata(indicator, indicatordata_json, indicatordata_json2, geographie
         IndicatorDataFactory(indicator=indicator, geography=geographies[1], data=indicatordata_json2),
     ]
 
-
 @pytest.mark.django_db
-def test_absolute_value(profile_key_metric, indicatordata_json, geography):
+def test_absolute_value(profile_highlight, indicatordata_json, geography):
     expected_value = sum(el["count"] for el in indicatordata_json if el["gender"] == "female")
-    actual_value = absolute_value(profile_key_metric, geography)
+    actual_value = absolute_value(profile_highlight, geography)
     assert expected_value == actual_value
 
 @pytest.mark.django_db
-def test_subindicator(profile_key_metric, indicatordata_json, geography):
+def test_subindicator(profile_highlight, indicatordata_json, geography):
     female_total = sum(el["count"] for el in indicatordata_json if el["gender"] == "female")
     total = sum(el["count"] for el in indicatordata_json)
     expected_value = female_total / total
 
-    actual_value = subindicator(profile_key_metric, geography)
+    actual_value = subindicator(profile_highlight, geography)
     
     assert expected_value == actual_value
 
     
 @pytest.mark.django_db
-def test_sibling(profile_key_metric, geography, geographies):
+def test_sibling(profile_highlight, geography, geographies):
     with patch.object(geography, "get_siblings", side_effect=lambda : geographies[0:2]):
         expected_value = 0.3333
-        actual_value = sibling(profile_key_metric, geography)
+        actual_value = sibling(profile_highlight, geography)
         assert pytest.approx(expected_value, abs=1e-1) == actual_value
-    
