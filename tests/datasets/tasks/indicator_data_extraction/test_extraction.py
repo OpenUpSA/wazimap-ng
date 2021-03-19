@@ -59,6 +59,21 @@ class TestIndicatorDataExtraction:
             {"gender": "female", "age": "17", "language": "isiZulu", "count": 12},
         ]
 
+    def test_old_data_deleted(self, datasetdata, indicator, geographies):
+        no_data = lambda x: len(x.data) == 0
+        geography = geographies[0]
+
+        assert IndicatorData.objects.count() == 0
+
+        indicator_data_items = indicator_data_extraction(indicator)
+        assert len(indicator_data_items) == 1
+        assert IndicatorData.objects.count() == 1
+
+        indicator_data_items = indicator_data_extraction(indicator)
+        assert len(indicator_data_items) == 1
+        assert IndicatorData.objects.count() == 1
+
+
     def test_three_geographies(self, indicator, datasetdata2, geographies):
         indicator_data_items = indicator_data_extraction(indicator)
         assert IndicatorData.objects.count() == 3
