@@ -26,97 +26,26 @@ class TestProfileGeographyData(APITestCase):
 
         GroupFactory(name="age group", dataset=dataset, subindicators=["15-19", "20-24"]),
         GroupFactory(name="gender", dataset=dataset, subindicators=["M", "F"]),
-        self.indicator_data_items_data = {
-            "groups": {
-                "age group": {
-                    "20-24": [
-                        {
-                            "count": 2.2397,
-                            "gender": "F"
-                            }
-                        ],
-                    "15-19": [
-                        {
-                            "count": 9.62006,
-                            "gender": "F"
-                            },
-                        {
-                            "count": 8.79722,
-                            "gender": "M"
-                            }
-                        ],
-                    }
-                },
-            "subindicators": { "M": 52.34565, "F": 56.0179 }
-            }
+        self.indicator_data_items_data = [
+            {"age group": "20-24", "gender": "F", "count": 2.2397},
+            {"age group": "15-19", "gender": "F", "count": 9.62006},
+            {"age group": "15-19", "gender": "M", "count": 8.79722},
+        ]
+            
         IndicatorDataFactory(indicator=indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
 
-    def test_profile_geography_data_ordering_is_correct(self):
-        expected_age_groups = OrderedDict([
-           ('15-19',OrderedDict(
-                            M={"count": 8.79722},
-                            F={"count": 9.62006},
-                    )),
-            ('20-24',OrderedDict(F={"count": 2.2397}))
-        ])
+    def test_profile_geography_data_(self):
+        expected_data = self.indicator_data_items_data
 
-        response = self.get('profile-geography-data', profile_id=self.profile.pk, geography_code=self.profile.geography_hierarchy.root_geography.code, extra={'format': 'json'})
-        groups = response.data.get('profile_data').get('Category').get('subcategories').get('Subcategory').get('indicators').get('Indicator').get('groups')
-        age_group = groups.get('age group')
+        response = self.get('profile-geography-data',
+            profile_id=self.profile.pk,
+            geography_code=self.profile.geography_hierarchy.root_geography.code,
+            extra={'format': 'json'}
+        )
 
-        assert age_group == expected_age_groups
+        data = response.data["profile_data"]["Category"]["subcategories"]["Subcategory"]["indicators"]["Indicator"]["data"]
 
-    def test_profile_geography_data_ordering_is_correct_order(self):
-        wrong_order = OrderedDict([
-            ('20-24',OrderedDict(F={"count": 2.2397})),
-            ('15-19',OrderedDict(
-                            M={"count": 8.79722},
-                            F={"count": 9.62006},
-            )),
-        ])
-
-        response = self.get('profile-geography-data', profile_id=self.profile.pk, geography_code=self.profile.geography_hierarchy.root_geography.code, extra={'format': 'json'})
-
-        groups = response.data.get('profile_data').get('Category').get('subcategories').get('Subcategory').get('indicators').get('Indicator').get('groups')
-        age_group = groups.get('age group')
-
-        assert age_group != wrong_order
-
-
-    def test_profile_geography_data_indicator_ordering_is_correct(self):
-        pi1 = ProfileIndicatorFactory(label="Indicator", order=2, profile=self.profile, subcategory=self.subcategory)
-        pi2 = ProfileIndicatorFactory(label="Indicator 2", order=1, profile=self.profile, subcategory=self.subcategory)
-
-        GroupFactory(name="age group", dataset=pi1.indicator.dataset, subindicators=["15-19", "20-24"]),
-        GroupFactory(name="gender", dataset=pi2.indicator.dataset, subindicators=["M", "F"]),
-
-        IndicatorDataFactory(indicator=pi1.indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
-        IndicatorDataFactory(indicator=pi2.indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
-
-        response = self.get('profile-geography-data', profile_id=self.profile.pk, geography_code=self.profile.geography_hierarchy.root_geography.code, extra={'format': 'json'})
-        indicators = response.data.get('profile_data').get('Category').get('subcategories').get('Subcategory').get('indicators')
-        indicator_list = list(indicators.items())
-
-        assert len(indicators) == 2
-        assert indicator_list[0][0] == 'Indicator 2'
-
-    def test_profile_geography_data_indicator_default_ordering_is_correct(self):
-        pi1 = ProfileIndicatorFactory(label="Indicator", profile=self.profile, subcategory=self.subcategory)
-        pi2 = ProfileIndicatorFactory(label="Indicator 2", profile=self.profile, subcategory=self.subcategory)
-
-        GroupFactory(name="age group", dataset=pi1.indicator.dataset, subindicators=["15-19", "20-24"]),
-        GroupFactory(name="gender", dataset=pi2.indicator.dataset, subindicators=["M", "F"]),
-
-        IndicatorDataFactory(indicator=pi1.indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
-        IndicatorDataFactory(indicator=pi2.indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
-
-        response = self.get('profile-geography-data', profile_id=self.profile.pk, geography_code=self.profile.geography_hierarchy.root_geography.code, extra={'format': 'json'})
-        indicators = response.data.get('profile_data').get('Category').get('subcategories').get('Subcategory').get('indicators')
-        indicator_list = list(indicators.items())
-
-        assert len(indicators) == 2
-        assert indicator_list[0][0] == 'Indicator'
-
+        assert data == expected_data
 
 
 @pytest.mark.django_db

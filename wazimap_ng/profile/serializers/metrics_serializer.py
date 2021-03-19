@@ -9,43 +9,53 @@ def get_subindicator(metric):
     idx = metric.subindicator if metric.subindicator is not None else 0
     return subindicators[idx]
 
+def get_indicator_data(profile_key_metric, geographies):
+    indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography__in=geographies)
+    return indicator_data
+
+def get_sum(data, group=None, subindicator=None):
+    if (group is not None and subindicator is not None):
+        return sum([float(row["count"]) for row in data if group in row and row[group] == subindicator])
+    return sum(float(row["count"]) for row in data)
+
 def sibling(profile_key_metric, geography):
     siblings = geography.get_siblings()
-    
-    indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography__in=siblings)
-    if indicator_data.count() > 0:
-        subindicator = get_subindicator(profile_key_metric)
-        numerator = None
-        denominator = 0
-        for datum in indicator_data:
-            if datum.geography == geography:
-                numerator = datum.data["subindicators"].get(subindicator, 0)
-            s = datum.data["subindicators"]
-            denominator += s[subindicator]
+    data = get_indicator_data(profile_key_metric, siblings)
+    group = profile_key_metric.variable.groups[0]
+    subindicator = get_subindicator(profile_key_metric)
+    numerator = None
+    denominator = 0
+    total = 0
+    for datum in data:
+        total += get_sum(datum.data)
+        if datum.geography == geography:
+            geography_total = get_sum(datum.data)
 
-        if denominator > 0 and numerator is not None:
-            return numerator / denominator
-    return None
+    denominator, numerator = total, geography_total        
+
+    if denominator > 0 and numerator is not None:
+        return numerator / denominator
 
 def absolute_value(profile_key_metric, geography):
-    indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography=geography)
-    if indicator_data.count() > 0:
-        subindicator = get_subindicator(profile_key_metric)
-        data = indicator_data.first().data # TODO what to do with multiple results
-        return data["subindicators"][subindicator]
-    return None
+    data = get_indicator_data(profile_key_metric, [geography]).first().data
+    group = profile_key_metric.variable.groups[0]
+    
+    subindicator = get_subindicator(profile_key_metric)
+    filtered_data = [row["count"] for row in data if group in row and row[group] == subindicator]
+        
+    return get_sum(data, group, subindicator)
 
 def subindicator(profile_key_metric, geography):
-    indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography=geography)
-    if indicator_data.count() > 0:
-        indicator_data = indicator_data.first() # Fix this need to cater for multiple results
-        subindicator = get_subindicator(profile_key_metric)
-        numerator = indicator_data.data["subindicators"].get(subindicator, 0)
-        denominator = sum(indicator_data.data["subindicators"].values())
+    data = get_indicator_data(profile_key_metric, [geography]).first().data
+    group = profile_key_metric.variable.groups[0]
 
-        if denominator > 0 and numerator is not None:
-            return numerator / denominator
-    return None
+    subindicator = get_subindicator(profile_key_metric)
+    numerator = get_sum(data, group, subindicator)
+    denominator = get_sum(data)
+    
+
+    if denominator > 0 and numerator is not None:
+        return numerator / denominator
 
 algorithms = {
     "absolute_value": absolute_value,

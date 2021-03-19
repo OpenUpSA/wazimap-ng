@@ -48,6 +48,7 @@ class ProfileKeyMetricsFactory(factory.django.DjangoModelFactory):
         model = models.ProfileKeyMetrics
 
     profile = factory.SubFactory(ProfileFactory)
+    variable = factory.SubFactory(datasets_factoryboy.IndicatorFactory)
     subcategory = factory.SubFactory(IndicatorSubcategoryFactory)
     subindicator = factory.Sequence(lambda n: '%d' % n)
 
