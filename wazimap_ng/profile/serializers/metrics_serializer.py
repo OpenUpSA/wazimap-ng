@@ -5,7 +5,7 @@ from wazimap_ng.datasets.models import IndicatorData
 from .. import models
 
 def get_subindicator(metric):
-    subindicators = metric.variable.subindicators
+    subindicators = metric.indicator.subindicators
     idx = metric.subindicator if metric.subindicator is not None else 0
     return subindicators[idx]
 
@@ -21,7 +21,7 @@ def get_sum(data, group=None, subindicator=None):
 def sibling(profile_key_metric, geography):
     siblings = geography.get_siblings()
     data = get_indicator_data(profile_key_metric, siblings)
-    group = profile_key_metric.variable.groups[0]
+    group = profile_key_metric.indicator.groups[0]
     subindicator = get_subindicator(profile_key_metric)
     numerator = None
     denominator = 0
@@ -38,7 +38,7 @@ def sibling(profile_key_metric, geography):
 
 def absolute_value(profile_key_metric, geography):
     data = get_indicator_data(profile_key_metric, [geography]).first().data
-    group = profile_key_metric.variable.groups[0]
+    group = profile_key_metric.indicator.groups[0]
     
     subindicator = get_subindicator(profile_key_metric)
     filtered_data = [row["count"] for row in data if group in row and row[group] == subindicator]
@@ -47,7 +47,7 @@ def absolute_value(profile_key_metric, geography):
 
 def subindicator(profile_key_metric, geography):
     data = get_indicator_data(profile_key_metric, [geography]).first().data
-    group = profile_key_metric.variable.groups[0]
+    group = profile_key_metric.indicator.groups[0]
 
     subindicator = get_subindicator(profile_key_metric)
     numerator = get_sum(data, group, subindicator)
