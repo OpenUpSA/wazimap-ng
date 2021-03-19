@@ -15,7 +15,8 @@ from tests.profile.factories import (
     IndicatorCategoryFactory,
     IndicatorSubcategoryFactory,
     ProfileFactory,
-    ProfileIndicatorFactory
+    ProfileIndicatorFactory,
+    ProfileKeyMetricsFactory
 )
 from wazimap_ng.datasets.models import Geography, GeographyHierarchy
 
@@ -60,7 +61,9 @@ def dataset(profile):
 
 @pytest.fixture
 def indicator(dataset):
-    return IndicatorFactory(dataset=dataset)
+    subindicators = ["male", "female"]
+    groups = ["gender"]
+    return IndicatorFactory(dataset=dataset, subindicators=subindicators, groups=groups)
 
 @pytest.fixture
 def datasetdata(indicator, geography):
@@ -116,5 +119,8 @@ def profile_indicator(profile, indicatordata):
     indicator = indicatordata[0].indicator
     return ProfileIndicatorFactory(profile=profile, indicator=indicator)
 
-    
 
+@pytest.fixture
+def profile_key_metric(profile, indicatordata):
+    indicator = indicatordata[0].indicator
+    return ProfileKeyMetricsFactory(profile=profile, variable=indicator, subindicator=1)
