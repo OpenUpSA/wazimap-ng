@@ -9,6 +9,9 @@ logger = logging.getLogger(__name__)
 
 @transaction.atomic
 def indicator_data_extraction(indicator, *args, universe=None, **kwargs):
+
+    indicator.indicatordata_set.all().delete()
+
     data_rows = []
     datasetdata_qs = models.DatasetData.objects.filter(dataset=indicator.dataset).order_by("geography", "id")
 
