@@ -54,7 +54,7 @@ def test_profile_indicator_order(geography, profile_indicators):
     pi2.order = 2
     pi2.save()
 
-    output = get_indicator_data(profile, geography)
+    output = get_indicator_data(profile, [geography])
     assert output[0]["profile_indicator_label"] == "PI1"
     assert output[1]["profile_indicator_label"] == "PI2"
 
@@ -64,7 +64,7 @@ def test_profile_indicator_order(geography, profile_indicators):
     pi2.order = 1
     pi2.save()
 
-    output = get_indicator_data(profile, geography)
+    output = get_indicator_data(profile, [geography])
     assert output[0]["profile_indicator_label"] == "PI2"
     assert output[1]["profile_indicator_label"] == "PI1"
 
@@ -72,7 +72,7 @@ def test_profile_indicator_order(geography, profile_indicators):
 @pytest.mark.usefixtures("indicator_data")
 def test_profile_indicator_metadata(geography, profile_indicators, metadata):
     profile = profile_indicators[0].profile
-    output = get_indicator_data(profile, geography)
+    output = get_indicator_data(profile, [geography])
     assert output[0]["metadata_source"] == "A source"
     assert output[0]["metadata_description"] == "A description"
     assert output[0]["metadata_url"] == "http://example.com"
@@ -117,3 +117,16 @@ def test_not_available_subindicator(geography_data, profile, metadata):
     IndicatorDataFactory(geography=geography_data, indicator=indicator_obj)
     result = absolute_value(profile_key_metrics, geography_data)
     assert result == "N/A"
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("indicator_data")
+def test_get_indicator_data(geography, profile_indicators):
+
+    profile = profile_indicators[0].profile
+    pi1, pi2 = profile_indicators
+
+    profile2 = ProfileFactory()
+    pi3 = ProfileIndicatorFactory(indicator=pi1.indicator, label="PI3", profile=profile2)
+    results = get_indicator_data(profile, [geography])
+    assert len(results) == 2
+
