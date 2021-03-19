@@ -16,7 +16,8 @@ from tests.profile.factories import (
     IndicatorSubcategoryFactory,
     ProfileFactory,
     ProfileIndicatorFactory,
-    ProfileKeyMetricsFactory
+    ProfileKeyMetricsFactory,
+    ProfileHighlightFactory
 )
 from wazimap_ng.datasets.models import Geography, GeographyHierarchy
 
@@ -124,3 +125,8 @@ def profile_indicator(profile, indicatordata):
 def profile_key_metric(profile, indicatordata):
     indicator = indicatordata[0].indicator
     return ProfileKeyMetricsFactory(profile=profile, variable=indicator, subindicator=1)
+
+@pytest.fixture
+def profile_highlight(profile, indicatordata):
+    indicator = indicatordata[0].indicator
+    return ProfileHighlightFactory(profile=profile, indicator=indicator, subindicator=1)
