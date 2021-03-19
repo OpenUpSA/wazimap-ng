@@ -1,9 +1,13 @@
 import pytest
 
-from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
-from tests.datasets.factories import GeographyFactory, IndicatorDataFactory, MetaDataFactory
+from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory, IndicatorSubcategoryFactory
+from tests.datasets.factories import GeographyFactory, IndicatorDataFactory, MetaDataFactory, DatasetFactory, \
+    IndicatorFactory
+from wazimap_ng.profile.models import ProfileKeyMetrics
 
 from wazimap_ng.profile.serializers.indicator_data_serializer import get_indicator_data
+from wazimap_ng.profile.serializers.metrics_serializer import absolute_value
+
 
 @pytest.fixture
 def profile():
@@ -72,3 +76,44 @@ def test_profile_indicator_metadata(geography, profile_indicators, metadata):
     assert output[0]["metadata_source"] == "A source"
     assert output[0]["metadata_description"] == "A description"
     assert output[0]["metadata_url"] == "http://example.com"
+
+@pytest.fixture
+def profile():
+    return ProfileFactory(name="Test Profile")
+
+
+@pytest.fixture
+def geography_data():
+    return GeographyFactory(name="XYZ", code="12131", version="ABC", level="adada")
+
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("indicator_data")
+def test_not_available_subindicator(geography_data, profile, metadata):
+    dataset = DatasetFactory(
+        geography_hierarchy=profile.geography_hierarchy,
+        groups=["age group", "gender"],
+        profile=profile,
+    )
+    indicator_obj = IndicatorFactory(
+        name="Age by Gender",
+        dataset=dataset,
+        groups=["gender"],
+        subindicators=[{"subindicators": None}],
+    )
+    indicator_subcategory = IndicatorSubcategoryFactory(
+        name="test_IndicatorSubcategory", description="this is test"
+    )
+    profile_key_metrics = ProfileKeyMetrics(
+        profile=profile,
+        label="test",
+        variable=indicator_obj,
+        subcategory=indicator_subcategory,
+        denominator="absolute_value",
+        subindicator=0,
+    )
+    profile_key_metrics.save()
+
+    IndicatorDataFactory(geography=geography_data, indicator=indicator_obj)
+    result = absolute_value(profile_key_metrics, geography_data)
+    assert result == "N/A"

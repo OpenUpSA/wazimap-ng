@@ -39,10 +39,8 @@ def absolute_value(profile_key_metric, geography):
             absolute_value = subindicators_data.get(subindicator)
             if absolute_value:
                 return absolute_value
-            # if the subindicator is missing
-            return "N/A"
-
-    return None
+    # if the subindicator is missing
+    return "N/A"
 
 
 def subindicator(profile_key_metric, geography):
