@@ -18,7 +18,7 @@ django-json-widget==0.2.0
 django-admin-sortable2==0.7.6
 
 # Rest apis
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 djangorestframework-csv==2.1.0
 django-rest-auth==0.9.5
 Markdown==3.0.1
