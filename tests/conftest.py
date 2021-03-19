@@ -49,6 +49,10 @@ def geographies(dataset):
     geo2 = GeographyFactory(code="GEOCODE_2", version=geography_hierarchy.version)
 
     return [geography_hierarchy.root_geography, geo1, geo2]
+
+@pytest.fixture
+def geography(geographies):
+    return geographies[0]
     
 @pytest.fixture
 def dataset(profile):
@@ -59,22 +63,22 @@ def indicator(dataset):
     return IndicatorFactory(dataset=dataset)
 
 @pytest.fixture
-def datasetdata(indicator, geographies):
+def datasetdata(indicator, geography):
     dataset = indicator.dataset
     
     return [
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "male", "age": "15", "language": "isiXhosa", "count": 1}),
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "male", "age": "15", "language": "isiZulu", "count": 2}),
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "male", "age": "16", "language": "isiXhosa", "count": 3}),
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "male", "age": "16", "language": "isiZulu", "count": 4}),
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "male", "age": "17", "language": "isiXhosa", "count": 5}),
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "male", "age": "17", "language": "isiZulu", "count": 6}),
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "female", "age": "15", "language": "isiXhosa", "count": 7}),
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "female", "age": "15", "language": "isiZulu", "count": 8}),
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "female", "age": "16", "language": "isiXhosa", "count": 9}),
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "female", "age": "16", "language": "isiZulu", "count": 10}),
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "female", "age": "17", "language": "isiXhosa", "count": 11}),
-        DatasetDataFactory(dataset=dataset, geography=geographies[0], data={"gender": "female", "age": "17", "language": "isiZulu", "count": 12}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "15", "language": "isiXhosa", "count": 1}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "15", "language": "isiZulu", "count": 2}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "16", "language": "isiXhosa", "count": 3}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "16", "language": "isiZulu", "count": 4}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "17", "language": "isiXhosa", "count": 5}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "17", "language": "isiZulu", "count": 6}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "15", "language": "isiXhosa", "count": 7}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "15", "language": "isiZulu", "count": 8}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "16", "language": "isiXhosa", "count": 9}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "16", "language": "isiZulu", "count": 10}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "17", "language": "isiXhosa", "count": 11}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "17", "language": "isiZulu", "count": 12}),
     ]
 
 @pytest.fixture
@@ -101,8 +105,7 @@ def indicatordata_json():
 
 
 @pytest.fixture
-def indicatordata(indicator, indicatordata_json, geographies):
-    geography = geographies[0]
+def indicatordata(indicator, indicatordata_json, geography):
 
     return [
         IndicatorDataFactory(indicator=indicator, geography=geography, data=indicatordata_json)
