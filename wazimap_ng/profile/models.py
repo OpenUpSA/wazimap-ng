@@ -67,13 +67,17 @@ class IndicatorSubcategory(BaseModel):
 
 class ProfileKeyMetrics(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    variable = models.ForeignKey(Indicator, on_delete=models.CASCADE)
+    variable = models.ForeignKey(Indicator, on_delete=models.CASCADE, )
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
     # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.
     subindicator = models.PositiveSmallIntegerField()
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32, help_text="Method for calculating the denominator that will normalise this value.")
     label = models.CharField(max_length=255, help_text="Text used for display to users.")
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
+
+    @property
+    def indicator(self):
+        return self.variable
     
     def __str__(self):
         return f"{self.label}"
