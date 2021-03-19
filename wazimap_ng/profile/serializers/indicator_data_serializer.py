@@ -106,7 +106,7 @@ def IndicatorDataSerializer(profile, geography):
                         "url": x["licence_url"]
                     },
                     "primary_group": x["primary_group"][0],
-                    "groups": str(dataset_groups_dict[x["dataset"]])
+                    "groups": dataset_groups_dict[x["dataset"]]
                 },
                 "chart_configuration": x["indicator_chart_configuration"],
             },
