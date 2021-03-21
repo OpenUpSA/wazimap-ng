@@ -22,9 +22,39 @@ from tests.profile.factories import (
 from wazimap_ng.datasets.models import Geography, GeographyHierarchy
 
 
+
 @pytest.fixture
-def profile():
-    _profile = ProfileFactory()
+def licence():
+    return LicenceFactory(name="licence name", url="abc url")
+
+@pytest.fixture
+def geographies():
+    root = GeographyFactory(code="ROOT_GEOGRAPHY")
+    geo1 = GeographyFactory(code="GEOCODE_1", version=root.version)
+    geo2 = GeographyFactory(code="GEOCODE_2", version=root.version)
+
+    return [root, geo1, geo2]
+
+@pytest.fixture
+def geography(geographies):
+    return geographies[0]
+
+@pytest.fixture
+def geography_hierarchy(geography):
+    hierarchy = GeographyHierarchyFactory(root_geography=geography)
+
+    return hierarchy
+
+@pytest.fixture
+def child_geographies(geography):
+    return [
+        geography.add_child(code=f"child{i}_geo", version=geography.version)
+        for i in range(2)
+    ]
+
+@pytest.fixture
+def profile(geography_hierarchy):
+    _profile = ProfileFactory(geography_hierarchy=geography_hierarchy)
     _profile.configuration = {
         "urls": ["some_domain.com"]
     }
@@ -33,28 +63,6 @@ def profile():
 
     return _profile
 
-@pytest.fixture
-def licence():
-    return LicenceFactory(name="licence name", url="abc url")
-
-
-@pytest.fixture
-def geography_hierarchy():
-    hierarchy = GeographyHierarchyFactory()
-
-    return hierarchy
-
-@pytest.fixture
-def geographies(dataset):
-    geography_hierarchy = dataset.geography_hierarchy
-    geo1 = GeographyFactory(code="GEOCODE_1", version=geography_hierarchy.version)
-    geo2 = GeographyFactory(code="GEOCODE_2", version=geography_hierarchy.version)
-
-    return [geography_hierarchy.root_geography, geo1, geo2]
-
-@pytest.fixture
-def geography(geographies):
-    return geographies[0]
     
 @pytest.fixture
 def dataset(profile):
@@ -113,6 +121,17 @@ def indicatordata(indicator, indicatordata_json, geography):
 
     return [
         IndicatorDataFactory(indicator=indicator, geography=geography, data=indicatordata_json)
+    ]
+
+@pytest.fixture
+def child_indicatordata(indicator, indicatordata_json, child_geographies):
+    mult_count = lambda js, factor: {"count": js["count"] * factor}
+    merge = lambda d1, d2: {**d1, **d2}
+    dup_data = lambda factor: [merge(js, mult_count(js, factor)) for js in indicatordata_json]
+
+    return [
+        IndicatorDataFactory(indicator=indicator, geography=g, data=dup_data(idx + 1))
+        for idx, g in enumerate(child_geographies)
     ]
 
 @pytest.fixture

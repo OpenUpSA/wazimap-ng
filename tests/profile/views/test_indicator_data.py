@@ -80,5 +80,5 @@ class TestIndicatorDataView:
         response = tp_api.client.get(reversed_url, format="json")
         js = response.json()
 
-        assert "data" in js
-        assert js["data"] == indicatordata_json
+        assert "indicator" in js
+        assert js["indicator"]["data"] == indicatordata_json

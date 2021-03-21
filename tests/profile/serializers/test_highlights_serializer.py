@@ -57,7 +57,7 @@ def test_subindicator(profile_highlight, indicatordata_json, geography):
     
 @pytest.mark.django_db
 def test_sibling(profile_highlight, geography, geographies):
-    with patch.object(geography, "get_siblings", side_effect=lambda : geographies[0:2]):
+    with patch.object(geography, "get_siblings", side_effect=lambda: geographies[0:2]):
         expected_value = 0.3333
         actual_value = sibling(profile_highlight, geography)
         assert pytest.approx(expected_value, abs=1e-1) == actual_value
