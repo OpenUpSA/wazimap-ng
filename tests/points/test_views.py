@@ -3,6 +3,9 @@ import pytest
 
 from django.contrib.gis.geos import Point, Polygon, MultiPolygon
 
+from wazimap_ng.points.models import Theme
+from wazimap_ng.points.serializers import ThemeSerializer
+
 from tests.profile.factories import ProfileFactory
 from tests.points.factories import (
     ProfileCategoryFactory, ThemeFactory, CategoryFactory, LocationFactory
@@ -38,16 +41,19 @@ class TestCategoryView(APITestCase):
         self.get('category-points-geography', profile_id=self.profile.pk, profile_category_id=self.profile_category.pk, geography_code=geography.code, extra={'format': 'json'})
         self.assert_http_404_not_found()
 
-class TestThemeView(APITestCase):
+@pytest.mark.django_db   
+class TestThemeView:
 
-    def setUp(self):
-        self.profile = ProfileFactory()
+    def test_points_themes_list(self, tp_api, profile_category):
+        res = tp_api.get("points-themes", profile_id=profile_category.profile.id)
 
-    def test_points_themes_list(self):
-        self.get("points-themes", profile_id=self.profile.pk)
+        tp_api.assert_http_200_ok()
 
-        self.assert_http_200_ok()
+        themes = Theme.objects.filter(profile=profile_category.profile)
+        expected = ThemeSerializer(instance=themes, many=True).data
+        actual = tp_api.last_response.json()
 
+        assert actual == expected
 
 class TestLocationView(APITestCase):
 

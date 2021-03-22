@@ -10,6 +10,7 @@ from wazimap_ng.general.serializers import (
 )
 from wazimap_ng.points.models import Location, Theme
 from wazimap_ng.profile.serializers import SimpleProfileSerializer as ProfileSerializer
+from wazimap_ng.datasets.serializers import LicenceSerializer
 
 from . import models
 
@@ -66,7 +67,7 @@ class ProfileCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.ProfileCategory
-        fields = ('id', 'name', 'description', 'theme', 'metadata',)
+        fields = ("id", "name", "description", "theme", "metadata", "color")
 
 
 class ThemeSerializer(serializers.ModelSerializer):
