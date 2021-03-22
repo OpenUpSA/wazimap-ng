@@ -63,15 +63,12 @@ def child_geographies(geography):
 
 @pytest.fixture
 def profile(geography_hierarchy):
-    _profile = ProfileFactory(geography_hierarchy=geography_hierarchy)
-    _profile.configuration = {
+    
+    configuration = {
         "urls": ["some_domain.com"]
     }
 
-    _profile.save()
-
-    return _profile
-
+    return ProfileFactory(geography_hierarchy=geography_hierarchy, configuration=configuration)
 
 @pytest.fixture
 def dataset(profile):
