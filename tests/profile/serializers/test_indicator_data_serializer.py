@@ -70,6 +70,7 @@ def test_profile_indicator_order(geography, profile_indicators):
     assert output[0]["profile_indicator_label"] == "PI2"
     assert output[1]["profile_indicator_label"] == "PI1"
 
+
 @pytest.mark.django_db
 @pytest.mark.usefixtures("indicator_data")
 def test_profile_indicator_metadata(geography, profile_indicators, metadata):
