@@ -62,7 +62,9 @@ def get_dataset_groups(profile: Profile) -> Dict:
         .values(
             "subindicators",
             "dataset",
-            "name"
+            "name",
+            "can_aggregate",
+            "can_filter"
         )
         .order_by("dataset")
     )

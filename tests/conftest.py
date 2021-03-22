@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 import pytest
+from factory.declarations import List
 
 from tests.datasets.factories import (
     DatasetDataFactory,
@@ -8,6 +9,7 @@ from tests.datasets.factories import (
     DatasetFileFactory,
     GeographyFactory,
     GeographyHierarchyFactory,
+    GroupFactory,
     IndicatorDataFactory,
     IndicatorFactory,
     LicenceFactory,
@@ -37,7 +39,6 @@ from wazimap_ng.profile.models import (
     ProfileIndicator,
     ProfileKeyMetrics
 )
-
 
 @pytest.fixture
 def licence() -> Licence:
@@ -88,6 +89,17 @@ def profile(geography_hierarchy: GeographyHierarchy) -> Profile:
 @pytest.fixture
 def dataset(profile: Profile) -> Dataset:
     return DatasetFactory(profile=profile)
+
+
+
+@pytest.fixture
+def groups(dataset):
+    return [
+        GroupFactory(dataset=dataset, name="gender", subindicators=[
+                     "male", "female"], can_aggregate=True, can_filter=True),
+        GroupFactory(dataset=dataset, name="language", subindicators=[
+                     "isiXhosa", "isiZulu"], can_aggregate=True, can_filter=True),
+    ]
 
 
 @pytest.fixture

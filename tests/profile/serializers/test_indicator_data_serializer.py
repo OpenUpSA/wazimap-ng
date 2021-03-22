@@ -1,6 +1,10 @@
 from typing import Dict, List
 from unittest.mock import patch
 
+
+from factory.declarations import List
+from wazimap_ng.profile.models import Profile
+from wazimap_ng.datasets.models.group import Group
 import pytest
 
 from tests.datasets.factories import (
@@ -20,6 +24,9 @@ from wazimap_ng.profile.serializers.indicator_data_serializer import (
 from wazimap_ng.profile.serializers.profile_indicator_serializer import (
     FullProfileIndicatorSerializer
 )
+
+from wazimap_ng.profile.serializers.indicator_data_serializer import get_indicator_data, get_profile_data, get_dataset_groups
+from wazimap_ng.profile.serializers.profile_indicator_serializer import FullProfileIndicatorSerializer
 
 
 @pytest.fixture
@@ -105,6 +112,26 @@ def test_get_profile_data(geography: Geography, profile_indicators: List[Profile
 
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("groups")
+@pytest.mark.usefixtures("profile_indicator")
+def test_get_dataset_groups(profile: Profile):
+    assert Group.objects.count() == 2
+    dataset = Group.objects.first().dataset
+
+    actual_output = get_dataset_groups(profile)
+    expected_output = {
+        dataset.pk: [
+            {"subindicators": ["male", "female"], "dataset": dataset.pk,
+                "name": "gender", "can_filter": True, "can_aggregate": True},
+            {"subindicators": ["isiXhosa", "isiZulu"], "dataset": dataset.pk,
+                "name": "language", "can_filter": True, "can_aggregate": True}
+        ]
+    }
+
+    assert actual_output == expected_output
+
+
+@pytest.mark.django_db
 class TestFullProfileIndicatorSerializer:
     def test_basic_serializer(self, profile_indicator: ProfileIndicator, indicatordata_json: List[Dict]):
         indicator = profile_indicator.indicator
@@ -118,7 +145,7 @@ class TestFullProfileIndicatorSerializer:
         geography = GeographyFactory()
         serializer = FullProfileIndicatorSerializer(geography=geography, instance=profile_indicator)
 
-        assert serializer.data["indicator"] == []
+        assert serializer.data["indicator"] == {}
 
     @pytest.mark.usefixtures("child_indicatordata")
     def test_children_data(self, profile_indicator: ProfileIndicator):
@@ -127,7 +154,7 @@ class TestFullProfileIndicatorSerializer:
 
         serializer = FullProfileIndicatorSerializer(geography=geography, instance=profile_indicator)
 
-        child_data: Dict = serializer.data["children"]
+        child_data = serializer.data["children"]
         assert len(child_data) == 2
         for g in geography.get_children():
             assert g.code in child_data
