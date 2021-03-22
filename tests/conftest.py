@@ -123,6 +123,18 @@ def datasetdata(indicator, geography):
                            "gender": "female", "age": "17", "language": "isiZulu", "count": 12}),
     ]
 
+@pytest.fixture
+def child_datasetdata(datasetdata, geography):
+    def gendict(d, g): return {**d.data, **{"geography": g.pk}}
+    dataset = datasetdata[0].dataset
+    
+    new_datasetdata = [
+        DatasetDataFactory(dataset=dataset, geography=g, data=gendict(d, g))
+        for g in geography.get_children()
+        for d in datasetdata
+    ]
+
+    return new_datasetdata
 
 @pytest.fixture
 def metadata(licence):
