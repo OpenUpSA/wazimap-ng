@@ -1,15 +1,20 @@
-from unittest.mock import patch
-
-from factory.declarations import List
-from wazimap_ng.profile.models import Profile
-from wazimap_ng.datasets.models.group import Group
 import pytest
 
+from tests.datasets.factories import (
+    GeographyFactory,
+    IndicatorDataFactory,
+    MetaDataFactory
+)
 from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
-from tests.datasets.factories import GeographyFactory, IndicatorDataFactory, MetaDataFactory
-
-from wazimap_ng.profile.serializers.indicator_data_serializer import get_indicator_data, get_profile_data, get_dataset_groups
-from wazimap_ng.profile.serializers.profile_indicator_serializer import FullProfileIndicatorSerializer
+from wazimap_ng.datasets.models.group import Group
+from wazimap_ng.profile.models import Profile
+from wazimap_ng.profile.serializers.indicator_data_serializer import (
+    get_dataset_groups,
+    get_profile_data
+)
+from wazimap_ng.profile.serializers.profile_indicator_serializer import (
+    FullProfileIndicatorSerializer
+)
 
 
 @pytest.fixture
