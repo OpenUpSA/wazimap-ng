@@ -12,20 +12,6 @@ from wazimap_ng.datasets.models import Geography, IndicatorData
 from wazimap_ng.datasets.tasks.indicator_data_extraction import (
     indicator_data_extraction
 )
-@pytest.fixture
-def datasetdata2(datasetdata, geographies):
-    gendict = lambda d, g: {**d.data, **{"geography": g.pk}}
-    dataset = datasetdata[0].dataset
-    new_geographies = geographies[1:]
-    new_datasetdata = [
-        DatasetDataFactory(dataset=dataset, geography=g, data=gendict(d, g))
-        for g in new_geographies
-        for d in datasetdata
-    ]
-
-    datasetdata
-
-    return datasetdata + new_datasetdata
 
 
 @pytest.mark.django_db
@@ -63,21 +49,21 @@ class TestIndicatorDataExtraction:
         assert len(indicator_data_items) == 1
         assert IndicatorData.objects.count() == 1
 
-    @pytest.mark.usefixtures("datasetdata2")
-    def test_three_geographies(self, indicator, geographies):
+    @pytest.mark.usefixtures("child_datasetdata")
+    @pytest.mark.usefixtures("child_geographies")
+    def test_three_geographies(self, indicator, geography):
         indicator_data_items = indicator_data_extraction(indicator)
-        assert IndicatorData.objects.count() == 3
-        assert len(indicator_data_items) == 3
+        num_geographies = 1 + geography.get_children().count()
+        assert IndicatorData.objects.count() == num_geographies
+        assert len(indicator_data_items) == num_geographies
 
-        new_geographies = geographies[1:]
+        new_geographies = geography.get_children()
 
-        for g in new_geographies:
+        for g in geography.get_children():
             idata = IndicatorData.objects.get(geography=g)
             assert idata.data[0]["geography"] == g.pk
 
-    @pytest.mark.usefixtures("datasetdata2")
-    def test_universe(self, indicator, geographies):
-        geography = geographies[0]
+    def test_universe(self, indicator, geography):
         universe = {"data__gender": "female", "data__age__lt": "17"}
 
         indicator_data_extraction(indicator, universe=universe)
