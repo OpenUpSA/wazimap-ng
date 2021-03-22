@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 import pytest
 
 from tests.datasets.factories import (
@@ -15,45 +17,64 @@ from tests.profile.factories import (
     IndicatorCategoryFactory,
     IndicatorSubcategoryFactory,
     ProfileFactory,
+    ProfileHighlightFactory,
     ProfileIndicatorFactory,
-    ProfileKeyMetricsFactory,
-    ProfileHighlightFactory
+    ProfileKeyMetricsFactory
 )
-from wazimap_ng.datasets.models import Geography, GeographyHierarchy
-
+from wazimap_ng.datasets.models import (
+    Dataset,
+    DatasetData,
+    Geography,
+    GeographyHierarchy,
+    Indicator,
+    IndicatorData,
+    Licence,
+    MetaData
+)
+from wazimap_ng.profile.models import (
+    Profile,
+    ProfileHighlight,
+    ProfileIndicator,
+    ProfileKeyMetrics
+)
 
 
 @pytest.fixture
-def licence():
+def licence() -> Licence:
     return LicenceFactory(name="licence name", url="abc url")
 
+
 @pytest.fixture
-def geographies():
+def geographies() -> List[Geography]:
     root = GeographyFactory(code="ROOT_GEOGRAPHY")
     geo1 = GeographyFactory(code="GEOCODE_1", version=root.version)
     geo2 = GeographyFactory(code="GEOCODE_2", version=root.version)
 
     return [root, geo1, geo2]
 
-@pytest.fixture
-def geography(geographies):
-    return geographies[0]
 
 @pytest.fixture
-def geography_hierarchy(geography):
+def geography(geographies: List[Geography]) -> Geography:
+    return geographies[0]
+
+
+@pytest.fixture
+def geography_hierarchy(geography: Geography) -> GeographyHierarchy:
     hierarchy = GeographyHierarchyFactory(root_geography=geography)
 
     return hierarchy
 
+
 @pytest.fixture
-def child_geographies(geography):
+def child_geographies(geography: Geography) -> List[Geography]:
     return [
         geography.add_child(code=f"child{i}_geo", version=geography.version)
         for i in range(2)
     ]
 
+
 @pytest.fixture
-def profile(geography_hierarchy):
+def profile(geography_hierarchy: GeographyHierarchy) -> Profile:
     _profile = ProfileFactory(geography_hierarchy=geography_hierarchy)
     _profile.configuration = {
         "urls": ["some_domain.com"]
@@ -63,43 +84,58 @@ def profile(geography_hierarchy):
 
     return _profile
 
-    
-@pytest.fixture
-def dataset(profile):
-    return DatasetFactory(profile=profile)
 
 @pytest.fixture
-def indicator(dataset):
+def dataset(profile: Profile) -> Dataset:
+    return DatasetFactory(profile=profile)
+
+
+@pytest.fixture
+def indicator(dataset: Dataset) -> Indicator:
     subindicators = ["male", "female"]
     groups = ["gender"]
     return IndicatorFactory(dataset=dataset, subindicators=subindicators, groups=groups)
 
-@pytest.fixture
-def datasetdata(indicator, geography):
-    dataset = indicator.dataset
-    
-    return [
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "15", "language": "isiXhosa", "count": 1}),
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "15", "language": "isiZulu", "count": 2}),
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "16", "language": "isiXhosa", "count": 3}),
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "16", "language": "isiZulu", "count": 4}),
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "17", "language": "isiXhosa", "count": 5}),
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "male", "age": "17", "language": "isiZulu", "count": 6}),
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "15", "language": "isiXhosa", "count": 7}),
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "15", "language": "isiZulu", "count": 8}),
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "16", "language": "isiXhosa", "count": 9}),
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "16", "language": "isiZulu", "count": 10}),
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "17", "language": "isiXhosa", "count": 11}),
-        DatasetDataFactory(dataset=dataset, geography=geography, data={"gender": "female", "age": "17", "language": "isiZulu", "count": 12}),
-    ]
 
 @pytest.fixture
-def metadata(licence):
+def datasetdata(indicator: Indicator, geography: Geography) -> List[DatasetData]:
+    dataset = indicator.dataset
+
+    return [
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "male", "age": "15", "language": "isiXhosa", "count": 1}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "male", "age": "15", "language": "isiZulu", "count": 2}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "male", "age": "16", "language": "isiXhosa", "count": 3}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "male", "age": "16", "language": "isiZulu", "count": 4}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "male", "age": "17", "language": "isiXhosa", "count": 5}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "male", "age": "17", "language": "isiZulu", "count": 6}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "female", "age": "15", "language": "isiXhosa", "count": 7}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "female", "age": "15", "language": "isiZulu", "count": 8}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "female", "age": "16", "language": "isiXhosa", "count": 9}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "female", "age": "16", "language": "isiZulu", "count": 10}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "female", "age": "17", "language": "isiXhosa", "count": 11}),
+        DatasetDataFactory(dataset=dataset, geography=geography, data={
+                           "gender": "female", "age": "17", "language": "isiZulu", "count": 12}),
+    ]
+
+
+@pytest.fixture
+def metadata(licence: Licence) -> MetaData:
     return MetaDataFactory(source="XYZ", url="http://example.com", description="ABC", licence=licence)
 
 
 @pytest.fixture
-def indicatordata_json():
+def indicatordata_json() -> List[Dict]:
     return [
         {"gender": "male", "age": "15", "language": "isiXhosa", "count": 1},
         {"gender": "male", "age": "15", "language": "isiZulu", "count": 2},
@@ -117,35 +153,38 @@ def indicatordata_json():
 
 
 @pytest.fixture
-def indicatordata(indicator, indicatordata_json, geography):
+def indicatordata(indicator: Indicator, indicatordata_json: List[Dict], geography: Geography) -> List[IndicatorData]:
 
     return [
         IndicatorDataFactory(indicator=indicator, geography=geography, data=indicatordata_json)
     ]
 
+
 @pytest.fixture
-def child_indicatordata(indicator, indicatordata_json, child_geographies):
-    mult_count = lambda js, factor: {"count": js["count"] * factor}
-    merge = lambda d1, d2: {**d1, **d2}
-    dup_data = lambda factor: [merge(js, mult_count(js, factor)) for js in indicatordata_json]
+def child_indicatordata(indicator: Indicator, indicatordata_json: List[Dict], child_geographies: List[Geography]) -> IndicatorData:
+    def mult_count(js, factor): return {"count": js["count"] * factor}
+    def merge(d1, d2): return {**d1, **d2}
+    def dup_data(factor): return [merge(js, mult_count(js, factor)) for js in indicatordata_json]
 
     return [
         IndicatorDataFactory(indicator=indicator, geography=g, data=dup_data(idx + 1))
         for idx, g in enumerate(child_geographies)
     ]
 
+
 @pytest.fixture
-def profile_indicator(profile, indicatordata):
+def profile_indicator(profile: Profile, indicatordata: List[IndicatorData]) -> ProfileIndicator:
     indicator = indicatordata[0].indicator
     return ProfileIndicatorFactory(profile=profile, indicator=indicator)
 
 
 @pytest.fixture
-def profile_key_metric(profile, indicatordata):
+def profile_key_metric(profile: Profile, indicatordata: List[IndicatorDataFactory]) -> ProfileKeyMetrics:
     indicator = indicatordata[0].indicator
     return ProfileKeyMetricsFactory(profile=profile, variable=indicator, subindicator=1)
 
+
 @pytest.fixture
-def profile_highlight(profile, indicatordata):
+def profile_highlight(profile: Profile, indicatordata: List[IndicatorDataFactory]) -> ProfileHighlight:
     indicator = indicatordata[0].indicator
     return ProfileHighlightFactory(profile=profile, indicator=indicator, subindicator=1)

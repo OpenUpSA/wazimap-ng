@@ -1,25 +1,30 @@
 import logging
+from typing import Dict, Union
 
+from django.contrib.sessions.backends.base import SessionBase
 from django.contrib.sessions.models import Session
+from django.db.models.base import Model
 from django.urls import reverse
+from django_q.models import Task
 
-import json
+from wazimap_ng.datasets.models.dataset import Dataset
 
 logger = logging.getLogger(__name__)
+
 
 class Notify:
 
     generic_messages = {
-        "delete" : {
+        "delete": {
             "success": "Data deleted for %s",
             "error": "Error in deleting data for %s",
         },
-        "upload" : {
+        "upload": {
             "success": "Imported File successfully for %s",
             "error": "Error in uploading file for %s.",
         },
 
-        "data_extraction" : {
+        "data_extraction": {
             "success": "Data extraction successful for %s",
             "error": "Data extraction failed for %s.",
         }
@@ -30,20 +35,20 @@ class Notify:
         "error": "Error in uploading file for model %s with name %s. For more details check : <a href='%s'>Click Here</a>",
     }
 
-
     @classmethod
-    def get_nofitification_details(self, notification_type, obj, task_type, results=None):
+    def get_nofitification_details(cls, notification_type: str, obj: Model, task_type: Union[str, None], results: Dict = None) -> str:
 
         func_name = "get_%s_messages" % (task_type)
-        notification_message = getattr(self, func_name, self.get_generic_message)
+        notification_message = getattr(cls, func_name, cls.get_generic_message)
         message = notification_message(notification_type, obj, task_type, results)
         return message
 
     @classmethod
-    def get_upload_messages(self, notification_type, obj, task_type=None, results=None):
+    def get_upload_messages(self, notification_type: str, obj: Model, task_type: str = None, results: Dict = None) -> str:
         """
         Get message for data upload.
         """
+
         model = obj.__class__.__name__.lower()
         obj_id = obj.id
         model_name = obj._meta.model_name
@@ -66,14 +71,15 @@ class Notify:
         return self.upload_message[notification_type] % (model, obj, admin_url)
 
     @classmethod
-    def get_generic_message(self, notification_type, obj, task_type, results):
+    def get_generic_message(cls, notification_type: str, obj: Model, task_type: str, results: Dict) -> str:
         """
         Get Generic message according to notification type.
         """
-        message = self.generic_messages[task_type][notification_type]
+        message = cls.generic_messages[task_type][notification_type]
         return message % obj
 
-def process_task_info(task):
+
+def process_task_info(task: Task) -> None:
     """
     Process task
     """
@@ -101,7 +107,8 @@ def process_task_info(task):
         # Add message to user
         notify_user(notification_type, session_key, message, task.id)
 
-def notify_user(notification_type, session_key, message, task_id=None):
+
+def notify_user(notification_type: str, session_key: Union[str, bool], message: str, task_id: str = None) -> None:
     """
     Call back function after the task has been executed.
     This function gets passed the complete Task object as its argument.
@@ -118,13 +125,14 @@ def notify_user(notification_type, session_key, message, task_id=None):
         session.session_data = Session.objects.encode(decoded_session)
         session.save()
 
-def custom_admin_notification(session, notification_type, message, task_id=None):
+
+def custom_admin_notification(session: SessionBase, notification_type: str, message: str, task_id: str = None) -> SessionBase:
     """
     Function for implementing custom admin notifications.
     notifications are stored in session and show to user when user refreshes page.
 
     A valid session object must be passed to this function with notification type and message
-    
+
     Type of notifications:
         * success
         * info
@@ -144,6 +152,7 @@ def custom_admin_notification(session, notification_type, message, task_id=None)
     messages.append(notification)
     session['notifications'] = messages
     return session
+
 
 def add_to_task_list(session, task):
     """

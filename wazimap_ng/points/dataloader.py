@@ -1,16 +1,20 @@
+from typing import Dict, Iterable, List
+
 from django.contrib.gis.geos import Point
 from django.db import transaction
+
+from wazimap_ng.points.models import Category
 
 from . import models
 
 
 @transaction.atomic
-def loaddata(category, iterable, row_number):
+def loaddata(category: Category, iterable: Iterable[Dict], row_number: int) -> List[Dict]:
 
     datarows = []
     logs = []
     for idx, row in enumerate(iterable):
-        line_no = row_number+idx+1
+        line_no = row_number + idx + 1
         row_list = list(row.values())
         error_lines = []
         if "longitude" not in row:
@@ -45,14 +49,13 @@ def loaddata(category, iterable, row_number):
                 "Error Details": "Empty value for Name"
             })
 
-
         try:
             longitude = float(longitude)
         except Exception as e:
             if not longitude:
                 msg = "Empty value for longitude"
             elif isinstance(longitude, str) and not longitude.isdigit():
-                msg = F"Invalid value passed for longitude {longitude}"
+                msg = f"Invalid value passed for longitude {longitude}"
             else:
                 msg = e
 
@@ -68,7 +71,7 @@ def loaddata(category, iterable, row_number):
             if not latitude:
                 msg = "Empty value for latitude"
             elif isinstance(latitude, str) and not latitude.isdigit():
-                msg = F"Invalid value passed for latitude {latitude}"
+                msg = f"Invalid value passed for latitude {latitude}"
             else:
                 msg = e
 
@@ -84,7 +87,7 @@ def loaddata(category, iterable, row_number):
             error_lines.append({
                 "CSV Line Number": line_no,
                 "Field Name": "Coordinates",
-                "Error Details": F"Issue while creating coordinates {e}"
+                "Error Details": f"Issue while creating coordinates {e}"
             })
 
         if error_lines:

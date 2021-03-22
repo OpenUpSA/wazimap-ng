@@ -1,46 +1,55 @@
+from typing import Callable, Dict, List, Union
+
+from django.db.models.query import QuerySet
+
+from wazimap_ng.datasets.models import IndicatorData
+from wazimap_ng.datasets.models.geography import Geography
+from wazimap_ng.profile.models import Profile, ProfileKeyMetrics
 from wazimap_ng.utils import mergedict
 
-from wazimap_ng.datasets.models import IndicatorData 
+from .helpers import MetricCalculator
 
-from .. import models
 
-from .helpers import get_subindicator, get_sum, MetricCalculator
-
-def get_indicator_data(profile_key_metric, geographies):
-    indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography__in=geographies)
+def get_indicator_data(profile_key_metric: ProfileKeyMetrics, geographies: List[Geography]) -> QuerySet:
+    indicator_data = IndicatorData.objects.filter(
+        indicator__profilekeymetrics=profile_key_metric, geography__in=geographies)
     return indicator_data
 
 
-def absolute_value(profile_key_metric, geography):
+def absolute_value(profile_key_metric: ProfileKeyMetrics, geography: Geography) -> float:
     data = get_indicator_data(profile_key_metric, [geography]).first().data
     return MetricCalculator.absolute_value(data, profile_key_metric, geography)
 
-def subindicator(profile_key_metric, geography):
+
+def subindicator(profile_key_metric: ProfileKeyMetrics, geography: Geography) -> Union[float, None]:
     data = get_indicator_data(profile_key_metric, [geography]).first().data
     return MetricCalculator.subindicator(data, profile_key_metric, geography)
 
-def sibling(profile_key_metric, geography):
+
+def sibling(profile_key_metric: ProfileKeyMetrics, geography: Geography) -> Union[float, None]:
     siblings = geography.get_siblings()
     data = get_indicator_data(profile_key_metric, siblings)
     return MetricCalculator.sibling(data, profile_key_metric, geography)
 
-algorithms = {
+
+algorithms: Dict[str, Callable] = {
     "absolute_value": absolute_value,
     "sibling": sibling,
     "subindicators": subindicator
 }
 
-def MetricsSerializer(profile, geography):
-    out_js = {}
-    profile_key_metrics = (models.ProfileKeyMetrics.objects
-        .filter(profile=profile)
-        .order_by("order")
-        .select_related("subcategory", "subcategory__category")
-    )
+
+def MetricsSerializer(profile: Profile, geography: Geography) -> Dict:
+    out_js: Dict = {}
+    profile_key_metrics = (ProfileKeyMetrics.objects
+                           .filter(profile=profile)
+                           .order_by("order")
+                           .select_related("subcategory", "subcategory__category")
+                           )
     for profile_key_metric in profile_key_metrics:
-        denominator = profile_key_metric.denominator
-        method = algorithms.get(denominator, absolute_value)
-        val = method(profile_key_metric, geography)
+        denominator: str = profile_key_metric.denominator
+        method: Callable = algorithms.get(denominator, absolute_value)
+        val: float = method(profile_key_metric, geography)
         if val is not None:
             js = {
                 profile_key_metric.subcategory.category.name: {

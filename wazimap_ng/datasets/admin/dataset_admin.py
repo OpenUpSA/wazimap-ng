@@ -1,36 +1,43 @@
 import json
 import logging
+from typing import Dict, List, Tuple, Union
 
-from django.contrib import admin
 from django import forms
+from django.contrib import admin
+from django.contrib.admin.options import ModelAdmin
+from django.db.models.query import QuerySet
+from django.http.request import HttpRequest
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-
 from django_q.tasks import async_task
 
-from .base_admin_model import DatasetBaseAdminModel, delete_selected_data
-from .. import models
-from .. import hooks
-from .views import MetaDataInline
-from .forms import DatasetAdminForm
+from wazimap_ng.datasets.models import Dataset, DatasetFile
+from wazimap_ng.datasets.models.dataset import DatasetQuerySet
+from wazimap_ng.general.admin import filters
+from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.widgets import description
 
-from wazimap_ng.general.services.permissions import assign_perms_to_group
-from wazimap_ng.general.admin import filters
+from .. import hooks
+from .base_admin_model import DatasetBaseAdminModel, delete_selected_data
+from .forms import DatasetAdminForm
+from .views import MetaDataInline
 
 logger = logging.getLogger(__name__)
 
 
-def set_to_public(modeladmin, request, queryset):
+def set_to_public(modeladmin: ModelAdmin, request: HttpRequest, queryset: DatasetQuerySet) -> None:
     queryset.make_public()
 
-def set_to_private(modeladmin, request, queryset):
+
+def set_to_private(modeladmin: ModelAdmin, request: HttpRequest, queryset: DatasetQuerySet) -> None:
     queryset.make_private()
 
-def get_source(dataset):
+
+def get_source(dataset: Dataset) -> Union[str, None]:
     if hasattr(dataset, "metadata"):
         return dataset.metadata.source
-    return None 
+    return None
+
 
 class PermissionTypeFilter(filters.DatasetFilter):
     title = "Permission Type"
@@ -40,7 +47,7 @@ class PermissionTypeFilter(filters.DatasetFilter):
         return [("private", "Mine"), ("public", "Public")]
 
 
-@admin.register(models.Dataset)
+@admin.register(Dataset)
 class DatasetAdmin(DatasetBaseAdminModel):
     exclude = ("groups", )
     inlines = (MetaDataInline,)
@@ -72,10 +79,9 @@ class DatasetAdmin(DatasetBaseAdminModel):
     class Media:
         js = ("/static/js/geography_hierarchy.js",)
 
+    def imported_dataset(self, obj: Dataset) -> str:
 
-    def imported_dataset(self, obj):
-
-        def get_url(file_obj):
+        def get_url(file_obj: DatasetFile) -> str:
             return '<a href="%s">%s</a>' % (reverse(
                 'admin:%s_%s_change' % (
                     file_obj._meta.app_label, file_obj._meta.model_name
@@ -84,7 +90,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
 
         if obj:
             dataset_file_links = [
-                get_url(file_obj) for file_obj in models.DatasetFile.objects.filter(
+                get_url(file_obj) for file_obj in DatasetFile.objects.filter(
                     dataset_id=obj.id, dataset_id__isnull=False
                 )
             ]
@@ -94,17 +100,17 @@ class DatasetAdmin(DatasetBaseAdminModel):
 
     imported_dataset.short_description = 'Previously Imported'
 
-    def get_related_fields_data(self, obj):
+    def get_related_fields_data(self, obj: Dataset) -> List[Dict]:
 
         return [{
                 "name": "dataset data",
                 "count": obj.datasetdata_set.count()
-            }, {
+                }, {
                 "name": "indicator",
                 "count": obj.indicator_set.count()
-        }]
+                }]
 
-    def save_model(self, request, obj, form, change):
+    def save_model(self, request: HttpRequest, obj: Dataset, form: DatasetAdminForm, change) -> bool:
         is_new = obj.pk == None and change == False
         is_profile_updated = change and "profile" in form.changed_data
 
@@ -118,7 +124,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
         logger.debug(f"Dataset import file: {dataset_import_file}")
 
         if dataset_import_file:
-            datasetfile_obj = models.DatasetFile.objects.create(
+            datasetfile_obj = DatasetFile.objects.create(
                 name=obj.name,
                 document=dataset_import_file,
                 dataset_id=obj.id
@@ -133,7 +139,6 @@ class DatasetAdmin(DatasetBaseAdminModel):
                 assign: True,
                 notify: True
             """)
-
 
             task = async_task(
                 "wazimap_ng.datasets.tasks.process_uploaded_file",
@@ -153,17 +158,16 @@ class DatasetAdmin(DatasetBaseAdminModel):
             )
         return obj
 
-    def get_search_results(self, request, queryset, search_term):
+    def get_search_results(self, request: HttpRequest, queryset: QuerySet, search_term: str) -> Tuple[QuerySet, bool]:
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
         if "autocomplete" in request.path:
 
             dataset_ids = queryset.values_list("id", flat=True)
-            in_progress_uploads = models.DatasetFile.objects.filter(
+            in_progress_uploads = DatasetFile.objects.filter(
                 task_id=None, dataset_id__in=dataset_ids
             ).values_list("dataset_id", flat=True)
 
             #queryset = queryset.exclude(id__in=in_progress_uploads)
 
         return queryset, use_distinct
-        

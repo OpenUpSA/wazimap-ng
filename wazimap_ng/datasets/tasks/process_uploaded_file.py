@@ -1,29 +1,32 @@
 import logging
+from typing import BinaryIO, Dict, List
 
-from django.db import transaction
-from django.conf import settings
 import pandas as pd
+from django.conf import settings
+from django.db import transaction
+from pandas import DataFrame
 
+from wazimap_ng.datasets.models.dataset import Dataset
 from wazimap_ng.general.services.csv_helpers import csv_logger
-from wazimap_ng.utils import get_stream_reader, clean_columns
+from wazimap_ng.utils import clean_columns, get_stream_reader
 
 from ..dataloader import loaddata
 
 logger = logging.getLogger(__name__)
 
 
-def process_file_data(df, dataset, row_number):
-    df = df.applymap(lambda s:s.strip() if type(s) == str else s)
+def process_file_data(df: DataFrame, dataset: Dataset, row_number: int) -> List[Dict]:
+    df = df.applymap(lambda s: s.strip() if type(s) == str else s)
     datasource = (dict(d[1]) for d in df.iterrows())
     return loaddata(dataset, datasource, row_number)
 
 
-def process_csv(dataset, buffer, chunksize=1000000):
+def process_csv(dataset: Dataset, buffer: BinaryIO, chunksize: int = 1000000):
     encoding, wrapper_file = get_stream_reader(buffer)
     _, columns = clean_columns(wrapper_file)
     row_number = 1
-    error_logs = [];
-    warning_logs = [];
+    error_logs = []
+    warning_logs = []
 
     wrapper_file.seek(0)
     for df in pd.read_csv(wrapper_file, chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1, encoding=encoding):

@@ -1,18 +1,32 @@
 import logging
 from datetime import datetime
+from typing import Union
 
 from django.core.cache import cache
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.http import Http404
+from django.http.request import HttpRequest
 from django.views.decorators.cache import cache_control
 from django.views.decorators.vary import vary_on_headers
 
-from wazimap_ng.datasets.models import Group, Geography, DatasetData, GeographyHierarchy
-from wazimap_ng.points.models import Location, Category
-from wazimap_ng.profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, \
-    ProfileKeyMetrics, Profile, Indicator
+from wazimap_ng.datasets.models import (
+    DatasetData,
+    Geography,
+    GeographyHierarchy,
+    Group
+)
+from wazimap_ng.points.models import Category, Location
+from wazimap_ng.profile.models import (
+    Indicator,
+    IndicatorCategory,
+    IndicatorSubcategory,
+    Profile,
+    ProfileHighlight,
+    ProfileIndicator,
+    ProfileKeyMetrics
+)
 from wazimap_ng.profile.services import authentication
 
 logger = logging.getLogger(__name__)
@@ -23,7 +37,7 @@ theme_key = "etag-Theme-profile-%s-%s"
 location_theme_key = "etag-Location-Theme-%s"
 
 
-def check_has_permission(request, profile_id):
+def check_has_permission(request: HttpRequest, profile_id: int) -> bool:
     try:
         profile = Profile.objects.get(pk=profile_id)
         has_permission = authentication.has_permission(request.user, profile)
@@ -34,7 +48,7 @@ def check_has_permission(request, profile_id):
         raise Http404
 
 
-def last_modified(request, profile_id, key):
+def last_modified(request: HttpRequest, profile_id: int, key: str) -> datetime:
     if check_has_permission(request, profile_id):
         _last_modified = datetime(year=1970, month=1, day=1)
         c = cache.get(key)
@@ -46,22 +60,22 @@ def last_modified(request, profile_id, key):
     return _last_modified
 
 
-def etag_profile_updated(request, profile_id, geography_code):
+def etag_profile_updated(request: HttpRequest, profile_id: int, geography_code: str) -> str:
     last_modified = last_modified_profile_updated(request, profile_id, geography_code)
     return str(last_modified)
 
 
-def last_modified_profile_updated(request, profile_id, geography_code):
+def last_modified_profile_updated(request: HttpRequest, profile_id: int, geography_code: str) -> datetime:
     key = profile_key % profile_id
     return last_modified(request, profile_id, key)
 
 
-def etag_point_updated(request, profile_id, profile_category_id=None, theme_id=None, geography_code=None):
+def etag_point_updated(request: HttpRequest, profile_id: int, profile_category_id: int = None, theme_id: int = None, geography_code: str = None) -> str:
     last_modified = last_modified_point_updated(request, profile_id, profile_category_id, theme_id, geography_code)
     return str(last_modified)
 
 
-def last_modified_point_updated(request, profile_id, profile_category_id=None, theme_id=None, geography_code=None):
+def last_modified_point_updated(request: HttpRequest, profile_id: int, profile_category_id: int = None, theme_id: int = None, geography_code: str = None) -> Union[datetime, None]:
     if profile_category_id is not None:
         key = location_key % (profile_id, profile_category_id)
     elif theme_id is not None:
@@ -76,13 +90,13 @@ def last_modified_point_updated(request, profile_id, profile_category_id=None, t
 
 
 ########### Signals #################
-def update_profile_cache(profile):
+def update_profile_cache(profile: Profile):
     logger.info(f"Updating profile cache: {profile}")
     key = profile_key % profile.id
     cache.set(key, datetime.now())
 
 
-def update_point_cache(category):
+def update_point_cache(category: Category):
     profile = category.profile
     key1 = location_key % (profile.id, category.id)
 
@@ -118,6 +132,7 @@ def profile_keymetrics_updated(sender, instance, **kwargs):
 @receiver(post_save, sender=Profile)
 def profile_updated(sender, instance, **kwargs):
     update_profile_cache(instance)
+
 
 @receiver(post_save, sender=Group)
 def subindicator_group_update(sender, instance, **kwargs):
@@ -167,7 +182,7 @@ def geography_updated(sender, instance, **kwargs):
         "indicator__dataset__profile", flat=True
     ).order_by("indicator__dataset__profile").distinct())
 
-    # Get hierarchy profile linked to 
+    # Get hierarchy profile linked to
     hierarchy_profile_ids = list(instance.geographyhierarchy_set.values_list(
         "profile", flat=True
     ).order_by("profile").distinct())

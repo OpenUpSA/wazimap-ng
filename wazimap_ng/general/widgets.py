@@ -1,23 +1,23 @@
+from __future__ import annotations
+
 import json
+from typing import Callable, Dict
 
-from django.forms.widgets import Widget
-from django.contrib import admin
-from guardian.shortcuts import (
-    get_group_perms, get_perms_for_model, get_groups_with_perms
-)
 from django import forms
+from django.contrib import admin
+from django.forms.widgets import Widget
 
-from wazimap_ng.general.services import permissions
 
-def customTitledFilter(title):
+def customTitledFilter(title: str):
     class Wrapper(admin.FieldListFilter):
         def __new__(cls, *args, **kwargs):
             instance = admin.FieldListFilter.create(*args, **kwargs)
             instance.title = title
             return instance
     return Wrapper
-    
-def description(description, func):
+
+
+def description(description: str, func: Callable):
     func.short_description = description
     return func
 
@@ -29,7 +29,7 @@ class SortableWidget(Widget):
         css = {'all': ("/static/css/jquery-ui.min.css", "/static/css/sortable-widget.css",)}
         js = ("/static/js/jquery-ui.min.js", "/static/js/sortable-widget.js",)
 
-    def get_context(self, name, value, attrs=None):
+    def get_context(self, name: str, value: str, attrs=None) -> Dict:
         values_list = []
         values = json.loads(value)
 
@@ -38,6 +38,7 @@ class SortableWidget(Widget):
             'values': values
         }}
 
+
 class VariableFilterWidget(Widget):
     template_name = 'widgets/VariableFilterWidget.html'
 
@@ -45,7 +46,7 @@ class VariableFilterWidget(Widget):
         css = {'all': ("/static/css/variable-filter-widget.css",)}
         js = ("/static/js/variable-filter-widget.js",)
 
-    def get_context(self, name, value, attrs=None):
+    def get_context(self, name: str, value: str, attrs=None) -> Dict:
 
         CHOICES = [('public', 'Public'), ('private', 'Private')]
         choice_field = forms.fields.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)

@@ -1,19 +1,24 @@
-from django.contrib import admin, messages
-from django.contrib.admin.options import DisallowedModelAdminToField
-from django.contrib.admin.utils import unquote
-from django.core.exceptions import PermissionDenied
-from django.template.response import TemplateResponse
-from django.contrib.admin.utils import model_ngettext, unquote
-from django.contrib.admin import helpers
+from typing import List, OrderedDict
 
+from django.contrib import admin, messages
+from django.contrib.admin import helpers
+from django.contrib.admin.options import (
+    DisallowedModelAdminToField,
+    ModelAdmin
+)
+from django.contrib.admin.utils import model_ngettext, unquote
+from django.core.exceptions import PermissionDenied
+from django.db.models.query import QuerySet
+from django.http.request import HttpRequest
+from django.template.response import TemplateResponse
 from django_q.tasks import async_task
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 
-
 from .. import hooks
 
-def delete_selected_data(modeladmin, request, queryset):
+
+def delete_selected_data(modeladmin: ModelAdmin, request: HttpRequest, queryset: QuerySet) -> TemplateResponse:
     if not modeladmin.has_delete_permission(request):
         raise PermissionDenied
 
@@ -70,11 +75,12 @@ def delete_selected_data(modeladmin, request, queryset):
 
 delete_selected_data.short_description = "Delete selected objects"
 
+
 class DatasetBaseAdminModel(BaseAdminModel):
 
     actions = [delete_selected_data]
 
-    def delete_view(self, request, object_id, extra_context=None):
+    def delete_view(self, request: HttpRequest, object_id, extra_context=None):
         opts = self.model._meta
         app_label = opts.app_label
 
@@ -136,7 +142,7 @@ class DatasetBaseAdminModel(BaseAdminModel):
             context,
         )
 
-    def get_actions(self, request):
+    def get_actions(self, request) -> OrderedDict:
         actions = super().get_actions(request)
         if 'delete_selected' in actions:
             del actions['delete_selected']

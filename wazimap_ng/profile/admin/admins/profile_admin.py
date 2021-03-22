@@ -1,15 +1,16 @@
 from django.contrib.gis import admin
 from django.contrib.postgres import fields
-
+from django.forms.models import ModelForm
+from django.http.request import HttpRequest
 from django_json_widget.widgets import JSONEditorWidget
 
-from ... import models
-
+from wazimap_ng.general.admin import filters
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.services.permissions import assign_perms_to_group
-from wazimap_ng.general.admin import filters
+from wazimap_ng.profile.models import Profile
 
-@admin.register(models.Profile)
+
+@admin.register(Profile)
 class ProfileAdmin(BaseAdminModel):
 
     list_display = ('name', 'geography_hierarchy',)
@@ -18,7 +19,7 @@ class ProfileAdmin(BaseAdminModel):
         fields.JSONField: {"widget": JSONEditorWidget},
     }
 
-    def save_model(self, request, obj, form, change):
+    def save_model(self, request: HttpRequest, obj: Profile, form: ModelForm, change: bool) -> Profile:
         is_new = obj.pk == None and change == False
         super().save_model(request, obj, form, change)
         if is_new:

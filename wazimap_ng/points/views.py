@@ -1,30 +1,22 @@
 import logging
+from typing import Dict, List
 
-from collections import defaultdict
-
-from django.views.decorators.http import condition
-from django.utils.decorators import method_decorator
-from django.http import Http404
-from django.db.models import Count
-from django.forms.models import model_to_dict
-from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import get_object_or_404
-
-from rest_framework.decorators import api_view
+from django.db.models import Count
+from django.http import Http404, HttpRequest
+from django.utils.decorators import method_decorator
+from django.views.decorators.http import condition
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework_gis.pagination import GeoJsonPagination
-from rest_framework import generics
 
-from wazimap_ng.profile.models import Profile
 from wazimap_ng.datasets.models import Geography
 from wazimap_ng.points.services.locations import get_locations
-from wazimap_ng.general.serializers import MetaDataSerializer
+from wazimap_ng.profile.models import Profile
 
-from . import models
-from . import serializers
-from ..cache import etag_point_updated, last_modified_point_updated
 from ..boundaries.models import GeographyBoundary
+from ..cache import etag_point_updated, last_modified_point_updated
+from . import models, serializers
 
 logger = logging.getLogger(__name__)
 
@@ -33,13 +25,12 @@ class CategoryList(generics.ListAPIView):
     queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer
 
-    def list(self, request, profile_id=None):
+    def list(self, request: HttpRequest, profile_id: int = None) -> Response:
         queryset = self.get_queryset()
 
         if profile_id is not None:
             profile = Profile.objects.get(id=profile_id)
             queryset = queryset.filter(profile=profile_id)
-
 
         serializer = self.get_serializer_class()(queryset, many=True)
         data = serializer.data
@@ -52,7 +43,7 @@ class LocationList(generics.ListAPIView):
     serializer_class = serializers.LocationSerializer
     queryset = models.Location.objects.all().prefetch_related("category")
 
-    def list(self, request, profile_id, profile_category_id=None, geography_code=None):
+    def list(self, request: HttpRequest, profile_id: int, profile_category_id: int = None, geography_code: str = None) -> Response:
         try:
             profile = Profile.objects.get(id=profile_id)
             profile_category = models.ProfileCategory.objects.get(
@@ -74,22 +65,23 @@ class LocationList(generics.ListAPIView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-def boundary_point_count_helper(profile, geography):
+
+def boundary_point_count_helper(profile: Profile, geography: Geography) -> List[Dict]:
     boundary = GeographyBoundary.objects.get(geography__code=geography.code, geography__version=geography.version)
     locations = models.Location.objects.filter(coordinates__contained=boundary.geom)
     location_count = (
         locations
-            .filter(category__profilecategory__profile=profile)
-            .values(
-                "category__profilecategory__id", "category__profilecategory__label",
-                "category__profilecategory__color",
-                "category__profilecategory__theme__name",
-                "category__profilecategory__theme__icon",
-                "category__profilecategory__theme__id",
-                "category__metadata__source", "category__metadata__description",
-                "category__metadata__licence"
-            )
-            .annotate(count_category=Count("category"))
+        .filter(category__profilecategory__profile=profile)
+        .values(
+            "category__profilecategory__id", "category__profilecategory__label",
+            "category__profilecategory__color",
+            "category__profilecategory__theme__name",
+            "category__profilecategory__theme__icon",
+            "category__profilecategory__theme__id",
+            "category__metadata__source", "category__metadata__description",
+            "category__metadata__licence"
+        )
+        .annotate(count_category=Count("category"))
     )
 
     theme_dict = {}
@@ -127,7 +119,7 @@ class ProfileCategoryList(generics.ListAPIView):
     queryset = models.ProfileCategory.objects.all()
     serializer_class = serializers.ProfileCategorySerializer
 
-    def list(self, request, profile_id, theme_id=None):
+    def list(self, request: HttpRequest, profile_id: int, theme_id: int = None) -> Response:
         query_dict = {
             "profile_id": profile_id
         }
@@ -145,7 +137,7 @@ class ThemeList(generics.ListAPIView):
     queryset = models.Theme.objects.all()
     serializer_class = serializers.ThemeSerializer
 
-    def list(self, request, profile_id):
+    def list(self, request: HttpRequest, profile_id: int) -> Response:
         queryset = self.get_queryset().filter(profile_id=profile_id)
         serializer = self.get_serializer_class()(queryset, many=True)
         data = serializer.data

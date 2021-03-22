@@ -2,11 +2,12 @@ import logging
 
 from django import forms
 
-from ... import models
 from wazimap_ng.datasets.models import Indicator
 from wazimap_ng.general.widgets import VariableFilterWidget
+from wazimap_ng.profile.models import ProfileKeyMetrics
 
 logger = logging.getLogger(__name__)
+
 
 class ProfileKeyMetricsForm(forms.ModelForm):
     MY_CHOICES = (
@@ -16,7 +17,7 @@ class ProfileKeyMetricsForm(forms.ModelForm):
     subindicator = forms.ChoiceField(choices=MY_CHOICES, required=False)
 
     class Meta:
-        model = models.ProfileKeyMetrics
+        model = ProfileKeyMetrics
         fields = "__all__"
         widgets = {
             'variable': VariableFilterWidget

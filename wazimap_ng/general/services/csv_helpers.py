@@ -1,20 +1,21 @@
 import os
+from typing import Dict, List
 
 import pandas as pd
 from django.conf import settings
 
 
-def get_log_filename(name, type, file_id):
-    return F"{name}_{file_id}_{type}_log.csv"
+def get_log_filename(name: str, type: str, file_id: int) -> str:
+    return f"{name}_{file_id}_{type}_log.csv"
 
 
-def write_csv(log, logfile, headers):
+def write_csv(log: List[str], logfile: str, headers: List[str]) -> str:
     df = pd.DataFrame(log, columns=headers)
     df.to_csv(logfile, header=headers, index=False)
     return logfile
 
 
-def csv_error_logger(logdir, target_name, target_id, logs, headers):
+def csv_error_logger(logdir: str, target_name: str, target_id: int, logs: List[Dict], headers: List[str]) -> List[str]:
     errors = []
     incorrect_rows = []
 
@@ -41,16 +42,16 @@ def csv_error_logger(logdir, target_name, target_id, logs, headers):
 
 
 def csv_logger(target_obj, file_obj, type, logs, headers):
-    results=[]
-    logdir=F"{settings.MEDIA_ROOT}/logs/{target_obj._meta.verbose_name}/{type}"
+    results = []
+    logdir = F"{settings.MEDIA_ROOT}/logs/{target_obj._meta.verbose_name}/{type}"
     if not os.path.exists(logdir):
         os.makedirs(logdir)
 
-    target_name=target_obj.name.replace(" ", "_")
-    target_id=file_obj.id
+    target_name = target_obj.name.replace(" ", "_")
+    target_id = file_obj.id
 
     if type == "error":
-        results=csv_error_logger(logdir, target_name, target_id, logs, headers)
+        results = csv_error_logger(logdir, target_name, target_id, logs, headers)
     else:
         log_file_name = get_log_filename(target_name, type, target_id)
         file_log = write_csv(logs, F"{logdir}/{log_file_name}", headers)

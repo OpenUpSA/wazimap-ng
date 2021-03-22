@@ -1,16 +1,20 @@
-from django.urls import reverse
-
 import pytest
+from django.urls import reverse
 from test_plus.test import TestCase
 
-from tests.profile.factories import (
-    ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory, ProfileIndicatorFactory
-)
-
 from tests.datasets.factories import IndicatorDataFactory
+from tests.profile.factories import (
+    IndicatorCategoryFactory,
+    IndicatorSubcategoryFactory,
+    ProfileFactory,
+    ProfileIndicatorFactory
+)
+from wazimap_ng.datasets.models import Indicator, MetaData
+from wazimap_ng.profile.models import Profile, ProfileIndicator
+
 
 @pytest.fixture
-def profile_indicator(metadata, profile, indicator):
+def profile_indicator(metadata: MetaData, profile: Profile, indicator: Indicator) -> ProfileIndicator:
     profile = indicator.dataset.profile
     return ProfileIndicatorFactory(profile=profile, indicator=indicator)
 
@@ -20,10 +24,10 @@ class TestIndicatorDataView:
     def test_url(self, tp, profile, profile_indicator):
 
         expected_url = "/api/v1/profile/8/geography/YYY/indicator/999/"
-        reversed_url = tp.reverse("profile-geography-indicator-data", profile_id=8, geography_code="YYY", profile_indicator_id=999)
+        reversed_url = tp.reverse("profile-geography-indicator-data", profile_id=8,
+                                  geography_code="YYY", profile_indicator_id=999)
         assert expected_url == reversed_url
 
-    
     def test_bad_profile(self, tp, tp_api, profile, profile_indicator):
         geography = profile.geography_hierarchy.root_geography
         reversed_url = tp.reverse(

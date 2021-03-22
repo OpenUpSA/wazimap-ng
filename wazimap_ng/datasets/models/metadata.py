@@ -1,8 +1,10 @@
 from django.db import models
 
-from .licence import Licence
-from .dataset import Dataset
 from wazimap_ng.general.models import BaseModel
+
+from .dataset import Dataset
+from .licence import Licence
+
 
 class MetaData(BaseModel):
     source = models.CharField(max_length=60, null=False, blank=True)
@@ -14,5 +16,5 @@ class MetaData(BaseModel):
     )
     dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Meta->Dataset : %s" % (self.dataset.name)

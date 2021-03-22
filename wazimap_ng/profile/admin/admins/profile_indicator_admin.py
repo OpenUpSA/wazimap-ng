@@ -1,20 +1,23 @@
-from django.contrib.gis import admin
-from django.contrib.postgres import fields
 from adminsortable2.admin import SortableAdminMixin
+from django.contrib.gis import admin
+from django.db.models import ForeignKey
+from django.db.models.functions import Concat
+from django.forms.models import ModelForm
+from django.http.request import HttpRequest
 
-from ... import models
+from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.widgets import description
+from wazimap_ng.profile.models import ProfileIndicator
+
 from ..forms import ProfileIndicatorAdminForm
 
-from wazimap_ng.general.widgets import customTitledFilter, description
-from wazimap_ng.datasets.models import Indicator, Dataset
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
-from wazimap_ng.general.admin import filters
-from django.db.models.functions import Concat
 
 class CategoryIndicatorFilter(filters.CategoryFilter):
     parameter_name = 'subcategory__category__id'
 
-@admin.register(models.ProfileIndicator)
+
+@admin.register(ProfileIndicator)
 class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
     list_filter = (
         filters.ProfileNameFilter,
@@ -25,8 +28,8 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
     exclude_common_list_display = True
     list_display = (
         "profile",
-        "label", 
-        description("Indicator", lambda x: x.indicator.name), 
+        "label",
+        description("Indicator", lambda x: x.indicator.name),
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
         "created",
@@ -39,10 +42,10 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
             'fields': ('profile', 'indicator')
         }),
         ("Profile fields", {
-          'fields': ('label', 'subcategory', 'description', 'choropleth_method')
+            'fields': ('label', 'subcategory', 'description', 'choropleth_method')
         }),
         ("Charts", {
-          'fields': ('chart_configuration',)
+            'fields': ('chart_configuration',)
         })
     )
     search_fields = ("label", )
@@ -54,17 +57,17 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
     class Media:
         js = ("/static/js/profile-indicator-admin.js",)
 
-    def get_readonly_fields(self, request, obj=None):
-        if obj: # editing an existing object
+    def get_readonly_fields(self, request: HttpRequest, obj: ProfileIndicator = None):
+        if obj:  # editing an existing object
             return ("profile",) + self.readonly_fields
         return self.readonly_fields
 
-    def save_model(self, request, obj, form, change):
+    def save_model(self, request: HttpRequest, obj: ProfileIndicator, form: ModelForm, change: bool):
         if not change:
             obj.subindicators = obj.indicator.subindicators
         super().save_model(request, obj, form, change)
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    def formfield_for_foreignkey(self, db_field: ForeignKey, request: HttpRequest, **kwargs):
         field = super().formfield_for_foreignkey(db_field, request, **kwargs)
         if db_field.name == "indicator":
             qs = field.queryset.annotate(

@@ -1,9 +1,11 @@
-from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.db import models
 
-from .indicator import Indicator
-from .geography import Geography
 from wazimap_ng.general.models import BaseModel
+
+from .geography import Geography
+from .indicator import Indicator
+
 
 class IndicatorData(BaseModel):
     """
@@ -14,10 +16,8 @@ class IndicatorData(BaseModel):
     geography = models.ForeignKey(Geography, on_delete=models.CASCADE)
     data = JSONField(default=dict, null=True, blank=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.geography} - {self.indicator.name}"
 
     class Meta:
         verbose_name_plural = "Indicator Data items"
-
-

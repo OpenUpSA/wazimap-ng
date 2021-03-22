@@ -1,24 +1,27 @@
 import operator
 from functools import reduce
+from typing import Dict, List, Sequence, Union
 
 from django.contrib import admin
-from django.db.models import Q, CharField
 from django.contrib.postgres import fields
-from django.db.models.functions import Cast
 from django.db import transaction
-
+from django.db.models import CharField, Q
+from django.db.models.functions import Cast
+from django.http.request import HttpRequest
 from django_q.tasks import async_task
 
-from .. import models
-from .. import hooks
-from .forms import IndicatorAdminForm
-from .base_admin_model import DatasetBaseAdminModel
+from wazimap_ng.datasets.models.indicator import Indicator
+from wazimap_ng.general.admin import filters
+from wazimap_ng.general.models import MetaData
 from wazimap_ng.general.services import permissions
 from wazimap_ng.general.widgets import description
-from wazimap_ng.general.admin import filters
+
+from .. import hooks, models
+from .base_admin_model import DatasetBaseAdminModel
+from .forms import IndicatorAdminForm
 
 
-def get_source(indicator):
+def get_source(indicator: Indicator) -> Union[MetaData, None]:
     if hasattr(indicator.dataset, "metadata"):
         return indicator.dataset.metadata.source
     return None
@@ -33,8 +36,10 @@ class PermissionTypeFilter(filters.DatasetFilter):
     def lookups(self, request, model_admin):
         return [("private", "Mine"), ("public", "Public")]
 
+
 class IndicatorProfileFilter(filters.ProfileFilter):
     parameter_name = 'dataset__profile'
+
 
 class IndicatorGeographyHierarchyFilter(filters.GeographyHierarchyFilter):
     parameter_name = 'dataset__geography_hierarchy_id'
@@ -54,7 +59,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
 
     form = IndicatorAdminForm
     fieldsets = [
-        (None, { 'fields': ('dataset', 'groups','universe', 'name',) } ),
+        (None, {'fields': ('dataset', 'groups', 'universe', 'name',)}),
     ]
 
     autocomplete_fields = ("dataset", )
@@ -63,19 +68,19 @@ class IndicatorAdmin(DatasetBaseAdminModel):
     class Media:
         js = ("/static/js/indicator-admin.js",)
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request: HttpRequest, obj: Indicator = None) -> Sequence:
         if obj:
-            to_add = ('dataset',"groups", "universe",)
+            to_add = ("dataset", "groups", "universe",)
             return self.readonly_fields + to_add
         return self.readonly_fields
 
-    def get_related_fields_data(self, obj):
+    def get_related_fields_data(self, obj: Indicator) -> List[Dict]:
         return [{
             "name": "indicator data",
             "count": obj.indicatordata_set.count()
         }]
 
-    def save_model(self, request, obj, form, change):
+    def save_model(self, request: HttpRequest, obj: Indicator, form: IndicatorAdminForm, change: bool) -> Indicator:
         """
         During Step 1, no background tasks are run because only the Dataset is available.
         """
@@ -84,7 +89,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
 
         with transaction.atomic():
             super().save_model(request, obj, form, change)
-        
+
         if run_task:
             task = async_task(
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",
@@ -104,7 +109,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
             )
         return obj
 
-    def get_form(self, request, obj=None, **kwargs):
+    def get_form(self, request: HttpRequest, obj: Indicator = None, **kwargs) -> IndicatorAdminForm:
         form = super().get_form(request, obj, **kwargs)
 
         if request.method == "GET":

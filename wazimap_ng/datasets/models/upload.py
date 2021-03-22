@@ -1,34 +1,35 @@
-import csv
+from __future__ import annotations
+
 import os
-import uuid
 from io import BytesIO
-import pathlib
+from typing import List
 
 import pandas as pd
 import xlrd
-
-from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
-from django.contrib.postgres.fields import JSONField
+from django.db import models
+from django.db.models.fields.files import FieldFile
 from django_q.models import Task
-from .dataset import Dataset
 
 from wazimap_ng import utils
 from wazimap_ng.general.models import BaseModel
 
 
-max_filesize = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
-allowed_file_extensions = getattr(settings, "ALLOWED_FILE_EXTENSIONS", ["xls", "xlsx", "csv"])
+max_filesize: int = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
+allowed_file_extensions: List[str] = getattr(settings, "ALLOWED_FILE_EXTENSIONS", ["xls", "xlsx", "csv"])
 
-def file_size(value):
+
+def file_size(value: FieldFile) -> None:
     if value.size > max_filesize:
         raise ValidationError(f"File too large. Size should not exceed {max_filesize / (1024 * 1024)} MiB.")
 
-def get_file_path(instance, filename):
+
+def get_file_path(instance: FieldFile, filename: str) -> str:
     filename = utils.get_random_filename(filename)
     return os.path.join('datasets', filename)
+
 
 class DatasetFile(BaseModel):
     document = models.FileField(
@@ -46,8 +47,7 @@ class DatasetFile(BaseModel):
     name = name = models.CharField(max_length=60)
     dataset_id = models.PositiveSmallIntegerField(null=True, blank=True)
 
-
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     def clean(self):

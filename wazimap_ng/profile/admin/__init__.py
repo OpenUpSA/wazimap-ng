@@ -1,7 +1,12 @@
 from django.contrib.gis import admin
-from .. import models
 
+from .. import models
 from .admins import (
-    LogoAdmin, ProfileIndicatorAdmin, ProfileKeyMetricsAdmin, ProfileHighlightAdmin,
-    IndicatorCategoryAdmin, IndicatorSubcategoryAdmin, ProfileAdmin
+    IndicatorCategoryAdmin,
+    IndicatorSubcategoryAdmin,
+    LogoAdmin,
+    ProfileAdmin,
+    ProfileHighlightAdmin,
+    ProfileIndicatorAdmin,
+    ProfileKeyMetricsAdmin
 )

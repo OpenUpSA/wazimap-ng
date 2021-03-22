@@ -1,10 +1,20 @@
-import pytest
+from typing import List, Dict
 from unittest.mock import patch
-from wazimap_ng.profile.serializers.highlights_serializer import absolute_value, subindicator, sibling
+
+import pytest
+
 from tests.datasets.factories import IndicatorDataFactory
+from wazimap_ng.datasets.models import Geography, Indicator, IndicatorData
+from wazimap_ng.profile.models import ProfileHighlight
+from wazimap_ng.profile.serializers.highlights_serializer import (
+    absolute_value,
+    sibling,
+    subindicator
+)
+
 
 @pytest.fixture
-def indicatordata_json():
+def indicatordata_json() -> List[Dict]:
     return [
         {"gender": "male", "age": "15", "language": "isiXhosa", "count": 1},
         {"gender": "male", "age": "15", "language": "isiZulu", "count": 2},
@@ -20,8 +30,9 @@ def indicatordata_json():
         {"gender": "female", "age": "17", "language": "isiZulu", "count": 12},
     ]
 
+
 @pytest.fixture
-def indicatordata_json2(indicatordata_json):
+def indicatordata_json2(indicatordata_json: List[Dict]) -> List[Dict]:
     js = []
     for row in indicatordata_json:
         row = dict(row)
@@ -30,33 +41,36 @@ def indicatordata_json2(indicatordata_json):
 
     return js
 
+
 @pytest.fixture
-def indicatordata(indicator, indicatordata_json, indicatordata_json2, geographies):
+def indicatordata(indicator: Indicator, indicatordata_json: List[Dict], indicatordata_json2: List[Dict], geographies: List[Geography]) -> List[IndicatorData]:
 
     return [
         IndicatorDataFactory(indicator=indicator, geography=geographies[0], data=indicatordata_json),
         IndicatorDataFactory(indicator=indicator, geography=geographies[1], data=indicatordata_json2),
     ]
 
+
 @pytest.mark.django_db
-def test_absolute_value(profile_highlight, indicatordata_json, geography):
+def test_absolute_value(profile_highlight: ProfileHighlight, indicatordata_json: List[Dict], geography: Geography):
     expected_value = sum(el["count"] for el in indicatordata_json if el["gender"] == "female")
     actual_value = absolute_value(profile_highlight, geography)
     assert expected_value == actual_value
 
+
 @pytest.mark.django_db
-def test_subindicator(profile_highlight, indicatordata_json, geography):
+def test_subindicator(profile_highlight: ProfileHighlight, indicatordata_json: List[Dict], geography: Geography):
     female_total = sum(el["count"] for el in indicatordata_json if el["gender"] == "female")
     total = sum(el["count"] for el in indicatordata_json)
     expected_value = female_total / total
 
     actual_value = subindicator(profile_highlight, geography)
-    
+
     assert expected_value == actual_value
 
-    
+
 @pytest.mark.django_db
-def test_sibling(profile_highlight, geography, geographies):
+def test_sibling(profile_highlight: ProfileHighlight, geography: Geography, geographies: List[Geography]):
     with patch.object(geography, "get_siblings", side_effect=lambda: geographies[0:2]):
         expected_value = 0.3333
         actual_value = sibling(profile_highlight, geography)

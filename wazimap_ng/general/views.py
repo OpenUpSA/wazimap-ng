@@ -1,23 +1,28 @@
-from django.views.decorators.http import condition
-from django.views.decorators.cache import never_cache
-from django.shortcuts import get_object_or_404, redirect
+from typing import Dict, Union
+
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import user_passes_test
-from django.http import JsonResponse
-
-from rest_framework.response import Response
+from django.contrib.auth.models import User
+from django.http import HttpRequest, JsonResponse
+from django.http.response import (
+    HttpResponsePermanentRedirect,
+    HttpResponseRedirect
+)
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import condition
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
-from ..profile import models as profile_models
-from ..profile import serializers as profile_serializers
-from ..datasets import models as dataset_models
-from ..datasets import views as dataset_views
-from ..boundaries import models as boundaries_models
 from ..boundaries import views as boundaries_views
 from ..cache import etag_profile_updated, last_modified_profile_updated
+from ..datasets import models as dataset_models
 from ..points import views as point_views
-from ..points import models as point_models
+from ..profile import models as profile_models
+from ..profile import serializers as profile_serializers
 
-def consolidated_profile_helper(profile_id, geography_code):
+
+def consolidated_profile_helper(profile_id: int, geography_code: str) -> Dict:
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
     version = profile.geography_hierarchy.root_geography.version
     geography = dataset_models.Geography.objects.get(code=geography_code, version=version)
@@ -43,33 +48,36 @@ def consolidated_profile_helper(profile_id, geography_code):
         "themes": point_views.boundary_point_count_helper(profile, geography)
     })
 
+
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
-def consolidated_profile(request, profile_id, geography_code):
+def consolidated_profile(request: HttpRequest, profile_id: int, geography_code: str) -> Response:
     js = consolidated_profile_helper(profile_id, geography_code)
     return Response(js)
 
+
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
-def consolidated_profile_test(request, profile_id, geography_code):
+def consolidated_profile_test(request: HttpRequest, profile_id: int, geography_code: str) -> Response:
     js = consolidated_profile_helper(profile_id, geography_code)
     return Response("test2")
 
-from django.contrib.auth import logout
-def logout_view(request):
+
+def logout_view(request: HttpRequest) -> Union[HttpResponseRedirect, HttpResponsePermanentRedirect]:
     logout(request)
     return redirect("version")
 
 
-def authenticate_admin(user):
+def authenticate_admin(user: User) -> bool:
     return user.is_staff or user.is_superuser
+
 
 @user_passes_test(authenticate_admin)
 @never_cache
-def notifications_view(request):
+def notifications_view(request: HttpRequest) -> JsonResponse:
     messages = request.session.pop("notifications", [])
     task_list = request.session.get("task_list", [])
-    
+
     if messages and task_list:
         for message in messages:
             if "task_id" in message:

@@ -1,24 +1,29 @@
-import math
 import functools
 import logging
+import math
+from typing import Dict, List, Tuple
 
 import numpy
-
 from django.db import transaction
+
+from wazimap_ng.datasets.models import Dataset, Geography
+from wazimap_ng.datasets.models.group import Group
 
 from . import models
 
 logger = logging.getLogger(__name__)
 
 # TODO should add a memoize decorator here
+
+
 @functools.lru_cache()
-def load_geography(geo_code, version):
+def load_geography(geo_code: str, version: str) -> Geography:
     geo_code = str(geo_code).upper()
     geography = models.Geography.objects.get(code=geo_code, version=version)
     return geography
 
 
-def create_groups(dataset, group_names):
+def create_groups(dataset: Dataset, group_names: List[str]) -> List[Group]:
     groups = []
     for g in group_names:
         subindicators = list(models.DatasetData.objects.get_unique_subindicators(g))
@@ -28,7 +33,7 @@ def create_groups(dataset, group_names):
 
 
 @transaction.atomic
-def loaddata(dataset, iterable, row_number):
+def loaddata(dataset: Dataset, iterable, row_number: int) -> List[List]:
     datarows = []
     errors = []
     warnings = []

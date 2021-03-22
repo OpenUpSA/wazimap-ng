@@ -1,15 +1,18 @@
 import logging
 import operator
+from typing import List
 
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
-from django.contrib.postgres.fields import JSONField, ArrayField
+
+from wazimap_ng.general.models import BaseModel
 
 from .dataset import Dataset
 from .datasetdata import DatasetData
 from .universe import Universe
-from wazimap_ng.general.models import BaseModel
 
 logger = logging.getLogger(__name__)
+
 
 class Indicator(BaseModel):
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
@@ -21,7 +24,7 @@ class Indicator(BaseModel):
     name = models.CharField(max_length=50)
     subindicators = JSONField(default=list, blank=True, null=True)
 
-    def get_unique_subindicators(self):
+    def get_unique_subindicators(self) -> List[str]:
         if len(self.groups) > 0:
             # TODO this model should be refactored to only allow one group
             group = self.groups[0]
@@ -30,15 +33,14 @@ class Indicator(BaseModel):
 
         return []
 
-    def save(self, force_subindicator_update=False, *args, **kwargs):
+    def save(self, force_subindicator_update: bool = False, *args, **kwargs):
         first_save = operator.not_(self.subindicators)
         if force_subindicator_update or first_save:
             logger.debug(f"Updating subindicators for indicator: {self.name} ({self.id})")
             self.subindicators = self.get_unique_subindicators()
         super().save(*args, **kwargs)
-        
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.dataset.name} -> {self.name}"
 
     class Meta:

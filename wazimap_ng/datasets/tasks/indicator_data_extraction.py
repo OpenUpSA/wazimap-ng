@@ -1,14 +1,18 @@
 import logging
 from itertools import groupby
+from typing import List
 
 from django.db import transaction
+
+from wazimap_ng.datasets.models import Indicator, IndicatorData, Universe
 
 from .. import models
 
 logger = logging.getLogger(__name__)
 
+
 @transaction.atomic
-def indicator_data_extraction(indicator, *args, universe=None, **kwargs):
+def indicator_data_extraction(indicator: Indicator, *args, universe: Universe = None, **kwargs) -> List[IndicatorData]:
 
     indicator.indicatordata_set.all().delete()
 

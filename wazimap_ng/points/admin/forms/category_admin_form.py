@@ -2,7 +2,7 @@ from django import forms
 
 from wazimap_ng.datasets.models import Licence
 from wazimap_ng.general.models import MetaData
-from ... import models
+from wazimap_ng.points.models import Category
 
 
 class CategoryAdminForm(forms.ModelForm):
@@ -21,7 +21,7 @@ class CategoryAdminForm(forms.ModelForm):
                 self.fields["description"].initial = metadata.description
                 self.fields["licence"].initial = metadata.licence
 
-    def save(self, commit=True):
+    def save(self, commit: bool = True):
         if self.has_changed():
             metadata = {
                 key: self.cleaned_data.get(key) for key in [
@@ -37,5 +37,5 @@ class CategoryAdminForm(forms.ModelForm):
         return super().save(commit=commit)
 
     class Meta:
-        model = models.Category
+        model = Category
         fields = "__all__"

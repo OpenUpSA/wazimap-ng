@@ -1,28 +1,41 @@
+from typing import Dict
+
 from rest_framework import serializers
 
-from wazimap_ng.utils import mergedict 
-from wazimap_ng.datasets.serializers import AncestorGeographySerializer
-
-from wazimap_ng.datasets.serializers import GeographyHierarchySerializer
 from wazimap_ng.cms.serializers import ContentSerializer
+from wazimap_ng.datasets.serializers import (
+    AncestorGeographySerializer,
+    GeographyHierarchySerializer
+)
+from wazimap_ng.profile.models import Profile
+from wazimap_ng.utils import mergedict
+
 from .. import models
-from . import IndicatorDataSerializer, MetricsSerializer, ProfileLogoSerializer, HighlightsSerializer, OverviewSerializer
-from . import ProfileIndicatorSerializer
+from . import (
+    HighlightsSerializer,
+    IndicatorDataSerializer,
+    MetricsSerializer,
+    OverviewSerializer,
+    ProfileIndicatorSerializer,
+    ProfileLogoSerializer
+)
+
 
 class SimpleProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Profile
         fields = ('id', 'name')
 
+
 class ProfileSerializer(serializers.ModelSerializer):
     requires_authentication = serializers.SerializerMethodField('is_authentication_required')
     geography_hierarchy = GeographyHierarchySerializer()
     configuration = serializers.SerializerMethodField()
 
-    def is_authentication_required(self, obj):
+    def is_authentication_required(self, obj: Profile) -> bool:
         return obj.permission_type == "private"
 
-    def get_configuration(self, obj):
+    def get_configuration(self, obj: Profile) -> Dict:
         configs = obj.configuration
         for page in obj.page_set.all():
             content_set = page.content_set.all()
@@ -34,7 +47,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Profile
-        fields = ('id', 'name', 'permission_type', 'requires_authentication', 'geography_hierarchy', 'description', 'configuration')
+        fields = ('id', 'name', 'permission_type', 'requires_authentication',
+                  'geography_hierarchy', 'description', 'configuration')
 
 
 def ExtendedProfileSerializer(profile, geography):
@@ -66,10 +80,10 @@ class FullProfileSerializer(serializers.ModelSerializer):
     requires_authentication = serializers.SerializerMethodField('is_authentication_required')
     configuration = serializers.SerializerMethodField()
 
-    def is_authentication_required(self, obj):
+    def is_authentication_required(self, obj: Profile) -> bool:
         return obj.permission_type == "private"
 
-    def get_configuration(self, obj):
+    def get_configuration(self, obj: Profile) -> Dict:
         configs = obj.configuration
         for page in obj.page_set.all():
             content_set = page.content_set.all()

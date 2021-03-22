@@ -1,18 +1,25 @@
 import os
+from typing import List, Tuple
+
 import pandas as pd
+from django.contrib import admin
+from django.contrib.admin.options import ModelAdmin
+from django.db.models.query import QuerySet
+from django.http.request import HttpRequest
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+
+from wazimap_ng.datasets.models.upload import DatasetFile
+from wazimap_ng.general.admin import filters
+from wazimap_ng.general.services import permissions
 
 from .. import models
 from .base_admin_model import BaseAdminModel
-from django.contrib import admin
-from django.urls import reverse
-from django.utils.safestring import mark_safe
-from django.template.loader import render_to_string
-from wazimap_ng.general.services import permissions
-from wazimap_ng.general.admin import filters
 
 
 # Filters
-def filter_custom_queryset(self, request, queryset):
+def filter_custom_queryset(self, request: HttpRequest, queryset: QuerySet) -> QuerySet:
     value = self.value()
     if value is None:
         return queryset
@@ -28,25 +35,25 @@ class CustomPermissionTypeFilter(admin.SimpleListFilter):
     title = "Permission Type"
     parameter_name = 'permission_type'
 
-    def lookups(self, request, model_admin):
+    def lookups(self, request: HttpRequest, model_admin: ModelAdmin) -> List[Tuple]:
         return [("private", "Mine"), ("public", "Public")]
 
-    def queryset(self, request, queryset):
+    def queryset(self, request: HttpRequest, queryset: QuerySet) -> QuerySet:
         return filter_custom_queryset(self, request, queryset)
 
 
 class CustomGeographyHierarchyFilter(filters.GeographyHierarchyFilter):
-    def queryset(self, request, queryset):
+    def queryset(self, request: HttpRequest, queryset: QuerySet) -> QuerySet:
         return filter_custom_queryset(self, request, queryset)
 
 
 class CustomProfileFilter(filters.ProfileFilter):
-    def queryset(self, request, queryset):
+    def queryset(self, request: HttpRequest, queryset: QuerySet) -> QuerySet:
         return filter_custom_queryset(self, request, queryset)
 
 
 class CustomMetadataFilter(filters.DatasetMetaDataFilter):
-    def queryset(self, request, queryset):
+    def queryset(self, request: HttpRequest, queryset: QuerySet) -> QuerySet:
         return filter_custom_queryset(self, request, queryset)
 
 
@@ -59,15 +66,15 @@ class DatasetFileAdmin(BaseAdminModel):
         }),
         ("Task Details", {
             "fields": (
-            	"get_status", "get_task_link",
-            	"get_warnings", "get_errors",
+                "get_status", "get_task_link",
+                "get_warnings", "get_errors",
             )
         }),
     )
 
     readonly_fields = (
-       "name", "get_document", "get_status", "get_task_link",
-       "get_warnings", "get_errors",
+        "name", "get_document", "get_status", "get_task_link",
+        "get_warnings", "get_errors",
     )
 
     list_filter = (
@@ -78,7 +85,7 @@ class DatasetFileAdmin(BaseAdminModel):
         "name", 'get_dataset_name'
     )
 
-    def get_dataset_name(self, obj):
+    def get_dataset_name(self, obj: DatasetFile) -> str:
         if obj:
             dataset = models.Dataset.objects.filter(id=obj.dataset_id).first()
             return dataset.name if dataset else "-"
@@ -86,7 +93,7 @@ class DatasetFileAdmin(BaseAdminModel):
 
     get_dataset_name.short_description = 'Dataset'
 
-    def get_document(self, obj):
+    def get_document(self, obj: DatasetFile) -> str:
         _, file_extension = os.path.splitext(obj.document.name)
         doc_name = f'{obj.name}-{obj.id}{file_extension}'
         return mark_safe(
@@ -95,7 +102,7 @@ class DatasetFileAdmin(BaseAdminModel):
 
     get_document.short_description = 'Document'
 
-    def get_dataset_link(self, obj):
+    def get_dataset_link(self, obj: DatasetFile) -> str:
         if obj:
             dataset = models.Dataset.objects.filter(id=obj.dataset_id).first()
 
@@ -104,7 +111,7 @@ class DatasetFileAdmin(BaseAdminModel):
 
             url = reverse('admin:%s_%s_change' % (
                 dataset._meta.app_label,  dataset._meta.model_name
-            ),  args=[dataset.id] )
+            ),  args=[dataset.id])
             return mark_safe(
                 f'<a href="{url}">{dataset.name}</a>'
             )
@@ -112,14 +119,14 @@ class DatasetFileAdmin(BaseAdminModel):
 
     get_dataset_link.short_description = 'Dataset'
 
-    def get_status(self, obj):
+    def get_status(self, obj: DatasetFile) -> str:
         if obj.id and obj.task:
-                return "Processed" if obj.task.success else "Failed"
+            return "Processed" if obj.task.success else "Failed"
         return "In Queue"
 
     get_status.short_description = 'Status'
 
-    def get_task_link(self, obj):
+    def get_task_link(self, obj: DatasetFile) -> str:
         if obj.task:
             task_type = "success" if obj.task.success else "failure"
             admin_url = reverse(
@@ -133,7 +140,7 @@ class DatasetFileAdmin(BaseAdminModel):
 
     get_task_link.short_description = 'Task Link'
 
-    def get_warnings(self, obj):
+    def get_warnings(self, obj: DatasetFile) -> str:
         if obj.task:
             result = obj.task.result
             if obj.task.success and result["warning_log"]:
@@ -146,7 +153,7 @@ class DatasetFileAdmin(BaseAdminModel):
 
     get_warnings.short_description = 'Warnings'
 
-    def get_errors(self, obj):
+    def get_errors(self, obj: DatasetFile) -> str:
         if obj.task:
             result = obj.task.result
             if not obj.task.success:
@@ -158,7 +165,7 @@ class DatasetFileAdmin(BaseAdminModel):
                 error_list = df.values.tolist()
                 result = render_to_string(
                     'custom/variable_task_errors.html', {
-                        'errors': error_list,'download_url': download_url,
+                        'errors': error_list, 'download_url': download_url,
                         'incorrect_csv': incorrect_csv
                     }
                 )
@@ -167,11 +174,11 @@ class DatasetFileAdmin(BaseAdminModel):
 
     get_errors.short_description = 'Errors'
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request: HttpRequest) -> bool:
         return False
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request: HttpRequest, obj: DatasetFile = None) -> bool:
         return False
 
-    def has_change_permission(self, request, obj=None):
+    def has_change_permission(self, request: HttpRequest, obj: DatasetFile = None) -> bool:
         return False

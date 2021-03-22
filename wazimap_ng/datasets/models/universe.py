@@ -1,5 +1,6 @@
-from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.db import models
+
 from wazimap_ng.general.models import BaseModel
 
 
@@ -8,7 +9,7 @@ class Universe(BaseModel):
 
     label = models.CharField(max_length=100)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.label}"
 
     class Meta:

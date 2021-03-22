@@ -1,21 +1,25 @@
-from django.contrib.postgres import fields
+from typing import Callable, OrderedDict
+
+from django.contrib import messages
+from django.contrib.admin.options import ModelAdmin
 from django.contrib.gis import admin
 from django.contrib.gis.db.models import PointField
-from django.contrib import messages
-
-from import_export.admin import ExportMixin
-from import_export import resources
-from import_export.fields import Field
-
+from django.contrib.postgres import fields
+from django.db.models.query import QuerySet
+from django.http.request import HttpRequest
 from django_json_widget.widgets import JSONEditorWidget
+from import_export import resources
+from import_export.admin import ExportMixin
+from import_export.fields import Field
 from mapwidgets.widgets import GooglePointFieldWidget
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
+
 from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.points.models import Category, Location
 
-from .. import models
 
-def assign_to_category_action(category):
-    def assign_to_category(modeladmin, request, queryset):
+def assign_to_category_action(category: Category) -> Callable:
+    def assign_to_category(modeladmin: ModelAdmin, request: HttpRequest, queryset: QuerySet) -> None:
         queryset.update(category=category)
         messages.info(request, "Locations assigned to category {0}".format(category.name))
 
@@ -30,23 +34,22 @@ class LocationResource(resources.ModelResource):
     longitude = Field()
     category = Field()
 
-    def dehydrate_latitude(self, location):
+    def dehydrate_latitude(self, location: Location) -> float:
         return location.coordinates.y
 
-    def dehydrate_longitude(self, location):
+    def dehydrate_longitude(self, location: Location) -> float:
         return location.coordinates.x
 
-    def dehydrate_category(self, location):
+    def dehydrate_category(self, location: Location) -> Category:
         return location.category.name
 
     class Meta:
-        model = models.Location
+        model = Location
         fields = ("name", "category", "latitude", "longitude", "data",)
         export_order = ("name", "category", "latitude", "longitude", "data")
 
 
-
-@admin.register(models.Location)
+@admin.register(Location)
 class LocationAdmin(ExportMixin, BaseAdminModel):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
@@ -58,10 +61,10 @@ class LocationAdmin(ExportMixin, BaseAdminModel):
     search_fields = ("name",)
     resource_class = LocationResource
 
-    def get_actions(self, request):
+    def get_actions(self, request: HttpRequest) -> OrderedDict:
         actions = super().get_actions(request)
 
-        for category in models.Category.objects.all():
+        for category in Category.objects.all():
             action = assign_to_category_action(category)
             actions[action.__name__] = (
                 action, action.__name__, action.short_description

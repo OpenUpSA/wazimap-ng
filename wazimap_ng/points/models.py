@@ -16,7 +16,7 @@ from colorfield.fields import ColorField
 
 
 
-def get_file_path(instance, filename):
+def get_file_path(instance, filename: str) -> str:
     filename = utils.get_random_filename(filename)
     return os.path.join('points', filename)
 
@@ -27,7 +27,7 @@ class Theme(BaseModel):
     icon = models.CharField(max_length=30, null=True, blank=True)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.profile} | {self.name}"
 
     class Meta:
@@ -40,7 +40,7 @@ class Category(BaseModel):
     metadata = models.OneToOneField('general.MetaData', on_delete=models.CASCADE, null=True, blank=True)
     permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="public")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     class Meta:
@@ -61,7 +61,7 @@ class Location(BaseModel):
         blank=True
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "%s: %s" % (self.category, self.name)
 
 
@@ -75,7 +75,7 @@ class ProfileCategory(BaseModel):
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     color = ColorField(blank=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.label
 
     class Meta:
@@ -94,7 +94,7 @@ class CoordinateFile(BaseModel):
     name = models.CharField(max_length=50)
     collection_id = models.PositiveSmallIntegerField(null=True, blank=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     def clean(self):

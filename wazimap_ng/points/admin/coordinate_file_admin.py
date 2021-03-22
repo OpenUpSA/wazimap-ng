@@ -1,16 +1,17 @@
 import os
-import pandas as pd
 
-from .. import models
+import pandas as pd
 from django.contrib import admin
+from django.http.request import HttpRequest
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from django.template.loader import render_to_string
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.points.models import CoordinateFile
 
 
-@admin.register(models.CoordinateFile)
+@admin.register(CoordinateFile)
 class CoordinateFileAdmin(BaseAdminModel):
     fieldsets = (
         ("Uploaded Dataset", {
@@ -18,17 +19,17 @@ class CoordinateFileAdmin(BaseAdminModel):
         }),
         ("Task Details", {
             "fields": (
-            	"get_status", "get_task_link", "get_errors",
+                "get_status", "get_task_link", "get_errors",
             )
         }),
     )
 
     readonly_fields = (
-       "name", "get_document", "get_status", "get_task_link",
-       "get_errors",
+        "name", "get_document", "get_status", "get_task_link",
+        "get_errors",
     )
 
-    def get_document(self, obj):
+    def get_document(self, obj: CoordinateFile) -> str:
         _, file_extension = os.path.splitext(obj.document.name)
         doc_name = f'{obj.name}-{obj.id}{file_extension}'
         return mark_safe(
@@ -36,14 +37,14 @@ class CoordinateFileAdmin(BaseAdminModel):
         )
     get_document.short_description = 'Document'
 
-    def get_status(self, obj):
+    def get_status(self, obj: CoordinateFile) -> str:
         if obj.id and obj.task:
-                return "Processed" if obj.task.success else "Failed"
+            return "Processed" if obj.task.success else "Failed"
         return "In Queue"
 
     get_status.short_description = 'Status'
 
-    def get_task_link(self, obj):
+    def get_task_link(self, obj: CoordinateFile) -> str:
         if obj.task:
             task_type = "success" if obj.task.success else "failure"
             admin_url = reverse(
@@ -56,7 +57,7 @@ class CoordinateFileAdmin(BaseAdminModel):
         return "-"
     get_task_link.short_description = 'Task Link'
 
-    def get_errors(self, obj):
+    def get_errors(self, obj: CoordinateFile) -> str:
         if obj.task:
             result = obj.task.result
             if not obj.task.success:
@@ -68,7 +69,7 @@ class CoordinateFileAdmin(BaseAdminModel):
                 error_list = df.values.tolist()
                 result = render_to_string(
                     'custom/variable_task_errors.html', {
-                        'errors': error_list,'download_url': download_url,
+                        'errors': error_list, 'download_url': download_url,
                         'incorrect_csv': incorrect_csv
                     }
                 )
@@ -77,11 +78,11 @@ class CoordinateFileAdmin(BaseAdminModel):
 
     get_errors.short_description = 'Errors'
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request: HttpRequest) -> bool:
         return False
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request: HttpRequest, obj: CoordinateFile = None) -> bool:
         return False
 
-    def has_change_permission(self, request, obj=None):
+    def has_change_permission(self, request: HttpRequest, obj: CoordinateFile = None) -> bool:
         return False

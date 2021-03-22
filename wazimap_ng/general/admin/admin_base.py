@@ -1,17 +1,14 @@
 import lorem
-
-from django.contrib import admin, messages
+from django.contrib import admin
 from django.contrib.admin.options import DisallowedModelAdminToField
-from django.contrib.admin.utils import unquote
-from django.core.exceptions import PermissionDenied
-from django.template.response import TemplateResponse
-from django.contrib.admin.utils import model_ngettext, unquote
-from django.contrib.admin import helpers
-from django.contrib.auth import get_permission_codename
-from django.utils.safestring import mark_safe
+from django.db.models.base import Model
+from django.db.models.fields.related import ForeignKey
+from django.db.models.query import QuerySet
+from django.forms import Field, Form
+from django.forms.fields import Field
+from django.http.request import HttpRequest
 from django.template.loader import render_to_string
-
-from django_q.tasks import async_task
+from django.utils.safestring import mark_safe
 
 from wazimap_ng.general.services import permissions
 
@@ -68,19 +65,21 @@ class BaseAdminModel(admin.ModelAdmin):
             self.list_display = list_display + self.common_list_display
         super().__init__(model, admin_site)
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request: HttpRequest, obj: Model = None) -> bool:
         has_perm = super().has_delete_permission(request, obj)
         if has_perm:
             return permissions.has_permission(request.user, obj, "delete")
         return has_perm
 
-    def has_change_permission(self, request, obj=None):
+    def has_change_permission(self, request: HttpRequest, obj: Model = None) -> bool:
+
         has_perm = super().has_change_permission(request, obj)
         if has_perm:
             return permissions.has_permission(request.user, obj, "change")
         return has_perm
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    def formfield_for_foreignkey(self, db_field: ForeignKey, request: HttpRequest, **kwargs) -> QuerySet:
+
         if db_field.name not in self.exclude_fk_filters and not request.user.is_superuser:
             kwargs["queryset"] = getattr(
                 permissions, "get_custom_fk_queryset"
@@ -88,7 +87,7 @@ class BaseAdminModel(admin.ModelAdmin):
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: HttpRequest) -> QuerySet:
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
@@ -96,8 +95,9 @@ class BaseAdminModel(admin.ModelAdmin):
             return getattr(permissions, self.custom_queryset_func)(self.model, request.user)
         return qs
 
-    def _get_help_text(self, field):
+    def _get_help_text(self, field: Field) -> str:
         widget = field.widget
+
         if widget.__class__.__name__ == "Select":
             choices = [
                 choice[0] for choice in widget.choices
@@ -113,7 +113,7 @@ class BaseAdminModel(admin.ModelAdmin):
             'admin/custom_help_texts.html', {'choices': choices}
         ))
 
-    def get_form(self, request, *args, **kwargs):
+    def get_form(self, request: HttpRequest, *args, **kwargs) -> Form:
         form = super().get_form(request, *args, **kwargs)
         form.current_user = request.user
 

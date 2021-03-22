@@ -1,14 +1,14 @@
 import logging
+from typing import Dict
 
 from django.db import transaction
 from django.db.models.query import QuerySet
-from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def delete_data(data, object_name, **kwargs):
+def delete_data(data: QuerySet, object_name: str, **kwargs) -> Dict:
     """
     Delete data
     """
