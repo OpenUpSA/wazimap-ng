@@ -1,7 +1,6 @@
 from typing import Dict, List
 
 import pytest
-from factory.declarations import List
 
 from tests.datasets.factories import (
     DatasetDataFactory,

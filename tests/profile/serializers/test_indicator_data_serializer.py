@@ -1,10 +1,6 @@
 from typing import Dict, List
 from unittest.mock import patch
 
-
-from factory.declarations import List
-from wazimap_ng.profile.models import Profile
-from wazimap_ng.datasets.models.group import Group
 import pytest
 
 from tests.datasets.factories import (
@@ -14,19 +10,18 @@ from tests.datasets.factories import (
 )
 from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
 from wazimap_ng.datasets.models import Geography, IndicatorData
+from wazimap_ng.datasets.models.group import Group
 from wazimap_ng.datasets.models.indicator import Indicator
 from wazimap_ng.datasets.models.metadata import MetaData
 from wazimap_ng.profile.models import Profile, ProfileIndicator
 from wazimap_ng.profile.serializers.indicator_data_serializer import (
+    get_dataset_groups,
     get_indicator_data,
     get_profile_data
 )
 from wazimap_ng.profile.serializers.profile_indicator_serializer import (
     FullProfileIndicatorSerializer
 )
-
-from wazimap_ng.profile.serializers.indicator_data_serializer import get_indicator_data, get_profile_data, get_dataset_groups
-from wazimap_ng.profile.serializers.profile_indicator_serializer import FullProfileIndicatorSerializer
 
 
 @pytest.fixture

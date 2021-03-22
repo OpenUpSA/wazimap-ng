@@ -1,4 +1,5 @@
 from django.contrib.postgres.fields import JSONField
+from django.db import models
 from django.db.models.fields import BooleanField
 
 from wazimap_ng.general.models import BaseModel
