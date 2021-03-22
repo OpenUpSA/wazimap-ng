@@ -60,10 +60,10 @@ class GroupFactory(factory.django.DjangoModelFactory):
 
     dataset = factory.SubFactory(DatasetFactory)
 
+
 class DatasetFileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.DatasetFile
-
 
     document = factory.django.FileField()
 
@@ -80,6 +80,7 @@ class DatasetDataFactory(factory.django.DjangoModelFactory):
 class LicenceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Licence
+
 
 class MetaDataFactory(factory.django.DjangoModelFactory):
     class Meta:
