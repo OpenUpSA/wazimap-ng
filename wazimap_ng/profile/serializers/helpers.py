@@ -25,7 +25,6 @@ class MetricCalculator:
         group = metric.indicator.groups[0]
 
         subindicator = get_subindicator(metric)
-        filtered_data = [row["count"] for row in data if group in row and row[group] == subindicator]
 
         return get_sum(data, group, subindicator)
 
@@ -42,9 +41,6 @@ class MetricCalculator:
 
     @staticmethod
     def sibling(data: List[IndicatorData], metric: MetricType, geography: Geography) -> Union[float, None]:
-        group = metric.indicator.groups[0]
-        subindicator = get_subindicator(metric)
-
         numerator = None
         denominator = 0
         total = 0
