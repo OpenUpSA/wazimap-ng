@@ -42,6 +42,9 @@ def geographies():
 def geography(geographies):
     return geographies[0]
 
+@pytest.fixture
+def other_geographies(geographies):
+    return geographies[1:]
 
 @pytest.fixture
 def geography_hierarchy(geography):
@@ -166,6 +169,12 @@ def indicatordata(indicator, indicatordata_json, geography):
         IndicatorDataFactory(indicator=indicator, geography=geography, data=indicatordata_json)
     ]
 
+@pytest.fixture
+def other_geographies_indicatordata(indicator, indicatordata_json, other_geographies):
+    return [
+        IndicatorDataFactory(indicator=indicator, geography=g, data=indicatordata_json)
+        for g in other_geographies
+    ]
 
 @pytest.fixture
 def child_indicatordata(indicator, indicatordata_json, child_geographies):

@@ -21,7 +21,7 @@ def subindicator(profile_key_metric, geography):
 
 def sibling(profile_key_metric, geography):
     siblings = geography.get_siblings()
-    data = get_indicator_data(profile_key_metric, siblings)
+    data = get_indicator_data(profile_key_metric, [geography] + siblings)
     return MetricCalculator.sibling(data, profile_key_metric, geography)
 
 algorithms = {

@@ -17,7 +17,7 @@ def subindicator(highlight, geography):
 
 def sibling(highlight, geography):
     siblings = geography.get_siblings()
-    data = get_indicator_data(highlight, siblings)
+    data = get_indicator_data(highlight, [geography] + siblings)
     return MetricCalculator.sibling(data, highlight, geography)
 
 algorithms = {
