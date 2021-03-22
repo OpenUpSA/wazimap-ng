@@ -43,7 +43,6 @@ from wazimap_ng.profile.models import (
 def licence() -> Licence:
     return LicenceFactory(name="licence name", url="abc url")
 
-
 @pytest.fixture
 def geographies() -> List[Geography]:
     root = GeographyFactory(code="ROOT_GEOGRAPHY")
@@ -57,6 +56,9 @@ def geographies() -> List[Geography]:
 def geography(geographies: List[Geography]) -> Geography:
     return geographies[0]
 
+@pytest.fixture
+def other_geographies(geographies):
+    return geographies[1:]
 
 @pytest.fixture
 def geography_hierarchy(geography: Geography) -> GeographyHierarchy:
@@ -75,20 +77,20 @@ def child_geographies(geography: Geography) -> List[Geography]:
 
 @pytest.fixture
 def profile(geography_hierarchy: GeographyHierarchy) -> Profile:
-    _profile = ProfileFactory(geography_hierarchy=geography_hierarchy)
-    _profile.configuration = {
+    
+    configuration = {
         "urls": ["some_domain.com"]
     }
 
-    _profile.save()
-
-    return _profile
-
+    return ProfileFactory(geography_hierarchy=geography_hierarchy, configuration=configuration)
 
 @pytest.fixture
 def dataset(profile: Profile) -> Dataset:
     return DatasetFactory(profile=profile)
 
+@pytest.fixture
+def metadata(licence: Licence, dataset: Dataset) -> MetaData:
+    return MetaDataFactory(source="XYZ", url="http://example.com", description="ABC", licence=licence, dataset=dataset)
 
 
 @pytest.fixture
@@ -139,10 +141,19 @@ def datasetdata(indicator: Indicator, geography: Geography) -> List[DatasetData]
                            "gender": "female", "age": "17", "language": "isiZulu", "count": 12}),
     ]
 
-
 @pytest.fixture
-def metadata(licence: Licence) -> MetaData:
-    return MetaDataFactory(source="XYZ", url="http://example.com", description="ABC", licence=licence)
+def child_datasetdata(datasetdata: List[DatasetData], geography: Geography) -> List[Dataset]:
+    def gendict(d, g): return {**d.data, **{"geography": g.pk}}
+    dataset = datasetdata[0].dataset
+    
+    new_datasetdata = [
+        DatasetDataFactory(dataset=dataset, geography=g, data=gendict(d, g))
+        for g in geography.get_children()
+        for d in datasetdata
+    ]
+
+    return new_datasetdata
+
 
 
 @pytest.fixture
@@ -170,6 +181,12 @@ def indicatordata(indicator: Indicator, indicatordata_json: List[Dict], geograph
         IndicatorDataFactory(indicator=indicator, geography=geography, data=indicatordata_json)
     ]
 
+@pytest.fixture
+def other_geographies_indicatordata(indicator, indicatordata_json, other_geographies):
+    return [
+        IndicatorDataFactory(indicator=indicator, geography=g, data=indicatordata_json)
+        for g in other_geographies
+    ]
 
 @pytest.fixture
 def child_indicatordata(indicator: Indicator, indicatordata_json: List[Dict], child_geographies: List[Geography]) -> IndicatorData:
@@ -182,20 +199,27 @@ def child_indicatordata(indicator: Indicator, indicatordata_json: List[Dict], ch
         for idx, g in enumerate(child_geographies)
     ]
 
+@pytest.fixture
+def profile_indicators(profile: Profile, indicatordata: List[IndicatorData]) -> List[ProfileIndicator]:
+    indicator = indicatordata[0].indicator
+    return [
+        ProfileIndicatorFactory(profile=profile, indicator=indicator, label="PI1"),
+        ProfileIndicatorFactory(profile=profile, indicator=indicator, label="PI2"),
+    ]
 
 @pytest.fixture
-def profile_indicator(profile: Profile, indicatordata: List[IndicatorData]) -> ProfileIndicator:
+def profile_indicator(profile_indicators: List[ProfileIndicator]) -> ProfileIndicator:
+    return profile_indicators[0]
+
+@pytest.fixture
+def profile_key_metric(profile: Profile, indicatordata: List[IndicatorData]) -> ProfileKeyMetrics:
+    FEMALE_GROUP_INDEX = 1
     indicator = indicatordata[0].indicator
-    return ProfileIndicatorFactory(profile=profile, indicator=indicator)
+    return ProfileKeyMetricsFactory(profile=profile, variable=indicator, subindicator=FEMALE_GROUP_INDEX)
 
 
 @pytest.fixture
-def profile_key_metric(profile: Profile, indicatordata: List[IndicatorDataFactory]) -> ProfileKeyMetrics:
+def profile_highlight(profile: Profile, indicatordata: List[IndicatorData]) -> ProfileHighlight:
+    FEMALE_GROUP_INDEX = 1
     indicator = indicatordata[0].indicator
-    return ProfileKeyMetricsFactory(profile=profile, variable=indicator, subindicator=1)
-
-
-@pytest.fixture
-def profile_highlight(profile: Profile, indicatordata: List[IndicatorDataFactory]) -> ProfileHighlight:
-    indicator = indicatordata[0].indicator
-    return ProfileHighlightFactory(profile=profile, indicator=indicator, subindicator=1)
+    return ProfileHighlightFactory(profile=profile, indicator=indicator, subindicator=FEMALE_GROUP_INDEX)

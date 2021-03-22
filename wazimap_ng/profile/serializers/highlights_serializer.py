@@ -24,7 +24,7 @@ def subindicator(highlight: ProfileHighlight, geography: Geography) -> Union[flo
 
 def sibling(highlight: ProfileHighlight, geography: Geography) -> Union[float, None]:
     siblings = geography.get_siblings()
-    data = get_indicator_data(highlight, siblings)
+    data = get_indicator_data(highlight, [geography] + siblings)
     return MetricCalculator.sibling(data, highlight, geography)
 
 

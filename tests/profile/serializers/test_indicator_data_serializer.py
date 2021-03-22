@@ -1,5 +1,4 @@
 from typing import Dict, List
-from unittest.mock import patch
 
 import pytest
 
@@ -9,14 +8,15 @@ from tests.datasets.factories import (
     MetaDataFactory
 )
 from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
-from wazimap_ng.datasets.models import Geography, IndicatorData
-from wazimap_ng.datasets.models.group import Group
-from wazimap_ng.datasets.models.indicator import Indicator
-from wazimap_ng.datasets.models.metadata import MetaData
+from wazimap_ng.datasets.models import (
+    Geography,
+    Group,
+    IndicatorData,
+    MetaData
+)
 from wazimap_ng.profile.models import Profile, ProfileIndicator
 from wazimap_ng.profile.serializers.indicator_data_serializer import (
     get_dataset_groups,
-    get_indicator_data,
     get_profile_data
 )
 from wazimap_ng.profile.serializers.profile_indicator_serializer import (
@@ -24,40 +24,7 @@ from wazimap_ng.profile.serializers.profile_indicator_serializer import (
 )
 
 
-@pytest.fixture
-def geography() -> Geography:
-    return GeographyFactory()
-
-
-@pytest.fixture
-def profile_indicators(profile: Profile) -> List[ProfileIndicator]:
-    pi1 = ProfileIndicatorFactory(profile=profile, label="PI1")
-    pi2 = ProfileIndicatorFactory(profile=profile, label="PI2")
-    return [
-        pi1, pi2
-    ]
-
-
-@pytest.fixture
-def indicator_data(geography: Geography, profile_indicators: List[ProfileIndicator]) -> List[IndicatorData]:
-    idata = []
-
-    for pi in profile_indicators:
-        indicator = pi.indicator
-        idatum = IndicatorDataFactory(geography=geography, indicator=indicator)
-        idata.append(idatum)
-
-    return idata
-
-
-@pytest.fixture
-def metadata(indicator_data: List[IndicatorData]) -> MetaData:
-    dataset = indicator_data[0].indicator.dataset
-    return MetaDataFactory(source="A source", url="http://example.com", description="A description", dataset=dataset)
-
-
 @pytest.mark.django_db
-@pytest.mark.usefixtures("indicator_data")
 def test_profile_indicator_order(geography: Geography, profile_indicators: List[ProfileIndicator]):
     profile = profile_indicators[0].profile
     pi1, pi2 = profile_indicators
@@ -84,17 +51,16 @@ def test_profile_indicator_order(geography: Geography, profile_indicators: List[
 
 
 @pytest.mark.django_db
-@pytest.mark.usefixtures("indicator_data")
+@pytest.mark.usefixtures("indicatordata")
 def test_profile_indicator_metadata(geography: Geography, profile_indicators: List[ProfileIndicator], metadata: MetaData):
     profile = profile_indicators[0].profile
     output = get_profile_data(profile, [geography])
-    assert output[0]["metadata_source"] == "A source"
-    assert output[0]["metadata_description"] == "A description"
-    assert output[0]["metadata_url"] == "http://example.com"
+    assert output[0]["metadata_source"] == metadata.source
+    assert output[0]["metadata_description"] == metadata.description
+    assert output[0]["metadata_url"] == metadata.url
 
 
 @pytest.mark.django_db
-@pytest.mark.usefixtures("indicator_data")
 def test_get_profile_data(geography: Geography, profile_indicators: List[ProfileIndicator]):
 
     profile = profile_indicators[0].profile
