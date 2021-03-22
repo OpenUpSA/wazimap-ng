@@ -50,9 +50,8 @@ class TestIndicatorDataExtraction:
 
         assert all(no_data(idata) for idata in IndicatorData.objects.exclude(geography=geography))
 
-    def test_old_data_deleted(self, datasetdata, indicator, geographies):
+    def test_old_data_deleted(self, indicator):
         def no_data(x): return len(x.data) == 0
-        geography = geographies[0]
 
         assert IndicatorData.objects.count() == 0
 
@@ -64,7 +63,8 @@ class TestIndicatorDataExtraction:
         assert len(indicator_data_items) == 1
         assert IndicatorData.objects.count() == 1
 
-    def test_three_geographies(self, indicator, datasetdata2, geographies):
+    @pytest.mark.usefixtures("datasetdata2")
+    def test_three_geographies(self, indicator, geographies):
         indicator_data_items = indicator_data_extraction(indicator)
         assert IndicatorData.objects.count() == 3
         assert len(indicator_data_items) == 3
@@ -75,7 +75,8 @@ class TestIndicatorDataExtraction:
             idata = IndicatorData.objects.get(geography=g)
             assert idata.data[0]["geography"] == g.pk
 
-    def test_universe(self, datasetdata, indicator, geographies):
+    @pytest.mark.usefixtures("datasetdata2")
+    def test_universe(self, indicator, geographies):
         geography = geographies[0]
         universe = {"data__gender": "female", "data__age__lt": "17"}
 
