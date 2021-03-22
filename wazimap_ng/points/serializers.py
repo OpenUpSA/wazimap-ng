@@ -3,8 +3,9 @@ from rest_framework import serializers
 from django.core.serializers import serialize
 
 from . import models
-from wazimap_ng.general.serializers import LicenceSerializer, MetaDataSerializer
+from wazimap_ng.general.serializers import MetaDataSerializer
 from wazimap_ng.profile.serializers import SimpleProfileSerializer as ProfileSerializer
+from wazimap_ng.datasets.serializers import LicenceSerializer
 
 class SimpleThemeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,7 +55,7 @@ class ProfileCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.ProfileCategory
-        fields = ('id', 'name', 'description', 'theme', 'metadata',)
+        fields = ("id", "name", "description", "theme", "metadata", "color")
 
 class ThemeSerializer(serializers.ModelSerializer):
     categories = ProfileCategorySerializer(many=True, source="profile_categories")
