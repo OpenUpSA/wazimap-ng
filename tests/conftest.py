@@ -193,11 +193,13 @@ def profile_indicator(profile, indicatordata):
 
 @pytest.fixture
 def profile_key_metric(profile, indicatordata):
+    FEMALE_GROUP_INDEX = 1
     indicator = indicatordata[0].indicator
-    return ProfileKeyMetricsFactory(profile=profile, variable=indicator, subindicator=1)
+    return ProfileKeyMetricsFactory(profile=profile, variable=indicator, subindicator=FEMALE_GROUP_INDEX)
 
 
 @pytest.fixture
 def profile_highlight(profile, indicatordata):
+    FEMALE_GROUP_INDEX = 1
     indicator = indicatordata[0].indicator
-    return ProfileHighlightFactory(profile=profile, indicator=indicator, subindicator=1)
+    return ProfileHighlightFactory(profile=profile, indicator=indicator, subindicator=FEMALE_GROUP_INDEX)
