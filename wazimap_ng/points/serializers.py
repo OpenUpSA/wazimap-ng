@@ -55,7 +55,7 @@ class ProfileCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.ProfileCategory
-        fields = ("id", "name", "description", "theme", "metadata", "color")
+        fields = ("id", "name", "description", "theme", "metadata", "color", 'visible_tooltip_attributes',)
 
 class ThemeSerializer(serializers.ModelSerializer):
     categories = ProfileCategorySerializer(many=True, source="profile_categories")

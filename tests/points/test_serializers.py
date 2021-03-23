@@ -13,6 +13,11 @@ from wazimap_ng.general.serializers import MetaDataSerializer
 from wazimap_ng.points.models import Location, Category
 from wazimap_ng.profile.models import Profile
 
+from tests.points.factories import (
+    ProfileCategoryFactory, CategoryFactory, LocationFactory
+)
+from tests.profile.factories import ProfileFactory
+
 SkipField = locate("rest_framework.fields.SkipField")
 
 class HasContext:
@@ -103,3 +108,21 @@ class TestLocationSerializer:
             .values(id=5, name="test", data=test_data, url="myurl") \
             .mocks("coordinates", "image") \
             .run()
+
+@pytest.mark.django_db
+class TestProfileCategorySerializer:
+
+    def test_keys(self):
+        pf = ProfileCategoryFactory()
+        serializer = ProfileCategorySerializer(pf)
+        assert "id" in serializer.data
+        assert "name" in serializer.data
+        assert "description" in serializer.data
+        assert "theme" in serializer.data
+        assert "metadata" in serializer.data
+        assert "visible_tooltip_attributes" in serializer.data
+
+    def test_attributes(self):
+        pf = ProfileCategoryFactory()
+        serializer = ProfileCategorySerializer(pf)
+        assert serializer.data["visible_tooltip_attributes"] == pf.visible_tooltip_attributes
