@@ -31,7 +31,7 @@ def dynamic_schema(obj):
     schema['items']['enum'] = obj.location_attributes
     return schema
 
-@admin.register(models.ProfileCategory)
+@admin.register(ProfileCategory)
 class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel):
     list_display = ("label", "theme", "order", "category", "profile")
     list_filter = (filters.ProfileFilter, filters.ThemeFilter, filters.CollectionFilter)

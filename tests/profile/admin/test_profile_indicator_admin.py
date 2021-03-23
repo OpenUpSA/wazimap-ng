@@ -43,30 +43,3 @@ class ProfileIndicatorAdminTests(TestCase):
         ma = ProfileIndicatorAdmin(ProfileIndicator, self.site)
         request.method = 'GET'
         self.assertEqual(list(ma.get_form(request, self.profile_indicator).base_fields), ['indicator', 'label', 'subcategory', 'description', 'choropleth_method', 'chart_configuration'])
-
-    def test_subcategories_for_indicator(self):
-        ma = ProfileIndicatorAdmin(ProfileIndicator, self.site)
-        request.method = 'GET'
-        form = ma.get_form(request, self.profile_indicator)()
-
-        self.assertHTMLEqual(
-            str(form["subcategory"]),
-            '<div class="related-widget-wrapper">'
-            '<select name="subcategory" id="id_subcategory" required>'
-            '<option value="" selected>---------</option>'
-            f'<option value="{self.subcategory.id}">{self.profile_indicator.profile.name}: {self.subcategory.category.name} -&gt; {self.subcategory.name}</option>'
-            '</select></div>'
-        )
-
-    def test_subcategories_empty(self):
-        ma = ProfileIndicatorAdmin(ProfileIndicator, self.site)
-        request.method = 'GET'
-        form = ma.get_form(request)()
-
-        self.assertHTMLEqual(
-            str(form["subcategory"]),
-            '<div class="related-widget-wrapper">'
-            '<select name="subcategory" id="id_subcategory" required>'
-            '<option value="" selected>---------</option>'
-            '</select></div>'
-        )
