@@ -23,13 +23,11 @@ def create_groups(dataset, group_names):
     for g in group_names:
         subindicators = list(models.DatasetData.objects.get_unique_subindicators(g))
 
-        group = models.Group.objects.filter(name=g, dataset=dataset).first()
-        if group:
-            group.subindicators = subindicators
-            group.save()
-        else:
-            group = models.Group.objects.create(name=g, dataset=dataset, subindicators=subindicators)
-
+        group, created = models.Group.objects.get_or_create(
+            name=g, dataset=dataset
+        )
+        group.subindicators = subindicators
+        group.save()
         groups.append(group)
     return groups
 
