@@ -22,7 +22,6 @@ class MockSuperUser:
 request = MockRequest()
 request.user = MockSuperUser()
 
-@pytest.mark.focus
 class ProfileIndicatorAdminTests(TestCase):
 
     @classmethod
