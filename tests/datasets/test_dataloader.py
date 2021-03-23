@@ -106,10 +106,10 @@ class TestLoadData:
         assert len(warnings) == 0
         assert len(errors) == 1
 
-    @patch('wazimap_ng.datasets.models.Group.objects')
     @patch('wazimap_ng.datasets.models.DatasetData')
     @patch('wazimap_ng.datasets.dataloader.load_geography')
-    def test_datasetdata_created(self, load_geography, MockDatasetData, group_objects, good_input_with_groups):
+    @patch('wazimap_ng.datasets.dataloader.create_groups')
+    def test_datasetdata_created(self, create_groups, load_geography, MockDatasetData, good_input_with_groups):
         data = good_input_with_groups
         dataset = Mock(spec=models.Dataset)
 
@@ -174,7 +174,7 @@ def subindicatorGroup(dataset):
 @pytest.mark.django_db
 class TestCreateGroups:
 
-    def test_create_groups(self, dataset):
+    def test_create_groups_without_subindicator_in_datasatdata(self, dataset):
         assert dataset.group_set.count() == 0
 
         dataloader.create_groups(dataset, ["group1", "group2"])
@@ -188,14 +188,7 @@ class TestCreateGroups:
         assert groups[1].dataset == dataset
         assert groups[1].subindicators == []
 
-    def test_return_groups(self, dataset):
-
-        groups = dataloader.create_groups(dataset, ["group1", "group2"])
-        assert len(groups) == 2
-        assert groups[0].name == "group1"
-        assert groups[1].name == "group2"
-
-    def test_populates_subindicators(self, dataset, datasetData):
+    def test_groups_with_subindicators_in_datasetdata(self, dataset, datasetData):
 
         groups = dataloader.create_groups(dataset, ["group1", "group2"])
         assert len(groups) == 2
