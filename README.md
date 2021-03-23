@@ -1,4 +1,7 @@
+This is the backend for Wazimap-NG.
+
 # Introduction
+
 Wazimap-NG is the next version of [Wazimap](http://www.wazimap.co.za). It provides a platform for users to bind tabular data to spatial boundaries in order create curated views of datasets. Yes - that's probably too vague a description to understand what it is. Hopefully the images below provide a better description:
 
 <a href="https://postimg.cc/G8XkZRhV" target="_blank"><img src="https://i.postimg.cc/G8XkZRhV/Screen-Shot-2020-09-27-at-09-50-00.png" alt="Screen-Shot-2020-09-27-at-09-50-00"/></a> <a href="https://postimg.cc/MM67PHx1" target="_blank"><img src="https://i.postimg.cc/MM67PHx1/Screen-Shot-2020-09-27-at-09-50-33.png" alt="Screen-Shot-2020-09-27-at-09-50-33"/></a><br/><br/>
@@ -42,19 +45,24 @@ Version 0.8 is due soon and will fix bugs that currently don't have workarounds.
 
 # Local Development
 
-Start the dev server for local development. Before you've created your database, the webserver will break because it can't find the database.
-```bash
-docker-compose up
-```
+Local development is normally done inside docker-compose so that the supporting services are available and the environment is very similar to how the application is run in production.
 
-curl https://wazimap-ng.s3-eu-west-1.amazonaws.com/wazimap_ng-2020203.bak.gz | gunzip -c | docker exec -i wazimap-ng_db_1 pg_restore -U postgres -d wazimap_ng
-```
+Make docker-compose start the supporting services using
 
-If this is the first time you're running this, bring the containers down, then up again
-```bash
-docker-compose down
-docker-compose up
-```
+    docker-compose run --rm web python wait_for_postgres.py
+      
+Run the tests using
+
+    docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
+    
+Start the backend using 
+
+    docker-compose up
+    
+Run Django manage commands inside docker-compose, e.g. create a superuser:
+
+    docker-compose run --rm web python manage.py createsuperuser
+
 
 # Documentation
 These are works in progress:

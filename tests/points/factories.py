@@ -4,6 +4,7 @@ from django.contrib.gis.geos import Point
 
 from wazimap_ng.points.models import Category, CoordinateFile, ProfileCategory, Theme, Location
 from tests.profile.factories import ProfileFactory
+from tests.general.factories import MetaDataFactory
 
 
 class ThemeFactory(factory.django.DjangoModelFactory):
@@ -19,6 +20,8 @@ class CategoryFactory(factory.django.DjangoModelFactory):
         model = Category
 
     profile = factory.SubFactory(ProfileFactory)
+    metadata = factory.SubFactory(MetaDataFactory)
+    
     name = "Category"
 
 
