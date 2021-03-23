@@ -59,13 +59,14 @@ class TestProfileCollectionSerializer:
         serializer = ProfileCategorySerializer(instance=profile_category)
         theme_serializer = InlineThemeSerializer(instance=profile_category.theme)
         metadata_serializer = MetaDataSerializer(instance=profile_category.category.metadata)
-        
+
         assert serializer.data == {
             "id": profile_category.id,
             "name": profile_category.label,
             "description": profile_category.description,
             "theme": theme_serializer.data,
             "metadata": metadata_serializer.data,
+            'visible_tooltip_attributes': ['point_attribute'],
             "color": "red"
         }
 
