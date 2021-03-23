@@ -24,6 +24,7 @@ from wazimap_ng.profile.serializers.profile_indicator_serializer import (
 )
 
 
+
 @pytest.mark.django_db
 def test_profile_indicator_order(geography: Geography, profile_indicators: List[ProfileIndicator]):
     profile = profile_indicators[0].profile

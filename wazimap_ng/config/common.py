@@ -55,6 +55,7 @@ class Common(QCluster, Configuration):
         "treebeard",                 # efficient tree representation
         "django_json_widget",        # admin widget for JSONField
         'whitenoise.runserver_nostatic',
+        "django_admin_json_editor",
 
         "debug_toolbar",
         "django_q",

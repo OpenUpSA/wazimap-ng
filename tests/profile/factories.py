@@ -8,6 +8,7 @@ class ProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Profile
 
+    name = "Profile"
     geography_hierarchy = factory.SubFactory(datasets_factoryboy.GeographyHierarchyFactory)
 
 

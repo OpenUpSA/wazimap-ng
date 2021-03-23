@@ -226,3 +226,38 @@ class TestLocationView(APITestCase):
         self.assert_http_200_ok()
         assert data["type"] == "FeatureCollection"
         assert data["features"] == []
+
+
+    def test_geography_points(self):
+
+        category = CategoryFactory(profile=self.profile)
+        profile_category = ProfileCategoryFactory(
+            profile=self.profile, category=category, theme=self.theme,
+            label="Pc Label 2"
+        )
+        geography = GeographyFactory(
+            version=self.profile.geography_hierarchy.root_geography.version
+        )
+        GeographyBoundaryFactory(geography=geography)
+        LocationFactory(category=category, coordinates=Point(2.0, 2.0))
+
+        response = self.get(
+            "geography-points", profile_id=self.profile.id,
+            geography_code=geography.code
+        )
+        data = response.data
+
+        results = data["results"]
+        assert data["count"] == 2
+
+        # Assert self.category
+        assert results[0]["type"] == "FeatureCollection"
+        assert len(results[0]["features"]) == 1
+        assert results[0]["features"][0]["geometry"]["coordinates"] == [1.0, 1.0]
+        assert results[0]["category"] == "Pc Label"
+
+        # Assert category
+        assert results[1]["type"] == "FeatureCollection"
+        assert len(results[1]["features"]) == 1
+        assert results[1]["features"][0]["geometry"]["coordinates"] == [2.0, 2.0]
+        assert results[1]["category"] == "Pc Label 2"

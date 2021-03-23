@@ -142,3 +142,34 @@ class ThemeList(generics.ListAPIView):
         serializer = self.get_serializer_class()(queryset, many=True)
         data = serializer.data
         return Response(data)
+
+
+class GeoLocationList(generics.ListAPIView):
+    pagination_class = GeoJsonPagination
+    serializer_class = serializers.LocationSerializer
+    queryset = models.Location.objects.all().prefetch_related("category")
+
+    def list(self, request, profile_id, geography_code):
+        try:
+            data = []
+            profile = Profile.objects.get(id=profile_id)
+            profile_categories = models.ProfileCategory.objects.filter(
+                profile_id=profile_id
+            )
+
+            for profile_category in profile_categories:
+                queryset = get_locations(
+                    self.get_queryset(), profile, profile_category.category,
+                    geography_code
+                )
+                serializer = self.get_serializer(queryset, many=True)
+                location_data = serializer.data
+                location_data["category"] = profile_category.label
+                data.append(serializer.data)
+            return Response({
+                "count": len(data),
+                "results": data
+            })
+        except ObjectDoesNotExist as e:
+            logger.exception(e)
+            raise Http404

@@ -18,7 +18,20 @@ class ProfileCategoryAdminForm(ModelForm):
         self.fields['icon'].widget = IconPickerWidget()
 
 
-@admin.register(ProfileCategory)
+DEFAULT_SCHEMA = {
+    'type': 'array',
+    'title': 'tags',
+    'items': {
+        'type': 'string',
+        'enum': []
+    }
+}
+def dynamic_schema(obj):
+    schema = DEFAULT_SCHEMA
+    schema['items']['enum'] = obj.location_attributes
+    return schema
+
+@admin.register(models.ProfileCategory)
 class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel):
     list_display = ("label", "theme", "order", "category", "profile")
     list_filter = (filters.ProfileFilter, filters.ThemeFilter, filters.CollectionFilter)
@@ -33,6 +46,9 @@ class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel):
         }),
         ("Point Collection description fields", {
             'fields': ('label', 'description',)
+        }),
+        ("Point Collection configuration", {
+            'fields': ('visible_tooltip_attributes',)
         }),
     )
     form = ProfileCategoryAdminForm
@@ -60,8 +76,12 @@ class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel):
             assign_perms_to_group(obj.profile.name, obj, is_profile_updated)
         return obj
 
-    def get_form(self, request: HttpRequest, obj: ProfileCategory = None, **kwargs) -> Form:
-        form = super().get_form(request, obj, **kwargs)
+    def get_form(self, request: HttpRequest, obj: ProfileCategory=None, **kwargs) -> Form:
+        schema = DEFAULT_SCHEMA
+        if obj:
+            schema = dynamic_schema(obj)
+        widget = JSONEditorWidget(schema, False)
+        form = super().get_form(request, obj, widgets={'attributes': widget}, **kwargs)
 
         qs = form.base_fields["theme"].queryset
         if obj:

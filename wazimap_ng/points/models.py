@@ -74,6 +74,7 @@ class ProfileCategory(BaseModel):
     icon = models.CharField(max_length=30, null=True, blank=True)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     color = ColorField(blank=True)
+    visible_tooltip_attributes = JSONField(default=dict, null=True, blank=True)
 
     def __str__(self) -> str:
         return self.label
@@ -83,6 +84,11 @@ class ProfileCategory(BaseModel):
         verbose_name_plural = "Profile Collections"
         ordering = ["order"]
 
+    @property
+    def location_attributes(self):
+        locations = Location.objects.filter(category=self.category).values_list('data', flat=True)
+        f = [data.get('key') for location in locations for data in location]
+        return list(set(f))
 
 class CoordinateFile(BaseModel):
     document = models.FileField(

@@ -10,7 +10,6 @@ from .. import models
 
 logger = logging.getLogger(__name__)
 
-
 @transaction.atomic
 def indicator_data_extraction(indicator: Indicator, *args, universe: Universe = None, **kwargs) -> List[IndicatorData]:
 
