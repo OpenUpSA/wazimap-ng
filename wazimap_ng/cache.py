@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.core.cache import cache
 from django.db.models import Q
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.http import Http404
 from django.views.decorators.cache import cache_control
@@ -132,14 +132,17 @@ def subindicator_group_update(sender, instance, **kwargs):
         update_profile_cache(profile_obj)
 
 
+@receiver(post_delete, sender=Location)
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
-    update_point_cache(instance.category)
+    for pc in instance.category.profilecategory_set.all():
+        update_point_cache(pc)
 
 
 @receiver(post_save, sender=Category)
 def point_updated_category(sender, instance, **kwargs):
-    update_point_cache(instance)
+    for pc in instance.profilecategory_set.all():
+        update_point_cache(instance)
 
 
 @receiver(post_save, sender=Indicator)
