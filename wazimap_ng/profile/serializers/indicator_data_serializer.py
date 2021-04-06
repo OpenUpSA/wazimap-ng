@@ -27,6 +27,7 @@ def get_indicator_data(profile, indicators, geographies):
                 geography__in=geographies
             )
             .values(
+                profile_indicator_id=F("indicator__profileindicator__id"),
                 jsdata=F("data"),
                 description=F("indicator__profileindicator__description"),
                 indicator_name=F("indicator__name"),
@@ -106,6 +107,7 @@ def IndicatorDataSerializer(profile, geography):
                              lambda x: "indicators",
                              "profile_indicator_label",
                              lambda x: {
+                                 "id": x["profile_indicator_id"],
                                  "description": x["description"],
                                  "choropleth_method": x["choropleth_method"],
                                  "metadata": {
