@@ -108,7 +108,7 @@ class ProfileIndicator(BaseModel):
     choropleth_method = models.ForeignKey(ChoroplethMethod, null=False, on_delete=models.CASCADE)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     chart_configuration = JSONField(default=dict, blank=True)
-    last_update = models.DateTimeField(auto_now=True)
+    last_updated = models.DateTimeField(auto_now=True, blank=True)
 
     def __str__(self):
         return f"{self.profile.name} -> {self.label}"
