@@ -96,3 +96,39 @@ class TestProfileGeographyData:
 
         assert age_group != wrong_order
 
+@pytest.mark.django_db
+def test_profile_last_update(api_client, profile, indicator_data_items_data):
+    """ProfileIndicator API endpoint should include the last_updated date."""
+    dataset = datasets_factoryboy.DatasetFactory(
+        geography_hierarchy=profile.geography_hierarchy, groups=["age group", "gender"]
+    )
+    indicator = datasets_factoryboy.IndicatorFactory(
+        name="Age by Gender", dataset=dataset, groups=["gender"]
+    )
+    category = profile_factoryboy.IndicatorCategoryFactory(
+        name="Category", profile=profile
+    )
+    subcategory = profile_factoryboy.IndicatorSubcategoryFactory(
+        category=category, name="Subcategory"
+    )
+
+    indicator_data = datasets_factoryboy.IndicatorDataFactory(
+        indicator=indicator,
+        geography=profile.geography_hierarchy.root_geography,
+        data=indicator_data_items_data,
+    )
+    profile_indicator = profile_factoryboy.ProfileIndicatorFactory(
+        label="Indicator", profile=profile, indicator=indicator, subcategory=subcategory
+    )
+    datasets_factoryboy.GroupFactory(
+        name="age group", dataset=dataset, subindicators=["15-19", "20-24"]
+    ),
+    datasets_factoryboy.GroupFactory(
+        name="gender", dataset=dataset, subindicators=["M", "F"]
+    ),
+
+    url = reverse("profile-detail", kwargs={"pk": profile.pk})
+    response = api_client.get(url, format="json")
+    is_last_update_present = response.data.get("indicators")[0].get("last_updated")
+
+    assert bool(is_last_update_present) == True
