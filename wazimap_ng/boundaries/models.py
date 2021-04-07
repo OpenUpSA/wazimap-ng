@@ -3,7 +3,6 @@ from django.db import models
 from django.contrib.gis.db import models
 from ..datasets.models import Geography
 from .fields import CachedMultiPolygonField
-from ..points.models import Location
 from django_q.tasks import async_task
 from wazimap_ng.general.models import BaseModel
 

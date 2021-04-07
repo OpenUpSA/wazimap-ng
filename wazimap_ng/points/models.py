@@ -11,6 +11,7 @@ from wazimap_ng.profile.models import Profile
 from django_q.models import Task
 from wazimap_ng import utils
 from wazimap_ng.general.models import BaseModel
+from wazimap_ng.boundaries.models import GeographyBoundary
 from wazimap_ng.config.common import PERMISSION_TYPES
 from colorfield.fields import ColorField
 
@@ -48,12 +49,24 @@ class Category(BaseModel):
         verbose_name_plural = "Collections"
 
 
+class CustomLocationManager(models.Manager):
+    def bulk_create(self, objs,  batch_size=None, **kwargs):
+        super().bulk_create(objs,  batch_size=None, **kwargs)
+        for obj in objs:
+            geo_boundaries = GeographyBoundary.objects.filter(
+                geom__intersects=obj.coordinates
+            )
+            obj.boundaries.add(*geo_boundaries)
+
+
 class Location(BaseModel):
+    objects = CustomLocationManager()
     name = models.CharField(max_length=255)
     category = models.ForeignKey(Category, related_name="locations", on_delete=models.CASCADE, verbose_name="collection")
     coordinates = models.PointField()
     data = JSONField(default=dict, blank=True)
     url = models.CharField(max_length=150, null=True, blank=True, help_text="Optional url for this point")
+    boundaries = models.ManyToManyField(GeographyBoundary, related_name="locations")
     image = models.ImageField(
         upload_to=get_file_path,
         help_text="Optional image for point",
