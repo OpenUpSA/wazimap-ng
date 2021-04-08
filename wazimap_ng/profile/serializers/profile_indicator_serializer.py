@@ -6,6 +6,7 @@ from wazimap_ng.datasets.models import IndicatorData
 from wazimap_ng.profile.models import ProfileIndicator
 
 from .indicator_data_serializer import get_indicator_data
+from .. import models
 
 
 class ProfileIndicatorSerializer(serializers.ModelSerializer):
