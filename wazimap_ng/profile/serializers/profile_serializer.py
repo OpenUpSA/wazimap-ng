@@ -4,6 +4,7 @@ from wazimap_ng.utils import mergedict
 from wazimap_ng.datasets.serializers import AncestorGeographySerializer
 
 from wazimap_ng.datasets.serializers import GeographyHierarchySerializer
+from wazimap_ng.cms.serializers import ContentSerializer
 from .. import models
 from . import IndicatorDataSerializer, MetricsSerializer, ProfileLogoSerializer, HighlightsSerializer, OverviewSerializer
 from . import ProfileIndicatorSerializer
@@ -16,9 +17,20 @@ class SimpleProfileSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     requires_authentication = serializers.SerializerMethodField('is_authentication_required')
     geography_hierarchy = GeographyHierarchySerializer()
+    configuration = serializers.SerializerMethodField()
 
     def is_authentication_required(self, obj):
         return obj.permission_type == "private"
+
+    def get_configuration(self, obj):
+        configs = obj.configuration
+        for page in obj.page_set.all():
+            content_set = page.content_set.all()
+            if content_set.exists():
+                configs[page.api_mapping] = [
+                    ContentSerializer(content).data for content in content_set
+                ]
+        return configs
 
     class Meta:
         model = models.Profile
@@ -52,9 +64,20 @@ def ExtendedProfileSerializer(profile, geography):
 class FullProfileSerializer(serializers.ModelSerializer):
     indicators = ProfileIndicatorSerializer(source="profileindicator_set", many=True)
     requires_authentication = serializers.SerializerMethodField('is_authentication_required')
+    configuration = serializers.SerializerMethodField()
 
     def is_authentication_required(self, obj):
         return obj.permission_type == "private"
+
+    def get_configuration(self, obj):
+        configs = obj.configuration
+        for page in obj.page_set.all():
+            content_set = page.content_set.all()
+            if content_set.exists():
+                configs[page.api_mapping] = [
+                    ContentSerializer(content).data for content in page.content_set.all()
+                ]
+        return configs
 
     class Meta:
         model = models.Profile

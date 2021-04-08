@@ -100,3 +100,11 @@ class CustomQuerySet(models.QuerySet):
 		return permissions.get_objects_for_user(
 		    user, ProfileCategory
 		).filter(profile__in=profiles)
+
+
+	# CMS
+	def get_cms_content_queryset(self, user):
+		profiles = permissions.get_objects_for_user(
+		    user, Profile, include_public=False
+		)
+		return self.filter(page__profile__in=profiles)

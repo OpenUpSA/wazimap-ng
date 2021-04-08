@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 
 from .. import models
@@ -38,9 +39,11 @@ class CustomGeographyHierarchyFilter(filters.GeographyHierarchyFilter):
     def queryset(self, request, queryset):
         return filter_custom_queryset(self, request, queryset)
 
+
 class CustomProfileFilter(filters.ProfileFilter):
     def queryset(self, request, queryset):
         return filter_custom_queryset(self, request, queryset)
+
 
 class CustomMetadataFilter(filters.DatasetMetaDataFilter):
     def queryset(self, request, queryset):
@@ -84,8 +87,10 @@ class DatasetFileAdmin(BaseAdminModel):
     get_dataset_name.short_description = 'Dataset'
 
     def get_document(self, obj):
+        _, file_extension = os.path.splitext(obj.document.name)
+        doc_name = f'{obj.name}-{obj.id}{file_extension}'
         return mark_safe(
-            f'<a href="{obj.document.url}" download="{obj.name}-{obj.id}.csv">{obj.name}-{obj.id}.csv</a>'
+            f'<a href="{obj.document.url}" download="{doc_name}">{doc_name}</a>'
         )
 
     get_document.short_description = 'Document'
@@ -148,10 +153,14 @@ class DatasetFileAdmin(BaseAdminModel):
                 return obj.task.result
             elif result["error_log"]:
                 download_url = result["error_log"].replace("/app", "")
+                incorrect_csv = result["incorrect_rows_log"].replace("/app", "")
                 df = pd.read_csv(result["error_log"], header=None, sep=",", nrows=10, skiprows=1)
                 error_list = df.values.tolist()
                 result = render_to_string(
-                    'custom/variable_task_errors.html', { 'errors': error_list,'download_url': download_url}
+                    'custom/variable_task_errors.html', {
+                        'errors': error_list,'download_url': download_url,
+                        'incorrect_csv': incorrect_csv
+                    }
                 )
                 return mark_safe(result)
         return "None"
@@ -166,4 +175,3 @@ class DatasetFileAdmin(BaseAdminModel):
 
     def has_change_permission(self, request, obj=None):
         return False
-

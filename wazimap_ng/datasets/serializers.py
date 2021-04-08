@@ -74,4 +74,4 @@ class MetaDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.MetaData
-        fields = ('source', 'description', 'licence',)
+        fields = ('source', 'description', 'licence', 'url')
