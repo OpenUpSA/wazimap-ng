@@ -76,7 +76,7 @@ class LocationList(generics.ListAPIView):
 
 def boundary_point_count_helper(profile, geography):
     boundary = GeographyBoundary.objects.get(geography__code=geography.code, geography__version=geography.version)
-    locations = models.Location.objects.filter(coordinates__contained=boundary.geom)
+    locations = boundary.locations.filter(category__profile=profile)
     location_count = (
         locations
             .filter(category__profilecategory__profile=profile)

@@ -7,7 +7,7 @@ def update_location_boundaries(apps, schema_editor):
     Location = apps.get_model('points', 'Location')
     GeographyBoundary = apps.get_model('boundaries', 'GeographyBoundary')
     for location in Location.objects.all():
-    	geo_boundaries = GeographyBoundary.objects.filter(geom__intersects=location.coordinates)
+    	geo_boundaries = GeographyBoundary.objects.filter(geom__contains=location.coordinates)
     	if geo_boundaries:
 	        location.boundaries.add(*geo_boundaries)
 	        location.save()

@@ -54,7 +54,7 @@ class CustomLocationManager(models.Manager):
         super().bulk_create(objs,  batch_size=None, **kwargs)
         for obj in objs:
             geo_boundaries = GeographyBoundary.objects.filter(
-                geom__intersects=obj.coordinates
+                geom__contains=obj.coordinates
             )
             obj.boundaries.add(*geo_boundaries)
 
