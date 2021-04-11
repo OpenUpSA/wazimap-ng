@@ -7,7 +7,8 @@ import pytest
 from tests.profile.factories import ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory, ProfileIndicatorFactory
 from tests.datasets.factories import DatasetFactory, IndicatorFactory, IndicatorDataFactory, GroupFactory
 
-from wazimap_ng.profile.views import ProfileByUrl
+from wazimap_ng.profile.views import ProfileByUrl, ProfileDetail
+
 
 @pytest.mark.django_db
 class TestProfileGeographyData(APITestCase):
@@ -46,6 +47,17 @@ class TestProfileGeographyData(APITestCase):
         data = response.data["profile_data"]["Category"]["subcategories"]["Subcategory"]["indicators"]["Indicator"]["data"]
 
         assert data == expected_data
+
+
+    def test_profile_last_update(self):
+
+        response = self.get('profile-detail',
+            pk=self.profile.pk
+
+        )
+        is_last_update_present = response.data.get("indicators")[0].get("last_updated")
+        assert bool(is_last_update_present) == True
+
 
 
 @pytest.mark.django_db
