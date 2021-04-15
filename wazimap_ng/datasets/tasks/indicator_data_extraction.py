@@ -32,8 +32,8 @@ class DataAccumulator:
             values_length = len(values)
             if values_length > 0:
                 subindicators = defaultdict(dict)
-                for x in range (values_length -1, -1, -1):
-                    if x == values_length -1:
+                for x in range (values_length - 1, -1, -1):
+                    if x == values_length - 1:
                         subindicators.update({values[x] : count })
                     else:
                         subindicators = ({ values[x] : subindicators})
