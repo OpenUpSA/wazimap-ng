@@ -109,7 +109,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
 
         if request.method == "GET":
             form.group_choices = [["", "-----------"]]
-            form.universe_queryset = models.Universe.objects.none()
+            form.universe_queryset = models.Universe.objects.all()
         else:
             if not obj:
                 dataset_id = request.POST.get('dataset', "")
