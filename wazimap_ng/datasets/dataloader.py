@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 # TODO should add a memoize decorator here
 @functools.lru_cache()
 def load_geography(geo_code, version):
-    geo_code = str(geo_code).upper()
     geography = models.Geography.objects.get(code=geo_code, version=version)
     return geography
 

@@ -42,6 +42,16 @@ def good_input_with_groups():
         {"geography": "YYY", "count": 222, "group1": "B", "group2": "X"},
     ]
 
+@pytest.fixture
+@pytest.mark.django_db
+def create_geography_code():
+    data = models.Geography.objects.create(
+        name='Test Location', code='sa',
+        version='1.0', level='B', depth=50
+    )
+    yield
+    data.delete()
+
 @pytest.mark.django_db
 class TestLoadData:
     pytestmark = pytest.mark.django_db
@@ -79,6 +89,21 @@ class TestLoadData:
         dataloader.loaddata(dataset, good_input, 0)
 
         load_geography.assert_called_with("YYY", 9999)
+
+    @pytest.mark.django_db
+    def test_correct_geography_code(self, create_geography_code):
+        code = 'sa'
+        version = '1.0'
+        try:
+            data = dataloader.load_geography(code, version)
+            assert data.code == code and data.version == version
+        except models.Geography.DoesNotExist:
+            pytest.fail('Unexpected Geography not found error...')
+
+    @pytest.mark.django_db
+    def test_wrong_geography_code(self, create_geography_code):
+        with pytest.raises(models.Geography.DoesNotExist):
+            dataloader.load_geography('SA', '1.0')
 
     @pytest.mark.django_db
     @patch('wazimap_ng.datasets.models.DatasetData')
