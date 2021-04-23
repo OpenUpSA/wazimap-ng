@@ -11,7 +11,8 @@ from django.db.models.functions import Cast
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework_csv import renderers as r
-from rest_framework import generics, viewsets
+from rest_framework import generics, viewsets, status
+
 from .serializers import AncestorGeographySerializer
 from . import serializers
 from . import models
@@ -21,6 +22,8 @@ from ..utils import truthy
 
 from wazimap_ng.profile.models import Profile
 
+from django_q.tasks import async_task
+
 class DatasetList(generics.ListAPIView):
     queryset = models.Dataset.objects.all()
     serializer_class = serializers.DatasetSerializer
@@ -28,6 +31,42 @@ class DatasetList(generics.ListAPIView):
 class DatasetDetailView(generics.RetrieveAPIView):
     queryset = models.Dataset
     serializer_class = serializers.DatasetDetailViewSerializer
+
+
+@api_view(['POST'])
+def dataset_upload(request, dataset_id):
+    dataset = get_object_or_404(models.Dataset, pk=dataset_id)
+
+    if not request.user.groups.filter(name=dataset.profile.name).exists():
+        return Response({
+                'detail': 'You do not have permission to upload to this profile'
+            }, status=status.HTTP_403_FORBIDDEN
+        )
+    file_obj = request.data.get('file', None)
+
+    if not file_obj:
+        return Response({
+                'detail': 'please add file for upload'
+            }, status=status.HTTP_403_FORBIDDEN
+        )
+
+    datasetfile_obj = models.DatasetFile.objects.create(
+        name=dataset.name,
+        document=file_obj,
+        dataset_id=dataset.id
+    )
+
+    task = async_task(
+        "wazimap_ng.datasets.tasks.process_uploaded_file",
+        datasetfile_obj, dataset,
+        task_name=f"Uploading data: {dataset.name}",
+        hook="wazimap_ng.datasets.hooks.process_task_info",
+        key=request.session.session_key,
+        type="upload", assign=True, notify=True
+    )
+
+    return Response({'detail': 'uploaded dataset'}, status=status.HTTP_200_OK)
+
 
 class UniverseListView(generics.ListAPIView):
     queryset = models.Universe.objects.all()
