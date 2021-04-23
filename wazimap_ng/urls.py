@@ -17,6 +17,7 @@ from .general import views as general_views
 from .cache import cache_headers as cache
 
 from wazimap_ng.general.views import logout_view, notifications_view
+from rest_framework.authtoken import views as authtoken_views
 
 def trigger_error(request):
     division_by_zero = 1 / 0
@@ -33,6 +34,10 @@ urlpatterns = [
     path(
         "api/v1/datasets/<int:pk>/", dataset_views.DatasetDetailView.as_view(),
         name="dataset-detail"
+    ),
+    path(
+        "api/v1/datasets/<int:dataset_id>/upload/", dataset_views.dataset_upload,
+        name="dataset-upload"
     ),
     path("api/v1/universe/", dataset_views.UniverseListView.as_view(), name="universe"),
     path(
@@ -150,6 +155,7 @@ urlpatterns = [
         name="all-details-test"
     ),
     path('sentry-debug/', trigger_error),
+    path('api/v1/api-token-auth/', authtoken_views.obtain_auth_token),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
