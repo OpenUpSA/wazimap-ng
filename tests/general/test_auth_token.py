@@ -6,9 +6,7 @@ from rest_framework.authtoken.models import Token
 from tests.datasets.factories import DatasetFactory
 
 
-
 class TestAuthToken(APITestCase):
-        
 
     def test_auth_token_generation(self):
         user1 = self.make_user('user1')
