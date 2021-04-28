@@ -16,8 +16,9 @@ from ..boundaries import views as boundaries_views
 from ..cache import etag_profile_updated, last_modified_profile_updated
 from ..points import views as point_views
 from ..points import models as point_models
-from django_q.tasks import result
 
+from django_q.tasks import result
+from django_q import models as queue_models
 
 def consolidated_profile_helper(profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
@@ -83,15 +84,27 @@ def notifications_view(request):
     })
 
 
+
 @api_view(["GET"])
 def task_record(request, task_id):
     """
     List the result against task id.
     """
     if request.method == "GET":
-        response = dict(id=task_id, status="running")
-        task_id_result = result(task_id=task_id)
-        if task_id_result:
-            response.update({"status": "success"})
-
+        response = dict(id=task_id, status="error")
+        try:
+            is_task_present = queue_models.Task.objects.filter(id=str(task_id)).exists()
+            is_task_executed = queue_models.Task.objects.get(id=str(task_id)).success
+            named_task_outcome = result(task_id=task_id)
+            # looks for results from builtin method 'result' if its none it means its not
+            # executed yet and on the same time looks if 'id' is present in table of task or not
+            # note : once the task is executed or has error it is placed in table otherwise
+            # in 'running' state it isn't added to table 'Task'
+            if not named_task_outcome and not is_task_present:
+                response.update({"status": "running"})
+            elif is_task_present and is_task_executed:
+                response.update({"status": "success"})
+        except queue_models.Task.DoesNotExist:
+            response.update({"status": "not found"})
         return Response(response)
+
