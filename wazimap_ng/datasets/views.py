@@ -101,8 +101,7 @@ def dataset_upload(request, dataset_id):
         task_name=f"Uploading data: {dataset.name}",
         hook="wazimap_ng.datasets.hooks.process_task_info",
         key=request.session.session_key,
-        type="upload", assign=True, notify=False, email=True,
-        user_id=request.user.id
+        type="upload", assign=True, notify=False
     )
     response["upload_task_id"] = upload_task
 
