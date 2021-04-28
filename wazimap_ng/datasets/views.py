@@ -62,6 +62,7 @@ class DatasetList(generics.ListCreateAPIView):
                 key=request.session.session_key,
                 type="upload", assign=True, notify=True
             )
+            response["upload_task_id"] = task
 
         return response
 
@@ -86,6 +87,7 @@ def dataset_upload(request, dataset_id):
                 'detail': 'please add file for upload'
             }, status=status.HTTP_403_FORBIDDEN
         )
+    response = serializers.DatasetDetailViewSerializer(dataset).data
 
     datasetfile_obj = models.DatasetFile.objects.create(
         name=dataset.name,
@@ -93,16 +95,37 @@ def dataset_upload(request, dataset_id):
         dataset_id=dataset.id
     )
 
-    task = async_task(
+    upload_task = async_task(
         "wazimap_ng.datasets.tasks.process_uploaded_file",
         datasetfile_obj, dataset,
         task_name=f"Uploading data: {dataset.name}",
         hook="wazimap_ng.datasets.hooks.process_task_info",
         key=request.session.session_key,
-        type="upload", assign=True, notify=True
+        type="upload", assign=True, notify=False, email=True,
+        user_id=request.user.id
     )
+    response["upload_task_id"] = upload_task
 
-    return Response({'detail': 'uploaded dataset'}, status=status.HTTP_200_OK)
+    indicator_tasks = []
+    if request.POST.get('update', False):
+        for obj in dataset.indicator_set.all():
+            task = async_task(
+                "wazimap_ng.datasets.tasks.indicator_data_extraction",
+                obj,
+                task_name=f"Data Extraction: {obj.name}",
+                hook="wazimap_ng.datasets.hooks.process_task_info",
+                key=request.session.session_key,
+                type="data_extraction", assign=False, notify=False
+            )
+            indicator_tasks.append({
+                'id': obj.id,
+                'name': obj.name,
+                'task_id': task
+            })
+
+        response["updated_indicators"] = indicator_tasks
+
+    return Response(response, status=status.HTTP_200_OK)
 
 
 class UniverseListView(generics.ListAPIView):
