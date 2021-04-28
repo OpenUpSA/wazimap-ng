@@ -16,7 +16,8 @@ from .boundaries import views as boundaries_views
 from .general import views as general_views
 from .cache import cache_headers as cache
 
-from wazimap_ng.general.views import logout_view, notifications_view
+from wazimap_ng.general.views import logout_view, notifications_view, task_record
+
 
 def trigger_error(request):
     division_by_zero = 1 / 0
@@ -30,6 +31,7 @@ urlpatterns = [
     # Api
     path("api/v1/rest-auth/", include("rest_auth.urls")),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view(), name="dataset"),
+    path("api/v1/tasks/<task_id>/", task_record, name="task_id_track"),
     path(
         "api/v1/datasets/<int:pk>/", dataset_views.DatasetDetailView.as_view(),
         name="dataset-detail"
@@ -111,7 +113,7 @@ urlpatterns = [
     re_path(r"^$", RedirectView.as_view(url="/api/v1/datasets/", permanent=False)),
     path("api/v1/data/points/collections/", cache(points_views.CategoryList.as_view())),
     path("api/v1/data/points/collections/profile/<int:profile_id>", cache(points_views.CategoryList.as_view())),
-    
+
 
     path(
         "api/v1/boundaries/",

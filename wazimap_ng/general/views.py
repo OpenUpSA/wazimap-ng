@@ -16,6 +16,8 @@ from ..boundaries import views as boundaries_views
 from ..cache import etag_profile_updated, last_modified_profile_updated
 from ..points import views as point_views
 from ..points import models as point_models
+from django_q.tasks import result
+
 
 def consolidated_profile_helper(profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
@@ -79,3 +81,17 @@ def notifications_view(request):
         "task_list": task_list,
         "notifications": messages,
     })
+
+
+@api_view(["GET"])
+def task_record(request, task_id):
+    """
+    List the result against task id.
+    """
+    if request.method == "GET":
+        response = dict(id=task_id, status="running")
+        task_id_result = result(task_id=task_id)
+        if task_id_result:
+            response.update({"status": "success"})
+
+        return Response(response)
