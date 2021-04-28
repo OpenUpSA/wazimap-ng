@@ -62,7 +62,7 @@ class DatasetList(generics.ListCreateAPIView):
                 key=request.session.session_key,
                 type="upload", assign=True, notify=True
             )
-            response["upload_task_id"] = task
+            response.data["upload_task_id"] = task
 
         return response
 
