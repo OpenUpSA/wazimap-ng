@@ -94,36 +94,18 @@ def dataset_upload(request, dataset_id):
         document=file_obj,
         dataset_id=dataset.id
     )
-
+    update_indicators = request.POST.get('update', False)
     upload_task = async_task(
         "wazimap_ng.datasets.tasks.process_uploaded_file",
         datasetfile_obj, dataset,
         task_name=f"Uploading data: {dataset.name}",
         hook="wazimap_ng.datasets.hooks.process_task_info",
         key=request.session.session_key,
-        type="upload", assign=True, notify=False
+        type="upload", assign=True, notify=False,
+        update_indicators=update_indicators
     )
+
     response["upload_task_id"] = upload_task
-
-    indicator_tasks = []
-    if request.POST.get('update', False):
-        for obj in dataset.indicator_set.all():
-            task = async_task(
-                "wazimap_ng.datasets.tasks.indicator_data_extraction",
-                obj,
-                task_name=f"Data Extraction: {obj.name}",
-                hook="wazimap_ng.datasets.hooks.process_task_info",
-                key=request.session.session_key,
-                type="data_extraction", assign=False, notify=False
-            )
-            indicator_tasks.append({
-                'id': obj.id,
-                'name': obj.name,
-                'task_id': task
-            })
-
-        response["updated_indicators"] = indicator_tasks
-
     return Response(response, status=status.HTTP_200_OK)
 
 
