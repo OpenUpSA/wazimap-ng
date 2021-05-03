@@ -32,13 +32,13 @@ def create_groups(dataset, group_names):
 
 
 @transaction.atomic
-def loaddata(dataset, iterable, row_number, reset=False):
+def loaddata(dataset, iterable, row_number, overwrite=False):
     datarows = []
     errors = []
     warnings = []
     groups = set()
 
-    if reset:
+    if overwrite:
         logger.debug(f"Deleting previously uploaded data for this dataset")
         dataset.datasetdata_set.all().delete()
 
