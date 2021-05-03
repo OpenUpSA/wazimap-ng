@@ -95,9 +95,11 @@ def dataset_upload(request, dataset_id):
         dataset_id=dataset.id
     )
     update_indicators = request.POST.get('update', False)
+    overwrite = request.POST.get('overwrite', False)
+
     upload_task = async_task(
         "wazimap_ng.datasets.tasks.process_uploaded_file",
-        datasetfile_obj, dataset, reset=True,
+        datasetfile_obj, dataset, reset=overwrite,
         task_name=f"Uploading data: {dataset.name}",
         hook="wazimap_ng.datasets.hooks.process_task_info",
         key=request.session.session_key,
