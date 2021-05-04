@@ -28,10 +28,11 @@ def process_file_data(df, dataset, row_number, overwrite=False):
     datasource = (dict(d[1]) for d in df.iterrows())
     return loaddata(dataset, datasource, row_number, overwrite)
 
-
 def process_csv(dataset, buffer, overwrite=False, chunksize=1000000):
-    encoding, wrapper_file = get_stream_reader(buffer)
-    _, columns = clean_columns(wrapper_file)
+    encoding = detect_encoding(buffer)
+    StreamReader = codecs.getreader(encoding)
+    wrapper_file = StreamReader(buffer)
+    wrapper_file.seek(0)
     row_number = 1
     df = pd.read_csv(wrapper_file, nrows=1, dtype=str, sep=",", encoding=encoding)
     df.dropna(how='all', axis='columns', inplace=True)
