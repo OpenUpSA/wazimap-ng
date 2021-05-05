@@ -1,10 +1,15 @@
 import logging
 
 from django.contrib.sessions.models import Session
+from django.contrib.auth.models import User
 from django.urls import reverse
 
 from django_q.tasks import async_task
 from .models import Indicator
+
+from django.core import mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 import json
 
@@ -84,6 +89,8 @@ def process_task_info(task):
     assign_task = task.kwargs.get("assign", False)
     update_indicators = task.kwargs.get("update_indicators", False)
     session_key = task.kwargs.get("key", False)
+    email_notification = task.kwargs.get("email", False)
+    user_id = task.kwargs.get("user_id", False)
     results = task.result or {}
     obj = next(iter(task.args))
 
@@ -117,6 +124,27 @@ def process_task_info(task):
                     key=session_key,
                     type="data_extraction", assign=False, notify=False
                 )
+
+    if email_notification and user_id:
+        user = User.objects.filter(id=user_id).first()
+
+        if user and user.email:
+            dataset = task.args[1]
+            complete_type = "Success" if task.success else "Failure"
+            subject = F"{complete_type} Report: Upload complete for dataset {dataset.name}"
+
+            context = {
+                "dataset": dataset,
+                "task": task,
+                "user": user,
+                "subject": "subject"
+            }
+            html_message = render_to_string('emailTemplates/upload_task_notification.html', context)
+            plain_message = strip_tags(html_message)
+            from_email = 'From <openup@org.ca>'
+            to = user.email
+            mail.send_mail(subject, plain_message, from_email, [to], html_message=html_message)
+
 
 def notify_user(notification_type, session_key, message, task_id=None):
     """
