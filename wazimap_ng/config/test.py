@@ -35,3 +35,8 @@ class Test(Common):
     }
 
     FILE_SIZE_LIMIT = 3000 * 1024 * 1024
+
+    Q_CLUSTER = {
+        "redis": os.environ.get("REDIS_URL"),
+        "sync": True
+    }

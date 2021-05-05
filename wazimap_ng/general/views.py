@@ -1,3 +1,5 @@
+import logging
+
 from django.views.decorators.http import condition
 from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404, redirect
@@ -17,8 +19,10 @@ from ..cache import etag_profile_updated, last_modified_profile_updated
 from ..points import views as point_views
 from ..points import models as point_models
 
-from django_q.tasks import result
-from django_q import models as queue_models
+from django_q.tasks import result, fetch
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 def consolidated_profile_helper(profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
@@ -86,25 +90,18 @@ def notifications_view(request):
 
 
 @api_view(["GET"])
-def task_record(request, task_id):
+def task_status(request, task_id):
     """
-    List the result against task id.
+    List the result for a task id
+    We don't check if the task exist, since we can't get it from django until it's either errored or done
     """
     if request.method == "GET":
         response = dict(id=task_id, status="error")
-        try:
-            is_task_present = queue_models.Task.objects.filter(id=str(task_id)).exists()
-            is_task_executed = queue_models.Task.objects.get(id=str(task_id)).success
-            named_task_outcome = result(task_id=task_id)
-            # looks for results from builtin method 'result' if its none it means its not
-            # executed yet and on the same time looks if 'id' is present in table of task or not
-            # note : once the task is executed or has error it is placed in table otherwise
-            # in 'running' state it isn't added to table 'Task'
-            if not named_task_outcome and not is_task_present:
-                response.update({"status": "running"})
-            elif is_task_present and is_task_executed:
-                response.update({"status": "success"})
-        except queue_models.Task.DoesNotExist:
-            response.update({"status": "not found"})
+        task = fetch(task_id)
+        if not task:
+            response.update({"status": "running"})
+            return Response(response)
+        if task.success:
+            response.update({"status": "success"})
+            return Response(response)
         return Response(response)
-

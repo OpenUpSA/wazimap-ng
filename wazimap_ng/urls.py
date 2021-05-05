@@ -16,7 +16,7 @@ from .boundaries import views as boundaries_views
 from .general import views as general_views
 from .cache import cache_headers as cache
 
-from wazimap_ng.general.views import logout_view, notifications_view, task_record
+from wazimap_ng.general.views import logout_view, notifications_view, task_status
 
 
 def trigger_error(request):
@@ -31,7 +31,6 @@ urlpatterns = [
     # Api
     path("api/v1/rest-auth/", include("rest_auth.urls")),
     path("api/v1/datasets/", dataset_views.DatasetList.as_view(), name="dataset"),
-    path("api/v1/tasks/<task_id>/", task_record, name="task_id_track"),
     path(
         "api/v1/datasets/<int:pk>/", dataset_views.DatasetDetailView.as_view(),
         name="dataset-detail"
@@ -151,6 +150,7 @@ urlpatterns = [
         cache(general_views.consolidated_profile_test),
         name="all-details-test"
     ),
+    path("api/v1/tasks/<str:task_id>/", task_status, name="task_status"),
     path('sentry-debug/', trigger_error),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
