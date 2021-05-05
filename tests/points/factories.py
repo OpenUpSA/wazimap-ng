@@ -2,8 +2,9 @@ import factory
 
 from django.contrib.gis.geos import Point
 
-from wazimap_ng.points.models import Category, ProfileCategory, Theme, Location
+from wazimap_ng.points.models import Category, CoordinateFile, ProfileCategory, Theme, Location
 from tests.profile.factories import ProfileFactory
+from tests.general.factories import MetaDataFactory
 
 
 class ThemeFactory(factory.django.DjangoModelFactory):
@@ -19,6 +20,8 @@ class CategoryFactory(factory.django.DjangoModelFactory):
         model = Category
 
     profile = factory.SubFactory(ProfileFactory)
+    metadata = factory.SubFactory(MetaDataFactory)
+    
     name = "Category"
 
 
@@ -30,6 +33,7 @@ class ProfileCategoryFactory(factory.django.DjangoModelFactory):
     category = factory.SubFactory(CategoryFactory)
     theme = factory.SubFactory(ThemeFactory)
     label = "Pc Label"
+    visible_tooltip_attributes = ['point_attribute']
 
 
 class LocationFactory(factory.django.DjangoModelFactory):
@@ -40,3 +44,10 @@ class LocationFactory(factory.django.DjangoModelFactory):
     name = "Location"
     coordinates = Point(1.0, 1.0)
     data = {}
+
+
+class CoordinateFileFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CoordinateFile
+
+    document = factory.django.FileField()

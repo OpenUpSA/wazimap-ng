@@ -1,8 +1,11 @@
 from django import forms
+from django.core.exceptions import ValidationError
 
-from ... import models
 from wazimap_ng.general.widgets import VariableFilterWidget
 from django_json_widget.widgets import JSONEditorWidget
+
+from ... import models
+
 
 class ProfileIndicatorAdminForm(forms.ModelForm):
     class Meta:
@@ -11,5 +14,4 @@ class ProfileIndicatorAdminForm(forms.ModelForm):
         widgets = {
             'indicator': VariableFilterWidget,
             'chart_configuration': JSONEditorWidget,
-
         }

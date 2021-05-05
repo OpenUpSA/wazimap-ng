@@ -21,12 +21,16 @@ class Common(QCluster, Configuration):
 
     SERVER_INSTANCE = os.environ.get("SERVER_INSTANCE", "Dev")
     RELEASE = f"{SERVER_INSTANCE}"
+    SENTRY_ENVIRONMENT = f"BE_{SERVER_INSTANCE}"
     SENTRY_DSN = os.environ.get("SENTRY_DSN", None)
+    SENTRY_PERF_SAMPLE_RATE = os.environ.get("SENTRY_PERF_SAMPLE_RATE", 0.1)
 
     if SENTRY_DSN:
         sentry_sdk.init(SENTRY_DSN,
             integrations=[DjangoIntegration(), RedisIntegration()],
             send_default_pii=True,
+            traces_sample_rate=SENTRY_PERF_SAMPLE_RATE,
+            environment=SENTRY_ENVIRONMENT,
             release=RELEASE
         )
 
@@ -51,6 +55,7 @@ class Common(QCluster, Configuration):
         "treebeard",                 # efficient tree representation
         "django_json_widget",        # admin widget for JSONField
         'whitenoise.runserver_nostatic',
+        "django_admin_json_editor",
 
         "debug_toolbar",
         "django_q",
@@ -69,6 +74,7 @@ class Common(QCluster, Configuration):
         "wazimap_ng.boundaries",
         "wazimap_ng.profile",
         "wazimap_ng.general",
+        "wazimap_ng.cms",
 
     ]
 
