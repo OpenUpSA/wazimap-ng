@@ -60,7 +60,8 @@ class DatasetList(generics.ListCreateAPIView):
                 task_name=f"Uploading data: {dataset_obj.name}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
-                type="upload", assign=True, notify=True
+                type="upload", assign=True, notify=True, email=True,
+                user_id=request.user.id
             )
             response.data["upload_task_id"] = task
 
@@ -104,7 +105,8 @@ def dataset_upload(request, dataset_id):
         hook="wazimap_ng.datasets.hooks.process_task_info",
         key=request.session.session_key,
         type="upload", assign=True, notify=False,
-        update_indicators=update_indicators
+        update_indicators=update_indicators, email=True,
+        user_id=request.user.id
     )
 
     response["upload_task_id"] = upload_task
