@@ -23,12 +23,12 @@ def detect_encoding(buffer):
     detector.close()
     return detector.result["encoding"]
 
-def process_file_data(df, dataset, row_number):
+def process_file_data(df, dataset, row_number, overwrite=False):
     df = df.applymap(lambda s:s.strip() if type(s) == str else s)
     datasource = (dict(d[1]) for d in df.iterrows())
-    return loaddata(dataset, datasource, row_number)
+    return loaddata(dataset, datasource, row_number, overwrite)
 
-def process_csv(dataset, buffer, chunksize=1000000):
+def process_csv(dataset, buffer, overwrite=False, chunksize=1000000):
     encoding = detect_encoding(buffer)
     StreamReader = codecs.getreader(encoding)
     wrapper_file = StreamReader(buffer)
@@ -45,7 +45,7 @@ def process_csv(dataset, buffer, chunksize=1000000):
     for df in pd.read_csv(wrapper_file, chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1, encoding=encoding):
         df.dropna(how='all', axis='columns', inplace=True)
         df.columns = columns
-        errors, warnings = process_file_data(df, dataset, row_number)
+        errors, warnings = process_file_data(df, dataset, row_number, overwrite)
         error_logs = error_logs + errors
         warning_logs = warning_logs + warnings
         row_number = row_number + chunksize
@@ -71,6 +71,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     filename = dataset_file.document.name
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
+    overwrite = kwargs.get("overwrite", False)
     logger.debug(f"Processing: {filename}")
 
     columns = None
@@ -80,7 +81,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     if ".csv" in filename:
         logger.debug(f"Processing as csv")
-        csv_output = process_csv(dataset, dataset_file.document.open("rb"), chunksize)
+        csv_output = process_csv(dataset, dataset_file.document.open("rb"), overwrite, chunksize)
         error_logs = csv_output["error_logs"]
         warning_logs = csv_output["warning_logs"]
         columns = csv_output["columns"]
@@ -102,7 +103,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
             else:
                 df.dropna(how='any', axis='columns', inplace=True)
                 df.columns = columns
-                errors, warnings = process_file_data(df, dataset, row_number)
+                errors, warnings = process_file_data(df, dataset, row_number, overwrite)
                 error_logs = error_logs + errors
                 warning_logs = warning_logs + warnings
                 row_number = row_number + chunksize

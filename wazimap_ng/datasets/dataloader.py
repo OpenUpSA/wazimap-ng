@@ -28,11 +28,15 @@ def create_groups(dataset, group_names):
 
 
 @transaction.atomic
-def loaddata(dataset, iterable, row_number):
+def loaddata(dataset, iterable, row_number, overwrite=False):
     datarows = []
     errors = []
     warnings = []
     groups = set()
+
+    if overwrite:
+        logger.debug(f"Deleting previously uploaded data for this dataset")
+        dataset.datasetdata_set.all().delete()
 
     version = dataset.geography_hierarchy.version
 

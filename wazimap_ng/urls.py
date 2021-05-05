@@ -34,6 +34,10 @@ urlpatterns = [
         "api/v1/datasets/<int:pk>/", dataset_views.DatasetDetailView.as_view(),
         name="dataset-detail"
     ),
+    path(
+        "api/v1/datasets/<int:dataset_id>/upload/", dataset_views.dataset_upload,
+        name="dataset-upload"
+    ),
     path("api/v1/universe/", dataset_views.UniverseListView.as_view(), name="universe"),
     path(
         "api/v1/datasets/<int:dataset_id>/indicators/",

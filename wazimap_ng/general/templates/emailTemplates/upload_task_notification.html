@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ subject }}</title>
+  </head>
+  <body>
+    Hello {{user.username}},
+
+    {% if task.success %}
+    <p>Upload process for {{dataset.name}} is finished successfully.</p>
+    {% else %}
+    <p> Upload process for {{dataset.name}} has failed.</p>
+    {% endif %}
+    <p>Please checkout <a href="">{{task.id}}</a> for further details of the process.</p>
+
+    <p>Thanks,<br /> Openup Team</p>
+  </body>
+</html>

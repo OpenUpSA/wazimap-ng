@@ -8,10 +8,13 @@ from django.conf import settings
 from django.forms.models import model_to_dict
 from django.db.models import Q, CharField
 from django.db.models.functions import Cast
+from django_q.tasks import async_task
+
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework_csv import renderers as r
-from rest_framework import generics, viewsets
+from rest_framework import generics, viewsets, status
+
 from .serializers import AncestorGeographySerializer
 from . import serializers
 from . import models
@@ -20,14 +23,95 @@ from ..profile.models import Logo
 from ..utils import truthy
 
 from wazimap_ng.profile.models import Profile
+from wazimap_ng.general.services.permissions import assign_perms_to_group
 
-class DatasetList(generics.ListAPIView):
+class DatasetList(generics.ListCreateAPIView):
     queryset = models.Dataset.objects.all()
     serializer_class = serializers.DatasetSerializer
+
+
+    def post(self, request, *args, **kwargs):
+        profile_id = request.data.get("profile")
+        profile = get_object_or_404(Profile, pk=profile_id)
+        if not request.user.groups.filter(name=profile.name).exists():
+            return Response({
+                    'detail': 'You do not have permission to upload to this profile'
+                }, status=status.HTTP_403_FORBIDDEN
+            )
+        response = self.create(request, *args, **kwargs)
+
+        dataset_obj = models.Dataset.objects.filter(id=response.data["id"]).first()
+
+        # Assign dataset object permission to profile group
+        assign_perms_to_group(profile.name, dataset_obj, False)
+
+        # Get and create dataset file if user has sent file while creating dataset
+        file_obj = request.data.get('file', None)
+        if file_obj:
+            datasetfile_obj = models.DatasetFile.objects.create(
+                name=dataset_obj.name,
+                document=file_obj,
+                dataset_id=dataset_obj.id
+            )
+
+            task = async_task(
+                "wazimap_ng.datasets.tasks.process_uploaded_file",
+                datasetfile_obj, dataset_obj,
+                task_name=f"Uploading data: {dataset_obj.name}",
+                hook="wazimap_ng.datasets.hooks.process_task_info",
+                key=request.session.session_key,
+                type="upload", assign=True, notify=True, email=True,
+                user_id=request.user.id
+            )
+            response.data["upload_task_id"] = task
+
+        return response
 
 class DatasetDetailView(generics.RetrieveAPIView):
     queryset = models.Dataset
     serializer_class = serializers.DatasetDetailViewSerializer
+
+
+@api_view(['POST'])
+def dataset_upload(request, dataset_id):
+    dataset = get_object_or_404(models.Dataset, pk=dataset_id)
+
+    if not request.user.groups.filter(name=dataset.profile.name).exists():
+        return Response({
+                'detail': 'You do not have permission to upload to this profile'
+            }, status=status.HTTP_403_FORBIDDEN
+        )
+    file_obj = request.data.get('file', None)
+
+    if not file_obj:
+        return Response({
+                'detail': 'please add file for upload'
+            }, status=status.HTTP_403_FORBIDDEN
+        )
+    response = serializers.DatasetDetailViewSerializer(dataset).data
+
+    datasetfile_obj = models.DatasetFile.objects.create(
+        name=dataset.name,
+        document=file_obj,
+        dataset_id=dataset.id
+    )
+    update_indicators = request.POST.get('update', False)
+    overwrite = request.POST.get('overwrite', False)
+
+    upload_task = async_task(
+        "wazimap_ng.datasets.tasks.process_uploaded_file",
+        datasetfile_obj, dataset, overwrite=overwrite,
+        task_name=f"Uploading data: {dataset.name}",
+        hook="wazimap_ng.datasets.hooks.process_task_info",
+        key=request.session.session_key,
+        type="upload", assign=True, notify=False,
+        update_indicators=update_indicators, email=True,
+        user_id=request.user.id
+    )
+
+    response["upload_task_id"] = upload_task
+    return Response(response, status=status.HTTP_200_OK)
+
 
 class UniverseListView(generics.ListAPIView):
     queryset = models.Universe.objects.all()
