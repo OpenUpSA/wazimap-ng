@@ -6,11 +6,16 @@ from wazimap_ng.general.services.permissions import get_user_group
 class DatasetAdminForm(forms.ModelForm):
     import_dataset = forms.FileField(required=False)
 
-    def clean_profile(self):
+    def clean(self):
         cleaned_data = super(DatasetAdminForm, self).clean()
-        if cleaned_data['profile'] is None:
-            raise forms.ValidationError('Profile is not set.')
-        return cleaned_data['profile']
+
+        profile = cleaned_data.get('profile', None)
+        permission_type = cleaned_data.get('permission_type', None)
+
+        if not profile:
+            if permission_type == 'private':
+                raise forms.ValidationError('Profile should be set for private permissions.')
+        return cleaned_data
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
