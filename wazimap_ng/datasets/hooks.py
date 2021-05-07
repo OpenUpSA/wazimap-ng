@@ -92,6 +92,7 @@ def process_task_info(task):
     email_notification = task.kwargs.get("email", False)
     user_id = task.kwargs.get("user_id", False)
     results = task.result or {}
+    task_type = task.kwargs.get("type", False)
     obj = next(iter(task.args))
 
     if assign_task:
@@ -101,7 +102,6 @@ def process_task_info(task):
     if notify:
         notification_type = "success" if task.success else "error"
 
-        task_type = task.kwargs.get("type", False)
         message = task.kwargs.get("message", None)
 
         # Get message
@@ -122,24 +122,39 @@ def process_task_info(task):
                     task_name=f"Data Extraction: {obj.name}",
                     hook="wazimap_ng.datasets.hooks.process_task_info",
                     key=session_key,
-                    type="data_extraction", assign=False, notify=False
+                    type="data_extraction", assign=False, notify=False,
+                    user_id=user_id, email=email_notification
                 )
 
     if email_notification and user_id:
         user = User.objects.filter(id=user_id).first()
+        complete_type = "Success" if task.success else "Failure"
 
         if user and user.email:
-            dataset = task.args[1]
-            complete_type = "Success" if task.success else "Failure"
-            subject = F"{complete_type} Report: Upload complete for dataset {dataset.name}"
+            if task_type == "upload":
+                dataset = task.args[1]
+                subject = F"{complete_type} Report: Upload complete for dataset {dataset.name}"
 
-            context = {
-                "dataset": dataset,
-                "task": task,
-                "user": user,
-                "subject": "subject"
-            }
-            html_message = render_to_string('emailTemplates/upload_task_notification.html', context)
+                context = {
+                    "dataset": dataset,
+                    "task": task,
+                    "user": user,
+                    "subject": subject
+                }
+                html_message = render_to_string('emailTemplates/upload_task_notification.html', context)
+
+            elif task_type == "data_extraction":
+                indicator = obj
+                subject = F"{complete_type} Report: Indicator data extraction completed for {indicator.name}"
+
+                context = {
+                    "indicator": indicator,
+                    "task": task,
+                    "user": user,
+                    "subject": subject
+                }
+                html_message = render_to_string('emailTemplates/indicator_extraction_task_notification.html', context)
+
             plain_message = strip_tags(html_message)
             from_email = 'From <openup@org.ca>'
             to = user.email
