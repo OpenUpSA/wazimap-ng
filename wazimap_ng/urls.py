@@ -82,6 +82,11 @@ urlpatterns = [
         name="profile-subcategories",
     ),
     path(
+        "api/v1/profiles/<int:profile_id>/subcategories/",
+        cache(profile_views.ProfileSubcategoriesList.as_view()),
+        name="profile-subcategories-list",
+    ),
+    path(
         "api/v1/profiles/<int:profile_id>/geographies/<str:geography_code>/",
         cache(profile_views.profile_geography_data),
         name="profile-geography-data",
