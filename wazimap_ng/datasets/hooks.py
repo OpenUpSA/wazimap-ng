@@ -125,7 +125,7 @@ def process_task_info(task):
                     type="data_extraction", assign=False, notify=False
                 )
 
-    if email_notification and user_id:
+    if email_notification and user_id and not task.success:
         user = User.objects.filter(id=user_id).first()
 
         if user and user.email:
