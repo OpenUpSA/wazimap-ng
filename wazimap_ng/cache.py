@@ -10,7 +10,7 @@ from django.views.decorators.cache import cache_control
 from django.views.decorators.vary import vary_on_headers
 
 from wazimap_ng.datasets.models import Group, Geography, DatasetData, GeographyHierarchy
-from wazimap_ng.points.models import Location, Category
+from wazimap_ng.points.models import Location, Category, ProfileCategory
 from wazimap_ng.profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, \
     ProfileKeyMetrics, Profile, Indicator
 from wazimap_ng.profile.services import authentication
@@ -82,8 +82,7 @@ def update_profile_cache(profile):
     cache.set(key, datetime.now())
 
 
-def update_point_cache(category):
-    profile = category.profile
+def update_point_cache(profile, category):
     key1 = location_key % (profile.id, category.id)
 
     logger.debug(f"Set cache key (category): {key1}")
@@ -136,13 +135,23 @@ def subindicator_group_update(sender, instance, **kwargs):
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
     for pc in instance.category.profilecategory_set.all():
-        update_point_cache(pc)
+        update_point_cache(pc.profile, pc)
+        update_profile_cache(pc.profile)
 
 
 @receiver(post_save, sender=Category)
 def point_updated_category(sender, instance, **kwargs):
-    for pc in instance.profilecategory_set.all():
-        update_point_cache(instance)
+    profile_categoies = instance.profilecategory_set.all()
+    for pc in profile_categoies:
+        update_point_cache(pc.profile, pc)
+        update_profile_cache(pc.profile)
+
+
+@receiver(post_delete, sender=ProfileCategory)
+@receiver(post_save, sender=ProfileCategory)
+def point_updated_profile_category(sender, instance, **kwargs):
+    update_point_cache(instance.profile, instance)
+    update_profile_cache(instance.profile)
 
 
 @receiver(post_save, sender=Indicator)
