@@ -9,7 +9,7 @@ def save_profile_category(apps, schema_editor):
         new_tooltip_data = []
 
         if isinstance(tooltip, dict):
-            new_tooltip_data = tooltip.values()
+            new_tooltip_data = list(tooltip.values())
 
         data.visible_tooltip_attributes = new_tooltip_data
         data.save()
