@@ -12,9 +12,8 @@ class DatasetAdminForm(forms.ModelForm):
         profile = cleaned_data.get('profile', None)
         permission_type = cleaned_data.get('permission_type', None)
 
-        if not profile:
-            if permission_type == 'private':
-                raise forms.ValidationError('Profile should be set for private permissions.')
+        if permission_type == 'private' and profile is None:
+            raise forms.ValidationError('Profile should be set for private permissions.')
         return cleaned_data
 
     def __init__(self, *args, **kwargs):
