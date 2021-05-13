@@ -50,7 +50,11 @@ Local development is normally done inside docker-compose so that the supporting 
 Make docker-compose start the supporting services using
 
     docker-compose run --rm web python wait_for_postgres.py
-      
+    
+Run Django migrations with
+
+    docker-compose run --rm web python manage.py migrate
+    
 Run the tests using
 
     docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
