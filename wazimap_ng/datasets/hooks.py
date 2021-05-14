@@ -10,6 +10,7 @@ from .models import Indicator
 from django.core import mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from wazimap_ng.config.common import STAFF_EMAIL_ADDRESS
 
 import json
 
@@ -89,7 +90,9 @@ def process_task_info(task):
     assign_task = task.kwargs.get("assign", False)
     update_indicators = task.kwargs.get("update_indicators", False)
     session_key = task.kwargs.get("key", False)
-    email_notification = task.kwargs.get("email", False)
+    email_notification_on_failure_only = task.kwargs.get(
+        "email_on_failure", True
+    )
     user_id = task.kwargs.get("user_id", False)
     results = task.result or {}
     obj = next(iter(task.args))
@@ -125,7 +128,7 @@ def process_task_info(task):
                     type="data_extraction", assign=False, notify=False
                 )
 
-    if email_notification and user_id and not task.success:
+    if email_notification_on_failure_only and user_id and not task.success:
         user = User.objects.filter(id=user_id).first()
 
         if user and user.email:
@@ -141,7 +144,7 @@ def process_task_info(task):
             }
             html_message = render_to_string('emailTemplates/upload_task_notification.html', context)
             plain_message = strip_tags(html_message)
-            from_email = 'From <openup@org.ca>'
+            from_email = F'From <{STAFF_EMAIL_ADDRESS}>'
             to = user.email
             mail.send_mail(subject, plain_message, from_email, [to], html_message=html_message)
 
