@@ -111,7 +111,8 @@ class DatasetAdmin(DatasetBaseAdminModel):
         super().save_model(request, obj, form, change)
 
         if is_new or is_profile_updated:
-            assign_perms_to_group(obj.profile.name, obj, is_profile_updated)
+            if obj.profile is not None:
+                assign_perms_to_group(obj.profile.name, obj, is_profile_updated)
 
         dataset_import_file = form.cleaned_data.get("import_dataset", None)
 

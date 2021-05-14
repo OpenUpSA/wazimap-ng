@@ -13,6 +13,7 @@ class ThemeFactory(factory.django.DjangoModelFactory):
 
     profile = factory.SubFactory(ProfileFactory)
     name = "Theme"
+    order = factory.Sequence(lambda n: n)
 
 
 class CategoryFactory(factory.django.DjangoModelFactory):
