@@ -140,7 +140,7 @@ def process_task_info(task):
                 "dataset": dataset,
                 "task": task,
                 "user": user,
-                "subject": "subject"
+                "subject": subject
             }
             html_message = render_to_string('emailTemplates/upload_task_notification.html', context)
             plain_message = strip_tags(html_message)
