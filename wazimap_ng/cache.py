@@ -89,35 +89,43 @@ def update_point_cache(profile, category):
     cache.set(key1, datetime.now())
 
 
+@receiver(post_delete, sender=ProfileIndicator)
 @receiver(post_save, sender=ProfileIndicator)
 def profile_indicator_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
+@receiver(post_delete, sender=ProfileHighlight)
 @receiver(post_save, sender=ProfileHighlight)
 def profile_highlight_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
+@receiver(post_delete, sender=IndicatorCategory)
 @receiver(post_save, sender=IndicatorCategory)
 def profile_category_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
+@receiver(post_delete, sender=IndicatorSubcategory)
 @receiver(post_save, sender=IndicatorSubcategory)
 def profile_subcategory_updated(sender, instance, **kwargs):
     update_profile_cache(instance.category.profile)
 
 
+@receiver(post_delete, sender=ProfileKeyMetrics)
 @receiver(post_save, sender=ProfileKeyMetrics)
 def profile_keymetrics_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
+@receiver(post_delete, sender=Profile)
 @receiver(post_save, sender=Profile)
 def profile_updated(sender, instance, **kwargs):
     update_profile_cache(instance)
 
+
+@receiver(post_delete, sender=Group)
 @receiver(post_save, sender=Group)
 def subindicator_group_update(sender, instance, **kwargs):
     indicator_ids = instance.dataset.indicator_set.values_list("id", flat=True)
@@ -139,6 +147,7 @@ def point_updated_location(sender, instance, **kwargs):
         update_profile_cache(pc.profile)
 
 
+@receiver(post_delete, sender=Category)
 @receiver(post_save, sender=Category)
 def point_updated_category(sender, instance, **kwargs):
     profile_categoies = instance.profilecategory_set.all()
@@ -154,6 +163,7 @@ def point_updated_profile_category(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
+@receiver(post_delete, sender=Indicator)
 @receiver(post_save, sender=Indicator)
 def indicator_updated(sender, instance, **kwargs):
     indicator_id = instance.id
@@ -166,6 +176,7 @@ def indicator_updated(sender, instance, **kwargs):
         update_profile_cache(profile_obj)
 
 
+@receiver(post_delete, sender=Geography)
 @receiver(post_save, sender=Geography)
 def geography_updated(sender, instance, **kwargs):
 
@@ -189,6 +200,7 @@ def geography_updated(sender, instance, **kwargs):
         update_profile_cache(profile)
 
 
+@receiver(post_delete, sender=GeographyHierarchy)
 @receiver(post_save, sender=GeographyHierarchy)
 def geography_hierarchy_updated(sender, instance, **kwargs):
     for profile in instance.profile_set.all():
