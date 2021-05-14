@@ -126,7 +126,7 @@ def process_task_info(task):
                     user_id=user_id, email=email_notification
                 )
 
-    if email_notification and user_id:
+    if email_notification and user_id and not task.success:
         user = User.objects.filter(id=user_id).first()
         complete_type = "Success" if task.success else "Failure"
 

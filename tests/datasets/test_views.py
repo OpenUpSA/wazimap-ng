@@ -17,7 +17,6 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django_q.tasks import fetch
-from django.core import mail
 
 
 class TestDatasetUploadView(APITestCase):
@@ -150,7 +149,6 @@ class TestDatasetUploadView(APITestCase):
         assert DatasetData.objects.filter(dataset=dataset).count() == 1
         data = DatasetData.objects.filter(dataset=dataset).first()
         assert data.data == {'test': 'x1', 'count': '11'}
-        assert mail.outbox[0].subject == 'Success Report: Upload complete for dataset dataset-2'
 
     def test_successful_request_for_updating_dataset(self):
 
@@ -177,7 +175,6 @@ class TestDatasetUploadView(APITestCase):
         data = DatasetData.objects.filter(dataset=self.dataset)
         assert data.first().data == {'test': 'y1', 'count': '22'}
         assert data.last().data == {'test': 'x1', 'count': '11'}
-        assert mail.outbox[0].subject == 'Success Report: Upload complete for dataset dataset-1'
 
 
     def test_updating_dataset_with_overwrite(self):
@@ -243,7 +240,6 @@ class TestDatasetUploadView(APITestCase):
             {'test': 'x1', 'count': '11'}
         ]
         assert self.dataset.datasetdata_set.count() == 2
-        assert mail.outbox[0].subject == 'Success Report: Indicator data extraction completed for test-indicator'
 
 
     def test_updating_dataset_with_indicator_update_and_overwrite(self):
