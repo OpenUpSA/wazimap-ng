@@ -334,7 +334,7 @@ PERMISSION_TYPES = (
 
 STAFF_GROUPS = ["ProfileAdmin", "DataAdmin"]
 
-STAFF_EMAIL_ADDRESS = "openup@org.ca"
+STAFF_EMAIL_ADDRESS = os.getenv("STAFF_EMAIL_ADDRESS", "openup@org.ca")
 
 
 if TESTING:
