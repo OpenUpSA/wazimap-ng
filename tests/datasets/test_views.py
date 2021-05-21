@@ -48,7 +48,7 @@ class TestDatasetUploadView(APITestCase):
         self.variable = IndicatorFactory(dataset=self.dataset)
         IndicatorDataFactory(
             indicator=self.variable, geography=geography,
-            data=[{'test': 'y1', 'count': '22'}]
+            data={'groups': {}, 'subindicators': {'y1': 22.0}}
         )
         
         # Upload csv related data
@@ -218,7 +218,7 @@ class TestDatasetUploadView(APITestCase):
         client.force_authenticate(user=user1, token=token)
 
         data = self.variable.indicatordata_set.all().first()
-        assert data.data == [{'test': 'y1', 'count': '22'}]
+        assert data.data == {'groups': {}, 'subindicators': {'y1': 22.0}}
         assert self.dataset.datasetdata_set.count() == 1
 
         url = reverse('dataset-upload', args=(self.dataset.id,))
@@ -235,10 +235,7 @@ class TestDatasetUploadView(APITestCase):
 
         assert self.dataset.id == response.data["id"]
         data = self.variable.indicatordata_set.all().first()
-        assert data.data == [
-            {'test': 'y1', 'count': '22'},
-            {'test': 'x1', 'count': '11'}
-        ]
+        assert data.data == {'groups': {}, 'subindicators': {'x1': 11.0, 'y1': 22.0}}
         assert self.dataset.datasetdata_set.count() == 2
 
 
@@ -251,7 +248,7 @@ class TestDatasetUploadView(APITestCase):
         client.force_authenticate(user=user1, token=token)
 
         data = self.variable.indicatordata_set.all().first()
-        assert data.data == [{'test': 'y1', 'count': '22'}]
+        assert data.data == {'groups': {}, 'subindicators': {'y1': 22.0}}
         assert self.dataset.datasetdata_set.count() == 1
 
         url = reverse('dataset-upload', args=(self.dataset.id,))
@@ -269,5 +266,5 @@ class TestDatasetUploadView(APITestCase):
 
         assert self.dataset.id == response.data["id"]
         data = self.variable.indicatordata_set.all().first()
-        assert data.data == [{'test': 'x1', 'count': '11'}]
+        assert data.data == {'groups': {}, 'subindicators': {'x1': 11.0}}
         assert self.dataset.datasetdata_set.count() == 1
