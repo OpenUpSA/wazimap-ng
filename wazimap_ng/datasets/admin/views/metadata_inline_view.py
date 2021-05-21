@@ -1,7 +1,5 @@
 from django.contrib import admin
 
-import lorem
-
 from ... import models
 
 
@@ -15,5 +13,5 @@ class MetaDataInline(admin.StackedInline):
 
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name == "description":
-            db_field.default = lorem.paragraph()
+            db_field.default = "Representation of data gathered from various sources"
         return super().formfield_for_dbfield(db_field, **kwargs)
