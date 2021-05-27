@@ -20,7 +20,7 @@ def load_geography(geo_code, version):
 def create_groups(dataset, group_names):
     groups = []
     for g in group_names:
-        subindicators = list(models.DatasetData.objects.get_unique_subindicators(g))
+        subindicators = list(models.DatasetData.objects.filter(dataset_id=dataset.id).get_unique_subindicators(g))
 
         group, created = models.Group.objects.get_or_create(
             name=g, dataset=dataset
