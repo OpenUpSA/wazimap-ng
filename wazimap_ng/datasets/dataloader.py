@@ -17,7 +17,7 @@ def load_geography(geo_code, version):
     return geography
 
 
-def create_groups(dataset, group_names):
+def create_groups(dataset, group_names, can_aggregate=False):
     groups = []
     for g in group_names:
         subindicators = list(models.DatasetData.objects.get_unique_subindicators(g))
@@ -26,18 +26,20 @@ def create_groups(dataset, group_names):
             name=g, dataset=dataset
         )
         group.subindicators = subindicators
+        group.can_aggregate = can_aggregate
         group.save()
         groups.append(group)
     return groups
 
 
 @transaction.atomic
-def loaddata(dataset, iterable, row_number, overwrite=False):
+def loaddata(
+        dataset, iterable, row_number, overwrite=False, can_aggregate=False
+    ):
     datarows = []
     errors = []
     warnings = []
     groups = set()
-
     if overwrite:
         logger.debug(f"Deleting previously uploaded data for this dataset")
         dataset.datasetdata_set.all().delete()
@@ -90,6 +92,6 @@ def loaddata(dataset, iterable, row_number, overwrite=False):
 
     group_list = sorted(g for g in groups if g.lower() not in ("count", "geography"))
 
-    create_groups(dataset, group_list)
+    create_groups(dataset, group_list, can_aggregate)
 
     return [errors, warnings]

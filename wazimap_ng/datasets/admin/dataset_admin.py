@@ -63,6 +63,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
         ("Dataset Imports", {
             "fields": (
                 "import_dataset", "imported_dataset",
+                "can_aggregate",
             )
         }),
     )
@@ -115,6 +116,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
                 assign_perms_to_group(obj.profile.name, obj, is_profile_updated)
 
         dataset_import_file = form.cleaned_data.get("import_dataset", None)
+        can_aggregate = form.cleaned_data.get("can_aggregate", False)
 
         logger.debug(f"Dataset import file: {dataset_import_file}")
 
@@ -138,7 +140,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
 
             task = async_task(
                 "wazimap_ng.datasets.tasks.process_uploaded_file",
-                datasetfile_obj, obj,
+                datasetfile_obj, obj,can_aggregate=can_aggregate,
                 task_name=f"Uploading data: {obj.name}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,

@@ -5,6 +5,7 @@ from wazimap_ng.general.services.permissions import get_user_group
 
 class DatasetAdminForm(forms.ModelForm):
     import_dataset = forms.FileField(required=False)
+    can_aggregate = forms.BooleanField(required=False, initial=True)
 
     def clean(self):
         cleaned_data = super(DatasetAdminForm, self).clean()
