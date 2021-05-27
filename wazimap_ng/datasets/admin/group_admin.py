@@ -12,12 +12,12 @@ from .base_admin_model import DatasetBaseAdminModel
 from wazimap_ng.general.admin import filters
 
 class GroupDatasetFilter(filters.DatasetFilter):
-    parameter_name = 'dataset__name'
-    lookup_fields = ["name", "name"]
+    parameter_name = 'dataset_id'
+    lookup_fields = ["id", "name"]
 
 class GroupProfileFilter(filters.ProfileFilter):
-    parameter_name = 'dataset__profile__name'
-    lookup_fields = ["name", "name"]
+    parameter_name = 'dataset__profile_id'
+    lookup_fields = ["id", "name"]
 
 
 
