@@ -57,7 +57,7 @@ class GroupAdmin(DatasetBaseAdminModel):
 
     fieldsets = (
         ("General", {
-            'fields': ('name', 'dataset')
+            'fields': ('name', 'dataset', 'can_aggregate')
         }),
         ("Subindicators", {
           'fields': ('subindicators',)
