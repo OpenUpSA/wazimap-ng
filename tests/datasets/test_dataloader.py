@@ -263,3 +263,19 @@ class TestCreateGroups:
         assert len(groups) == 2
         assert groups[0].subindicators == ["A", "B", "C"]
         assert groups[1].subindicators == ["X", "Y"]
+
+    def test_new_dataset(self, dataset, datasetData, subindicatorGroup):
+        dataset = DatasetFactory()
+
+        DatasetDataFactory(
+            dataset=dataset, data={
+                'group1': 'D', 'group2': 'Z'
+            }
+        )
+
+        groups = dataloader.create_groups(dataset, ["group1", "group2"])
+
+        assert len(groups) == 2
+        assert groups[0].subindicators == ["D"]
+        assert groups[1].subindicators == ["Z"]
+
