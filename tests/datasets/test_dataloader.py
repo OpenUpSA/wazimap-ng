@@ -264,7 +264,8 @@ class TestCreateGroups:
         assert groups[0].subindicators == ["A", "B", "C"]
         assert groups[1].subindicators == ["X", "Y"]
 
-    def test_new_dataset(self, dataset, datasetData, subindicatorGroup):
+    def test_new_dataset_subindicators(self, dataset, datasetData, subindicatorGroup):
+        # Re-instantiate DatasetFactory to get a new dataset ID, create groups with unique subindicators and check that only subindicators from this dataset exist
         dataset = DatasetFactory()
 
         DatasetDataFactory(
