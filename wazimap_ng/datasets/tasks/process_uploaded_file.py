@@ -1,16 +1,44 @@
-import os
-import pandas as pd
 import logging
 
 from django.db import transaction
 from django.conf import settings
+import pandas as pd
+
+from wazimap_ng.general.services.csv_helpers import csv_logger
+from wazimap_ng.utils import get_stream_reader, clean_columns
 
 from ..dataloader import loaddata
-from .. import models
-
-from wazimap_ng.general.services.permissions import assign_perms_to_group
 
 logger = logging.getLogger(__name__)
+
+
+def process_file_data(df, dataset, row_number, overwrite=False):
+    df = df.applymap(lambda s:s.strip() if type(s) == str else s)
+    datasource = (dict(d[1]) for d in df.iterrows())
+    return loaddata(dataset, datasource, row_number, overwrite)
+
+
+def process_csv(dataset, buffer, overwrite=False, chunksize=1000000):
+    encoding, wrapper_file = get_stream_reader(buffer)
+    _, columns = clean_columns(wrapper_file)
+    row_number = 1
+    error_logs = [];
+    warning_logs = [];
+
+    wrapper_file.seek(0)
+    for df in pd.read_csv(wrapper_file, chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1, encoding=encoding):
+        df.dropna(how='all', axis='columns', inplace=True)
+        df.columns = columns
+        errors, warnings = process_file_data(df, dataset, row_number, overwrite)
+        error_logs = error_logs + errors
+        warning_logs = warning_logs + warnings
+        row_number = row_number + chunksize
+
+    return {
+        "error_logs": error_logs,
+        "warning_logs": warning_logs,
+        "columns": columns
+    }
 
 
 @transaction.atomic
@@ -24,13 +52,10 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     Get header index for geography & count and create Result objects.
     """
-    def process_file_data(df, dataset, row_number):
-        df = df.applymap(lambda s:s.capitalize().strip() if type(s) == str else s)
-        datasource = (dict(d[1]) for d in df.iterrows())
-        return loaddata(dataset, datasource, row_number)
 
     filename = dataset_file.document.name
     chunksize = getattr(settings, "CHUNK_SIZE_LIMIT", 1000000)
+    overwrite = kwargs.get("overwrite", False)
     logger.debug(f"Processing: {filename}")
 
     columns = None
@@ -40,24 +65,17 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     if ".csv" in filename:
         logger.debug(f"Processing as csv")
-        df = pd.read_csv(dataset_file.document.open(), nrows=1, dtype=str, sep=",")
-        df.dropna(how='all', axis='columns', inplace=True)
-        columns = df.columns.str.lower()
-
-        for df in pd.read_csv(dataset_file.document.open(), chunksize=chunksize, dtype=str, sep=",", header=None, skiprows=1):
-            df.dropna(how='all', axis='columns', inplace=True)
-            df.columns = columns
-            errors, warnings = process_file_data(df, dataset, row_number)
-            error_logs = error_logs + errors
-            warning_logs = warning_logs + warnings
-            row_number = row_number + chunksize
+        csv_output = process_csv(dataset, dataset_file.document.open("rb"), overwrite, chunksize)
+        error_logs = csv_output["error_logs"]
+        warning_logs = csv_output["warning_logs"]
+        columns = csv_output["columns"]
     else:
         logger.debug("Process as other filetype")
         skiprows = 1
         i_chunk = 0
         df = pd.read_excel(dataset_file.document.open(), nrows=1, dtype=str)
         df.dropna(how='any', axis='columns', inplace=True)
-        columns = df.columns.str.lower()
+        columns = df.columns.str.lower().str.strip()
         while True:
             df = pd.read_excel(
                 dataset_file.document.open(), nrows=chunksize, skiprows=skiprows, header=None
@@ -69,7 +87,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
             else:
                 df.dropna(how='any', axis='columns', inplace=True)
                 df.columns = columns
-                errors, warnings = process_file_data(df, dataset, row_number)
+                errors, warnings = process_file_data(df, dataset, row_number, overwrite)
                 error_logs = error_logs + errors
                 warning_logs = warning_logs + warnings
                 row_number = row_number + chunksize
@@ -77,33 +95,26 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
 
     groups = [group for group in columns.to_list() if group not in ["geography", "count"]]
 
-    dataset.groups =  list(set(groups + dataset.groups))
+    dataset.groups = list(set(groups + dataset.groups))
     dataset.save()
 
+    error_file_log = incorrect_file_log = None
     if error_logs:
-        logger.error(error_logs)
-        logdir = settings.MEDIA_ROOT + "/logs/dataset/errors/"
-        if not os.path.exists(logdir):
-            os.makedirs(logdir)
-        logfile = logdir + "%s_%d_error_log.csv" % (dataset.name.replace(" ", "_"), dataset_file.id)
-        df = pd.DataFrame(error_logs)
-        df.to_csv(logfile, header=["Line Number", "Field Name", "Error Details"], index=False)
-        error_logs = logfile
+        error_file_log, incorrect_file_log = csv_logger(
+            dataset, dataset_file, "error", error_logs, columns
+        )
 
     if warning_logs:
-        logdir = settings.MEDIA_ROOT + "/logs/dataset/warnings/"
-        if not os.path.exists(logdir):
-            os.makedirs(logdir)
-        logfile = logdir + "%s_%d_warnings.csv" % (dataset.name.replace(" ", "_"), dataset.id)
-        df = pd.DataFrame(warning_logs)
-        df.to_csv(logfile, header=columns, index=False)
-        warning_logs = logfile
+        warning_logs, = csv_logger(
+            dataset, dataset_file, "warning", warning_logs, columns
+        )
 
     return {
         "model": "datasetfile",
         "name": dataset.name,
         "id": dataset_file.id,
         "dataset_id": dataset.id,
-        "error_log": error_logs or None,
+        "error_log": error_file_log,
+        "incorrect_rows_log": incorrect_file_log,
         "warning_log": warning_logs or None
     }

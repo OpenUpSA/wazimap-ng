@@ -3,13 +3,14 @@ from datetime import datetime
 
 from django.core.cache import cache
 from django.db.models import Q
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.http import Http404
 from django.views.decorators.cache import cache_control
 from django.views.decorators.vary import vary_on_headers
 
-from wazimap_ng.points.models import Location, Category
+from wazimap_ng.datasets.models import Group, Geography, DatasetData, GeographyHierarchy
+from wazimap_ng.points.models import Location, Category, ProfileCategory
 from wazimap_ng.profile.models import ProfileIndicator, ProfileHighlight, IndicatorCategory, IndicatorSubcategory, \
     ProfileKeyMetrics, Profile, Indicator
 from wazimap_ng.profile.services import authentication
@@ -81,54 +82,88 @@ def update_profile_cache(profile):
     cache.set(key, datetime.now())
 
 
-def update_point_cache(category):
-    profile = category.profile
+def update_point_cache(profile, category):
     key1 = location_key % (profile.id, category.id)
 
     logger.debug(f"Set cache key (category): {key1}")
     cache.set(key1, datetime.now())
 
 
+@receiver(post_delete, sender=ProfileIndicator)
 @receiver(post_save, sender=ProfileIndicator)
 def profile_indicator_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
+@receiver(post_delete, sender=ProfileHighlight)
 @receiver(post_save, sender=ProfileHighlight)
 def profile_highlight_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
+@receiver(post_delete, sender=IndicatorCategory)
 @receiver(post_save, sender=IndicatorCategory)
 def profile_category_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
+@receiver(post_delete, sender=IndicatorSubcategory)
 @receiver(post_save, sender=IndicatorSubcategory)
 def profile_subcategory_updated(sender, instance, **kwargs):
     update_profile_cache(instance.category.profile)
 
 
+@receiver(post_delete, sender=ProfileKeyMetrics)
 @receiver(post_save, sender=ProfileKeyMetrics)
 def profile_keymetrics_updated(sender, instance, **kwargs):
     update_profile_cache(instance.profile)
 
 
+@receiver(post_delete, sender=Profile)
 @receiver(post_save, sender=Profile)
-def profile_indicator_updated(sender, instance, **kwargs):
+def profile_updated(sender, instance, **kwargs):
     update_profile_cache(instance)
 
 
+@receiver(post_delete, sender=Group)
+@receiver(post_save, sender=Group)
+def subindicator_group_update(sender, instance, **kwargs):
+    indicator_ids = instance.dataset.indicator_set.values_list("id", flat=True)
+    profiles_to_invalidate_cache = Profile.objects.filter(
+        Q(id=instance.dataset.profile_id)
+        | Q(profileindicator__indicator_id__in=indicator_ids)
+        | Q(profilekeymetrics__variable_id__in=indicator_ids)
+        | Q(profilehighlight__indicator_id__in=indicator_ids)
+    ).distinct()
+    for profile_obj in profiles_to_invalidate_cache:
+        update_profile_cache(profile_obj)
+
+
+@receiver(post_delete, sender=Location)
 @receiver(post_save, sender=Location)
 def point_updated_location(sender, instance, **kwargs):
-    update_point_cache(instance.category)
+    for pc in instance.category.profilecategory_set.all():
+        update_point_cache(pc.profile, pc)
+        update_profile_cache(pc.profile)
 
 
+@receiver(post_delete, sender=Category)
 @receiver(post_save, sender=Category)
 def point_updated_category(sender, instance, **kwargs):
-    update_point_cache(instance)
+    profile_categoies = instance.profilecategory_set.all()
+    for pc in profile_categoies:
+        update_point_cache(pc.profile, pc)
+        update_profile_cache(pc.profile)
 
 
+@receiver(post_delete, sender=ProfileCategory)
+@receiver(post_save, sender=ProfileCategory)
+def point_updated_profile_category(sender, instance, **kwargs):
+    update_point_cache(instance.profile, instance)
+    update_profile_cache(instance.profile)
+
+
+@receiver(post_delete, sender=Indicator)
 @receiver(post_save, sender=Indicator)
 def indicator_updated(sender, instance, **kwargs):
     indicator_id = instance.id
@@ -139,6 +174,37 @@ def indicator_updated(sender, instance, **kwargs):
     ).distinct()
     for profile_obj in profiles_to_invalidate_cache:
         update_profile_cache(profile_obj)
+
+
+@receiver(post_delete, sender=Geography)
+@receiver(post_save, sender=Geography)
+def geography_updated(sender, instance, **kwargs):
+
+    # dataset data objs
+    dataset_data_profile_ids = list(instance.datasetdata_set.values_list(
+        "dataset__profile", flat=True
+    ).order_by("dataset__profile").distinct())
+
+    # indicator data objs
+    indicator_data_profile_ids = list(instance.indicatordata_set.values_list(
+        "indicator__dataset__profile", flat=True
+    ).order_by("indicator__dataset__profile").distinct())
+
+    # Get hierarchy profile linked to 
+    hierarchy_profile_ids = list(instance.geographyhierarchy_set.values_list(
+        "profile", flat=True
+    ).order_by("profile").distinct())
+
+    profile_ids = set(dataset_data_profile_ids + indicator_data_profile_ids + hierarchy_profile_ids)
+    for profile in Profile.objects.filter(id__in=set(profile_ids)):
+        update_profile_cache(profile)
+
+
+@receiver(post_delete, sender=GeographyHierarchy)
+@receiver(post_save, sender=GeographyHierarchy)
+def geography_hierarchy_updated(sender, instance, **kwargs):
+    for profile in instance.profile_set.all():
+        update_profile_cache(profile)
 
 
 def cache_headers(func):

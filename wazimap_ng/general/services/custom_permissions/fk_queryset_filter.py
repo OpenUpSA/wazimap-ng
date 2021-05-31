@@ -4,6 +4,7 @@ from .. import permissions
 from wazimap_ng.profile.models import Profile
 from wazimap_ng.points.models import Category
 from wazimap_ng.datasets.models import Dataset
+from wazimap_ng.cms.models import Page
 
 
 class CustomFKQuerySet(models.QuerySet):
@@ -51,3 +52,9 @@ class CustomFKQuerySet(models.QuerySet):
 
 	def get_dataset_queryset(self, user):
 		return permissions.get_objects_for_user(user, Dataset)
+
+	def get_page_queryset(self, user):
+		profiles = permissions.get_objects_for_user(
+		    user, Profile, include_public=False
+		)
+		return self.filter(profile__in=profiles)

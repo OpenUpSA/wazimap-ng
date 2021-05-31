@@ -3,6 +3,9 @@ import logging
 from django.contrib.sessions.models import Session
 from django.urls import reverse
 
+from django_q.tasks import async_task
+from .models import Indicator
+
 import json
 
 logger = logging.getLogger(__name__)
@@ -79,6 +82,9 @@ def process_task_info(task):
     """
     notify = task.kwargs.get("notify", False)
     assign_task = task.kwargs.get("assign", False)
+    update_indicators = task.kwargs.get("update_indicators", False)
+    session_key = task.kwargs.get("key", False)
+    results = task.result or {}
     obj = next(iter(task.args))
 
     if assign_task:
@@ -88,10 +94,8 @@ def process_task_info(task):
     if notify:
         notification_type = "success" if task.success else "error"
 
-        session_key = task.kwargs.get("key", False)
         task_type = task.kwargs.get("type", False)
         message = task.kwargs.get("message", None)
-        results = task.result or {}
 
         # Get message
         notify = Notify()
@@ -100,6 +104,19 @@ def process_task_info(task):
 
         # Add message to user
         notify_user(notification_type, session_key, message, task.id)
+
+    if update_indicators:
+        if "dataset_id" in results:
+            indicators = Indicator.objects.filter(dataset_id=int(results["dataset_id"]))
+            for obj in indicators:
+                async_task(
+                    "wazimap_ng.datasets.tasks.indicator_data_extraction",
+                    obj,
+                    task_name=f"Data Extraction: {obj.name}",
+                    hook="wazimap_ng.datasets.hooks.process_task_info",
+                    key=session_key,
+                    type="data_extraction", assign=False, notify=False
+                )
 
 def notify_user(notification_type, session_key, message, task_id=None):
     """
