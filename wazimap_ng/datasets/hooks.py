@@ -126,7 +126,7 @@ def process_task_info(task):
                     hook="wazimap_ng.datasets.hooks.process_task_info",
                     key=session_key,
                     type="data_extraction", assign=False, notify=False,
-                    user_id=user_id, email=email_notification
+                    user_id=user_id, email=email_notification_on_failure_only
                 )
 
     if email_notification_on_failure_only and user_id and not task.success:
