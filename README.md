@@ -46,10 +46,6 @@ Version 0.8 is due soon and will fix bugs that currently don't have workarounds.
 # Local Development
 
 Local development is normally done inside docker-compose so that the supporting services are available and the environment is very similar to how the application is run in production.
-
-Make docker-compose start the supporting services using
-
-    docker-compose run --rm web python wait_for_postgres.py
     
 Run Django migrations with
 
@@ -67,6 +63,12 @@ Run Django manage commands inside docker-compose, e.g. create a superuser:
 
     docker-compose run --rm web python manage.py createsuperuser
 
+## Loading initial Data
+
+Download the shapefiles necessary for creating Geography and therefore Geography Hierarchies here: https://wazimap-ng.s3-eu-west-1.amazonaws.com/initial_data/za-simplified.zip
+Run the following command to import ZA into Geographies: 
+
+    docker-compose run --rm web python manage.py loadshp za_simplified.zip Region_cod=code,Parent_g_3=parent_code,Region_nam=name,Shape_Area=area planning_region version_0
 
 # Documentation
 These are works in progress:
