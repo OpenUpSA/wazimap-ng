@@ -18,9 +18,9 @@ def remove_duplicate_groups(apps, schema_editor):
         # one time
         for group in groups.values("name").annotate(gc=Count("name")):
 
-            # Filter group by name and order by -created
+            # Filter group by name and order by updated
             # So we can get latest updated group
-            filtered_group = groups.filter(name=group["name"]).order_by("-modified")
+            filtered_group = groups.filter(name=group["name"]).order_by("-updated")
             last_updated_group = filtered_group.first()
 
             # if count of groups in greater than one 
