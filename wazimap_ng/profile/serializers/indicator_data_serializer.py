@@ -56,6 +56,7 @@ def get_dataset_groups(profile: Profile) -> Dict:
     dataset_groups = (
         Group.objects
         .filter(dataset__indicator__profileindicator__profile=profile)
+        .distinct()
         .values(
             "subindicators",
             "dataset",
