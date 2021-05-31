@@ -44,7 +44,8 @@ def get_indicator_data(profile, indicators, geographies):
                 licence_name=F("indicator__dataset__metadata__licence__name"),
                 indicator_chart_configuration=F("indicator__profileindicator__chart_configuration"),
                 geography_code=F("geography__code"),
-                primary_group=F("indicator__groups")
+                primary_group=F("indicator__groups"),
+                last_updated_at=F("indicator__profileindicator__updated"),
             )
             .order_by("indicator__profileindicator__order")
             )
@@ -110,6 +111,7 @@ def IndicatorDataSerializer(profile, geography):
                                  "id": x["profile_indicator_id"],
                                  "description": x["description"],
                                  "choropleth_method": x["choropleth_method"],
+                                 "last_updated_at": x["last_updated_at"],
                                  "metadata": {
                                      "source": x["metadata_source"],
                                      "description": x["metadata_description"],
