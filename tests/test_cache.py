@@ -126,7 +126,7 @@ def test_update_point_cache_signal(mock_datetime):
 
     mock_datetime.now.return_value = "Some time"
 
-    cache.update_point_cache(category)
+    cache.update_point_cache(profile, category)
 
     key = "etag-Location-profile-%s-%s" % (profile.id, category.id)
 
