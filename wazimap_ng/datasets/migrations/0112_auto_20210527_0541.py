@@ -4,22 +4,32 @@ from django.db import migrations
 from django.db.models import Count
 
 
-def remove_dubplicate_groups(apps, schema_editor):
+def remove_duplicate_groups(apps, schema_editor):
     Dataset = apps.get_model("datasets", "Dataset")
+    DatasetData = apps.get_model("datasets", "DatasetData")
 
     for dataset in Dataset.objects.all():
         groups = dataset.group_set.all()
 
         for group in groups.values("name").annotate(gc=Count("name")):
+            filtered_group = groups.filter(name=group["name"]).order_by("-created")
+            last_updated_group = filtered_group.first()
             if group["gc"] > 1:
-                filtered_group = groups.filter(name=group["name"])
-                subindicators = []
-                for g in filtered_group:
-                    subindicators = subindicators + g.subindicators
+                filtered_group.exclude(id=last_updated_group.id).delete()
 
-                first = filtered_group.first()
-                first.subindicators = list(set(subindicators))
-                filtered_group.exclude(id=first.id).delete()
+            subindicators = list(
+                DatasetData.objects.filter(dataset=dataset)
+                .order_by()
+                .values_list(F"data__{group['name']}", flat=True)
+                .distinct()
+            )
+
+            sorted_list = sorted(
+                subindicators, key=lambda x: last_updated_group.subindicators.index(x)
+            )
+
+            last_updated_group.subindicators = subindicators
+            last_updated_group.save()
 
 
 class Migration(migrations.Migration):
@@ -29,5 +39,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(remove_dubplicate_groups),
+        migrations.RunPython(remove_duplicate_groups),
     ]
