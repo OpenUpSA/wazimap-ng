@@ -83,9 +83,11 @@ def boundary_point_count_helper(profile, geography):
             .values(
                 "category__profilecategory__id", "category__profilecategory__label",
                 "category__profilecategory__color",
+                "category__profilecategory__order",
                 "category__profilecategory__theme__name",
                 "category__profilecategory__theme__icon",
                 "category__profilecategory__theme__id",
+                "category__profilecategory__theme__order",
                 "category__metadata__source", "category__metadata__description",
                 "category__metadata__licence"
             )
@@ -103,6 +105,7 @@ def boundary_point_count_helper(profile, geography):
                 "name": lc["category__profilecategory__theme__name"],
                 "id": lc["category__profilecategory__theme__id"],
                 "icon": lc["category__profilecategory__theme__icon"],
+                "order": lc["category__profilecategory__theme__order"],
                 "subthemes": []
             }
             theme_dict[id] = theme
@@ -113,12 +116,20 @@ def boundary_point_count_helper(profile, geography):
             "id": lc["category__profilecategory__id"],
             "count": lc["count_category"],
             "color": lc["category__profilecategory__color"],
+            "order": lc["category__profilecategory__order"],
             "metadata": {
                 "source": lc["category__metadata__source"],
                 "description": lc["category__metadata__description"],
                 "licence": lc["category__metadata__licence"],
             }
         })
+
+    res = sorted(res, key=lambda k: k['order'])
+    for idx, r in enumerate(res):
+        if "subthemes" in r and r["subthemes"]:
+            subthemes = r["subthemes"]
+            subthemes = sorted(subthemes, key=lambda k: k['order'])
+            res[idx]["subthemes"] = subthemes
 
     return res
 
@@ -150,3 +161,34 @@ class ThemeList(generics.ListAPIView):
         serializer = self.get_serializer_class()(queryset, many=True)
         data = serializer.data
         return Response(data)
+
+
+class GeoLocationList(generics.ListAPIView):
+    pagination_class = GeoJsonPagination
+    serializer_class = serializers.LocationSerializer
+    queryset = models.Location.objects.all().prefetch_related("category")
+
+    def list(self, request, profile_id, geography_code):
+        try:
+            data = []
+            profile = Profile.objects.get(id=profile_id)
+            profile_categories = models.ProfileCategory.objects.filter(
+                profile_id=profile_id
+            )
+
+            for profile_category in profile_categories:
+                queryset = get_locations(
+                    self.get_queryset(), profile, profile_category.category,
+                    geography_code
+                )
+                serializer = self.get_serializer(queryset, many=True)
+                location_data = serializer.data
+                location_data["category"] = profile_category.label
+                data.append(serializer.data)
+            return Response({
+                "count": len(data),
+                "results": data
+            })
+        except ObjectDoesNotExist as e:
+            logger.exception(e)
+            raise Http404

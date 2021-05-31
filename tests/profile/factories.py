@@ -8,6 +8,7 @@ class ProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Profile
 
+    name = "Profile"
     geography_hierarchy = factory.SubFactory(datasets_factoryboy.GeographyHierarchyFactory)
 
 
@@ -47,6 +48,7 @@ class ProfileKeyMetricsFactory(factory.django.DjangoModelFactory):
         model = models.ProfileKeyMetrics
 
     profile = factory.SubFactory(ProfileFactory)
+    variable = factory.SubFactory(datasets_factoryboy.IndicatorFactory)
     subcategory = factory.SubFactory(IndicatorSubcategoryFactory)
     subindicator = factory.Sequence(lambda n: '%d' % n)
 

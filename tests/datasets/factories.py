@@ -8,7 +8,7 @@ class GeographyFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Geography
 
-    depth = factory.Sequence(lambda n: '%d' % n)
+    depth = factory.Sequence(lambda n: n)
     path = factory.Sequence(lambda n: 'path_%d' % n)
     version = factory.Sequence(lambda n: 'version_%d' % n)
     code = factory.Sequence(lambda n: 'code_%d' % n)
@@ -60,10 +60,10 @@ class GroupFactory(factory.django.DjangoModelFactory):
 
     dataset = factory.SubFactory(DatasetFactory)
 
+
 class DatasetFileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.DatasetFile
-
 
     document = factory.django.FileField()
 
@@ -80,6 +80,7 @@ class DatasetDataFactory(factory.django.DjangoModelFactory):
 class LicenceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Licence
+
 
 class MetaDataFactory(factory.django.DjangoModelFactory):
     class Meta:

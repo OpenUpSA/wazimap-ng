@@ -1,5 +1,3 @@
-import lorem
-
 from django.contrib import admin, messages
 from django.contrib.admin.options import DisallowedModelAdminToField
 from django.contrib.admin.utils import unquote
@@ -124,5 +122,5 @@ class BaseAdminModel(admin.ModelAdmin):
                 )
 
         if "description" in form.base_fields:
-            form.base_fields["description"].initial = lorem.paragraph()
+            form.base_fields["description"].initial = "Representation of data gathered from various sources"
         return form

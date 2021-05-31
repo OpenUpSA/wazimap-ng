@@ -7,6 +7,7 @@ from django.urls import reverse
 from django_q.tasks import async_task
 from .models import Indicator
 
+
 from django.core import mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -91,6 +92,7 @@ def process_task_info(task):
     session_key = task.kwargs.get("key", False)
     email_notification = task.kwargs.get("email", False)
     user_id = task.kwargs.get("user_id", False)
+
     results = task.result or {}
     obj = next(iter(task.args))
 

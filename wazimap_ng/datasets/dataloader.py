@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 # TODO should add a memoize decorator here
 @functools.lru_cache()
 def load_geography(geo_code, version):
-    geo_code = str(geo_code).upper()
     geography = models.Geography.objects.get(code=geo_code, version=version)
     return geography
 
@@ -21,8 +20,13 @@ def load_geography(geo_code, version):
 def create_groups(dataset, group_names):
     groups = []
     for g in group_names:
-        subindicators = list(models.DatasetData.objects.get_unique_subindicators(g))
-        group = models.Group.objects.create(name=g, dataset=dataset, subindicators=subindicators)
+        subindicators = list(models.DatasetData.objects.filter(dataset_id=dataset.id).get_unique_subindicators(g))
+
+        group, created = models.Group.objects.get_or_create(
+            name=g, dataset=dataset
+        )
+        group.subindicators = subindicators
+        group.save()
         groups.append(group)
     return groups
 

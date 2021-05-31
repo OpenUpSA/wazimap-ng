@@ -4,7 +4,7 @@ from io import BytesIO
 
 import pytest
 
-from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv, detect_encoding
+from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv
 from tests.datasets.factories import DatasetFactory, GeographyFactory, GeographyHierarchyFactory, DatasetFileFactory
 
 def generate_file(data, header, encoding="utf8"):
@@ -24,23 +24,6 @@ def create_datasetfile(csv_data, encoding, header):
     buffer = generate_file(csv_data, header, encoding)
     return DatasetFileFactory(document__data=buffer.read())
 
-
-@pytest.fixture
-def geography_hierarchy():
-    hierarchy = GeographyHierarchyFactory()
-
-    return hierarchy
-
-@pytest.fixture
-def geographies(geography_hierarchy):
-    geo1 = GeographyFactory(code="GEOCODE_1", version=geography_hierarchy.version)
-    geo2 = GeographyFactory(code="GEOCODE_2", version=geography_hierarchy.version)
-
-    return [geo1, geo2]
-
-@pytest.fixture
-def dataset(geography_hierarchy):
-    return DatasetFactory(geography_hierarchy=geography_hierarchy)
 
 good_data = [
     ("GEOCODE_1", "F1_value_1", "F2_value_1", 111),
@@ -65,14 +48,9 @@ to_be_fixed_header = ["Geography", "field1", "field2", "count "]
 def data(request):
     return request.param
 
-def test_detect_encoding():
-    buffer = generate_file(data_with_different_encodings, good_header, "Windows-1252")
-    encoding = detect_encoding(buffer)
-    assert encoding == "Windows-1252"
 
 @pytest.mark.django_db
 class TestUploadFile:
-
     def test_process_csv(self, dataset, data, geographies):
         csv_data, header, encoding = data
         datasetfile = create_datasetfile(csv_data, encoding, header)
