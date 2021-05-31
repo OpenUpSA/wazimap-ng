@@ -8,15 +8,27 @@ def remove_duplicate_groups(apps, schema_editor):
     Dataset = apps.get_model("datasets", "Dataset")
     DatasetData = apps.get_model("datasets", "DatasetData")
 
+    # loop over all datasets
     for dataset in Dataset.objects.all():
+
+        # Get groups for a dataset
         groups = dataset.group_set.all()
 
+        # loop over groups and check if group with same name exists more
+        # one time
         for group in groups.values("name").annotate(gc=Count("name")):
-            filtered_group = groups.filter(name=group["name"]).order_by("-created")
+
+            # Filter group by name and order by -created
+            # So we can get latest updated group
+            filtered_group = groups.filter(name=group["name"]).order_by("-modified")
             last_updated_group = filtered_group.first()
+
+            # if count of groups in greater than one 
+            # Delete all groups of dataset with same name except last updated group
             if group["gc"] > 1:
                 filtered_group.exclude(id=last_updated_group.id).delete()
 
+            # Fetch list of subindicator from dataset data
             subindicators = list(
                 DatasetData.objects.filter(dataset=dataset)
                 .order_by()
@@ -24,6 +36,7 @@ def remove_duplicate_groups(apps, schema_editor):
                 .distinct()
             )
 
+            # Sort subindicators acording to last updated groups subindicator
             sorted_list = sorted(
                 subindicators, key=lambda x: last_updated_group.subindicators.index(x)
             )
