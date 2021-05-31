@@ -265,37 +265,42 @@ class TestCreateGroups:
         assert groups[1].subindicators == ["X", "Y"]
 
     def test_new_dataset_same_group_name(self, dataset, datasetData, subindicatorGroup):
-        # Make sure datasets with new subindicators are not leaking into groups with the same name from previous datasets
+        # Make sure new datasets with the same group name do not have subindicators from previous datasets
         new_dataset = DatasetFactory()
 
         DatasetDataFactory(
             dataset=new_dataset, data={
-                'group1': 'D', 'group2': 'Z'
+                'group1': 'C', 'group2': 'Z'
             }
         )
 
         groups = dataloader.create_groups(new_dataset, ["group1", "group2"])
 
         assert len(groups) == 2
-        assert groups[0].subindicators == ["D"]
-        assert groups[0].subindicators != ["A", "B", "C", "D"]
+        assert groups[0].subindicators == ["C"]
+        assert groups[0].subindicators != ["A", "B", "C"]
         assert groups[1].subindicators == ["Z"]
         assert groups[1].subindicators != ["X", "Y", "Z"]
 
     def test_old_dataset_does_not_include_new_subindicators(self, dataset, datasetData, subindicatorGroup):
         # Make sure same group names from a previous dataset does not have subindicators leaking into it
+        new_dataset = DatasetFactory()
 
         DatasetDataFactory(
-            dataset=dataset, data={
-                'group1': 'C', 'group2': 'Z'
+            dataset=new_dataset, data={
+                'group1': 'D', 'group2': 'W'
             }
         )
 
+        new_groups = dataloader.create_groups(new_dataset, ["group1", "group2"])
         groups = dataloader.create_groups(dataset, ["group1", "group2"])
 
         assert len(groups) == 2
-        assert groups[0].subindicators == ["A", "B", "C"]
+        assert new_groups[0].subindicators == ["D"]
+        assert new_groups[1].subindicators == ["W"]
+
+        assert groups[0].subindicators == ["A", "B"]
         assert groups[0].subindicators != ["D"]
-        assert groups[1].subindicators == ["X", "Y", "Z"]
-        assert groups[1].subindicators != ["Z"]
+        assert groups[1].subindicators == ["X", "Y"]
+        assert groups[1].subindicators != ["W"]
 
