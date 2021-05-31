@@ -264,19 +264,38 @@ class TestCreateGroups:
         assert groups[0].subindicators == ["A", "B", "C"]
         assert groups[1].subindicators == ["X", "Y"]
 
-    def test_new_dataset_subindicators(self, dataset, datasetData, subindicatorGroup):
-        # Re-instantiate DatasetFactory to get a new dataset ID, create groups with unique subindicators and check that only subindicators from this dataset exist
-        dataset = DatasetFactory()
+    def test_new_dataset_same_group_name(self, dataset, datasetData, subindicatorGroup):
+        # Make sure datasets with new subindicators are not leaking into groups with the same name from previous datasets
+        new_dataset = DatasetFactory()
+
+        DatasetDataFactory(
+            dataset=new_dataset, data={
+                'group1': 'D', 'group2': 'Z'
+            }
+        )
+
+        groups = dataloader.create_groups(new_dataset, ["group1", "group2"])
+
+        assert len(groups) == 2
+        assert groups[0].subindicators == ["D"]
+        assert groups[0].subindicators != ["A", "B", "C", "D"]
+        assert groups[1].subindicators == ["Z"]
+        assert groups[1].subindicators != ["X", "Y", "Z"]
+
+    def test_old_dataset_does_not_include_new_subindicators(self, dataset, datasetData, subindicatorGroup):
+        # Make sure same group names from a previous dataset does not have subindicators leaking into it
 
         DatasetDataFactory(
             dataset=dataset, data={
-                'group1': 'D', 'group2': 'Z'
+                'group1': 'C', 'group2': 'Z'
             }
         )
 
         groups = dataloader.create_groups(dataset, ["group1", "group2"])
 
         assert len(groups) == 2
-        assert groups[0].subindicators == ["D"]
-        assert groups[1].subindicators == ["Z"]
+        assert groups[0].subindicators == ["A", "B", "C"]
+        assert groups[0].subindicators != ["D"]
+        assert groups[1].subindicators == ["X", "Y", "Z"]
+        assert groups[1].subindicators != ["Z"]
 
