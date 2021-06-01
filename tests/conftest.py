@@ -42,9 +42,11 @@ def geographies():
 def geography(geographies):
     return geographies[0]
 
+
 @pytest.fixture
 def other_geographies(geographies):
     return geographies[1:]
+
 
 @pytest.fixture
 def geography_hierarchy(geography):
@@ -63,12 +65,13 @@ def child_geographies(geography):
 
 @pytest.fixture
 def profile(geography_hierarchy):
-    
+
     configuration = {
         "urls": ["some_domain.com"]
     }
 
     return ProfileFactory(geography_hierarchy=geography_hierarchy, configuration=configuration)
+
 
 @pytest.fixture
 def dataset(profile):
@@ -123,11 +126,12 @@ def datasetdata(indicator, geography):
                            "gender": "female", "age": "17", "language": "isiZulu", "count": 12}),
     ]
 
+
 @pytest.fixture
 def child_datasetdata(datasetdata, geography):
     def gendict(d, g): return {**d.data, **{"geography": g.pk}}
     dataset = datasetdata[0].dataset
-    
+
     new_datasetdata = [
         DatasetDataFactory(dataset=dataset, geography=g, data=gendict(d, g))
         for g in geography.get_children()
@@ -135,6 +139,7 @@ def child_datasetdata(datasetdata, geography):
     ]
 
     return new_datasetdata
+
 
 @pytest.fixture
 def metadata(licence):
@@ -166,12 +171,14 @@ def indicatordata(indicator, indicatordata_json, geography):
         IndicatorDataFactory(indicator=indicator, geography=geography, data=indicatordata_json)
     ]
 
+
 @pytest.fixture
 def other_geographies_indicatordata(indicator, indicatordata_json, other_geographies):
     return [
         IndicatorDataFactory(indicator=indicator, geography=g, data=indicatordata_json)
         for g in other_geographies
     ]
+
 
 @pytest.fixture
 def child_indicatordata(indicator, indicatordata_json, child_geographies):
@@ -189,6 +196,22 @@ def child_indicatordata(indicator, indicatordata_json, child_geographies):
 def profile_indicator(profile, indicatordata):
     indicator = indicatordata[0].indicator
     return ProfileIndicatorFactory(profile=profile, indicator=indicator)
+
+
+@pytest.fixture
+def category(profile_indicator):
+    c = profile_indicator.subcategory.category
+    c.name = "A test category"
+    c.save()
+    return c
+
+
+@pytest.fixture
+def subcategory(profile_indicator):
+    s = profile_indicator.subcategory
+    s.name = "A test subcategory"
+    s.save()
+    return s
 
 
 @pytest.fixture

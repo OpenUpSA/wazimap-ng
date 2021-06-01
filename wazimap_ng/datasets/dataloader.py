@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 # TODO should add a memoize decorator here
 @functools.lru_cache()
 def load_geography(geo_code, version):
-    geo_code = str(geo_code).upper()
     geography = models.Geography.objects.get(code=geo_code, version=version)
     return geography
 
@@ -21,7 +20,7 @@ def load_geography(geo_code, version):
 def create_groups(dataset, group_names):
     groups = []
     for g in group_names:
-        subindicators = list(models.DatasetData.objects.get_unique_subindicators(g))
+        subindicators = list(models.DatasetData.objects.filter(dataset_id=dataset.id).get_unique_subindicators(g))
 
         group, created = models.Group.objects.get_or_create(
             name=g, dataset=dataset
@@ -33,11 +32,15 @@ def create_groups(dataset, group_names):
 
 
 @transaction.atomic
-def loaddata(dataset, iterable, row_number):
+def loaddata(dataset, iterable, row_number, overwrite=False):
     datarows = []
     errors = []
     warnings = []
     groups = set()
+
+    if overwrite:
+        logger.debug(f"Deleting previously uploaded data for this dataset")
+        dataset.datasetdata_set.all().delete()
 
     version = dataset.geography_hierarchy.version
 

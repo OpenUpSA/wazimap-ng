@@ -42,6 +42,16 @@ def good_input_with_groups():
         {"geography": "YYY", "count": 222, "group1": "B", "group2": "X"},
     ]
 
+@pytest.fixture
+@pytest.mark.django_db
+def create_geography_code():
+    data = models.Geography.objects.create(
+        name='Test Location', code='sa',
+        version='1.0', level='B', depth=50
+    )
+    yield
+    data.delete()
+
 @pytest.mark.django_db
 class TestLoadData:
     pytestmark = pytest.mark.django_db
@@ -79,6 +89,21 @@ class TestLoadData:
         dataloader.loaddata(dataset, good_input, 0)
 
         load_geography.assert_called_with("YYY", 9999)
+
+    @pytest.mark.django_db
+    def test_correct_geography_code(self, create_geography_code):
+        code = 'sa'
+        version = '1.0'
+        try:
+            data = dataloader.load_geography(code, version)
+            assert data.code == code and data.version == version
+        except models.Geography.DoesNotExist:
+            pytest.fail('Unexpected Geography not found error...')
+
+    @pytest.mark.django_db
+    def test_wrong_geography_code(self, create_geography_code):
+        with pytest.raises(models.Geography.DoesNotExist):
+            dataloader.load_geography('SA', '1.0')
 
     @pytest.mark.django_db
     @patch('wazimap_ng.datasets.models.DatasetData')
@@ -238,3 +263,44 @@ class TestCreateGroups:
         assert len(groups) == 2
         assert groups[0].subindicators == ["A", "B", "C"]
         assert groups[1].subindicators == ["X", "Y"]
+
+    def test_new_dataset_same_group_name(self, dataset, datasetData, subindicatorGroup):
+        # Make sure new datasets with the same group name do not have subindicators from previous datasets
+        new_dataset = DatasetFactory()
+
+        DatasetDataFactory(
+            dataset=new_dataset, data={
+                'group1': 'C', 'group2': 'Z'
+            }
+        )
+
+        groups = dataloader.create_groups(new_dataset, ["group1", "group2"])
+
+        assert len(groups) == 2
+        assert groups[0].subindicators == ["C"]
+        assert groups[0].subindicators != ["A", "B", "C"]
+        assert groups[1].subindicators == ["Z"]
+        assert groups[1].subindicators != ["X", "Y", "Z"]
+
+    def test_old_dataset_does_not_include_new_subindicators(self, dataset, datasetData, subindicatorGroup):
+        # Make sure same group names from a previous dataset does not have subindicators leaking into it
+        new_dataset = DatasetFactory()
+
+        DatasetDataFactory(
+            dataset=new_dataset, data={
+                'group1': 'D', 'group2': 'W'
+            }
+        )
+
+        new_groups = dataloader.create_groups(new_dataset, ["group1", "group2"])
+        groups = dataloader.create_groups(dataset, ["group1", "group2"])
+
+        assert len(groups) == 2
+        assert new_groups[0].subindicators == ["D"]
+        assert new_groups[1].subindicators == ["W"]
+
+        assert groups[0].subindicators == ["A", "B"]
+        assert groups[0].subindicators != ["D"]
+        assert groups[1].subindicators == ["X", "Y"]
+        assert groups[1].subindicators != ["W"]
+

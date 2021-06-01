@@ -340,6 +340,10 @@ PERMISSION_TYPES = (
 
 STAFF_GROUPS = ["ProfileAdmin", "DataAdmin"]
 
+STAFF_EMAIL_ADDRESS = os.getenv(
+    "STAFF_EMAIL_ADDRESS", "info@openup.org.za"
+)
+
 
 if TESTING:
     PASSWORD_HASHERS = [

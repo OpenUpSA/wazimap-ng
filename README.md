@@ -50,7 +50,11 @@ Local development is normally done inside docker-compose so that the supporting 
 Make docker-compose start the supporting services using
 
     docker-compose run --rm web python wait_for_postgres.py
-      
+    
+Run Django migrations with
+
+    docker-compose run --rm web python manage.py migrate
+    
 Run the tests using
 
     docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
@@ -72,7 +76,6 @@ These are works in progress:
 
 # Contributions
 Contributions are welcome - we are working towards making this process easier. New development takes place in the [staging branch](https://github.com/OpenUpSA/wazimap-ng/tree/staging)
-
 
 # Shoulders of giants
 This project is the next iteration of a number of excellent projects starting with [CensusReporter](https://censusreporter.org/) and [Wazimap](http://www.wazimap.co.za) that followed it. Special thanks to William Bird from [Media Monitoring Africa](https://mediamonitoringafrica.org) whose initial idea (and funding) it was to build a tool to help journalists better understand areas they were reporting on. Also thanks to Chris Berens from [VPUU](vpuu.org.za) who directed funding to help kickstart this new build. Finally, all of the amazing spatial software and tools developed by one of the most dedicated open source communities out there.

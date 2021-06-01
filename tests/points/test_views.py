@@ -261,3 +261,20 @@ class TestLocationView(APITestCase):
         assert len(results[1]["features"]) == 1
         assert results[1]["features"][0]["geometry"]["coordinates"] == [2.0, 2.0]
         assert results[1]["category"] == "Pc Label 2"
+
+@pytest.mark.focus
+@pytest.mark.django_db
+class TestPointThemes:
+    def test_order_themes(self, tp, tp_api):
+        profile = ProfileFactory()
+        theme2 = ThemeFactory(order=2, profile=profile)
+        theme1 = ThemeFactory(order=1, profile=profile)
+
+        reversed_url = tp.reverse('points-themes', profile_id=profile.pk)
+        response = tp_api.client.get(reversed_url, format="json")
+
+        assert response.status_code == 200
+        js_data = response.json()
+        assert js_data[0]["id"] == theme1.id
+        assert js_data[1]["id"] == theme2.id
+
