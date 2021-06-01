@@ -1,4 +1,9 @@
 from test_plus import APITestCase
+import pytest
+from time import sleep
+from django_q.models import Task
+
+from django_q.tasks import async_task, result
 
 from tests.profile.factories import ProfileFactory
 from tests.points.factories import (
@@ -6,6 +11,7 @@ from tests.points.factories import (
 )
 from tests.datasets.factories import GeographyFactory, GeographyHierarchyFactory
 from tests.boundaries.factories import GeographyBoundaryFactory
+from tests.general.factories import TaskFactory
 
 
 class TestConsolidatedProfileView(APITestCase):
@@ -130,3 +136,61 @@ class TestConsolidatedProfileView(APITestCase):
         assert subthemes[2]['label'] == pc4.label
         assert subthemes[3]['label'] == pc2.label
 
+
+@pytest.mark.focus
+@pytest.mark.django_db
+def test_task_status(tp, tp_api):
+    reversed_url = tp.reverse(
+        "task_status",
+        task_id="1234",
+    )
+    response = tp_api.client.get(reversed_url, format="json")
+
+    assert response.status_code == 200
+
+
+def short_task():
+    return 1
+
+
+@pytest.mark.django_db
+def test_task_status_success(tp, tp_api):
+    task_id = async_task(short_task)
+
+    reversed_url = tp.reverse(
+        "task_status",
+        task_id=task_id,
+    )
+    response = tp_api.client.get(reversed_url, format="json")
+    js = response.json()
+
+    assert response.status_code == 200
+    assert js["status"] == "success"
+
+
+@pytest.mark.django_db
+def test_task_status_running(tp, tp_api):
+    reversed_url = tp.reverse(
+        "task_status",
+        task_id="1234",
+    )
+    response = tp_api.client.get(reversed_url, format="json")
+    js = response.json()
+
+    assert response.status_code == 200
+    assert js["status"] == "running"
+
+
+@pytest.mark.django_db
+def test_task_status_failure(tp, tp_api):
+    task = TaskFactory(success=False)
+
+    reversed_url = tp.reverse(
+        "task_status",
+        task_id=task.name,
+    )
+    response = tp_api.client.get(reversed_url, format="json")
+    js = response.json()
+
+    assert response.status_code == 200
+    assert js["status"] == "error"
