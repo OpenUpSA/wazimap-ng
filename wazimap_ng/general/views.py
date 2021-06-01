@@ -1,3 +1,5 @@
+import logging
+
 from django.views.decorators.http import condition
 from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404, redirect
@@ -16,6 +18,11 @@ from ..boundaries import views as boundaries_views
 from ..cache import etag_profile_updated, last_modified_profile_updated
 from ..points import views as point_views
 from ..points import models as point_models
+
+from django_q.tasks import result, fetch
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 def consolidated_profile_helper(profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
@@ -79,3 +86,22 @@ def notifications_view(request):
         "task_list": task_list,
         "notifications": messages,
     })
+
+
+
+@api_view(["GET"])
+def task_status(request, task_id):
+    """
+    List the result for a task id
+    We don't check if the task exist, since we can't get it from django until it's either errored or done
+    """
+    if request.method == "GET":
+        response = dict(id=task_id, status="error")
+        task = fetch(task_id)
+        if not task:
+            response.update({"status": "running"})
+            return Response(response)
+        if task.success:
+            response.update({"status": "success"})
+            return Response(response)
+        return Response(response)
