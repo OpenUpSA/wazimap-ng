@@ -37,8 +37,10 @@ def remove_duplicate_groups(apps, schema_editor):
             )
 
             # Sort subindicators acording to last updated groups subindicator
+
+            sub_groups = last_updated_group.subindicators
             sorted_list = sorted(
-                subindicators, key=lambda x: last_updated_group.subindicators.index(x)
+                subindicators, key=lambda x: sub_groups.index(x) if x in sub_groups else len(subindicators)
             )
 
             last_updated_group.subindicators = subindicators
