@@ -16,9 +16,9 @@ def absolute_value(profile_key_metric, geography):
     return MetricCalculator.absolute_value(data, profile_key_metric, geography)
 
 def subindicator(profile_key_metric, geography):
-    indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography=geography)
+    indicator_data = get_indicator_data(profile_key_metric, [geography])
     if indicator_data.count() > 0:
-        data = get_indicator_data(profile_key_metric, [geography]).first().data
+        data = indicator_data.first().data
         return MetricCalculator.subindicator(data, profile_key_metric, geography)
     return None
 
