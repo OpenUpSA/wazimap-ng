@@ -30,11 +30,14 @@ def test_sibling(profile_key_metric, geography, other_geographies):
 
 
 @pytest.mark.django_db
-def test_subindicator_geography(profile_key_metric, geography, other_geographies):
-    # Check that a subindicator exists for the given geography before trying to access it
+def test_subindicator_not_none(profile_key_metric, geography):
+    # Check expected function of subindicator that it returns some value
     subindicator_data = subindicator(profile_key_metric, geography)
-    subindicator_none = subindicator(profile_key_metric, other_geographies[0])
+    assert subindicator_data != None
 
-    assert type(subindicator_data) == type(0.1)
-    assert subindicator_none == None
+@pytest.mark.django_db
+def test_subindicator_none(profile_key_metric, other_geographies):
+    # Check that an incorrect geography, without a subindicator returns None
+    subindicator_data = subindicator(profile_key_metric, other_geographies[0])
+    assert subindicator_data == None
 
