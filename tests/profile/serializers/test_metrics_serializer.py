@@ -27,4 +27,14 @@ def test_sibling(profile_key_metric, geography, other_geographies):
         expected_value = 1 / num_geographies
         actual_value = sibling(profile_key_metric, geography)
         assert pytest.approx(expected_value, abs=1e-1) == actual_value
-    
+
+
+@pytest.mark.django_db
+def test_subindicator_geography(profile_key_metric, geography, other_geographies):
+    # Check that a subindicator exists for the given geography before trying to access it
+    subindicator_data = subindicator(profile_key_metric, geography)
+    subindicator_none = subindicator(profile_key_metric, other_geographies[0])
+
+    assert type(subindicator_data) == type(0.1)
+    assert subindicator_none == None
+
