@@ -10,19 +10,22 @@ def get_indicator_data(profile_key_metric, geographies):
     indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography__in=geographies)
     return indicator_data
 
+def indicator_exists(profile_key_metric, geographies):
+    indicator_data = get_indicator_data(profile_key_metric, geographies)
+    if indicator_data.count() > 0:
+        return indicator_data.first().data
+    return None
 
 def absolute_value(profile_key_metric, geography):
-    indicator_data = get_indicator_data(profile_key_metric, [geography])
-    if indicator_data.count() > 0:
-        data = indicator_data.first().data
+    indicator_data = indicator_exists(profile_key_metric, [geography])
+    if indicator_data != None:
         return MetricCalculator.absolute_value(data, profile_key_metric, geography)
     return None
 
 def subindicator(profile_key_metric, geography):
-    indicator_data = get_indicator_data(profile_key_metric, [geography])
-    if indicator_data.count() > 0:
-        data = indicator_data.first().data
-        return MetricCalculator.subindicator(data, profile_key_metric, geography)
+    indicator_data = indicator_exists(profile_key_metric, [geography])
+    if indicator_data != None:
+        return MetricCalculator.subindicator(indicator_data, profile_key_metric, geography)
     return None
 
 def sibling(profile_key_metric, geography):
