@@ -19,7 +19,7 @@ def indicator_exists(profile_key_metric, geographies):
 def absolute_value(profile_key_metric, geography):
     indicator_data = indicator_exists(profile_key_metric, [geography])
     if indicator_data != None:
-        return MetricCalculator.absolute_value(data, profile_key_metric, geography)
+        return MetricCalculator.absolute_value(indicator_data, profile_key_metric, geography)
     return None
 
 def subindicator(profile_key_metric, geography):
