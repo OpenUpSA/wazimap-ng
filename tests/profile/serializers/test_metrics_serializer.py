@@ -35,15 +35,21 @@ def test_subindicator_not_none(profile_key_metric, geography):
     subindicator_data = subindicator(profile_key_metric, geography)
     assert subindicator_data != None
 
-    absolute_value_data = absolute_value(profile_key_metric, geography)
-    assert absolute_value_data != None
-
 @pytest.mark.django_db
 def test_subindicator_none(profile_key_metric, other_geographies):
     # Check that an incorrect geography, without a subindicator returns None
     subindicator_data = subindicator(profile_key_metric, other_geographies[0])
     assert subindicator_data == None
 
+@pytest.mark.django_db
+def test_absolute_value_not_none(profile_key_metric, geography):
+    # Check expected function of absolute_value that it returns some value
+    absolute_value_data = absolute_value(profile_key_metric, geography)
+    assert absolute_value_data != None
+
+@pytest.mark.django_db
+def test_absolute_value_none(profile_key_metric, other_geographies):
+    # Check that an incorrect geography, without a subindicator returns None
     absolute_value_data = absolute_value(profile_key_metric, other_geographies[0])
     assert absolute_value_data == None
 
