@@ -14,3 +14,9 @@ run:
 
 stop:
 	docker-compose stop
+
+migrate:
+	docker-compose exec web python3 manage.py migrate
+
+shell:
+	docker-compose exec web bash
