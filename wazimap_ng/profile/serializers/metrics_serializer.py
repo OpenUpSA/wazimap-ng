@@ -12,8 +12,11 @@ def get_indicator_data(profile_key_metric, geographies):
 
 
 def absolute_value(profile_key_metric, geography):
-    data = get_indicator_data(profile_key_metric, [geography]).first().data
-    return MetricCalculator.absolute_value(data, profile_key_metric, geography)
+    indicator_data = get_indicator_data(profile_key_metric, [geography])
+    if indicator_data.count() > 0:
+        data = indicator_data.first().data
+        return MetricCalculator.absolute_value(data, profile_key_metric, geography)
+    return None
 
 def subindicator(profile_key_metric, geography):
     indicator_data = get_indicator_data(profile_key_metric, [geography])
@@ -24,8 +27,12 @@ def subindicator(profile_key_metric, geography):
 
 def sibling(profile_key_metric, geography):
     siblings = geography.get_siblings()
-    data = get_indicator_data(profile_key_metric, [geography] + siblings)
-    return MetricCalculator.sibling(data, profile_key_metric, geography)
+    indicator_data = get_indicator_data(profile_key_metric, [geography] + siblings)
+
+    if indicator_data.count() > 0:
+        data = indicator_data
+        return MetricCalculator.sibling(data, profile_key_metric, geography)
+    return None
 
 algorithms = {
     "absolute_value": absolute_value,

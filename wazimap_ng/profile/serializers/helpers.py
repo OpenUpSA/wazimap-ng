@@ -32,15 +32,18 @@ class MetricCalculator:
     @staticmethod
     def sibling(data, metric, geography):
         group = metric.indicator.groups[0]
-        subindicator = get_subindicator(metric)
-        
-        numerator = None
-        denominator = 0
-        total = 0
+
+        geography_total = total = 0
+        geography_has_data = False
+
         for datum in data:
             total += get_sum(datum.data)
             if datum.geography == geography:
                 geography_total = get_sum(datum.data)
+                geography_has_data = True
+
+        if not geography_has_data:
+            return None
 
         denominator, numerator = total, geography_total        
 
