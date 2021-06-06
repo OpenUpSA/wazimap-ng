@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch
 from wazimap_ng.profile.serializers.metrics_serializer import absolute_value, subindicator, sibling 
 
-from tests.datasets.factories import GeographyFactory
+from tests.datasets.factories import GeographyFactory, IndicatorDataFactory
 
 @pytest.mark.django_db
 class TestAbsoluteValue:
@@ -42,7 +42,37 @@ class TestSibling:
         with patch.object(geography, "get_siblings", side_effect=lambda: other_geographies):
             expected_value = 1 / num_geographies
             actual_value = sibling(profile_key_metric, geography)
-            assert pytest.approx(expected_value, abs=1e-1) == actual_value
+            assert pytest.approx(expected_value, abs=1e-2) == actual_value
+
+    def test_sibling_calculation(self, profile_key_metric, indicator):
+        data1 = [
+            {"gender": "male", "colour": "blue", "count": 1},
+            {"gender": "male", "colour": "green", "count": 2},
+            {"gender": "female", "colour": "blue", "count": 3},
+            {"gender": "female", "colour": "green", "count": 4},
+        ]
+        data2 = [
+            {"gender": "male", "colour": "blue", "count": 14},
+            {"gender": "male", "colour": "green", "count": 23},
+            {"gender": "female", "colour": "blue", "count": 39},
+            {"gender": "female", "colour": "green", "count": 42},
+        ]
+
+        geography = GeographyFactory()
+        other_geography = GeographyFactory()
+
+        id1 = IndicatorDataFactory(indicator=indicator, geography=geography, data=data1)
+        id2 = IndicatorDataFactory(indicator=indicator, geography=other_geography, data=data2)
+
+        total_female1 = sum(el["count"] for el in data1 if el["gender"] == "female")
+        total_female2 = sum(el["count"] for el in data2 if el["gender"] == "female")
+
+        expected_value = total_female1 / (total_female1 + total_female2)
+
+        with patch.object(geography, "get_siblings", side_effect=lambda: [other_geography]):
+            actual_value = sibling(profile_key_metric, geography)
+            assert pytest.approx(expected_value, abs=1e-3) == actual_value
+
 
     def test_returns_none_if_geography_missing_data(self, profile_key_metric, indicatordata_json, other_geographies):
         new_geography = GeographyFactory()
