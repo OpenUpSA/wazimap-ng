@@ -20,3 +20,12 @@ migrate:
 
 shell:
 	docker-compose exec web bash
+
+pyshell:
+	docker-compose exec web python3 manage.py shell
+
+dbshell:
+	docker-compose exec web python3 manage.py dbshell
+
+requirements:
+	docker-compose exec web pip3 install -r requirements.txt
