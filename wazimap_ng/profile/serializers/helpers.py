@@ -12,8 +12,8 @@ class MetricCalculator:
     @staticmethod
     def absolute_value(data, metric, geography):
         group = metric.indicator.groups[0]
-        
         subindicator = get_subindicator(metric)
+        
         filtered_data = [row["count"] for row in data if group in row and row[group] == subindicator]
             
         return get_sum(data, group, subindicator)
@@ -21,8 +21,8 @@ class MetricCalculator:
     @staticmethod
     def subindicator(data, metric, geography):
         group = metric.indicator.groups[0]
-
         subindicator = get_subindicator(metric)
+
         numerator = get_sum(data, group, subindicator)
         denominator = get_sum(data)
 
@@ -33,14 +33,18 @@ class MetricCalculator:
     def sibling(data, metric, geography):
         group = metric.indicator.groups[0]
         subindicator = get_subindicator(metric)
-        
-        numerator = None
-        denominator = 0
-        total = 0
+
+        geography_total = total = 0
+        geography_has_data = False
+
         for datum in data:
-            total += get_sum(datum.data)
+            total += get_sum(datum.data, group=group, subindicator=subindicator)
             if datum.geography == geography:
-                geography_total = get_sum(datum.data)
+                geography_total = get_sum(datum.data, group=group, subindicator=subindicator)
+                geography_has_data = True
+
+        if not geography_has_data:
+            return None
 
         denominator, numerator = total, geography_total        
 
