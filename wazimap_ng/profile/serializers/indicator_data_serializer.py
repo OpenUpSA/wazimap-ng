@@ -63,8 +63,7 @@ def get_dataset_groups(profile: Profile) -> Dict:
             "name",
             "can_aggregate",
             "can_filter"
-        )
-        .order_by("dataset")
+        ).order_by("dataset_id", "name").distinct("dataset_id", "name")
     )
 
     grouped_datasetdata = groupby(dataset_groups, lambda g: g["dataset"])
