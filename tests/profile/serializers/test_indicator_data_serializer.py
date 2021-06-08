@@ -112,6 +112,26 @@ def test_get_dataset_groups(profile: Profile):
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("groups")
+@pytest.mark.usefixtures("profile_indicator")
+@pytest.mark.usefixtures("profile_indicator_language")
+def test_get_dataset_groups_for_duplicate_data(profile: Profile):
+    assert Group.objects.count() == 2
+    dataset = Group.objects.first().dataset
+    actual_output = get_dataset_groups(profile)
+    expected_output = {
+        dataset.pk: [
+            {"subindicators": ["male", "female"], "dataset": dataset.pk,
+                "name": "gender", "can_filter": True, "can_aggregate": True},
+            {"subindicators": ["isiXhosa", "isiZulu"], "dataset": dataset.pk,
+                "name": "language", "can_filter": True, "can_aggregate": True}
+        ]
+    }
+
+    assert actual_output == expected_output
+
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("groups")
 class TestIndicatorSerializer:
     def test(self, profile, geography, profile_indicator, category, subcategory):
         serializer = IndicatorDataSerializer(profile, geography)

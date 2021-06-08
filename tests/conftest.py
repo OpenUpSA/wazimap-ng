@@ -94,6 +94,12 @@ def indicator(dataset):
     groups = ["gender"]
     return IndicatorFactory(dataset=dataset, subindicators=subindicators, groups=groups)
 
+@pytest.fixture
+def indicator_language(dataset):
+    subindicators = ["isiXhosa", "isiZulu"]
+    groups = ["language"]
+    return IndicatorFactory(dataset=dataset, subindicators=subindicators, groups=groups)
+
 
 @pytest.fixture
 def datasetdata(indicator, geography):
@@ -171,6 +177,13 @@ def indicatordata(indicator, indicatordata_json, geography):
         IndicatorDataFactory(indicator=indicator, geography=geography, data=indicatordata_json)
     ]
 
+@pytest.fixture
+def indicatordata_language(indicator_language, indicatordata_json, geography):
+
+    return [
+        IndicatorDataFactory(indicator=indicator_language, geography=geography, data=indicatordata_json)
+    ]
+
 
 @pytest.fixture
 def other_geographies_indicatordata(indicator, indicatordata_json, other_geographies):
@@ -195,6 +208,11 @@ def child_indicatordata(indicator, indicatordata_json, child_geographies):
 @pytest.fixture
 def profile_indicator(profile, indicatordata):
     indicator = indicatordata[0].indicator
+    return ProfileIndicatorFactory(profile=profile, indicator=indicator)
+
+@pytest.fixture
+def profile_indicator_language(profile, indicatordata_language):
+    indicator = indicatordata_language[0].indicator
     return ProfileIndicatorFactory(profile=profile, indicator=indicator)
 
 
