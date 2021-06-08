@@ -150,3 +150,23 @@ def test_subindicator_none(profile_key_metric, other_geographies):
     subindicator_data = subindicator(profile_key_metric, other_geographies[0])
     assert subindicator_data == None
 
+@pytest.mark.django_db
+def test_absolute_value_not_none(profile_key_metric, geography):
+    # Check expected function of absolute_value that it returns some value
+    absolute_value_data = absolute_value(profile_key_metric, geography)
+    assert absolute_value_data != None
+
+@pytest.mark.django_db
+def test_absolute_value_none(profile_key_metric, other_geographies):
+    # Check that an incorrect geography, without a subindicator returns None
+    absolute_value_data = absolute_value(profile_key_metric, other_geographies[0])
+    assert absolute_value_data == None
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("other_geographies_indicatordata")
+def test_sibling_not_none(profile_key_metric, geography, other_geographies):
+    # Check expected function of sibling that it returns some value
+    with patch.object(geography, "get_siblings", side_effect=lambda: other_geographies):
+        sibling_data = sibling(profile_key_metric, geography)
+        assert sibling_data != None
+
