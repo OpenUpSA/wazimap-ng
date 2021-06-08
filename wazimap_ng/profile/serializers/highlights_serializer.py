@@ -3,22 +3,35 @@ from wazimap_ng.datasets.models import IndicatorData
 from .helpers import MetricCalculator
 
 def get_indicator_data(highlight, geographies):
-    indicator_data = IndicatorData.objects.filter(indicator__profilehighlight=highlight, geography__in=geographies)
-    return indicator_data
+    return IndicatorData.objects.filter(
+        indicator__profilehighlight=highlight, geography__in=geographies
+    )
 
 def absolute_value(highlight, geography):
-    data = get_indicator_data(highlight, [geography]).first().data
-    return MetricCalculator.absolute_value(data, highlight, geography)
+    indicator_data = get_indicator_data(highlight, [geography]).first()
+    if indicator_data:
+        return MetricCalculator.absolute_value(
+            indicator_data.data, highlight, geography
+        )
+    return None
+
 
 def subindicator(highlight, geography):
-    data = get_indicator_data(highlight, [geography]).first().data
-    return MetricCalculator.subindicator(data, highlight, geography)
+    indicator_data = get_indicator_data(highlight, [geography]).first()
+    if indicator_data:
+        return MetricCalculator.subindicator(
+            indicator_data.data, highlight, geography
+        )
+    return None
 
 
 def sibling(highlight, geography):
-    siblings = geography.get_siblings()
-    data = get_indicator_data(highlight, [geography] + siblings)
-    return MetricCalculator.sibling(data, highlight, geography)
+    siblings = list(geography.get_siblings())
+    indicator_data = get_indicator_data(highlight, [geography] + siblings)
+
+    if indicator_data:
+        return MetricCalculator.sibling(indicator_data, highlight, geography)
+    return None
 
 algorithms = {
     "absolute_value": absolute_value,
