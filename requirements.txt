@@ -47,7 +47,7 @@ django-test-plus==1.4.0
 # Static and Media Storage
 django-storages==1.7.1
 boto3==1.9.93
-Pillow==7.1.0 # Needed for ImageField
+Pillow==8.2.0 # Needed for ImageField
 
 # Serving static content
 whitenoise==5.0.1
