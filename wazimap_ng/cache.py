@@ -36,7 +36,7 @@ def check_has_permission(request, profile_id):
 
 def last_modified(request, profile_id, key):
     if check_has_permission(request, profile_id):
-        _last_modified = datetime(year=1970, month=1, day=1)
+        _last_modified = datetime.now()
         c = cache.get(key)
 
         if c is not None:
@@ -190,7 +190,7 @@ def geography_updated(sender, instance, **kwargs):
         "indicator__dataset__profile", flat=True
     ).order_by("indicator__dataset__profile").distinct())
 
-    # Get hierarchy profile linked to 
+    # Get hierarchy profile linked to
     hierarchy_profile_ids = list(instance.geographyhierarchy_set.values_list(
         "profile", flat=True
     ).order_by("profile").distinct())
