@@ -41,6 +41,8 @@ def last_modified(request, profile_id, key):
 
         if c is not None:
             return c
+        else:
+            return datetime.now()
     else:
         _last_modified = datetime.now()
     return _last_modified
@@ -190,7 +192,7 @@ def geography_updated(sender, instance, **kwargs):
         "indicator__dataset__profile", flat=True
     ).order_by("indicator__dataset__profile").distinct())
 
-    # Get hierarchy profile linked to 
+    # Get hierarchy profile linked to
     hierarchy_profile_ids = list(instance.geographyhierarchy_set.values_list(
         "profile", flat=True
     ).order_by("profile").distinct())
