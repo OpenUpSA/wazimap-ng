@@ -19,7 +19,6 @@ def get_profile_data(profile, geographies):
 
 
 def get_indicator_data(profile, indicators, geographies):
-
     data = (IndicatorData.objects
             .filter(
                 indicator__in=indicators,
@@ -46,6 +45,8 @@ def get_indicator_data(profile, indicators, geographies):
                 geography_code=F("geography__code"),
                 primary_group=F("indicator__groups"),
                 last_updated_at=F("indicator__profileindicator__updated"),
+                content_indicator=F("indicator__profileindicator__content__indicator"),
+                content_type=F("indicator__profileindicator__content__content_type"),
             )
             .order_by("indicator__profileindicator__order")
             )
@@ -72,6 +73,18 @@ def get_dataset_groups(profile: Profile) -> Dict:
     dataset_groups_dict = dict(list(grouped_datasetdata))
 
     return dataset_groups_dict
+
+
+def get_contet(indicator_id, content_type, geography):
+    indicator_data = IndicatorData.objects.filter(
+        indicator_id=indicator_id, geography=geography
+    ).first()
+    if not indicator_data:
+        return {}
+    return {
+        "data": indicator_data.data,
+        "type": content_type
+    }
 
 
 def IndicatorDataSerializer(profile, geography):
@@ -120,7 +133,10 @@ def IndicatorDataSerializer(profile, geography):
                                          "url": x["licence_url"]
                                      },
                                      "primary_group": x["primary_group"][0],
-                                     "groups": dataset_groups_dict[x["dataset"]]
+                                     "groups": dataset_groups_dict[x["dataset"]],
+                                     "content": get_contet(
+                                        x["content_indicator"], x["content_type"], geography
+                                     ),
                                  },
                                  "chart_configuration": x["indicator_chart_configuration"],
                              },

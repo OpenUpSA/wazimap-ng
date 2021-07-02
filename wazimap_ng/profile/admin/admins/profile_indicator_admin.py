@@ -41,6 +41,9 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'description', 'choropleth_method')
         }),
+        ("Qualitative Content", {
+          'fields': ('content_type', 'content_indicator')
+        }),
         ("Charts", {
           'fields': ('chart_configuration',)
         })
@@ -89,3 +92,26 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
             ).order_by("display_name")
             field.queryset = qs
         return field
+
+    def save_model(self, request, obj, form, change):
+        is_new = obj.pk == None
+        content_indicator = form.cleaned_data.get("content_indicator", None)
+        content_type = form.cleaned_data.get("content_type", None)
+        if not change:
+            if content_indicator:
+                obj.content = models.Content.objects.create(
+                    indicator=content_indicator,
+                    content_type=content_type
+                )
+        else:
+            if(
+                "content_indicator" in form.changed_data or 
+                "content_type" in form.changed_data
+            ):
+                content, created = models.Content.objects.update_or_create(
+                    indicator=content_indicator,
+                    content_type=content_type
+                )
+                obj.content = content
+
+        super().save_model(request, obj, form, change)

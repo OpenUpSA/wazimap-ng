@@ -4,7 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 from .geography import Geography, GeographyHierarchy
 from wazimap_ng.general.models import BaseModel
 
-from wazimap_ng.config.common import PERMISSION_TYPES
+from wazimap_ng.config.common import PERMISSION_TYPES, DATASET_CONTENT_TYPES
 
 
 class DatasetQuerySet(models.QuerySet):
@@ -22,6 +22,7 @@ class Dataset(BaseModel):
     groups = ArrayField(models.CharField(max_length=200), blank=True, default=list)
     geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.CASCADE)
     permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="private")
+    content_type = models.CharField(choices=DATASET_CONTENT_TYPES, max_length=32, default="quantitative")
 
     objects = DatasetQuerySet.as_manager()
 
