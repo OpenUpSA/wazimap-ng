@@ -77,6 +77,11 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
             qs = models.IndicatorSubcategory.objects.filter(
                 category__profile_id=profile_id
             )
+
+            if obj.content and obj.content.indicator:
+                form.base_fields["content_indicator"].initial = obj.content.indicator_id
+                form.base_fields["content_type"].initial = obj.content.content_type
+
         elif not obj and request.method == "GET":
              qs = qs = models.IndicatorSubcategory.objects.none()
 

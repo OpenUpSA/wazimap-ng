@@ -54,10 +54,11 @@ class VariableFilterWidget(Widget):
         if value:
             value = queryset.get(id=value)
             selected_permission = value.dataset.permission_type
+
         return {
             'name': name,
             'value': value,
             'choices': queryset,
             'permission_type': selected_permission,
-            "choice_field": choice_field.widget.render("variable_type", selected_permission)
+            "choice_field": choice_field.widget.render(F"{name}_variable_type", selected_permission)
         }
