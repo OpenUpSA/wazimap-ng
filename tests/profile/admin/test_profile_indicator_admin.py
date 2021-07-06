@@ -3,6 +3,7 @@ from django.contrib.admin.sites import AdminSite
 from django.test import SimpleTestCase, TestCase
 
 from tests.profile.factories import ProfileIndicatorFactory, ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory
+from tests.datasets.factories import DatasetFactory, IndicatorFactory
 from wazimap_ng.profile.models import ProfileIndicator
 from wazimap_ng.profile.admin.admins import ProfileIndicatorAdmin
 
@@ -30,6 +31,10 @@ class ProfileIndicatorAdminTests(TestCase):
         indicatorcategory = IndicatorCategoryFactory(profile=profile)
         self.subcategory = IndicatorSubcategoryFactory(category=indicatorcategory)
         self.profile_indicator = ProfileIndicatorFactory(profile=profile)
+
+        # qualitative data
+        dataset2 = DatasetFactory(profile=profile, content_type="qualitative")
+        self.qualitative_indicator = IndicatorFactory(dataset=dataset2)
 
     def setUp(self):
         self.site = AdminSite()
@@ -70,3 +75,22 @@ class ProfileIndicatorAdminTests(TestCase):
             '<option value="" selected>---------</option>'
             '</select></div>'
         )
+
+    def test_indicator_queryset(self):
+        ma = ProfileIndicatorAdmin(ProfileIndicator, self.site)
+        request.method = 'GET'
+        form = ma.get_form(request)()
+        queryset = form.fields["indicator"].queryset
+        assert self.qualitative_indicator not in queryset
+
+        for indicator in queryset:
+            assert indicator.dataset.content_type == "quantitative"
+
+    def test_content_indicator_queryset(self):
+        ma = ProfileIndicatorAdmin(ProfileIndicator, self.site)
+        request.method = 'GET'
+        form = ma.get_form(request)()
+        queryset = form.fields["content_indicator"].queryset
+
+        for indicator in queryset:
+            assert indicator.dataset.content_type == "qualitative"
