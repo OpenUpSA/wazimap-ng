@@ -56,7 +56,7 @@ def loaddata(dataset, iterable, row_number, overwrite=False):
             continue
 
 
-        if dataset.content_type == "quantitative":
+        if dataset.content_type != "qualitative":
             try:
                 count = float(row["count"])
                 if math.isnan(count):
