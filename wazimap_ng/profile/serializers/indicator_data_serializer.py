@@ -76,6 +76,7 @@ def get_dataset_groups(profile: Profile) -> Dict:
 
 
 def get_contet(indicator_id, content_type, geography):
+
     indicator_data = IndicatorData.objects.filter(
         indicator_id=indicator_id, geography=geography
     ).first()
@@ -134,10 +135,10 @@ def IndicatorDataSerializer(profile, geography):
                                      },
                                      "primary_group": x["primary_group"][0],
                                      "groups": dataset_groups_dict[x["dataset"]],
-                                     "content": get_contet(
-                                        x["content_indicator"], x["content_type"], geography
-                                     ),
                                  },
+                                 "content": get_contet(
+                                    x["content_indicator"], x["content_type"], geography
+                                 ),
                                  "chart_configuration": x["indicator_chart_configuration"],
                              },
                              )

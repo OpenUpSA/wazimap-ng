@@ -59,3 +59,9 @@ class ProfileHighlightFactory(factory.django.DjangoModelFactory):
 
     profile = factory.SubFactory(ProfileFactory)
     indicator = factory.SubFactory(datasets_factoryboy.IndicatorFactory)
+
+class ContentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Content
+
+    indicator = factory.SubFactory(datasets_factoryboy.IndicatorFactory)
