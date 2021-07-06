@@ -47,7 +47,7 @@ class ProfileIndicatorAdminTests(TestCase):
     def test_fieldset(self):
         ma = ProfileIndicatorAdmin(ProfileIndicator, self.site)
         request.method = 'GET'
-        self.assertEqual(list(ma.get_form(request, self.profile_indicator).base_fields), ['indicator', 'label', 'subcategory', 'description', 'choropleth_method', 'chart_configuration'])
+        self.assertEqual(list(ma.get_form(request, self.profile_indicator).base_fields), ['indicator', 'label', 'subcategory', 'description', 'choropleth_method', 'content_type', 'content_indicator', 'chart_configuration'])
 
     def test_subcategories_for_indicator(self):
         ma = ProfileIndicatorAdmin(ProfileIndicator, self.site)

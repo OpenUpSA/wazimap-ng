@@ -13,10 +13,10 @@ from wazimap_ng.config.common import (
 
 class ProfileIndicatorAdminForm(forms.ModelForm):
 
-    content_type = forms.ChoiceField(choices=PI_CONTENT_TYPE)
+    content_type = forms.ChoiceField(choices=PI_CONTENT_TYPE, required=False)
     content_indicator = forms.ModelChoiceField(
         queryset=Indicator.objects.filter(dataset__content_type="qualitative"),
-        widget=VariableFilterWidget
+        widget=VariableFilterWidget, required=False
     )
 
     def __init__(self, *args, **kwargs):

@@ -45,7 +45,7 @@ class ProfileKeyMetricsAdminTests(TestCase):
         ma = ProfileKeyMetricsAdmin(ProfileKeyMetrics, self.site)
         request.method = 'GET'
         form = ma.get_form(request)()
-        queryset = form.fields["indicator"].queryset
+        queryset = form.fields["variable"].queryset
         assert self.qualitative_indicator not in queryset
 
         for indicator in queryset:
