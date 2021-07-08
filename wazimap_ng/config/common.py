@@ -56,6 +56,7 @@ class Common(QCluster, Configuration):
         "django_json_widget",        # admin widget for JSONField
         'whitenoise.runserver_nostatic',
         "django_admin_json_editor",
+        "tinymce",
 
         "debug_toolbar",
         "django_q",

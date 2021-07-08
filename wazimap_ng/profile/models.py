@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
+from tinymce.models import HTMLField
 
 from wazimap_ng.datasets.models import Indicator, GeographyHierarchy
 from wazimap_ng.general.models import BaseModel
@@ -11,7 +12,7 @@ class Profile(BaseModel):
     indicators = models.ManyToManyField(Indicator, through="profile.ProfileIndicator", verbose_name="variables")
     geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.PROTECT, null=False)
     permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="public")
-    description = models.TextField(max_length=255, blank=True)
+    description = HTMLField(max_length=255, blank=True)
     configuration = JSONField(default=dict, blank=True)
 
     def __str__(self):
@@ -40,7 +41,7 @@ class ChoroplethMethod(BaseModel):
 class IndicatorCategory(BaseModel):
     name = models.CharField(max_length=255)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    description = models.TextField(blank=True)
+    description = HTMLField(blank=True)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     icon = models.CharField(max_length=30, null=True, blank=True)
 
@@ -55,7 +56,7 @@ class IndicatorCategory(BaseModel):
 class IndicatorSubcategory(BaseModel):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(IndicatorCategory, on_delete=models.CASCADE)
-    description = models.TextField(blank=True)
+    description = HTMLField(blank=True)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
 
     def __str__(self):
@@ -107,7 +108,7 @@ class ProfileIndicator(BaseModel):
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.", verbose_name="variable")
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
     label = models.CharField(max_length=255, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
-    description = models.TextField(blank=True)
+    description = HTMLField(blank=True)
     subindicators = JSONField(default=list, blank=True)
     choropleth_method = models.ForeignKey(ChoroplethMethod, null=False, on_delete=models.CASCADE)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
