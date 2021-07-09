@@ -36,11 +36,13 @@ def check_has_permission(request, profile_id):
 
 def last_modified(request, profile_id, key):
     if check_has_permission(request, profile_id):
-        _last_modified = datetime.now()
+        _last_modified = datetime(year=1970, month=1, day=1)
         c = cache.get(key)
 
         if c is not None:
             return c
+        else:
+            cache.set(key, datetime.now())
     else:
         _last_modified = datetime.now()
     return _last_modified
