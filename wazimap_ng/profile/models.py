@@ -18,7 +18,7 @@ class Profile(BaseModel):
         return self.name
 
     class Meta:
-        ordering = ["id"]
+        ordering = ["name"]
 
 class Logo(BaseModel):
     profile = models.OneToOneField(Profile, null=False, on_delete=models.CASCADE)
