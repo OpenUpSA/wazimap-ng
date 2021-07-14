@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
+from django.db.models.functions import Lower
 
 from wazimap_ng.datasets.models import Indicator, GeographyHierarchy
 from wazimap_ng.general.models import BaseModel
@@ -18,7 +19,7 @@ class Profile(BaseModel):
         return self.name
 
     class Meta:
-        ordering = ["name"]
+        ordering = [Lower("name")]
 
 class Logo(BaseModel):
     profile = models.OneToOneField(Profile, null=False, on_delete=models.CASCADE)
