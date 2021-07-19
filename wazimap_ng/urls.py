@@ -154,6 +154,10 @@ urlpatterns = [
         cache(general_views.consolidated_profile_test),
         name="all-details-test"
     ),
+    path("api/v1/profile/<int:profile_id>/geography/<str:geography_code>/themes_count/",
+        cache(general_views.boundary_point_count),
+        name="themes-count"
+    ),
     path("api/v1/tasks/<str:task_id>/", task_status, name="task_status"),
     path('sentry-debug/', trigger_error),
 
