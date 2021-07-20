@@ -111,5 +111,5 @@ class Command(BaseCommand):
         for idx, s in enumerate(shape):
             self.process_shape(s, field_map, level, version)
 
-        print(f"{idx + 1} geographies successfully loaded")
+            print(f"{idx + 1} geographies successfully loaded")
 
