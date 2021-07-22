@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.postgres.indexes import GinIndex
+from tinymce.models import HTMLField
 
 from treebeard.mp_tree import MP_Node
 from treebeard.mp_tree import MP_NodeManager, MP_NodeQuerySet
@@ -72,7 +73,7 @@ class Geography(MP_Node, BaseModel):
 class GeographyHierarchy(BaseModel):
     name = models.CharField(max_length=50)
     root_geography = models.ForeignKey(Geography, null=False, on_delete=models.CASCADE)
-    description = models.TextField(blank=True)
+    description = HTMLField(blank=True)
 
     @property
     def version(self):

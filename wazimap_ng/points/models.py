@@ -4,6 +4,7 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
+from tinymce.models import HTMLField
 
 import pandas as pd
 from io import BytesIO
@@ -70,7 +71,7 @@ class ProfileCategory(BaseModel):
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, related_name="profile_categories")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="collection")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
-    description = models.TextField(blank=True)
+    description = HTMLField(blank=True)
     icon = models.CharField(max_length=30, null=True, blank=True)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     color = ColorField(blank=True)
