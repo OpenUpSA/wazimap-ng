@@ -15,3 +15,7 @@
 #variable-permission-filter ul>li:first-child{
 	padding-left: 2px;
 }
+
+select[name="content_indicator"] {
+  margin-left: 160px;
+}

@@ -49,6 +49,17 @@ def data(request):
     return request.param
 
 
+qualitative_data = [
+    ("GEOCODE_1", "F1_value_1"),
+    ("GEOCODE_2", "F1_value_2"),
+]
+qualitative_data_header = ["Geography", "content"]
+
+@pytest.fixture(params=[(qualitative_data, qualitative_data_header, "utf8")])
+def qualitative_data(request):
+    return request.param
+
+
 @pytest.mark.django_db
 class TestUploadFile:
     def test_process_csv(self, dataset, data, geographies):
@@ -65,3 +76,24 @@ class TestUploadFile:
             assert dd.data["field1"] == ed[1]
             assert dd.data["field2"] == ed[2]
             assert dd.data["count"] == str(ed[3])
+
+@pytest.mark.django_db
+class TestQualitativeFileUpload:
+    def test_process_csv(self, dataset, qualitative_data, geographies):
+        csv_data, header, encoding = qualitative_data
+        datasetfile = create_datasetfile(csv_data, encoding, header)
+
+        # Check if quantative data can be uploaded without count
+        assert dataset.content_type == "quantitative"
+        with pytest.raises(KeyError) as e_info:
+            process_csv(dataset, datasetfile.document.open("rb"))
+        assert str(e_info.value) == "'count'"
+
+        # Change content type to qualitative
+        dataset2 = DatasetFactory(profile=dataset.profile, content_type="qualitative")
+        process_csv(dataset2, datasetfile.document.open("rb"))
+        datasetdata = dataset2.datasetdata_set.all()
+
+        for dd, ed in zip(datasetdata, csv_data):
+            assert dd.geography.code == ed[0]
+            assert dd.data["content"] == ed[1]

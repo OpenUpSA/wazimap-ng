@@ -1,9 +1,9 @@
 import pytest
 
 from tests.datasets.factories import (
-    GeographyFactory,
-    IndicatorDataFactory,
-    MetaDataFactory
+    GeographyFactory, IndicatorDataFactory,
+    MetaDataFactory, DatasetFactory,
+    GroupFactory ,IndicatorFactory
 )
 from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
 from wazimap_ng.datasets.models.group import Group
@@ -16,6 +16,8 @@ from wazimap_ng.profile.serializers.indicator_data_serializer import (
 from wazimap_ng.profile.serializers.profile_indicator_serializer import (
     FullProfileIndicatorSerializer
 )
+
+from tests.profile.factories import ContentFactory
 
 
 @pytest.fixture
@@ -44,6 +46,48 @@ def metadata(indicator_data):
     dataset = indicator_data[0].indicator.dataset
     return MetaDataFactory(source="A source", url="http://example.com", description="A description", dataset=dataset)
 
+
+
+@pytest.fixture
+def qualitative_dataset(profile):
+    return DatasetFactory(profile=profile, content_type="qualitative")
+
+@pytest.fixture
+def qualitative_groups(qualitative_dataset):
+    return [
+        GroupFactory(
+            dataset=qualitative_dataset,
+            name="content",
+            subindicators=["This is example text", "www.test.com"],
+            can_aggregate=True, can_filter=True),
+    ]
+
+@pytest.fixture
+def qualitative_indicator(qualitative_dataset):
+    subindicators = ["This is example text", "www.test.com"]
+    groups = ["content"]
+    return IndicatorFactory(dataset=qualitative_dataset, subindicators=subindicators, groups=groups)
+
+@pytest.fixture
+def qualitative_indicatordata(qualitative_indicator, geography):
+    return [
+        IndicatorDataFactory(
+            indicator=qualitative_indicator,
+            geography=geography,
+            data=[
+                  {
+                    "content": "This is example text"
+                  },
+                  {
+                    "content": "www.test.com"
+                  }
+            ]
+        )
+    ]
+
+@pytest.fixture
+def qualitative_content(qualitative_indicator):
+    return ContentFactory(indicator=qualitative_indicator)
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("indicator_data")
@@ -116,6 +160,22 @@ class TestIndicatorSerializer:
     def test(self, profile, geography, profile_indicator, category, subcategory):
         serializer = IndicatorDataSerializer(profile, geography)
         assert serializer[category.name]["subcategories"][subcategory.name]["indicators"][""]["id"] == profile_indicator.id
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("groups")
+class TestQualitativeData:
+    def test_without_qualitative_data(self, profile, geography, profile_indicator, category, subcategory):
+        serializer = IndicatorDataSerializer(profile, geography)
+        assert serializer[category.name]["subcategories"][subcategory.name]["indicators"][""]["content"] == {}
+
+    @pytest.mark.usefixtures("qualitative_indicatordata")
+    def test_with_qualitative_data(self, profile, geography, profile_indicator, category, subcategory, qualitative_content):
+        profile_indicator.content = qualitative_content
+        profile_indicator.save()
+        serializer = IndicatorDataSerializer(profile, geography)
+        assert serializer[category.name]["subcategories"][subcategory.name]["indicators"][""]["content"] == {
+            'data': [{'content': 'This is example text'}, {'content': 'www.test.com'}], 'type': 'indicator'
+        }
 
 
 @pytest.mark.django_db

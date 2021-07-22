@@ -55,21 +55,23 @@ def loaddata(dataset, iterable, row_number, overwrite=False):
             warnings.append(list(row.values()))
             continue
 
-        try:
-            count = float(row["count"])
-            if math.isnan(count):
+
+        if dataset.content_type != "qualitative":
+            try:
+                count = float(row["count"])
+                if math.isnan(count):
+                    error_lines.append({
+                        "CSV Line Number": line_no,
+                        "Field Name": "count",
+                        "Error Details": "Missing data for count"
+                    })
+
+            except (TypeError, ValueError):
                 error_lines.append({
                     "CSV Line Number": line_no,
                     "Field Name": "count",
-                    "Error Details": "Missing data for count"
+                    "Error Details": f"Expected a number in the 'count' column, received {row['count']}"
                 })
-
-        except (TypeError, ValueError):
-            error_lines.append({
-                "CSV Line Number": line_no,
-                "Field Name": "count",
-                "Error Details": f"Expected a number in the 'count' column, received {row['count']}"
-            })
 
         if error_lines:
             errors.append({
