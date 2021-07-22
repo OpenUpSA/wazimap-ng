@@ -48,8 +48,6 @@ def test_last_modified_without_permissions(mock_check_has_permission, mock_datet
 def test_last_modified_with_permissions(mock_check_has_permission, mock_request):
     mock_check_has_permission.return_value = True
 
-    assert cache.last_modified(mock_request, 1, "key_not_in_cache") == datetime(1970, 1, 1)
-
     django_cache.set("key_in_cache", "some value")
 
     assert cache.last_modified(mock_request, 1, "key_in_cache") == "some value"

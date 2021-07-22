@@ -41,6 +41,8 @@ def last_modified(request, profile_id, key):
 
         if c is not None:
             return c
+        else:
+            cache.set(key, datetime.now())
     else:
         _last_modified = datetime.now()
     return _last_modified
