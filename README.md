@@ -47,26 +47,20 @@ Version 0.8 is due soon and will fix bugs that currently don't have workarounds.
 
 Local development is normally done inside docker-compose so that the supporting services are available and the environment is very similar to how the application is run in production.
 
-Make docker-compose start the supporting services using
+Make docker-compose start the supporting services
 
     docker-compose run --rm web python wait_for_postgres.py
     
-Run Django migrations with
+Migrate, load development data and start the app
 
     docker-compose run --rm web python manage.py migrate
-    
-Run the tests using
-
-    docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
-    
-Load development data using
-
     docker-compose run --rm web python manage.py loaddata demodata.json
-
-Start the backend using 
-
     docker-compose up
     
+Run the tests
+
+    docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
+
 Run Django manage commands inside docker-compose, e.g. create a superuser:
 
     docker-compose run --rm web python manage.py createsuperuser
