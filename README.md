@@ -61,7 +61,7 @@ Run the tests using
     
 Load development data using
 
-    docker-compose exec web python manage.py loadshp /scripts/za.shp code=code,parent_cod=parent_code,name=name,area=area demo_region demo_version
+    docker-compose run --rm web python manage.py loaddata demodata.json
 
 Start the backend using 
 
