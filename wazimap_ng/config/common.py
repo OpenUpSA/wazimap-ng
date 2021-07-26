@@ -338,14 +338,18 @@ PERMISSION_TYPES = (
     ('public', 'Public'),
 )
 
+
+QUANTITATIVE = "quantitative"
+QUALITATIVE = "qualitative"
+
 DATASET_CONTENT_TYPES = (
-    ('quantitative', 'quantitative'),
-    ('qualitative', 'qualitative')
+    ('quantitative', 'Quantitative'),
+    ('qualitative', 'Qualitative')
 )
 
 PI_CONTENT_TYPE = (
-    ('indicator', 'indicator'),
-    ('html', 'html')
+    ('indicator', 'Indicator'),
+    ('html', 'HTML')
 )
 
 STAFF_GROUPS = ["ProfileAdmin", "DataAdmin"]

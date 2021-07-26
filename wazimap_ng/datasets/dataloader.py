@@ -5,6 +5,8 @@ import logging
 import numpy
 
 from django.db import transaction
+from wazimap_ng.config.common import QUANTITATIVE
+
 
 from . import models
 
@@ -56,7 +58,7 @@ def loaddata(dataset, iterable, row_number, overwrite=False):
             continue
 
 
-        if dataset.content_type != "qualitative":
+        if dataset.content_type == QUANTITATIVE:
             try:
                 count = float(row["count"])
                 if math.isnan(count):

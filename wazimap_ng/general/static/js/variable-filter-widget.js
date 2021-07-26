@@ -1,10 +1,10 @@
 (function($) {
     jQuery(document).ready(function($) {
         $(function () {
-            $("#variable-permission-filter input[type='radio']" ).on('change', ChangeVaribaleValues);
+            $("#variable-permission-filter input[type='radio']" ).on('change', ChangeVariableValues);
         });
 
-        function ChangeVaribaleValues() {
+        function ChangeVariableValues() {
             let permissionType = $(this).val();
             let hiddenPermissionType = permissionType == "public" ? "private": "public";
             let parent = $(this).parents("div");

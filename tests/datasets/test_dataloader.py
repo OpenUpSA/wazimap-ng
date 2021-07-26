@@ -124,7 +124,7 @@ class TestLoadData:
 
     @patch('wazimap_ng.datasets.dataloader.load_geography')
     def test_bad_count(self, load_geography):
-        dataset = Mock()
+        dataset = Mock(content_type="quantitative")
         input_data = [{"geography": "XXX", "count": ""}]
 
         (errors, warnings) = dataloader.loaddata(dataset, input_data, 0)

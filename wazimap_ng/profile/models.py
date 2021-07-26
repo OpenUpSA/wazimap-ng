@@ -103,12 +103,6 @@ class ProfileHighlight(BaseModel):
     class Meta:
         ordering = ["order"]
 
-class Content(BaseModel):
-    content_type = models.CharField(choices=PI_CONTENT_TYPE, max_length=32, default="indicator")
-    indicator = models.ForeignKey(
-        Indicator, on_delete=models.CASCADE, help_text="Indicator on which content is based on", verbose_name="content",
-        null=True
-    )
 
 class ProfileIndicator(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
@@ -122,7 +116,7 @@ class ProfileIndicator(BaseModel):
     choropleth_method = models.ForeignKey(ChoroplethMethod, null=False, on_delete=models.CASCADE)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     chart_configuration = JSONField(default=dict, blank=True)
-    content = models.ForeignKey(Content, null=True, blank=True, on_delete=models.CASCADE)
+    content_type = models.CharField(choices=PI_CONTENT_TYPE, max_length=32, default="indicator")
     
 
     def __str__(self):
