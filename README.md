@@ -59,6 +59,10 @@ Run the tests using
 
     docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
     
+Load development data using
+
+    docker-compose exec web python manage.py loadshp /scripts/za.shp code=code,parent_cod=parent_code,name=name,area=area demo_region demo_version
+
 Start the backend using 
 
     docker-compose up
