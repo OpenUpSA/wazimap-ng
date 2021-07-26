@@ -16,8 +16,7 @@ class TestProfileKeyMetricsAdmin:
 
 
     def test_variable_queryset_excludes_qualitative_indicator(
-            self, factory, mocked_request, superuser, indicator,
-            qualitative_indicator
+            self, mocked_request, indicator, qualitative_indicator
         ):
         ma = ProfileKeyMetricsAdmin(ProfileKeyMetrics, AdminSite())
 

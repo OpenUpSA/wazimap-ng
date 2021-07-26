@@ -1,9 +1,9 @@
 import pytest
 
 from tests.datasets.factories import (
-    GeographyFactory, IndicatorDataFactory,
-    MetaDataFactory, DatasetFactory,
-    GroupFactory ,IndicatorFactory
+    GeographyFactory,
+    IndicatorDataFactory,
+    MetaDataFactory
 )
 from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
 from wazimap_ng.datasets.models.group import Group

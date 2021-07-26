@@ -15,8 +15,7 @@ class TestProfileHighlightAdmin:
         assert str(admin_site) == 'profile.ProfileHighlightAdmin'
 
     def test_indicator_queryset_excludes_qualitative_indicator(
-            self, factory, mocked_request, superuser, indicator,
-            qualitative_indicator
+            self, mocked_request, indicator, qualitative_indicator
         ):
         ma = ProfileHighlightAdmin(ProfileHighlight, AdminSite())
         # Assert that there are both quantative and qualitative type of indicator available
