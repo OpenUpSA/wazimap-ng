@@ -36,13 +36,10 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'indicator')
+            'fields': ('profile', 'indicator', 'content_type')
         }),
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'description', 'choropleth_method')
-        }),
-        ("Qualitative Content", {
-          'fields': ('content_type', 'content_indicator')
         }),
         ("Charts", {
           'fields': ('chart_configuration',)
@@ -78,10 +75,6 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
                 category__profile_id=profile_id
             )
 
-            if obj.content and obj.content.indicator:
-                form.base_fields["content_indicator"].initial = obj.content.indicator_id
-                form.base_fields["content_type"].initial = obj.content.content_type
-
         elif not obj and request.method == "GET":
              qs = qs = models.IndicatorSubcategory.objects.none()
 
@@ -97,26 +90,3 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
             ).order_by("display_name")
             field.queryset = qs
         return field
-
-    def save_model(self, request, obj, form, change):
-        is_new = obj.pk == None
-        content_indicator = form.cleaned_data.get("content_indicator", None)
-        content_type = form.cleaned_data.get("content_type", None)
-        if not change:
-            if content_indicator:
-                obj.content = models.Content.objects.create(
-                    indicator=content_indicator,
-                    content_type=content_type
-                )
-        else:
-            if(
-                "content_indicator" in form.changed_data or 
-                "content_type" in form.changed_data
-            ):
-                content, created = models.Content.objects.update_or_create(
-                    indicator=content_indicator,
-                    content_type=content_type
-                )
-                obj.content = content
-
-        super().save_model(request, obj, form, change)

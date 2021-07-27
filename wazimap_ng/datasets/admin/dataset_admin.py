@@ -47,8 +47,8 @@ class DatasetAdmin(DatasetBaseAdminModel):
     actions = (set_to_public, set_to_private, delete_selected_data,)
     list_display = ("name", "permission_type", "geography_hierarchy", "profile", description("source", get_source))
     list_filter = (
-        PermissionTypeFilter, filters.GeographyHierarchyFilter,
-        filters.ProfileFilter, filters.DatasetMetaDataFilter
+        PermissionTypeFilter, filters.GeographyHierarchyFilter, "content_type",
+        filters.ProfileFilter, filters.DatasetMetaDataFilter,
     )
     form = DatasetAdminForm
     search_fields = ("name", )

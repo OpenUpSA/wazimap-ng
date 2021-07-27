@@ -49,15 +49,15 @@ def data(request):
     return request.param
 
 
-qualitative_data = [
+qualitative_content = [
     ("GEOCODE_1", "F1_value_1"),
     ("GEOCODE_2", "F1_value_2"),
 ]
 qualitative_data_header = ["Geography", "content"]
 
-@pytest.fixture(params=[(qualitative_data, qualitative_data_header, "utf8")])
-def qualitative_data(request):
-    return request.param
+@pytest.fixture
+def qualitative_data():
+    return (qualitative_content, qualitative_data_header, "utf8")
 
 
 @pytest.mark.django_db

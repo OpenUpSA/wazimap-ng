@@ -39,14 +39,14 @@ def get_indicator_data(profile, indicators, geographies):
                 metadata_source=F("indicator__dataset__metadata__source"),
                 metadata_description=F("indicator__dataset__metadata__description"),
                 metadata_url=F("indicator__dataset__metadata__url"),
+                dataset_content_type=F("indicator__dataset__content_type"),
                 licence_url=F("indicator__dataset__metadata__licence__url"),
                 licence_name=F("indicator__dataset__metadata__licence__name"),
                 indicator_chart_configuration=F("indicator__profileindicator__chart_configuration"),
                 geography_code=F("geography__code"),
                 primary_group=F("indicator__groups"),
                 last_updated_at=F("indicator__profileindicator__updated"),
-                content_indicator=F("indicator__profileindicator__content__indicator"),
-                content_type=F("indicator__profileindicator__content__content_type"),
+                content_type=F("indicator__profileindicator__content_type"),
             )
             .order_by("indicator__profileindicator__order")
             )
@@ -73,19 +73,6 @@ def get_dataset_groups(profile: Profile) -> Dict:
     dataset_groups_dict = dict(list(grouped_datasetdata))
 
     return dataset_groups_dict
-
-
-def get_contet(indicator_id, content_type, geography):
-
-    indicator_data = IndicatorData.objects.filter(
-        indicator_id=indicator_id, geography=geography
-    ).first()
-    if not indicator_data:
-        return {}
-    return {
-        "data": indicator_data.data,
-        "type": content_type
-    }
 
 
 def IndicatorDataSerializer(profile, geography):
@@ -136,9 +123,8 @@ def IndicatorDataSerializer(profile, geography):
                                      "primary_group": x["primary_group"][0],
                                      "groups": dataset_groups_dict[x["dataset"]],
                                  },
-                                 "content": get_contet(
-                                    x["content_indicator"], x["content_type"], geography
-                                 ),
+                                 "content_type": x["content_type"],
+                                 "dataset_content_type": x["dataset_content_type"],
                                  "chart_configuration": x["indicator_chart_configuration"],
                              },
                              )

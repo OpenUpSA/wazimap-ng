@@ -16,7 +16,7 @@
             var $help_div = $(document).find(".field-geography_hierarchy .help");
 
             if (geographyHierarchyID) {
-                var url = '/api/v1/geography/hierarchies/' + geographyHierarchyID + "/";
+                var url = `/api/v1/geography/hierarchies/${geographyHierarchyID}/`;
                 $.ajax({
                     url: url,
                     success: function(data) {
@@ -28,7 +28,7 @@
                             $help_div = $(document).find(".field-geography_hierarchy .help");
                         }
                         let description = data.description.length ? data.description : "Description not Provided for this hierarchy."
-                        $help_div.append(data.name + " : " + description);
+                        $help_div.append(`${data.name} : ${description}`);
                     }
                 })
             } else {
@@ -44,7 +44,7 @@
             var $help_div = $(document).find(".field-geography_hierarchy .help");
 
             if (profileID) {
-                var url = '/api/v1/profiles/' + profileID + "/";
+                var url = `/api/v1/profiles/${profileID}/`;
                 $.ajax({
                     url: url,
                     success: function(data) {
@@ -60,7 +60,7 @@
                                 $help_div = $(document).find(".field-geography_hierarchy .help");
                             }
                             let description = data.geography_hierarchy.description.length ? data.geography_hierarchy.description : "Description not Provided for this hierarchy."
-                            $help_div.append(data.name + " : " + description);
+                            $help_div.append(`${data.name} : ${description}`);
                         }
                         
                     }

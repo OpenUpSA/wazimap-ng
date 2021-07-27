@@ -60,5 +60,5 @@ class VariableFilterWidget(Widget):
             'value': value,
             'choices': queryset,
             'permission_type': selected_permission,
-            "choice_field": choice_field.widget.render(F"{name}_variable_type", selected_permission)
+            "choice_field": choice_field.widget.render(f"{name}_variable_type", selected_permission)
         }
