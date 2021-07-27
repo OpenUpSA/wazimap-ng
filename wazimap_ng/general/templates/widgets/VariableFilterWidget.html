@@ -7,6 +7,7 @@
 	<option 
 		value="{{ choice.id }}"
 		data-type="{{ choice.dataset.permission_type }}"
+		data-contenttype="{{ choice.dataset.content_type }}"
 		class="{% if permission_type != choice.dataset.permission_type %} hidden {% endif %}"
 		{% if value.id == choice.id %} selected {% endif %}
 	> {{ choice }}</option>

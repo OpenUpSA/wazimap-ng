@@ -113,7 +113,7 @@ class ProfileIndicator(BaseModel):
     label = models.CharField(max_length=255, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
     description = models.TextField(blank=True)
     subindicators = JSONField(default=list, blank=True)
-    choropleth_method = models.ForeignKey(ChoroplethMethod, null=False, on_delete=models.CASCADE)
+    choropleth_method = models.ForeignKey(ChoroplethMethod, null=True, blank=True, on_delete=models.CASCADE)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     chart_configuration = JSONField(default=dict, blank=True)
     content_type = models.CharField(choices=PI_CONTENT_TYPE, max_length=32, default="indicator")

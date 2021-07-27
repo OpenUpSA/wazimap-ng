@@ -38,6 +38,17 @@
                 clearSubcategories();
             }
         }
+
+        $(document).find("#id_indicator").on("change", function(){
+            let contentType = $(this).find(":selected").data("contenttype");
+            if (contentType == "qualitative"){
+                $(".field-choropleth_method").hide();
+                $(".field-chart_configuration").parents("fieldset").hide();
+            } else {
+                $(".field-choropleth_method").show();
+                $(".field-chart_configuration").parents("fieldset").show();
+            }
+        });
     });
 })(django.jQuery);
 
