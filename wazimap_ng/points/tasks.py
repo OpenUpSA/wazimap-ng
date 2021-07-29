@@ -35,6 +35,7 @@ def process_uploaded_file(point_file, subtheme, **kwargs):
         header=None,
         keep_default_na=False,
         encoding=encoding,
+        dtype=str
     ):
         df.columns = old_columns
         df = df.loc[:, new_columns]
