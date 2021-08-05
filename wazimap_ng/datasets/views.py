@@ -226,7 +226,7 @@ def geography_ancestors(request, geography_code, version):
     Returns parent geographies of the given geography code
     Return a 404 HTTP response if the is the code is not found
     """
-    geos = models.Geography.objects.filter(code=geography_code, version=version)
+    geos = models.Geography.objects.filter(code=geography_code, versions__name=version)
     if geos.count() == 0:
         raise Http404 
 

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.postgres.indexes import GinIndex
 from tinymce.models import HTMLField
+from django.contrib.postgres.fields import JSONField
 
 from treebeard.mp_tree import MP_Node
 from treebeard.mp_tree import MP_NodeManager, MP_NodeQuerySet
@@ -8,6 +9,13 @@ from treebeard.mp_tree import MP_NodeManager, MP_NodeQuerySet
 from django.contrib.postgres.search import TrigramSimilarity
 from wazimap_ng.extensions.index import GinTrgmIndex
 from wazimap_ng.general.models import BaseModel
+
+
+class Version(BaseModel):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
 
 
 class GeographyQuerySet(MP_NodeQuerySet):
@@ -30,10 +38,10 @@ class Geography(MP_Node, BaseModel):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=20)
     level = models.CharField(max_length=20)
-    version = models.CharField(max_length=20, blank=True)
+    versions = models.ManyToManyField(Version, blank=True)
 
     def __str__(self):
-        return f"{self.name} ({self.version})"
+        return f"{self.name}"
 
     objects = GeographyManager()
 
@@ -53,9 +61,9 @@ class Geography(MP_Node, BaseModel):
         siblings = super(Geography, self).get_siblings()
         return siblings.filter(version=self.version)
 
-    def get_child_boundaries(self):
+    def get_child_boundaries(self, versions):
         from ...boundaries.models import GeographyBoundary
-        children = self.get_children()
+        children = self.get_children().filter(versions__in=versions)
         codes = [c.code for c in children]
         levels = set(c.level for c in children)
 
@@ -65,7 +73,11 @@ class Geography(MP_Node, BaseModel):
             for child_level in levels:
                 child_types[child_level] = (
                     GeographyBoundary.objects
-                        .filter(geography__code__in=codes, geography__level=child_level, geography__version=self.version)
+                        .filter(
+                            geography__code__in=codes,
+                            geography__level=child_level,
+                            version__in=versions
+                        )
                         .select_related("geography")
                 )
         return child_types
@@ -74,6 +86,7 @@ class GeographyHierarchy(BaseModel):
     name = models.CharField(max_length=50)
     root_geography = models.ForeignKey(Geography, null=False, on_delete=models.CASCADE)
     description = HTMLField(blank=True)
+    configuration = JSONField(default=dict, blank=True)
 
     @property
     def version(self):

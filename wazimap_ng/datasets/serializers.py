@@ -5,7 +5,7 @@ from . import models
 class GeographySerializer(serializers.ModelSerializer):
     class Meta:
         model = Geography
-        fields = ["name", "code", "level", "version"]
+        fields = ["name", "code", "level", "versions"]
 
 class GeographyHierarchySerializer(serializers.ModelSerializer):
     root_geography = GeographySerializer()
@@ -20,7 +20,7 @@ class AncestorGeographySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Geography
-        fields = ["name", "code", "level", "version", "parents"]
+        fields = ["name", "code", "level", "versions", "parents"]
 
 class DatasetSerializer(serializers.ModelSerializer):
 	class Meta:

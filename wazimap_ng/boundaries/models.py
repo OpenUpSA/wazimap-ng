@@ -1,7 +1,7 @@
 from django.db import models
 
 from django.contrib.gis.db import models
-from ..datasets.models import Geography
+from ..datasets.models import Geography, Version
 from .fields import CachedMultiPolygonField
 from ..points.models import Location
 from django_q.tasks import async_task
@@ -16,10 +16,15 @@ class GeographyBoundaryManager(models.Manager):
         return obj
 
 class GeographyBoundary(BaseModel):
-    geography = models.OneToOneField(Geography, on_delete=models.PROTECT, null=False)
-
+    geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=False)
+    version = models.ForeignKey(Version, on_delete=models.PROTECT, null=True)
     area = models.FloatField()
     geom = models.MultiPolygonField(srid=4326, null=True)
     geom_cache = CachedMultiPolygonField(field_name="geom")
     objects = GeographyBoundaryManager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["version", "geography"], name="unique_geography_version")
+        ]
   

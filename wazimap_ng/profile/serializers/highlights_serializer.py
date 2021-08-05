@@ -1,4 +1,4 @@
-from wazimap_ng.datasets.models import IndicatorData 
+from wazimap_ng.datasets.models import IndicatorData
 
 from .helpers import MetricCalculator
 
@@ -7,7 +7,7 @@ def get_indicator_data(highlight, geographies):
         indicator__profilehighlight=highlight, geography__in=geographies
     )
 
-def absolute_value(highlight, geography):
+def absolute_value(highlight, geography, versions):
     indicator_data = get_indicator_data(highlight, [geography]).first()
     if indicator_data:
         return MetricCalculator.absolute_value(
@@ -16,7 +16,7 @@ def absolute_value(highlight, geography):
     return None
 
 
-def subindicator(highlight, geography):
+def subindicator(highlight, geography, versions):
     indicator_data = get_indicator_data(highlight, [geography]).first()
     if indicator_data:
         return MetricCalculator.subindicator(
@@ -25,8 +25,8 @@ def subindicator(highlight, geography):
     return None
 
 
-def sibling(highlight, geography):
-    siblings = list(geography.get_siblings())
+def sibling(highlight, geography, versions):
+    siblings = list(geography.get_siblings().filter(versions__in=versions))
     indicator_data = get_indicator_data(highlight, [geography] + siblings)
 
     if indicator_data:
@@ -39,7 +39,7 @@ algorithms = {
     "subindicators": subindicator
 }
 
-def HighlightsSerializer(profile, geography):
+def HighlightsSerializer(profile, geography, versions):
     highlights = []
 
     profile_highlights = profile.profilehighlight_set.all().order_by("order")
@@ -47,7 +47,7 @@ def HighlightsSerializer(profile, geography):
     for highlight in profile_highlights:
         denominator = highlight.denominator
         method = algorithms.get(denominator, absolute_value)
-        val = method(highlight, geography)
+        val = method(highlight, geography, versions)
 
         if val is not None:
             highlights.append({"label": highlight.label, "value": val, "method": denominator})

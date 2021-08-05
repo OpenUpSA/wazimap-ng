@@ -45,7 +45,7 @@ class GeographyBoundarySerializer(GeographySerializer):
     level = serializers.SerializerMethodField()
     code = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
-    version = serializers.SerializerMethodField()
+    # versions = serializers.SerializerMethodField()
     #themes = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
@@ -60,11 +60,11 @@ class GeographyBoundarySerializer(GeographySerializer):
     def get_name(self, obj):
         return obj.geography.name
 
-    def get_version(self, obj):
-        return obj.geography.version
+    def get_versions(self, obj):
+        return obj.geography.versions
 
     class Meta:
         model = models.GeographyBoundary
         geo_field = "geom_cache"
 
-        fields = ("code", "name", "area", "parent", "level", "version")
+        fields = ("code", "name", "area", "parent", "level")

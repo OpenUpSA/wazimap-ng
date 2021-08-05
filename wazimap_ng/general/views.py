@@ -26,19 +26,20 @@ logger.setLevel(logging.DEBUG)
 
 def consolidated_profile_helper(profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
-    version = profile.geography_hierarchy.root_geography.version
-    geography = dataset_models.Geography.objects.get(code=geography_code, version=version)
+    versions_list = profile.geography_hierarchy.configuration.get("versions", [])
+    versions = dataset_models.Version.objects.filter(name__in=versions_list)
+    geography = dataset_models.Geography.objects.get(code=geography_code, versions__in=versions)
 
-    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography)
-    boundary_js = boundaries_views.geography_item_helper(geography_code, version)
-    children_boundary_js = boundaries_views.geography_children_helper(geography_code, version)
+    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, versions)
+    boundary_js = boundaries_views.geography_item_helper(geography_code, versions)
+    children_boundary_js = boundaries_views.geography_children_helper(geography_code, versions)
 
     parent_layers = []
     parents = profile_js["geography"]["parents"]
     children_levels = [p["level"] for p in parents[1:]] + [profile_js["geography"]["level"]]
     pairs = zip(parents, children_levels)
     for parent, children_level in pairs:
-        layer = boundaries_views.geography_children_helper(parent["code"], version)
+        layer = boundaries_views.geography_children_helper(parent["code"], versions)
         if children_level in layer:
             parent_layers.append(layer[children_level])
 
@@ -84,7 +85,7 @@ def authenticate_admin(user):
 def notifications_view(request):
     messages = request.session.pop("notifications", [])
     task_list = request.session.get("task_list", [])
-    
+
     if messages and task_list:
         for message in messages:
             if "task_id" in message:

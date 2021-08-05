@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
-from .geography import Geography, GeographyHierarchy
+from .geography import Geography, GeographyHierarchy, Version
 from wazimap_ng.general.models import BaseModel
 
 from wazimap_ng.config.common import (
@@ -25,6 +25,7 @@ class Dataset(BaseModel):
     geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.CASCADE)
     permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="private")
     content_type = models.CharField(choices=DATASET_CONTENT_TYPES, max_length=32, default=QUANTITATIVE)
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, null=True)
 
     objects = DatasetQuerySet.as_manager()
 

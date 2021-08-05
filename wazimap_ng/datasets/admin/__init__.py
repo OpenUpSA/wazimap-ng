@@ -14,16 +14,14 @@ from .. import models
 
 
 @admin.register(models.Geography)
-
-
 class GeographyAdmin(TreeAdmin):
     form = movenodeform_factory(models.Geography)
     list_display = (
-        "name", "code", "level", "version", "created", "updated"
+        "name", "code", "level", "created", "updated"
     )
 
     search_fields = ("name", "code")
-    list_filter = ("level", "version")
+    list_filter = ("level", "versions")
 
 @admin.register(models.GeographyHierarchy)
 class GeographyHierarchyAdmin(admin.ModelAdmin):
@@ -44,6 +42,13 @@ class UniverseAdmin(admin.ModelAdmin):
   
 @admin.register(models.Licence)
 class LicenceAdmin(admin.ModelAdmin):
+    list_display = (
+        "name", "created", "updated"
+    )
+
+
+@admin.register(models.Version)
+class VersionAdmin(admin.ModelAdmin):
     list_display = (
         "name", "created", "updated"
     )
