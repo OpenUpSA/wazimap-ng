@@ -25,6 +25,7 @@ def delete_selected_data(modeladmin, request, queryset):
         if not modeladmin.has_delete_permission(request):
             raise PermissionDenied
         n = queryset.count()
+
         if n:
             for obj in queryset:
                 obj_display = str(obj)
@@ -36,13 +37,9 @@ def delete_selected_data(modeladmin, request, queryset):
                 task_name=f"Deleting data: {objects_name}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
-                type="delete"
+                type="delete", notify=True,
             )
             modeladmin.delete_queryset(request, queryset)
-            modeladmin.message_user(request, "Successfully deleted %(count)d %(items)s." % {
-                "count": n, "items": model_ngettext(modeladmin.opts, n)
-            }, messages.SUCCESS)
-        # Return None to display the change list page again.
         return None
 
     context = {
@@ -73,6 +70,13 @@ delete_selected_data.short_description = "Delete selected objects"
 class DatasetBaseAdminModel(BaseAdminModel):
 
     actions = [delete_selected_data]
+    def message_user(self, *args, **kwargs):
+        request = args[0]
+        if request and "delete" in request.path:
+            pass
+        else:
+            return super().message_user(*args, **kwargs)
+
 
     def delete_view(self, request, object_id, extra_context=None):
         opts = self.model._meta
@@ -83,7 +87,6 @@ class DatasetBaseAdminModel(BaseAdminModel):
             raise DisallowedModelAdminToField("The field %s cannot be referenced." % to_field)
 
         obj = self.get_object(request, unquote(object_id), to_field)
-
         if not self.has_delete_permission(request, obj):
             raise PermissionDenied
 
@@ -105,7 +108,12 @@ class DatasetBaseAdminModel(BaseAdminModel):
                 task_name=f"Deleting data: {obj.name}",
                 hook="wazimap_ng.datasets.hooks.process_task_info",
                 key=request.session.session_key,
-                type="delete"
+                type="delete", notify=True
+            )
+            hooks.custom_admin_notification(
+                request.session,
+                "info",
+                f"Started deletion process for dataset : {obj.name}. We will let you know when it's done"
             )
 
             return self.response_delete(request, obj_display, obj_id)
