@@ -38,6 +38,7 @@ class Geography(MP_Node, BaseModel):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=20)
     level = models.CharField(max_length=20)
+    version = models.CharField(max_length=20, null=True, blank=True)
     versions = models.ManyToManyField(Version, blank=True)
 
     def __str__(self):
@@ -52,10 +53,6 @@ class Geography(MP_Node, BaseModel):
             models.Index(fields=["code"], name="idx_datasets_geography_code"),
         ]
         ordering = ["id"]
-
-        constraints = [
-            models.UniqueConstraint(fields=["version", "code"], name="unique_geography_code_version")
-        ]
 
     def get_siblings(self):
         siblings = super(Geography, self).get_siblings()
@@ -90,7 +87,7 @@ class GeographyHierarchy(BaseModel):
 
     @property
     def version(self):
-        return self.root_geography.version
+        return self.root_geography.configuration.get("versions", [])
 
     def help_text(self):
         return f"{self.name} : {self.description}"

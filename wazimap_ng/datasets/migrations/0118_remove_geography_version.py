@@ -10,6 +10,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RemoveConstraint(
+            model_name='geography',
+            name='unique_geography_code_version',
+        ),
         migrations.RemoveField(
             model_name='geography',
             name='version',

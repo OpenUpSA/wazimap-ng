@@ -62,7 +62,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
         }),
         ("Dataset Imports", {
             "fields": (
-                "content_type", "import_dataset", "imported_dataset",
+                "version", "content_type", "import_dataset", "imported_dataset",
             )
         }),
     )
