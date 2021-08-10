@@ -45,7 +45,12 @@ data_with_different_encodings = [
     (150.12345, 30.12345, "€ŠPointFile1®®"),
 ]
 
+data_with_additional_variables = [
+    (123.45678, 36.84302, "PointFile1", "0123456789"),
+]
+
 good_header = ["longitude", "latitude", "name"]
+header_with_additional_variables = ["longitude", "latitude", "name", "phone number"]
 
 to_be_fixed_header = [" longitude ", " latitude", "name "]
 
@@ -56,6 +61,7 @@ to_be_fixed_header = [" longitude ", " latitude", "name "]
         (good_data, to_be_fixed_header, "utf8"),
         (data_with_different_case, good_header, "utf8"),
         (data_with_different_encodings, good_header, "Windows-1252"),
+        (data_with_additional_variables, header_with_additional_variables, "utf8"),
     ]
 )
 def data(request):
@@ -79,3 +85,7 @@ class TestUploadFile:
         for dd, ed in zip(location_data, csv_data):
             assert pytest.approx(dd.coordinates.x) == ed[0]
             assert pytest.approx(dd.coordinates.y) == ed[1]
+
+            if len(dd.data) > 0:
+                if dd.data[0]["key"] == "phone number":
+                    assert ed[3] == dd.data[0]["value"]
