@@ -83,6 +83,8 @@ class TestUploadFile:
         assert len(location_data) == len(csv_data)
 
         for dd, ed in zip(location_data, csv_data):
+            assert type(dd.coordinates.y) == float
+            assert type(dd.coordinates.y) == float
             assert pytest.approx(dd.coordinates.x) == ed[0]
             assert pytest.approx(dd.coordinates.y) == ed[1]
 
