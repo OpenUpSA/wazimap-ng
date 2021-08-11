@@ -24,4 +24,4 @@ jobs:
       - name: Start server
         run: docker-compose up -d
       - name: Check that the server has a profile
-        run: wget --retry-connrefused --waitretry=1 --read-timeout=10 --timeout=10 --tries=10 -O-  "http://localhost:8000/api/v1/profiles/1/" | grep "Demo"
+        run: wget --retry-connrefused --waitretry=1 --read-timeout=10 --timeout=10 --tries=10 -O-  "http://localhost:8000/api/v1/profiles/2/" | grep "TestDemo"
