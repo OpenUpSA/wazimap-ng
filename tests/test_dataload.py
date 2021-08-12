@@ -22,7 +22,7 @@ class SiteTests(TestCase):
         self.assertEquals(geography.name, 'South Africa')
         
         dataset = Dataset.objects.get(pk=1)
-        self.assertEquals(dataset.name, 'Population dataset')
+        self.assertEquals(dataset.name, 'Language dataset')
     
     def testPoints(self):
         collection = Category.objects.get(pk=1)
