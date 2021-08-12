@@ -31,26 +31,9 @@ def delete_selected_data(modeladmin, request, queryset):
             request.user, Profile, include_public=False
         )
 
-        queryset_count = queryset.count()
-        if queryset_count:
-            if queryset.exclude(profile__in=user_profiles).count() == 0:
-                for obj in queryset:
-                    obj_display = str(obj)
-                    modeladmin.log_deletion(request, obj, obj_display)
-
-                async_task(
-                    'wazimap_ng.datasets.tasks.delete_data',
-                    queryset, objects_name,
-                    task_name=f"Deleting data: {objects_name}",
-                    hook="wazimap_ng.datasets.hooks.process_task_info",
-                    key=request.session.session_key,
-                    type="delete", notify=True
-                )
-                modeladmin.delete_queryset(request, queryset)
-                modeladmin.message_user(request, "Successfully deleted %(count)d %(items)s." % {
-                    "count": queryset_count, "items": model_ngettext(modeladmin.opts, queryset_count)
-                }, messages.SUCCESS)
-            else:
+        if queryset.count():
+            selected_objects_without_permission = queryset.exclude(profile__in=user_profiles).count() > 0
+            if selected_objects_without_permission:
                 modeladmin.message_user(
                     request,
                     """
@@ -58,6 +41,18 @@ def delete_selected_data(modeladmin, request, queryset):
                           Please review your selection and try again
                     """,
                     messages.ERROR
+                )
+            else:
+                for obj in queryset:
+                    obj_display = str(obj)
+                    modeladmin.log_deletion(request, obj, obj_display)
+                async_task(
+                    'wazimap_ng.datasets.tasks.delete_data',
+                    queryset, objects_name,
+                    task_name=f"Deleting data: {objects_name}",
+                    hook="wazimap_ng.datasets.hooks.process_task_info",
+                    key=request.session.session_key,
+                    type="delete", notify=True
                 )
         return None
 

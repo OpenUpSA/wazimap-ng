@@ -12,12 +12,13 @@ def delete_data(data, object_name, **kwargs):
     """
     Delete data
     """
+    str_of_objs = [str(x) for x in data]
     data.delete()
 
     is_queryset = isinstance(data, QuerySet)
 
     return {
         "is_queryset": is_queryset,
-        "data": data,
+        "data": str_of_objs,
         "object_name": object_name,
     }

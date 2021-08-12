@@ -21,9 +21,20 @@ from tests.profile.factories import (
     ProfileIndicatorFactory,
     ProfileKeyMetricsFactory
 )
-from wazimap_ng.datasets.models import Geography, GeographyHierarchy
+
+from tests.general.factories import (
+    UserFactory, AuthGroupFactory
+)
+
+from wazimap_ng.datasets.models import (
+    Geography, GeographyHierarchy, Dataset
+)
+from wazimap_ng.profile.models import Profile
 
 from django.test import RequestFactory
+from guardian.shortcuts import (
+    get_perms_for_model, assign_perm
+)
 
 
 class MockSuperUser:
@@ -34,10 +45,19 @@ class MockSuperUser:
     def is_superuser(self):
         return True
 
-
 @pytest.fixture
 def superuser():
     return MockSuperUser()
+
+@pytest.fixture
+def data_admin_group():
+    return AuthGroupFactory(name="DataAdmin")
+
+@pytest.fixture
+def data_admin_user(data_admin_group):
+    user = UserFactory(is_staff=True)
+    user.groups.add(data_admin_group)
+    return user
 
 
 @pytest.fixture
@@ -50,6 +70,14 @@ def mocked_request(factory, superuser):
     request = factory.get('/get/request')
     request.method = 'GET'
     request.user = superuser
+    return request
+
+
+@pytest.fixture
+def mocked_request_dataadmin(factory, data_admin_user):
+    request = factory.get('/get/request')
+    request.method = 'GET'
+    request.user = data_admin_user
     return request
 
 
@@ -103,8 +131,34 @@ def profile(geography_hierarchy):
 
 
 @pytest.fixture
+def profile_group(profile):
+    profile_group = AuthGroupFactory(name=profile.name)
+    for perm in get_perms_for_model(Profile):
+        assign_perm(perm, profile_group, profile)
+
+    return profile_group
+
+
+@pytest.fixture
 def dataset(profile):
-    return DatasetFactory(profile=profile)
+    dataset = DatasetFactory(profile=profile, name="private dataset")
+
+    # Assign perms of dataset object to profile group
+    profile_group = AuthGroupFactory(name=profile.name)
+    for perm in get_perms_for_model(Dataset):
+        assign_perm(perm, profile_group, dataset)
+    return dataset
+
+@pytest.fixture
+def public_dataset(profile):
+    dataset = DatasetFactory(
+        profile=profile, permission_type="public",
+        name="public dataset"
+    )
+    profile_group = AuthGroupFactory(name=profile.name)
+    for perm in get_perms_for_model(Dataset):
+        assign_perm(perm, profile_group, dataset)
+    return dataset
 
 
 @pytest.fixture

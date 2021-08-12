@@ -20,7 +20,7 @@ class Notify:
 
     generic_messages = {
         "delete" : {
-            "success": "Data deleted for %s",
+            "success": "Data deleted for %s - %s",
             "error": "Error in deleting data for %s",
         },
         "upload" : {
@@ -79,8 +79,15 @@ class Notify:
         """
         Get Generic message according to notification type.
         """
+        name = results["data"]
+        if isinstance(name, list) and len(name):
+            if len(name) > 1:
+                name = f"{name[0]} and {len(name) - 1} others."
+            else:
+                name = name[0]
+
         message = self.generic_messages[task_type][notification_type]
-        return message % obj
+        return message % (results["object_name"], name)
 
 def process_task_info(task):
     """
