@@ -89,8 +89,10 @@ class Command(BaseCommand):
         else:
             geo_shape = geometry
 
-        if fields["parent_code"] is None:
-            process_as_root = input(f"""Geography '{fields["code"]}' does not have a parent. Load it as a root geography? (Y/N)?""")
+        if level == "country":
+            return self.process_root(fields, geo_shape)
+        elif fields["parent_code"] is None :
+            process_as_root = input(f"""Geography '{fields["code"]}' does not have a parent. Load it as a root geography? (Y/n)?""")
             if not process_as_root.lower().startswith('n'):
                 return self.process_root(fields, geo_shape)
             return
