@@ -2,6 +2,7 @@ from test_plus import APITestCase
 import pytest
 
 from django.contrib.gis.geos import Point, Polygon, MultiPolygon
+from django.urls import reverse
 
 from wazimap_ng.points.models import Theme
 from wazimap_ng.points.serializers import ThemeSerializer
@@ -53,6 +54,20 @@ class TestThemeView:
         expected = ThemeSerializer(instance=themes, many=True).data
         actual = tp_api.last_response.json()
 
+        assert actual == expected
+
+
+    def test_points_themes_list_for_private_profile(
+            self, client, private_profile, private_profile_theme, profile_admin_user, private_profile_group
+        ):
+        profile_admin_user.groups.add(private_profile_group)
+        client.force_login(user=profile_admin_user)
+        res = client.get(reverse("points-themes", args=(private_profile.id,)))
+        assert res.status_code == 200
+        actual = res.json()
+
+        themes = Theme.objects.filter(profile=private_profile)
+        expected = ThemeSerializer(instance=themes, many=True).data
         assert actual == expected
 
 class TestLocationView(APITestCase):
