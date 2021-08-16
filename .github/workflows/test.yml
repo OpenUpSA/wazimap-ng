@@ -13,5 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: docker-compose run --rm web python wait_for_postgres.py
+      - run: docker-compose run --rm web python manage.py collectstatic --no-input
       - name: Run tests
         run: docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
