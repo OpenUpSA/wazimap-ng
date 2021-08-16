@@ -17,7 +17,7 @@ from tests.general.factories import TaskFactory
 class TestConsolidatedProfileView(APITestCase):
 
     def setUp(self):
-        self.geography = GeographyFactory()
+        self.geography = GeographyFactory(depth=0, path='path_0')
         GeographyBoundaryFactory(geography=self.geography)
         self.hierarchy = GeographyHierarchyFactory(root_geography=self.geography)
         self.profile = ProfileFactory(geography_hierarchy=self.hierarchy)
