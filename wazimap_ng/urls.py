@@ -150,6 +150,11 @@ urlpatterns = [
     ),
 
     path(
+        "api/v1/indicator_data/profile/<int:profile_id>/geography/<str:geography_code>/",
+        cache(general_views.consolidated_versioned_data),
+        name="all-details"
+    ),
+    path(
         "api/v1/all_details/profile/<int:profile_id>/geography/<str:geography_code>/test/",
         cache(general_views.consolidated_profile_test),
         name="all-details-test"
