@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # TODO should add a memoize decorator here
 @functools.lru_cache()
 def load_geography(geo_code, version):
-    geography = models.Geography.objects.get(code=geo_code, versions__in=[version])
+    geography = models.Geography.objects.get(code=geo_code, versions=version)
     return geography
 
 
@@ -43,8 +43,6 @@ def loaddata(dataset, iterable, row_number, overwrite=False):
     if overwrite:
         logger.debug(f"Deleting previously uploaded data for this dataset")
         dataset.datasetdata_set.all().delete()
-
-    # version = dataset.geography_hierarchy.version
 
     for idx, row in enumerate(iterable):
         groups |= set(x for x in row.keys())

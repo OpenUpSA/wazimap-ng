@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
     def load_file(self, profile, dataset_name, path):
         with atomic():
-            dataset = Dataset.objects.create(profile=profile, name=dataset_name, geography_hierarchy=profile.geography_hierarchy)
+            dataset = Dataset.objects.create(profile=profile, name=dataset_name)
             df = DatasetFile.objects.create(name=dataset_name, dataset_id=dataset.pk, document=File(path.open("rb")))
 
             uuid = task = async_task(

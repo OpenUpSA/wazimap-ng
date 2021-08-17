@@ -21,7 +21,6 @@ class DatasetAdminForm(forms.ModelForm):
 
         if not self.instance.id:
             profiles = self.fields["profile"].queryset
-            hierarchies = self.fields["geography_hierarchy"].queryset
 
             user_group = get_user_group(self.current_user)
 
@@ -35,8 +34,3 @@ class DatasetAdminForm(forms.ModelForm):
 
             if filtered_profile:
                 self.fields["profile"].initial = filtered_profile
-
-                for hierarchy in hierarchies:
-                    hp = hierarchy.profile_set.all()
-                    if hp.count() == 1 and hp.first() == filtered_profile:
-                        self.fields["geography_hierarchy"].initial = hierarchy

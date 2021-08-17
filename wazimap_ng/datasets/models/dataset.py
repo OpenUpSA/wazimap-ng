@@ -22,7 +22,6 @@ class Dataset(BaseModel):
     )
     name = models.CharField(max_length=60)
     groups = ArrayField(models.CharField(max_length=200), blank=True, default=list)
-    geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.CASCADE)
     permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="private")
     content_type = models.CharField(choices=DATASET_CONTENT_TYPES, max_length=32, default=QUANTITATIVE)
     version = models.ForeignKey(Version, on_delete=models.CASCADE, null=True)
