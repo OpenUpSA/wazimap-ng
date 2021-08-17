@@ -12,7 +12,7 @@ from wazimap_ng.general.models import BaseModel
 
 
 class Version(BaseModel):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
@@ -38,7 +38,6 @@ class Geography(MP_Node, BaseModel):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=20)
     level = models.CharField(max_length=20)
-    version = models.CharField(max_length=20, null=True, blank=True)
     versions = models.ManyToManyField(Version, blank=True)
 
     def __str__(self):
@@ -54,13 +53,18 @@ class Geography(MP_Node, BaseModel):
         ]
         ordering = ["id"]
 
-    def get_siblings(self):
+    def get_siblings(self, versions=None):
         siblings = super(Geography, self).get_siblings()
-        return siblings.filter(version=self.version)
+        if verisons:
+            if not isinstance(versions, list):
+                versions = list(versions)
+            siblings = siblings.filter(versions__in=versions)
+        return siblings
 
-    def get_child_boundaries(self, versions):
+    def get_child_boundaries(self, version):
         from ...boundaries.models import GeographyBoundary
-        children = self.get_children().filter(versions__in=versions)
+
+        children = self.get_child_geographies(version)
         codes = [c.code for c in children]
         levels = set(c.level for c in children)
 
@@ -73,11 +77,31 @@ class Geography(MP_Node, BaseModel):
                         .filter(
                             geography__code__in=codes,
                             geography__level=child_level,
-                            version__in=versions
+                            version=version
                         )
                         .select_related("geography")
                 )
         return child_types
+
+
+    def get_child_geographies(self, versions=None):
+        """
+        Get Child geographies.
+
+        if versions is not passed : get all children for every version
+        version can be passed as a obj or list of obj for fetching
+        children of same geo code but different versions.
+        """
+        child_geographies = self.get_children()
+        if versions:
+            if not isinstance(versions, list):
+                versions = [versions]
+
+            child_geographies = child_geographies.filter(
+                versions__in=versions
+            )
+        return child_geographies
+
 
 class GeographyHierarchy(BaseModel):
     name = models.CharField(max_length=50)
@@ -87,7 +111,7 @@ class GeographyHierarchy(BaseModel):
 
     @property
     def version(self):
-        return self.root_geography.configuration.get("versions", [])
+        return self.root_geography.configuration.get("default_version", "")
 
     def help_text(self):
         return f"{self.name} : {self.description}"

@@ -79,7 +79,7 @@ def get_dataset_groups(profile: Profile) -> Dict:
 
 def IndicatorDataSerializer(profile, geography, versions):
     indicator_data = get_profile_data(profile, [geography], versions)
-    children = geography.get_children().filter(versions__in=versions)
+    children = geography.get_child_geographies(versions)
     children_indicator_data = get_profile_data(profile, children, versions)
 
     dataset_groups_dict = get_dataset_groups(profile)
@@ -151,6 +151,7 @@ def IndicatorDataSerializer(profile, geography, versions):
                 lambda x: "indicators",
                 "profile_indicator_label",
                 lambda x: "child_data",
+                lambda x: x["version_name"],
                 "geography_code",
                 "jsdata",
                 )

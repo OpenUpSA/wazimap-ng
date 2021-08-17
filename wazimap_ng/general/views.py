@@ -4,7 +4,7 @@ from django.views.decorators.http import condition
 from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import user_passes_test
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -24,22 +24,27 @@ from django_q.tasks import result, fetch
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-def consolidated_profile_helper(profile_id, geography_code):
+def consolidated_profile_helper(profile_id, geography_code, version):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
     versions_list = profile.geography_hierarchy.configuration.get("versions", [])
-    versions = dataset_models.Version.objects.filter(name__in=versions_list)
-    geography = dataset_models.Geography.objects.get(code=geography_code, versions__in=versions)
+    if not version:
+        version = profile.geography_hierarchy.configuration.get("default_version", None)
+    if not version or version not in versions_list:
+        raise Http404
 
-    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, versions)
-    boundary_js = boundaries_views.geography_item_helper(geography_code, versions)
-    children_boundary_js = boundaries_views.geography_children_helper(geography_code, versions)
+
+    version = get_object_or_404(dataset_models.Version, name=version)
+    geography = dataset_models.Geography.objects.get(code=geography_code, versions=version)
+    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, [version])
+    boundary_js = boundaries_views.geography_item_helper(geography_code, version)
+    children_boundary_js = boundaries_views.geography_children_helper(geography_code, version)
 
     parent_layers = []
     parents = profile_js["geography"]["parents"]
     children_levels = [p["level"] for p in parents[1:]] + [profile_js["geography"]["level"]]
     pairs = zip(parents, children_levels)
     for parent, children_level in pairs:
-        layer = boundaries_views.geography_children_helper(parent["code"], versions)
+        layer = boundaries_views.geography_children_helper(parent["code"], version)
         if children_level in layer:
             parent_layers.append(layer[children_level])
 
@@ -53,7 +58,8 @@ def consolidated_profile_helper(profile_id, geography_code):
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
 def consolidated_profile(request, profile_id, geography_code):
-    js = consolidated_profile_helper(profile_id, geography_code)
+    version = request.GET.get('version', None)
+    js = consolidated_profile_helper(profile_id, geography_code, version)
     return Response(js)
 
 

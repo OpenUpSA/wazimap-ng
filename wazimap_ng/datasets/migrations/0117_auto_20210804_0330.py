@@ -35,7 +35,10 @@ def update_geographies_and_related_data(apps, schema_editor):
         ).values_list("dataset_id", flat=True)
         Dataset.objects.filter(id__in=dataset_list).update(version=first_geo_version)
         GeographyHierarchy.objects.filter(root_geography=first_geo_obj).update(
-            configuration={"versions": [first_geo_obj.version]}
+            configuration={
+                "versions": [first_geo_obj.version],
+                "default_version": first_geo_obj.version
+            }
         )
 
         # Change related data to geo objs that will be deleted
