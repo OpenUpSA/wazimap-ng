@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 
-from wazimap_ng.datasets.models import Geography
+from wazimap_ng.datasets.models import Geography, Version
 from wazimap_ng.boundaries.models import GeographyBoundary
 
 import fiona
@@ -33,28 +33,32 @@ class Command(BaseCommand):
         if not os.path.exists(shapefile_path):
             raise CommandError(f"Can't find shapefile: {shapefile_path}")
 
-    def process_root(self, fields, geo_shape):
+    def process_root(self, fields, geo_shape, version):
         fields.pop("parent_code")
         area = fields.pop("area")
-        g = Geography.add_root(**fields)
-        GeographyBoundary.objects.create(geography=g, geom=geo_shape, area=area)
 
-    def process_node(self, fields, geo_shape):
+        g = Geography.objects.filter(code=fields["code"]).first()
+        if not g:
+            g = Geography.add_root(**fields)
+        g.versions.add(version)
+        GeographyBoundary.objects.create(geography=g, geom=geo_shape, area=area, version=version)
+
+    def process_node(self, fields, geo_shape, version):
         parent_code = fields.pop("parent_code")
         area = fields.pop("area")
-        version = fields.pop("version")
 
         try:
-            parent_geography = Geography.objects.get(code__iexact=parent_code, version=version)
+            parent_geography = Geography.objects.get(code__iexact=parent_code, versions=version)
         except Geography.DoesNotExist:
             print(f"Can't find parent geography: {parent_code} ({version})")
             return
 
         try:
-            geography = Geography.objects.get(code__iexact=fields["code"], version=version)
+            geography = Geography.objects.get(code__iexact=fields["code"], versions=version)
         except Geography.DoesNotExist:
-            geography = parent_geography.add_child(code=fields["code"], level=fields["level"], name=fields["name"], version=version)
-            GeographyBoundary.objects.create(geography=geography, geom=geo_shape, area=area)
+            geography = parent_geography.add_child(code=fields["code"], level=fields["level"], name=fields["name"])
+            geography.versions.add(version)
+            GeographyBoundary.objects.create(geography=geography, geom=geo_shape, area=area, version=version)
 
     def extract_fields(self, field_map, properties):
         reverse_map = dict(zip(field_map.values(), field_map.keys()))
@@ -77,7 +81,6 @@ class Command(BaseCommand):
 
         fields = self.extract_fields(field_map, properties)
         fields["level"] = level
-        fields["version"] = version
 
         if shape["geometry"] is None:
             print(f"No geometry present for {fields['code']}")
@@ -95,10 +98,10 @@ class Command(BaseCommand):
         elif fields["parent_code"] is None :
             process_as_root = input(f"""Geography '{fields["code"]}' does not have a parent. Load it as a root geography? (Y/n)?""")
             if not process_as_root.lower().startswith('n'):
-                return self.process_root(fields, geo_shape)
+                return self.process_root(fields, geo_shape, version)
             return
         else:
-            self.process_node(fields, geo_shape)
+            self.process_node(fields, geo_shape, version)
 
     @transaction.atomic()
     def handle(self, *args, **options):
@@ -107,6 +110,7 @@ class Command(BaseCommand):
         level = options["level"]
         version = options["version"]
         quiet = options["quiet"]
+        version, created = Version.objects.get_or_create(name=version)
 
         self.check_shapefile(shapefile)
         self.check_field_map(field_map)
