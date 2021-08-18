@@ -17,11 +17,11 @@ def update_geographies_and_related_data(apps, schema_editor):
     ).order_by("code").distinct()
 
     for code in geo_codes:
-        gegraphy_objs = Geography.objects.filter(code=code)
-        first_geo_obj = gegraphy_objs.first()
+        geography_objs = Geography.objects.filter(code=code)
+        first_geo_obj = geography_objs.first()
 
         # get versions and assign it to first geo obj
-        version_list = gegraphy_objs.values_list("version", flat=True).order_by("version").distinct()
+        version_list = geography_objs.values_list("version", flat=True).order_by("version").distinct()
         versions_qs = Version.objects.filter(name__in=version_list)
         first_geo_obj.versions.add(*versions_qs)
 
@@ -42,8 +42,8 @@ def update_geographies_and_related_data(apps, schema_editor):
         )
 
         # Change related data to geo objs that will be deleted
-        gegraphy_objs = gegraphy_objs.exclude(id=first_geo_obj.id)
-        for geo_obj in gegraphy_objs:
+        geography_objs = geography_objs.exclude(id=first_geo_obj.id)
+        for geo_obj in geography_objs:
             version = versions_qs.get(name=geo_obj.version)
             # Update boundaries
             GeographyBoundary.objects.filter(geography=geo_obj).update(
@@ -65,7 +65,7 @@ def update_geographies_and_related_data(apps, schema_editor):
                 configuration={"versions": [geo_obj.version]}, root_geography=first_geo_obj
             )
 
-        gegraphy_objs.delete()
+        geography_objs.delete()
 
 
 

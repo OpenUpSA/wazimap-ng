@@ -7,7 +7,7 @@ import tinymce.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0114_auto_20210803_0721'),
+        ('datasets', '0114_create_versions_auto_20210818_0900'),
     ]
 
     operations = [

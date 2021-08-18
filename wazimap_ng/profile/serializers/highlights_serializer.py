@@ -7,7 +7,7 @@ def get_indicator_data(highlight, geographies):
         indicator__profilehighlight=highlight, geography__in=geographies
     )
 
-def absolute_value(highlight, geography, versions):
+def absolute_value(highlight, geography):
     indicator_data = get_indicator_data(highlight, [geography]).first()
     if indicator_data:
         return MetricCalculator.absolute_value(
@@ -16,7 +16,7 @@ def absolute_value(highlight, geography, versions):
     return None
 
 
-def subindicator(highlight, geography, versions):
+def subindicator(highlight, geography):
     indicator_data = get_indicator_data(highlight, [geography]).first()
     if indicator_data:
         return MetricCalculator.subindicator(
@@ -25,8 +25,8 @@ def subindicator(highlight, geography, versions):
     return None
 
 
-def sibling(highlight, geography, versions):
-    siblings = list(geography.get_siblings().filter(versions__in=versions))
+def sibling(highlight, geography):
+    siblings = list(geography.get_siblings()
     indicator_data = get_indicator_data(highlight, [geography] + siblings)
 
     if indicator_data:
@@ -39,7 +39,7 @@ algorithms = {
     "subindicators": subindicator
 }
 
-def HighlightsSerializer(profile, geography, versions):
+def HighlightsSerializer(profile, geography):
     highlights = []
 
     profile_highlights = profile.profilehighlight_set.all().order_by("order")
@@ -47,7 +47,7 @@ def HighlightsSerializer(profile, geography, versions):
     for highlight in profile_highlights:
         denominator = highlight.denominator
         method = algorithms.get(denominator, absolute_value)
-        val = method(highlight, geography, versions)
+        val = method(highlight, geography)
 
         if val is not None:
             highlights.append({"label": highlight.label, "value": val, "method": denominator})

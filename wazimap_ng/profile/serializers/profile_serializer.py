@@ -41,9 +41,9 @@ def ExtendedProfileSerializer(profile, geography, versions):
     models.ProfileKeyMetrics.objects.filter(subcategory__category__profile=profile)
 
     profile_data = IndicatorDataSerializer(profile, geography, versions)
-    metrics_data = MetricsSerializer(profile, geography, versions)
+    metrics_data = MetricsSerializer(profile, geography)
     logo_json = ProfileLogoSerializer(profile)
-    highlights = HighlightsSerializer(profile, geography, versions)
+    highlights = HighlightsSerializer(profile, geography)
     overview = OverviewSerializer(profile)
 
     geo_js = AncestorGeographySerializer().to_representation(geography)
