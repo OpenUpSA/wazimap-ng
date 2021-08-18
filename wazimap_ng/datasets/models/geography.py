@@ -55,7 +55,7 @@ class Geography(MP_Node, BaseModel):
 
     def get_siblings(self, versions=None):
         siblings = super(Geography, self).get_siblings()
-        if verisons:
+        if versions:
             if not isinstance(versions, list):
                 versions = list(versions)
             siblings = siblings.filter(versions__in=versions)
