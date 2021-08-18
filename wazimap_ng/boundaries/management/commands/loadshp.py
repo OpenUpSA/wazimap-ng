@@ -41,7 +41,8 @@ class Command(BaseCommand):
         if not g:
             g = Geography.add_root(**fields)
         g.versions.add(version)
-        GeographyBoundary.objects.create(geography=g, geom=geo_shape, area=area, version=version)
+        if GeographyBoundary.objects.filter(geography=g, version=version).count() == 0:
+            GeographyBoundary.objects.create(geography=g, geom=geo_shape, area=area, version=version)
 
     def process_node(self, fields, geo_shape, version):
         parent_code = fields.pop("parent_code")
@@ -58,7 +59,8 @@ class Command(BaseCommand):
         except Geography.DoesNotExist:
             geography = parent_geography.add_child(code=fields["code"], level=fields["level"], name=fields["name"])
             geography.versions.add(version)
-            GeographyBoundary.objects.create(geography=geography, geom=geo_shape, area=area, version=version)
+            if GeographyBoundary.objects.filter(geography=geography, version=version).count() == 0:
+                GeographyBoundary.objects.create(geography=geography, geom=geo_shape, area=area, version=version)
 
     def extract_fields(self, field_map, properties):
         reverse_map = dict(zip(field_map.values(), field_map.keys()))
