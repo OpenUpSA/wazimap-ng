@@ -22,6 +22,59 @@ from tests.profile.factories import (
     ProfileKeyMetricsFactory
 )
 from wazimap_ng.datasets.models import Geography, GeographyHierarchy
+from wazimap_ng.profile.models import Profile
+
+from django.test import RequestFactory
+
+from tests.general.factories import (
+    UserFactory, AuthGroupFactory
+)
+
+from guardian.shortcuts import (
+    get_perms_for_model, assign_perm
+)
+
+
+class MockSuperUser:
+    def has_perm(self, perm, obj=None):
+        return True
+
+    @property
+    def is_superuser(self):
+        return True
+
+
+@pytest.fixture
+def profile_admin_group():
+    return AuthGroupFactory(name="ProfileAdmin")
+
+@pytest.fixture
+def profile_admin_user(profile_admin_group):
+    user = UserFactory(is_staff=True)
+    user.groups.add(profile_admin_group)
+    return user
+
+@pytest.fixture
+def superuser():
+    return MockSuperUser()
+
+@pytest.fixture
+def factory():
+    return RequestFactory()
+
+@pytest.fixture
+def mocked_request(factory, superuser):
+    request = factory.get('/get/request')
+    request.method = 'GET'
+    request.user = superuser
+    return request
+
+@pytest.fixture
+def mocked_request_profileadmin(factory, profile_admin_user):
+    request = factory.get('/get/request')
+    request.method = 'GET'
+    request.user = profile_admin_user
+    return request
 
 from django.test import RequestFactory
 
@@ -100,6 +153,29 @@ def profile(geography_hierarchy):
     }
 
     return ProfileFactory(geography_hierarchy=geography_hierarchy, configuration=configuration)
+
+@pytest.fixture
+def profile_group(profile):
+    profile_group = AuthGroupFactory(name=profile.name)
+    for perm in get_perms_for_model(Profile):
+        assign_perm(perm, profile_group, profile)
+
+    return profile_group
+
+@pytest.fixture
+def private_profile(geography_hierarchy):
+    return ProfileFactory(
+        name="private profile", permission_type="private",
+        geography_hierarchy=geography_hierarchy
+    )
+
+@pytest.fixture
+def private_profile_group(private_profile):
+    profile_group = AuthGroupFactory(name=private_profile.name)
+    for perm in get_perms_for_model(Profile):
+        assign_perm(perm, profile_group, private_profile)
+
+    return profile_group
 
 
 @pytest.fixture

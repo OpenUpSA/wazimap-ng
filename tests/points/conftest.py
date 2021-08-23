@@ -5,12 +5,8 @@ from tests.profile.factories import ProfileFactory
 
 
 @pytest.fixture
-def profile():
-    return ProfileFactory()
-
-@pytest.fixture
-def theme():
-    return ThemeFactory()
+def theme(profile):
+    return ThemeFactory(profile=profile)
 
 @pytest.fixture
 def profile_category(theme):
