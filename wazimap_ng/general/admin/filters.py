@@ -63,7 +63,7 @@ class ThemeFilter(DynamicBaseFilter):
 
     def lookups(self, request, model_admin):
         profiles = permissions.get_objects_for_user(
-            request.user, Profile, include_public=True
+            request.user, Profile, include_public=False
         )
         return [(theme.id, theme) for theme in self.model_class.objects.filter(
             profile__in=profiles
