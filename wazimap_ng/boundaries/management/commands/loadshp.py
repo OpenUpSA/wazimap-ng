@@ -21,6 +21,7 @@ class Command(BaseCommand):
         parser.add_argument("field_map", type=str, help="Mapping of fields to extract from the shapefile. Should be formatted as follows: code_field=code,name_field=name,parent_code_field=parent_code,area_field=area....")
         parser.add_argument("level", type=str, help="Geography level, e.g. province, municipality, ...")
         parser.add_argument("version", type=str, help="Geography version, e.g. 'census 2016'...")
+        parser.add_argument("--quiet", action='store_true', help="Load the shape file silently, with default responses.")
 
     def check_field_map(self, field_map):
         fields = ["name", "code", "parent_code", "area"]
@@ -71,7 +72,7 @@ class Command(BaseCommand):
         }
 
 
-    def process_shape(self, shape, field_map, level, version):
+    def process_shape(self, shape, field_map, level, version, quiet):
         properties = shape["properties"]
 
         fields = self.extract_fields(field_map, properties)
@@ -89,7 +90,7 @@ class Command(BaseCommand):
         else:
             geo_shape = geometry
 
-        if level == "country":
+        if quiet:
             return self.process_root(fields, geo_shape)
         elif fields["parent_code"] is None :
             process_as_root = input(f"""Geography '{fields["code"]}' does not have a parent. Load it as a root geography? (Y/n)?""")
@@ -105,13 +106,14 @@ class Command(BaseCommand):
         field_map = dict(pair.split("=") for pair in options["field_map"].split(","))
         level = options["level"]
         version = options["version"]
+        quiet = options["quiet"]
 
         self.check_shapefile(shapefile)
         self.check_field_map(field_map)
 
         shape = fiona.open(shapefile)
         for idx, s in enumerate(shape):
-            self.process_shape(s, field_map, level, version)
+            self.process_shape(s, field_map, level, version, quiet)
 
             print(f"{idx + 1} geographies successfully loaded")
 
