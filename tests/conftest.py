@@ -11,7 +11,8 @@ from tests.datasets.factories import (
     IndicatorDataFactory,
     IndicatorFactory,
     LicenceFactory,
-    MetaDataFactory
+    MetaDataFactory,
+    VersionFactory
 )
 from tests.profile.factories import (
     IndicatorCategoryFactory,
@@ -112,10 +113,14 @@ def licence():
 
 
 @pytest.fixture
-def geographies():
+def version():
+    return VersionFactory()
+
+@pytest.fixture
+def geographies(version):
     root = GeographyFactory(code="ROOT_GEOGRAPHY")
-    geo1 = GeographyFactory(code="GEOCODE_1", version=root.version)
-    geo2 = GeographyFactory(code="GEOCODE_2", version=root.version)
+    geo1 = GeographyFactory(code="GEOCODE_1", versions=[version.name])
+    geo2 = GeographyFactory(code="GEOCODE_2", versions=[version.name])
 
     return [root, geo1, geo2]
 
@@ -131,18 +136,25 @@ def other_geographies(geographies):
 
 
 @pytest.fixture
-def geography_hierarchy(geography):
-    hierarchy = GeographyHierarchyFactory(root_geography=geography)
-
+def geography_hierarchy(geography, version):
+    hierarchy = GeographyHierarchyFactory(
+        root_geography=geography,
+        configuration = {
+            "default_version": version.name,
+            "versions": [version.name]
+        }
+    )
     return hierarchy
 
 
 @pytest.fixture
-def child_geographies(geography):
-    return [
-        geography.add_child(code=f"child{i}_geo", version=geography.version)
-        for i in range(2)
-    ]
+def child_geographies(geography, version):
+    child_geographies = []
+    for i in range(2):
+        obj = geography.add_child(code=f"child{i}_geo")
+        obj.versions.add(version)
+        child_geographies.append(obj)
+    return child_geographies
 
 
 @pytest.fixture
@@ -179,8 +191,8 @@ def private_profile_group(private_profile):
 
 
 @pytest.fixture
-def dataset(profile):
-    return DatasetFactory(profile=profile)
+def dataset(profile, version):
+    return DatasetFactory(profile=profile, version=version)
 
 
 @pytest.fixture
@@ -338,8 +350,11 @@ def profile_highlight(profile, indicatordata):
 # Qualitative content indicator
 
 @pytest.fixture
-def qualitative_dataset(profile):
-    return DatasetFactory(profile=profile, content_type="qualitative")
+def qualitative_dataset(profile, version):
+    return DatasetFactory(
+        profile=profile, content_type="qualitative",
+        version=version
+    )
 
 @pytest.fixture
 def qualitative_groups(qualitative_dataset):

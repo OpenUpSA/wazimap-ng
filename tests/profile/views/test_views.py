@@ -6,7 +6,7 @@ import json
 
 
 from tests.profile.factories import ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory, ProfileIndicatorFactory
-from tests.datasets.factories import DatasetFactory, IndicatorFactory, IndicatorDataFactory, GroupFactory
+from tests.datasets.factories import DatasetFactory, IndicatorFactory, IndicatorDataFactory, GroupFactory, VersionFactory
 
 from wazimap_ng.profile.views import ProfileByUrl
 

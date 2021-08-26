@@ -9,7 +9,7 @@ from tests.profile.factories import ProfileFactory
 from tests.points.factories import (
     ProfileCategoryFactory, ThemeFactory, CategoryFactory, LocationFactory
 )
-from tests.datasets.factories import GeographyFactory, GeographyHierarchyFactory
+from tests.datasets.factories import GeographyFactory, GeographyHierarchyFactory, VersionFactory
 from tests.boundaries.factories import GeographyBoundaryFactory
 from tests.general.factories import TaskFactory
 
@@ -17,8 +17,9 @@ from tests.general.factories import TaskFactory
 class TestConsolidatedProfileView(APITestCase):
 
     def setUp(self):
-        self.geography = GeographyFactory()
-        GeographyBoundaryFactory(geography=self.geography)
+        self.version = VersionFactory()
+        self.geography = GeographyFactory(versions=[self.version.name])
+        GeographyBoundaryFactory(geography=self.geography, version=self.version)
         self.hierarchy = GeographyHierarchyFactory(root_geography=self.geography)
         self.profile = ProfileFactory(geography_hierarchy=self.hierarchy)
         self.category = CategoryFactory(profile=self.profile)

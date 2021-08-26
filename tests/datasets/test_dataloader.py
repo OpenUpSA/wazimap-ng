@@ -6,17 +6,17 @@ import pytest
 
 from wazimap_ng.datasets import dataloader
 from wazimap_ng.datasets import models
-from .factories import GroupFactory
+from .factories import GroupFactory, VersionFactory
 from tests.datasets.factories import DatasetFactory, DatasetDataFactory
 
 pytestmark = pytest.mark.django_db
 
-@patch('wazimap_ng.datasets.models.Geography.objects.get', side_effect=lambda code, version: (code, version))
+@patch('wazimap_ng.datasets.models.Geography.objects.get', side_effect=lambda code, versions: (code, versions))
 def test_load_geography(mock_objects):
     o = ("X", "Y")
     assert  dataloader.load_geography(*o) == o
 
-@patch('wazimap_ng.datasets.models.Geography.objects.get', side_effect=lambda code, version: (code, version))
+@patch('wazimap_ng.datasets.models.Geography.objects.get', side_effect=lambda code, versions: (code, versions))
 def test_correct_geography_cache(mock_objects):
     o = ("X", "Y")
     assert  dataloader.load_geography(*o) == o
@@ -44,11 +44,12 @@ def good_input_with_groups():
 
 @pytest.fixture
 @pytest.mark.django_db
-def create_geography_code():
+def create_geography_code(version):
     data = models.Geography.objects.create(
         name='Test Location', code='sa',
-        version='1.0', level='B', depth=50
+        level='B', depth=50
     )
+    data.versions.add(version)
     yield
     data.delete()
 
@@ -60,10 +61,8 @@ class TestLoadData:
     @patch('wazimap_ng.datasets.dataloader.load_geography')
     def test_bulk_create_lt_10000(self, load_geography, MockDatasetData, good_input):
         dataset = Mock()
-        dataset.geography_hierarchy.version = 9999
-
+        dataset.version = 9999
         dataloader.loaddata(dataset, good_input, 0)
-
         MockDatasetData.objects.bulk_create.assert_called_once()
         load_geography.called_with("YYY", 222)
 
@@ -83,7 +82,7 @@ class TestLoadData:
     @patch('wazimap_ng.datasets.dataloader.load_geography')
     def test_bulk_check_load_geography_call(self, load_geography, MockDatasetData, good_input):
         dataset = Mock()
-        dataset.geography_hierarchy.version = 9999
+        dataset.version = 9999
         load_geography.return_value = "XXX"
 
         dataloader.loaddata(dataset, good_input, 0)
@@ -91,25 +90,31 @@ class TestLoadData:
         load_geography.assert_called_with("YYY", 9999)
 
     @pytest.mark.django_db
-    def test_correct_geography_code(self, create_geography_code):
+    def test_correct_geography_code(self, create_geography_code, version):
         code = 'sa'
-        version = '1.0'
         try:
             data = dataloader.load_geography(code, version)
-            assert data.code == code and data.version == version
+            assert data.code == code and data.versions.filter(id=version.id).exists()
         except models.Geography.DoesNotExist:
             pytest.fail('Unexpected Geography not found error...')
 
     @pytest.mark.django_db
-    def test_wrong_geography_code(self, create_geography_code):
+    def test_wrong_geography_code(self, create_geography_code, version):
         with pytest.raises(models.Geography.DoesNotExist):
-            dataloader.load_geography('SA', '1.0')
+            dataloader.load_geography('SA', version)
+
+    @pytest.mark.django_db
+    def test_wrong_version_for_geography_code(self, create_geography_code):
+        version2 = VersionFactory()
+        with pytest.raises(models.Geography.DoesNotExist):
+            dataloader.load_geography('sa', version2)
 
     @pytest.mark.django_db
     @patch('wazimap_ng.datasets.models.DatasetData')
     @patch('wazimap_ng.datasets.dataloader.load_geography')
-    def test_missing_geography(self, load_geography, MockDatasetData, good_input):
+    def test_missing_geography(self, load_geography, MockDatasetData, good_input, version):
         dataset = Mock()
+        dataset.version = version
         load_geography.side_effect = models.Geography.DoesNotExist()
 
         try:

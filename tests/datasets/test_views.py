@@ -8,7 +8,8 @@ from wazimap_ng.datasets.models import DatasetData, Dataset
 from tests.profile.factories import ProfileFactory
 from tests.datasets.factories import (
     GeographyFactory, GeographyHierarchyFactory, DatasetFactory,
-    DatasetDataFactory, IndicatorFactory, IndicatorDataFactory
+    DatasetDataFactory, IndicatorFactory, IndicatorDataFactory,
+    VersionFactory
 )
 
 from rest_framework.authtoken.models import Token
@@ -27,17 +28,23 @@ class TestDatasetUploadView(APITestCase):
         return csvfile.getvalue()
 
     def setUp(self):
-
         # General data
-        geography = GeographyFactory(code="ZA")
-        self.geography_hierarchy = GeographyHierarchyFactory(root_geography=geography)
+        self.version = VersionFactory()
+        geography = GeographyFactory(code="ZA", versions=[self.version.name])
+        self.geography_hierarchy = GeographyHierarchyFactory(
+            root_geography=geography,
+            configuration={
+                "default_version": self.version.name,
+                "versions": [self.version.name]
+            }
+        )
         self.profile = ProfileFactory(geography_hierarchy=self.geography_hierarchy)
         self.group = Group.objects.create(name=self.profile.name)
 
         # Dataset specific data
         self.dataset = DatasetFactory(
             name="dataset-1", profile=self.profile, groups=["test"],
-            geography_hierarchy=self.geography_hierarchy
+            version=self.version
         )
         DatasetDataFactory(
             dataset=self.dataset, geography=geography,
@@ -68,6 +75,7 @@ class TestDatasetUploadView(APITestCase):
             "geography_hierarchy": self.geography_hierarchy.id,
             "profile": self.profile.id,
             "name": "dataset-2",
+            "version": self.version.id
         })
 
         assert response.status_code == 403
@@ -97,6 +105,7 @@ class TestDatasetUploadView(APITestCase):
             "geography_hierarchy": self.geography_hierarchy.id,
             "profile": self.profile.id,
             "name": "dataset-2",
+            "version": self.version.id
         }, format='multipart')
 
         assert response.status_code == 403
@@ -134,6 +143,7 @@ class TestDatasetUploadView(APITestCase):
             "geography_hierarchy": self.geography_hierarchy.id,
             "profile": self.profile.id,
             "name": "dataset-2",
+            "version": self.version.id
         }, format='multipart')
 
         assert response.status_code == 201

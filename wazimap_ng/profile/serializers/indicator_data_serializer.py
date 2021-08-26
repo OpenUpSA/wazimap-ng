@@ -151,7 +151,6 @@ def IndicatorDataSerializer(profile, geography, versions):
                 lambda x: "indicators",
                 "profile_indicator_label",
                 lambda x: "child_data",
-                lambda x: x["version_name"],
                 "geography_code",
                 "jsdata",
                 )
