@@ -9,7 +9,7 @@
         function loadGroups() {
             var datasetId = $(document).find("#id_dataset").val();
             if (datasetId) {
-                var url = '/api/v1/datasets/' + datasetId + "/";
+                var url = `/api/v1/datasets/${datasetId}/`;
                 var groups = [];
                 $.ajax({
                     url: url,

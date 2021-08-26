@@ -11,7 +11,7 @@
             var $el = $("#id_subcategory");
             var profileName = $(this).find("option:selected").text()
             if (profileId) {
-                var url = '/api/v1/profiles/' + profileId + '/categories/';
+                var url = `/api/v1/profiles/${profileId}/categories/`;
                 var subcategories = [];
                 $.ajax({
                     url: url,
@@ -21,7 +21,7 @@
                         data.forEach(function(category) {
                             $.each(category.subcategories, function(key, sc) {
                                 $el.append($("<option></option>").attr("value", sc.id).text(
-                                    profileName+": "+ category.name + " -> " + sc.name
+                                    `${profileName}: ${category.name} -> ${sc.name}`
                                 ));
                             });
                         });
@@ -38,7 +38,7 @@
             var $el = $("#id_subindicator");
 
             if(indicatorId) {
-               var url = '/api/v1/indicators/' + indicatorId + "/";
+               var url = `/api/v1/indicators/${indicatorId}/`;
                 $.ajax({
                     url: url,
                     success: function (data) {

@@ -115,7 +115,21 @@ def test_get_dataset_groups(profile: Profile):
 class TestIndicatorSerializer:
     def test(self, profile, geography, profile_indicator, category, subcategory):
         serializer = IndicatorDataSerializer(profile, geography)
-        assert serializer[category.name]["subcategories"][subcategory.name]["indicators"][""]["id"] == profile_indicator.id
+        pi_data = serializer[category.name]["subcategories"][subcategory.name]["indicators"][profile_indicator.label]
+        assert pi_data["id"] == profile_indicator.id
+        assert pi_data["dataset_content_type"] == "quantitative"
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("qualitative_groups")
+class TestQualitativeData:
+
+    @pytest.mark.usefixtures("qualitative_indicatordata")
+    def test_with_qualitative_data(self, profile, geography, qualitative_profile_indicator):
+        serializer = IndicatorDataSerializer(profile, geography)
+        subcategory = qualitative_profile_indicator.subcategory
+        pi_data = serializer[subcategory.category.name]["subcategories"][subcategory.name]["indicators"][qualitative_profile_indicator.label]
+        assert pi_data["dataset_content_type"] == "qualitative"
+        assert pi_data["data"] == [{'content': 'This is example text'}, {'content': 'www.test.com'}]
 
 
 @pytest.mark.django_db

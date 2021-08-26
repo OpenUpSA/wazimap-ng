@@ -19,7 +19,6 @@ def get_profile_data(profile, geographies):
 
 
 def get_indicator_data(profile, indicators, geographies):
-
     data = (IndicatorData.objects
             .filter(
                 indicator__in=indicators,
@@ -40,12 +39,14 @@ def get_indicator_data(profile, indicators, geographies):
                 metadata_source=F("indicator__dataset__metadata__source"),
                 metadata_description=F("indicator__dataset__metadata__description"),
                 metadata_url=F("indicator__dataset__metadata__url"),
+                dataset_content_type=F("indicator__dataset__content_type"),
                 licence_url=F("indicator__dataset__metadata__licence__url"),
                 licence_name=F("indicator__dataset__metadata__licence__name"),
                 indicator_chart_configuration=F("indicator__profileindicator__chart_configuration"),
                 geography_code=F("geography__code"),
                 primary_group=F("indicator__groups"),
                 last_updated_at=F("indicator__profileindicator__updated"),
+                content_type=F("indicator__profileindicator__content_type"),
             )
             .order_by("indicator__profileindicator__order")
             )
@@ -120,8 +121,10 @@ def IndicatorDataSerializer(profile, geography):
                                          "url": x["licence_url"]
                                      },
                                      "primary_group": x["primary_group"][0],
-                                     "groups": dataset_groups_dict[x["dataset"]]
+                                     "groups": dataset_groups_dict[x["dataset"]],
                                  },
+                                 "content_type": x["content_type"],
+                                 "dataset_content_type": x["dataset_content_type"],
                                  "chart_configuration": x["indicator_chart_configuration"],
                              },
                              )

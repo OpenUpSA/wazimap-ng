@@ -120,7 +120,4 @@ class BaseAdminModel(admin.ModelAdmin):
                 form.base_fields[field_name].help_text = self._get_help_text(
                     form.base_fields[field_name]
                 )
-
-        if "description" in form.base_fields:
-            form.base_fields["description"].initial = "Representation of data gathered from various sources"
         return form

@@ -36,7 +36,7 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'indicator')
+            'fields': ('profile', 'indicator', 'content_type')
         }),
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'description', 'choropleth_method')
@@ -74,6 +74,7 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
             qs = models.IndicatorSubcategory.objects.filter(
                 category__profile_id=profile_id
             )
+
         elif not obj and request.method == "GET":
              qs = qs = models.IndicatorSubcategory.objects.none()
 

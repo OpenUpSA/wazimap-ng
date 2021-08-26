@@ -339,6 +339,20 @@ PERMISSION_TYPES = (
     ('public', 'Public'),
 )
 
+
+QUANTITATIVE = "quantitative"
+QUALITATIVE = "qualitative"
+
+DATASET_CONTENT_TYPES = (
+    ('quantitative', 'Quantitative'),
+    ('qualitative', 'Qualitative')
+)
+
+PI_CONTENT_TYPE = (
+    ('indicator', 'Indicator'),
+    ('html', 'HTML')
+)
+
 STAFF_GROUPS = ["ProfileAdmin", "DataAdmin"]
 
 STAFF_EMAIL_ADDRESS = os.getenv(
