@@ -20,7 +20,13 @@ class TestConsolidatedProfileView(APITestCase):
         self.version = VersionFactory()
         self.geography = GeographyFactory(versions=[self.version.name])
         GeographyBoundaryFactory(geography=self.geography, version=self.version)
-        self.hierarchy = GeographyHierarchyFactory(root_geography=self.geography)
+        self.hierarchy = GeographyHierarchyFactory(
+            root_geography=self.geography,
+            configuration = {
+                "default_version": self.version.name,
+                "versions": [self.version.name]
+            }
+        )
         self.profile = ProfileFactory(geography_hierarchy=self.hierarchy)
         self.category = CategoryFactory(profile=self.profile)
         self.location = LocationFactory(category=self.category)
