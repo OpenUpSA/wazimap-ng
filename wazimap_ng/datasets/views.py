@@ -184,7 +184,10 @@ def search_geography(request, profile_id):
     max-results number of results to be returned [default is 30] 
     """
     profile = get_object_or_404(Profile, pk=profile_id)
-    version = profile.geography_hierarchy.root_geography.version
+    version = request.GET.get("version", None)
+    if not version:
+        version = profile.geography_hierarchy.configuration.get("default_version", None)
+    version = get_object_or_404(models.Version, name=version)
     
     default_results = 30
     max_results = request.GET.get("max_results", default_results)
@@ -197,7 +200,7 @@ def search_geography(request, profile_id):
 
     q = request.GET.get("q", "")
 
-    geographies = models.Geography.objects.filter(version=version).search(q)[0:max_results]
+    geographies = models.Geography.objects.filter(versions=version).search(q)[0:max_results]
 
     def sort_key(x):
         exact_match = x.name.lower() == q.lower()

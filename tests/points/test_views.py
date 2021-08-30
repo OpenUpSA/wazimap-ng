@@ -14,13 +14,16 @@ from tests.profile.factories import ProfileFactory
 from tests.points.factories import (
     ProfileCategoryFactory, ThemeFactory, CategoryFactory, LocationFactory
 )
-from tests.datasets.factories import GeographyFactory, GeographyHierarchyFactory
+from tests.datasets.factories import (
+    GeographyFactory, GeographyHierarchyFactory, VersionFactory
+)
 from tests.boundaries.factories import GeographyBoundaryFactory
 
 
 class TestCategoryView(APITestCase):
 
     def setUp(self):
+        self.version = VersionFactory()
         self.profile = ProfileFactory()
         self.profile_category = ProfileCategoryFactory(profile=self.profile)
 
@@ -30,9 +33,12 @@ class TestCategoryView(APITestCase):
         self.assert_http_200_ok()
 
     def test_category_points_geography_list(self):
-        geography = GeographyFactory()
-        GeographyBoundaryFactory(geography=geography)
-        hierarchy = GeographyHierarchyFactory(root_geography=geography)
+        geography = GeographyFactory(versions=[self.version.name])
+        GeographyBoundaryFactory(geography=geography, version=self.version)
+        hierarchy = GeographyHierarchyFactory(root_geography=geography, configuration={
+            "default_version": self.version.name,
+            "versions": [self.version.name]
+        })
         profile = ProfileFactory(geography_hierarchy=hierarchy)
         profile_category = ProfileCategoryFactory(profile=profile)
 
@@ -41,7 +47,7 @@ class TestCategoryView(APITestCase):
         self.assert_http_200_ok()
 
     def test_category_points_geography_not_found(self):
-        geography = GeographyFactory()
+        geography = GeographyFactory(versions=[self.version.name])
         self.get('category-points-geography', profile_id=self.profile.pk, profile_category_id=self.profile_category.pk, geography_code=geography.code, extra={'format': 'json'})
         self.assert_http_404_not_found()
 
@@ -108,7 +114,13 @@ class TestThemeView:
 class TestLocationView(APITestCase):
 
     def setUp(self):
-        self.profile = ProfileFactory()
+        self.version = VersionFactory()
+        self.geography = GeographyFactory(versions=[self.version.name])
+        hierarchy = GeographyHierarchyFactory(root_geography=self.geography, configuration={
+            "default_version": self.version.name,
+            "versions": [self.version.name]
+        })
+        self.profile = ProfileFactory(geography_hierarchy=hierarchy)
         self.theme = ThemeFactory(profile=self.profile)
         self.category = CategoryFactory(profile=self.profile)
         self.location = LocationFactory(category=self.category)
@@ -197,15 +209,11 @@ class TestLocationView(APITestCase):
         MultiPolygon([Polygon( ((0.0, 0.0), (0.0, 50.0), (50.0, 50.0), (50.0, 0.0), (0.0, 0.0)) )])
         default Location: Point(1.0, 1.0)
         """
-        geography = GeographyFactory(
-            version=self.profile.geography_hierarchy.root_geography.version
-        )
-        GeographyBoundaryFactory(geography=geography)
-
+        GeographyBoundaryFactory(geography=self.geography, version=self.version)
         response = self.get(
             "category-points-geography", profile_id=self.profile.id,
             profile_category_id=self.profile_category.id,
-            geography_code=geography.code
+            geography_code=self.geography.code
         )
         data = response.data
 
@@ -219,12 +227,10 @@ class TestLocationView(APITestCase):
         category-points-geography returns no locations when
         the geography code is not linked to the profile
         """
-        geography = GeographyFactory()
-
         response = self.get(
             "category-points-geography", profile_id=self.profile.id,
             profile_category_id=self.profile_category.id,
-            geography_code=geography.code
+            geography_code=self.geography.code
         )
         self.assert_http_404_not_found()
 
@@ -235,9 +241,9 @@ class TestLocationView(APITestCase):
         """
         geography = GeographyFactory(
             code="ABC",
-            version=self.profile.geography_hierarchy.root_geography.version
+            versions=[self.version.name]
         )
-        GeographyBoundaryFactory(geography=geography, geom=MultiPolygon([
+        GeographyBoundaryFactory(geography=geography, version=self.version, geom=MultiPolygon([
             Polygon( ((5.0, 5.0), (5.0, 50.0), (50.0, 50.0), (50.0, 5.0), (5.0, 5.0)) )
         ]))
 
@@ -260,16 +266,13 @@ class TestLocationView(APITestCase):
         profile_category = ProfileCategoryFactory(
             profile=self.profile, category=category, theme=self.theme
         )
-        geography = GeographyFactory(
-            version=self.profile.geography_hierarchy.root_geography.version
-        )
-        GeographyBoundaryFactory(geography=geography)
+        GeographyBoundaryFactory(geography=self.geography, version=self.version)
         location = LocationFactory(category=category, coordinates=Point(70.0, 70.0))
 
         response = self.get(
             "category-points-geography", profile_id=self.profile.id,
             profile_category_id=profile_category.id,
-            geography_code=geography.code
+            geography_code=self.geography.code
         )
         data = response.data
 
@@ -285,17 +288,15 @@ class TestLocationView(APITestCase):
             profile=self.profile, category=category, theme=self.theme,
             label="Pc Label 2"
         )
-        geography = GeographyFactory(
-            version=self.profile.geography_hierarchy.root_geography.version
-        )
-        GeographyBoundaryFactory(geography=geography)
+        GeographyBoundaryFactory(geography=self.geography, version=self.version)
         LocationFactory(category=category, coordinates=Point(2.0, 2.0))
 
         response = self.get(
             "geography-points", profile_id=self.profile.id,
-            geography_code=geography.code
+            geography_code=self.geography.code
         )
         data = response.data
+        print(data)
 
         results = data["results"]
         assert data["count"] == 2

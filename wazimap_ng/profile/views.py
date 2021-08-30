@@ -19,7 +19,7 @@ from . import models
 from . import serializers
 from ..cache import etag_profile_updated, last_modified_profile_updated
 
-from wazimap_ng.datasets.models import Geography
+from wazimap_ng.datasets.models import Geography, Version
 
 logger = logging.getLogger(__name__)
 
@@ -62,10 +62,14 @@ class ProfileByUrl(generics.RetrieveAPIView):
 @api_view()
 def profile_geography_data(request, profile_id, geography_code):
     profile = get_object_or_404(models.Profile, pk=profile_id)
-    version = profile.geography_hierarchy.root_geography.version
-    geography = get_object_or_404(Geography, code=geography_code, version=version)
+    version = request.GET.get("version", None)
+    if not version:
+        version = profile.geography_hierarchy.configuration.get("default_version", None)
 
-    js = serializers.ExtendedProfileSerializer(profile, geography)
+    version = get_object_or_404(Version, name=version)
+    geography = get_object_or_404(Geography, code=geography_code, versions=version)
+
+    js = serializers.ExtendedProfileSerializer(profile, geography, [version])
     return Response(js)
 
 class ProfileCategoriesList(generics.ListAPIView):
@@ -110,8 +114,7 @@ class ProfileSubcategoriesList(generics.ListAPIView):
 @api_view()
 def profile_geography_indicator_data(request, profile_id, geography_code, profile_indicator_id):
     profile = get_object_or_404(models.Profile, pk=profile_id)
-    version = profile.geography_hierarchy.root_geography.version
-    geography = get_object_or_404(Geography, code=geography_code, version=version)
+    geography = get_object_or_404(Geography, code=geography_code)
     profile_indicator = get_object_or_404(models.ProfileIndicator, profile=profile, pk=profile_indicator_id)
 
     js = serializers.FullProfileIndicatorSerializer(instance=profile_indicator, geography=geography).data

@@ -36,9 +36,10 @@ class FullProfileIndicatorSerializer(serializers.Serializer):
 
         profile = obj.profile
         indicator = obj.indicator
+        version = indicator.dataset.version
 
         try:
-            indicator_json = get_indicator_data(profile, [indicator], [self.geography])
+            indicator_json = get_indicator_data(profile, [indicator], [self.geography], [version])
 
             if len(indicator_json) == 0:
                 return {}
@@ -54,9 +55,10 @@ class FullProfileIndicatorSerializer(serializers.Serializer):
     def get_children(self, obj: ProfileIndicator) -> Dict:
         profile = obj.profile
         indicator = obj.indicator
+        version = indicator.dataset.version
 
         try:
-            children_indicator_json = get_indicator_data(profile, [indicator], self.geography.get_children())
+            children_indicator_json = get_indicator_data(profile, [indicator], self.geography.get_children(), [version])
             children_indicator_json = {j["geography_code"]: j["jsdata"] for j in children_indicator_json}
             return children_indicator_json
         except IndicatorData.DoesNotExist:
