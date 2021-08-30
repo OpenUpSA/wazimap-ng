@@ -18,13 +18,11 @@ def parse_database_url(url):
 		"port": parsed_url.port
 	}
 
-check_timeout = os.getenv("POSTGRES_CHECK_TIMEOUT", 30)
+check_timeout = os.getenv("POSTGRES_CHECK_TIMEOUT", 60)
 check_interval = os.getenv("POSTGRES_CHECK_INTERVAL", 1)
 interval_unit = "second" if check_interval == 1 else "seconds"
 
 config = parse_database_url(os.getenv("DATABASE_URL"))
-
-con = psycopg2.connect(**config)
 
 start_time = time()
 logger = logging.getLogger()
