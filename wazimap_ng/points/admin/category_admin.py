@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 
 from django_q.tasks import async_task
 
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin.admin_base import BaseAdminModel, HistoryAdmin
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.admin import filters
 
@@ -14,7 +14,7 @@ from wazimap_ng.datasets import hooks
 
 
 @admin.register(models.Category)
-class CategoryAdmin(BaseAdminModel):
+class CategoryAdmin(BaseAdminModel, HistoryAdmin):
     list_display = ("name", "profile")
     form = CategoryAdminForm
     exclude = ("metadata", )

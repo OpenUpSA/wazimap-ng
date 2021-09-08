@@ -3,9 +3,9 @@ from django.contrib.postgres.fields import JSONField
 from django.db.models.fields import BooleanField
 
 from .dataset import Dataset
-from wazimap_ng.general.models import BaseModel
+from wazimap_ng.general.models import BaseModel, SimpleHistory
 
-class Group(BaseModel):
+class Group(BaseModel, SimpleHistory):
     name = models.CharField(max_length=100, blank=False, null=False)
     dataset = models.ForeignKey(Dataset, null=True, on_delete=models.CASCADE)
     subindicators = JSONField(blank=True, default=list)

@@ -17,6 +17,7 @@ from wazimap_ng.general.widgets import description
 
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import HistoryAdmin
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class PermissionTypeFilter(filters.DatasetFilter):
 
 
 @admin.register(models.Dataset)
-class DatasetAdmin(DatasetBaseAdminModel):
+class DatasetAdmin(DatasetBaseAdminModel, HistoryAdmin):
     exclude = ("groups", )
     inlines = (MetaDataInline,)
     actions = (set_to_public, set_to_private, delete_selected_data,)

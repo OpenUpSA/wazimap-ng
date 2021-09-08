@@ -2,10 +2,11 @@ from django import forms
 
 from wazimap_ng.datasets.models import Licence
 from wazimap_ng.general.models import MetaData
+from wazimap_ng.general.admin.forms import HistoryAdminForm
 from ... import models
 
 
-class CategoryAdminForm(forms.ModelForm):
+class CategoryAdminForm(HistoryAdminForm):
     source = forms.CharField(widget=forms.TextInput(attrs={'class': 'vTextField'}), required=False)
     description = forms.CharField(widget=forms.Textarea(attrs={'class': 'vLargeTextField'}), required=False)
     licence = forms.ModelChoiceField(queryset=Licence.objects.all(), required=False)

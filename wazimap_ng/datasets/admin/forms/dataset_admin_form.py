@@ -1,9 +1,10 @@
 from django import forms
 
 from wazimap_ng.general.services.permissions import get_user_group
+from wazimap_ng.general.admin.forms import HistoryAdminForm
 
 
-class DatasetAdminForm(forms.ModelForm):
+class DatasetAdminForm(HistoryAdminForm):
     import_dataset = forms.FileField(required=False)
 
     def clean(self):

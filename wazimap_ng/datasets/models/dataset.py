@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
 from .geography import Geography, GeographyHierarchy, Version
-from wazimap_ng.general.models import BaseModel
+from wazimap_ng.general.models import BaseModel, SimpleHistory
 
 from wazimap_ng.config.common import (
     PERMISSION_TYPES, DATASET_CONTENT_TYPES, QUANTITATIVE
@@ -16,7 +16,7 @@ class DatasetQuerySet(models.QuerySet):
     def make_private(self):
         return self.update(permission_type="private")
 
-class Dataset(BaseModel):
+class Dataset(BaseModel, SimpleHistory):
     profile = models.ForeignKey(
         'profile.Profile', on_delete=models.CASCADE, blank=True, null=True
     )

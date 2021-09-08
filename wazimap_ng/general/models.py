@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from simple_history.models import HistoricalRecords
 
 
 class BaseModel(models.Model):
@@ -7,6 +8,13 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+class SimpleHistory(models.Model):
+    history = HistoricalRecords(inherit=True)
+
+    class Meta:
+        abstract = True
+
 
 class MetaData(BaseModel):
     source = models.CharField(max_length=60, null=False, blank=True)

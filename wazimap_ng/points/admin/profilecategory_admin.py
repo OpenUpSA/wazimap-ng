@@ -5,7 +5,8 @@ from django.contrib.postgres import fields
 
 from django_json_widget.widgets import JSONEditorWidget
 
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin.admin_base import BaseAdminModel, HistoryAdmin
+from wazimap_ng.general.admin.forms import HistoryAdminForm
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.admin import filters
 
@@ -14,7 +15,7 @@ from .. import models
 from icon_picker_widget.widgets import IconPickerWidget
 
 
-class ProfileCategoryAdminForm(forms.ModelForm):
+class ProfileCategoryAdminForm(HistoryAdminForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['icon'].widget = IconPickerWidget()
@@ -34,7 +35,7 @@ def dynamic_schema(obj):
     return schema
 
 @admin.register(models.ProfileCategory)
-class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel):
+class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
     list_display = ("label", "theme", "order", "category", "profile")
     list_filter = (filters.ProfileFilter, filters.ThemeFilter, filters.CollectionFilter)
 

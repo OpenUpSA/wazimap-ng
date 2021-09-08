@@ -37,15 +37,6 @@ from guardian.shortcuts import (
 )
 
 
-class MockSuperUser:
-    def has_perm(self, perm, obj=None):
-        return True
-
-    @property
-    def is_superuser(self):
-        return True
-
-
 @pytest.fixture
 def profile_admin_group():
     return AuthGroupFactory(name="ProfileAdmin")
@@ -58,7 +49,8 @@ def profile_admin_user(profile_admin_group):
 
 @pytest.fixture
 def superuser():
-    return MockSuperUser()
+    user = UserFactory(is_superuser=True, is_staff=True)
+    return user
 
 @pytest.fixture
 def factory():
@@ -76,35 +68,6 @@ def mocked_request_profileadmin(factory, profile_admin_user):
     request = factory.get('/get/request')
     request.method = 'GET'
     request.user = profile_admin_user
-    return request
-
-from django.test import RequestFactory
-
-
-class MockSuperUser:
-    def has_perm(self, perm, obj=None):
-        return True
-
-    @property
-    def is_superuser(self):
-        return True
-
-
-@pytest.fixture
-def superuser():
-    return MockSuperUser()
-
-
-@pytest.fixture
-def factory():
-    return RequestFactory()
-
-
-@pytest.fixture
-def mocked_request(factory, superuser):
-    request = factory.get('/get/request')
-    request.method = 'GET'
-    request.user = superuser
     return request
 
 
@@ -313,29 +276,18 @@ def child_indicatordata(indicator, indicatordata_json, child_geographies):
         for idx, g in enumerate(child_geographies)
     ]
 
+@pytest.fixture
+def category(profile):
+    return IndicatorCategoryFactory(name="A test category", profile=profile)
 
 @pytest.fixture
-def profile_indicator(profile, indicatordata):
+def subcategory(category):
+    return IndicatorSubcategoryFactory(name="A test subcategory", category=category)
+
+@pytest.fixture
+def profile_indicator(profile, indicatordata, subcategory):
     indicator = indicatordata[0].indicator
-    return ProfileIndicatorFactory(profile=profile, indicator=indicator)
-
-
-@pytest.fixture
-def category(profile_indicator):
-    c = profile_indicator.subcategory.category
-    c.profile_id = profile_indicator.profile_id
-    c.name = "A test category"
-    c.save()
-    return c
-
-
-@pytest.fixture
-def subcategory(profile_indicator, category):
-    s = profile_indicator.subcategory
-    s.category = category
-    s.name = "A test subcategory"
-    s.save()
-    return s
+    return ProfileIndicatorFactory(profile=profile, indicator=indicator, subcategory=subcategory)
 
 
 @pytest.fixture

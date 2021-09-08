@@ -7,7 +7,7 @@ from ..forms import ProfileIndicatorAdminForm
 
 from wazimap_ng.general.widgets import customTitledFilter, description
 from wazimap_ng.datasets.models import Indicator, Dataset
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin.admin_base import BaseAdminModel, HistoryAdmin
 from wazimap_ng.general.admin import filters
 from django.db.models.functions import Concat
 
@@ -15,7 +15,7 @@ class CategoryIndicatorFilter(filters.CategoryFilter):
     parameter_name = 'subcategory__category__id'
 
 @admin.register(models.ProfileIndicator)
-class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
+class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
     list_filter = (
         filters.ProfileNameFilter,
         CategoryIndicatorFilter,
