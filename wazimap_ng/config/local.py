@@ -41,3 +41,5 @@ class Local(Common):
     }
 
     FILE_SIZE_LIMIT = 3000 * 1024 * 1024
+
+    FIXTURE_DIRS = "/"
