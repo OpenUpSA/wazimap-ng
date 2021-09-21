@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 from test_plus import APITestCase
 import pytest
+import json
 
 
 from tests.profile.factories import ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory, ProfileIndicatorFactory
@@ -60,6 +61,8 @@ class TestProfileByUrl:
         response = ProfileByUrl.as_view()(request)
         assert response.status_code == 200
 
+        response.render()
+        assert "configuration" in str(response.content)
 
 
 
