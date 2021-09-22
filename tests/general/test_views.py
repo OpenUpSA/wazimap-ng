@@ -45,12 +45,12 @@ class TestConsolidatedProfileView(APITestCase):
         pc3, pc4 = self.create_multiple_profile_categories(theme2)
 
         response = self.get(
-            'all-details', profile_id=self.profile.pk,
+            'themes-count', profile_id=self.profile.pk,
             geography_code=self.geography.code, extra={'format': 'json'}
         )
         self.assert_http_200_ok()
 
-        theme_data = response.data["themes"]
+        theme_data = response.data
         assert len(theme_data) == 2
         assert theme_data[0]["name"] == theme1.name
         assert theme_data[1]["name"] == theme2.name
@@ -69,12 +69,12 @@ class TestConsolidatedProfileView(APITestCase):
         self.create_multiple_profile_categories(theme2)
 
         response = self.get(
-            'all-details', profile_id=self.profile.pk,
+            'themes-count', profile_id=self.profile.pk,
             geography_code=self.geography.code, extra={'format': 'json'}
         )
         self.assert_http_200_ok()
 
-        theme_data = response.data["themes"]
+        theme_data = response.data
         assert len(theme_data) == 2
         assert theme_data[0]["name"] == theme2.name
         assert theme_data[1]["name"] == theme1.name
@@ -89,12 +89,12 @@ class TestConsolidatedProfileView(APITestCase):
         pc4 = self.create_pc(theme2, order=0, label=F"pc_{theme2.name}")
 
         response = self.get(
-            'all-details', profile_id=self.profile.pk,
+            'themes-count', profile_id=self.profile.pk,
             geography_code=self.geography.code, extra={'format': 'json'}
         )
         self.assert_http_200_ok()
 
-        theme_data = response.data["themes"]
+        theme_data = response.data
         assert theme_data[0]["subthemes"][0]['label'] == pc2.label
         assert theme_data[0]["subthemes"][1]['label'] == pc1.label
         assert theme_data[1]["subthemes"][0]['label'] == pc4.label
@@ -106,12 +106,12 @@ class TestConsolidatedProfileView(APITestCase):
         pc2 = self.create_pc(theme1, order=0, label=F"pc_{theme1.name}")
 
         response = self.get(
-            'all-details', profile_id=self.profile.pk,
+            'themes-count', profile_id=self.profile.pk,
             geography_code=self.geography.code, extra={'format': 'json'}
         )
         self.assert_http_200_ok()
 
-        theme_data = response.data["themes"]
+        theme_data = response.data
         subthemes = theme_data[0]["subthemes"]
         assert subthemes[0]['label'] == pc2.label
         assert subthemes[1]['label'] == pc1.label
@@ -124,12 +124,12 @@ class TestConsolidatedProfileView(APITestCase):
         pc2.save()
 
         response = self.get(
-            'all-details', profile_id=self.profile.pk,
+            'themes-count', profile_id=self.profile.pk,
             geography_code=self.geography.code, extra={'format': 'json'}
         )
         self.assert_http_200_ok()
 
-        theme_data = response.data["themes"]
+        theme_data = response.data
         subthemes = theme_data[0]["subthemes"]
         assert subthemes[0]['label'] == pc3.label
         assert subthemes[1]['label'] == pc1.label
