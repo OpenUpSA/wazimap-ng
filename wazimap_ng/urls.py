@@ -16,7 +16,8 @@ from .boundaries import views as boundaries_views
 from .general import views as general_views
 from .cache import cache_headers as cache
 
-from wazimap_ng.general.views import logout_view, notifications_view
+from wazimap_ng.general.views import logout_view, notifications_view, task_status
+
 
 def trigger_error(request):
     division_by_zero = 1 / 0
@@ -33,6 +34,10 @@ urlpatterns = [
     path(
         "api/v1/datasets/<int:pk>/", dataset_views.DatasetDetailView.as_view(),
         name="dataset-detail"
+    ),
+    path(
+        "api/v1/datasets/<int:dataset_id>/upload/", dataset_views.dataset_upload,
+        name="dataset-upload"
     ),
     path("api/v1/universe/", dataset_views.UniverseListView.as_view(), name="universe"),
     path(
@@ -74,8 +79,13 @@ urlpatterns = [
     ),
     path(
         "api/v1/profiles/<int:profile_id>/categories/<int:category_id>/",
-        cache(profile_views.ProfileSubcategoriesList.as_view()),
+        cache(profile_views.ProfileSubcategoriesByCategoryList.as_view()),
         name="profile-subcategories",
+    ),
+    path(
+        "api/v1/profiles/<int:profile_id>/subcategories/",
+        cache(profile_views.ProfileSubcategoriesList.as_view()),
+        name="profile-subcategories-list",
     ),
     path(
         "api/v1/profiles/<int:profile_id>/geographies/<str:geography_code>/",
@@ -87,12 +97,18 @@ urlpatterns = [
         cache(profile_views.profile_geography_data),
         name="profile-geography-data",
     ),
+    path(
+        "api/v1/profile/<int:profile_id>/geography/<str:geography_code>/indicator/<int:profile_indicator_id>/",
+        profile_views.profile_geography_indicator_data,
+        name="profile-geography-indicator-data",
+    ),
     path("api/v1/geography/search/<str:profile_id>/", cache(dataset_views.search_geography)),
     path("api/v1/geography/ancestors/<str:geography_code>/<str:version>/", cache(dataset_views.geography_ancestors), name="geography-ancestors"),
 
     path("api/v1/profile/<int:profile_id>/points/themes/", cache(points_views.ThemeList.as_view()), name="points-themes"),
     path("api/v1/profile/<int:profile_id>/points/themes/categories/", cache(points_views.ProfileCategoryList.as_view())),
     path("api/v1/profile/<int:profile_id>/points/category/<int:profile_category_id>/points/", cache(points_views.LocationList.as_view()), name="category-points"),
+    path("api/v1/profile/<int:profile_id>/points/geography/<str:geography_code>/points/", cache(points_views.GeoLocationList.as_view()), name="geography-points"),
     path("api/v1/profile/<int:profile_id>/points/category/<int:profile_category_id>/geography/<str:geography_code>/points/", cache(points_views.LocationList.as_view()), name="category-points-geography"),
     path("api/v1/profile/<int:profile_id>/points/profile_categories/", cache(points_views.ProfileCategoryList.as_view()), name="profile-category"),
     path("api/v1/profile/<int:profile_id>/points/theme/<int:theme_id>/profile_categories/", cache(points_views.ProfileCategoryList.as_view()), name="profile-category-theme"),
@@ -100,6 +116,7 @@ urlpatterns = [
     re_path(r"^$", RedirectView.as_view(url="/api/v1/datasets/", permanent=False)),
     path("api/v1/data/points/collections/", cache(points_views.CategoryList.as_view())),
     path("api/v1/data/points/collections/profile/<int:profile_id>", cache(points_views.CategoryList.as_view())),
+
 
     path(
         "api/v1/boundaries/",
@@ -137,6 +154,11 @@ urlpatterns = [
         cache(general_views.consolidated_profile_test),
         name="all-details-test"
     ),
+    path("api/v1/profile/<int:profile_id>/geography/<str:geography_code>/themes_count/",
+        cache(general_views.boundary_point_count),
+        name="themes-count"
+    ),
+    path("api/v1/tasks/<str:task_id>/", task_status, name="task_status"),
     path('sentry-debug/', trigger_error),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

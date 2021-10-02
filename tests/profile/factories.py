@@ -8,6 +8,7 @@ class ProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Profile
 
+    name = "Profile"
     geography_hierarchy = factory.SubFactory(datasets_factoryboy.GeographyHierarchyFactory)
 
 
@@ -39,6 +40,7 @@ class ProfileIndicatorFactory(factory.django.DjangoModelFactory):
     subcategory = factory.SubFactory(IndicatorSubcategoryFactory)
     choropleth_method = factory.SubFactory(ChoroplethMethodFactory)
     subindicators = []
+    order = factory.Sequence(lambda n: n)
 
 
 class ProfileKeyMetricsFactory(factory.django.DjangoModelFactory):
@@ -46,6 +48,7 @@ class ProfileKeyMetricsFactory(factory.django.DjangoModelFactory):
         model = models.ProfileKeyMetrics
 
     profile = factory.SubFactory(ProfileFactory)
+    variable = factory.SubFactory(datasets_factoryboy.IndicatorFactory)
     subcategory = factory.SubFactory(IndicatorSubcategoryFactory)
     subindicator = factory.Sequence(lambda n: '%d' % n)
 

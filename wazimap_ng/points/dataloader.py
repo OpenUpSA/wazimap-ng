@@ -94,9 +94,11 @@ def loaddata(category, iterable, row_number):
             })
             continue
 
+        attributes = [{"key": k, "value": v} for (k, v) in row.items()]
+
         dd = models.Location(
             name=location, category=category,
-            coordinates=coordinates, data=row
+            coordinates=coordinates, data=attributes
         )
 
         datarows.append(dd)

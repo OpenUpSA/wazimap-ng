@@ -32,9 +32,12 @@ class GeographySerializer(GeoFeatureModelSerializer):
         # TODO how to handle no results
         # TODO this might get inefficient with many children
         geo = obj.geography
-        parent = geo.get_parent()
-        if parent is not None:
-            return parent.code
+        try:
+            parent = geo.get_parent()
+            if parent is not None:
+                return parent.code
+        except Geography.DoesNotExist:
+            return None
         return None
 
 

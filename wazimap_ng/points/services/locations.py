@@ -18,5 +18,5 @@ def get_locations(queryset, profile, category=None, geography_code=None):
         geography = Geography.objects.get(code=geography_code, version=version) 
         boundary = GeographyBoundary.objects.get(geography=geography)
 
-        queryset = queryset.filter(coordinates__contained=boundary.geom)
+        queryset = queryset.filter(coordinates__within=boundary.geom)
     return queryset

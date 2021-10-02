@@ -1,0 +1,16 @@
+{% extends "admin/change_form.html" %}
+{% block content %}
+{{ block.super }}
+<div>
+  <h2>Indicator Subcateogry Resources</h2>
+  <h3>Profile indicators</h3>
+  <table>
+    {% for profileindicator in original.profileindicator_set.all %}
+    <tr>
+      <td><a href="{% url 'admin:profile_profileindicator_change' profileindicator.pk %}">{{ profileindicator.label }}</a></td>
+      <td>{{ profileindicator.profile.name }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

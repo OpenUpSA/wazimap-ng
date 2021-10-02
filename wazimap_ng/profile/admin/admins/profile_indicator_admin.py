@@ -9,6 +9,7 @@ from wazimap_ng.general.widgets import customTitledFilter, description
 from wazimap_ng.datasets.models import Indicator, Dataset
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.admin import filters
+from django.db.models.functions import Concat
 
 class CategoryIndicatorFilter(filters.CategoryFilter):
     parameter_name = 'subcategory__category__id'
@@ -35,13 +36,10 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
 
     fieldsets = (
         ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'indicator')
+            'fields': ('profile', 'indicator', 'content_type')
         }),
         ("Profile fields", {
           'fields': ('label', 'subcategory', 'description', 'choropleth_method')
-        }),
-        ("Subindicators", {
-          'fields': ('subindicators',)
         }),
         ("Charts", {
           'fields': ('chart_configuration',)
@@ -53,6 +51,9 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
 
     help_texts = ["choropleth_method", ]
 
+    class Media:
+        js = ("/static/js/profile-indicator-admin.js",)
+
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
             return ("profile",) + self.readonly_fields
@@ -62,3 +63,30 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
         if not change:
             obj.subindicators = obj.indicator.subindicators
         super().save_model(request, obj, form, change)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        qs = form.base_fields["subcategory"].queryset
+        if obj:
+            profile_id = obj.profile_id
+            if request.method == "POST":
+                profile_id = request.POST.get("profile", profile_id)
+            qs = models.IndicatorSubcategory.objects.filter(
+                category__profile_id=profile_id
+            )
+
+        elif not obj and request.method == "GET":
+             qs = qs = models.IndicatorSubcategory.objects.none()
+
+        form.base_fields["subcategory"].queryset = qs
+
+        return form
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        field = super().formfield_for_foreignkey(db_field, request, **kwargs)
+        if db_field.name == "indicator":
+            qs = field.queryset.annotate(
+                display_name=Concat('dataset__name', 'name')
+            ).order_by("display_name")
+            field.queryset = qs
+        return field

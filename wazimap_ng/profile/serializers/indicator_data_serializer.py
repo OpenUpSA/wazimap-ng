@@ -1,220 +1,162 @@
 import logging
+from collections.abc import Iterable
+from itertools import groupby
+from typing import Dict
 
 from django.db.models import F
 
-from wazimap_ng.datasets.models import IndicatorData 
-from wazimap_ng.utils import qsdict, mergedict, expand_nested_list, pivot
+from wazimap_ng.datasets.models import Dataset, Group, IndicatorData
+from wazimap_ng.profile.models import Profile
+from wazimap_ng.utils import expand_nested_list, mergedict, qsdict
 
 from .. import models
-from .profile_indicator_sorter import ProfileIndicatorSorter
 
 logger = logging.getLogger(__name__)
 
-def get_indicator_data(profile, geography):
+
+def get_profile_data(profile, geographies):
+    return get_indicator_data(profile, profile.indicators.all(), geographies)
+
+
+def get_indicator_data(profile, indicators, geographies):
     data = (IndicatorData.objects
-        .filter(
-            indicator__in=profile.indicators.all(),
-            geography=geography
-        )
-        .values(
-            jsdata=F("data"),
-            description=F("indicator__profileindicator__description"),
-            indicator_name=F("indicator__name"),
-            indicator_group=F("indicator__groups"),
-            profile_indicator_label=F("indicator__profileindicator__label"),
-            subcategory=F("indicator__profileindicator__subcategory__name"),
-            category=F("indicator__profileindicator__subcategory__category__name"),
-            choropleth_method=F("indicator__profileindicator__choropleth_method__name"),
-            dataset=F("indicator__dataset"),
-            metadata_source=F("indicator__dataset__metadata__source"),
-            metadata_description=F("indicator__dataset__metadata__description"),
-            licence_url=F("indicator__dataset__metadata__licence__url"),
-            licence_name=F("indicator__dataset__metadata__licence__name"),
-            indicator_chart_configuration=F("indicator__profileindicator__chart_configuration"),
-        ))
+            .filter(
+                indicator__in=indicators,
+                indicator__profileindicator__profile=profile,
+                geography__in=geographies
+            )
+            .values(
+                profile_indicator_id=F("indicator__profileindicator__id"),
+                jsdata=F("data"),
+                description=F("indicator__profileindicator__description"),
+                indicator_name=F("indicator__name"),
+                indicator_group=F("indicator__groups"),
+                profile_indicator_label=F("indicator__profileindicator__label"),
+                subcategory=F("indicator__profileindicator__subcategory__name"),
+                category=F("indicator__profileindicator__subcategory__category__name"),
+                choropleth_method=F("indicator__profileindicator__choropleth_method__name"),
+                dataset=F("indicator__dataset"),
+                metadata_source=F("indicator__dataset__metadata__source"),
+                metadata_description=F("indicator__dataset__metadata__description"),
+                metadata_url=F("indicator__dataset__metadata__url"),
+                dataset_content_type=F("indicator__dataset__content_type"),
+                licence_url=F("indicator__dataset__metadata__licence__url"),
+                licence_name=F("indicator__dataset__metadata__licence__name"),
+                indicator_chart_configuration=F("indicator__profileindicator__chart_configuration"),
+                geography_code=F("geography__code"),
+                primary_group=F("indicator__groups"),
+                last_updated_at=F("indicator__profileindicator__updated"),
+                content_type=F("indicator__profileindicator__content_type"),
+            )
+            .order_by("indicator__profileindicator__order")
+            )
 
     return data
 
-def get_child_indicator_data(profile, geography):
-    children_profiles = (IndicatorData.objects
-        .filter(
-            indicator__in=profile.indicators.all(),
-            geography_id__in=geography.get_children()
-        )
+
+def get_dataset_groups(profile: Profile) -> Dict:
+    dataset_groups = (
+        Group.objects
+        .filter(dataset__indicator__profileindicator__profile=profile)
         .values(
-            jsdata=F("data"),
-            description=F("indicator__profileindicator__description"),
-            indicator_name=F("indicator__name"),
-            indicator_group=F("indicator__groups"),
-            profile_indicator_label=F("indicator__profileindicator__label"),
-            subcategory=F("indicator__profileindicator__subcategory__name"),
-            category=F("indicator__profileindicator__subcategory__category__name"),
-            choropleth_method=F("indicator__profileindicator__choropleth_method__name"),
-            dataset=F("indicator__dataset"),
-            metadata_source=F("indicator__dataset__metadata__source"),
-            metadata_description=F("indicator__dataset__metadata__description"),
-            licence_url=F("indicator__dataset__metadata__licence__url"),
-            licence_name=F("indicator__dataset__metadata__licence__name"),
-            indicator_chart_configuration=F("indicator__profileindicator__chart_configuration"),
-
-
-
-            geography_code=F("geography__code"),
-        )
+            "subindicators",
+            "dataset",
+            "name",
+            "can_aggregate",
+            "can_filter"
+        ).order_by("dataset_id", "name").distinct("dataset_id", "name")
     )
 
-    return children_profiles
+    grouped_datasetdata = groupby(dataset_groups, lambda g: g["dataset"])
+    grouped_datasetdata = [(grouper, list(groups)) for grouper, groups in grouped_datasetdata]
 
-def rearrange_group(data):
-    for row in data:
-        group_dict = row["jsdata"]["groups"]
+    dataset_groups_dict = dict(list(grouped_datasetdata))
 
-        for group_subindicators_dict in group_dict.values():
-            for subindicator, value_array in group_subindicators_dict.items():
-                group_subindicators_dict[subindicator] = {}
-                for value_dict in value_array:
-                    count = value_dict.pop("count")
-                    value = list(value_dict.values())[0]
-                    group_subindicators_dict[subindicator][value] = {
-                        "count": count
-                    }
-        yield row
+    return dataset_groups_dict
 
 
 def IndicatorDataSerializer(profile, geography):
+    indicator_data = get_profile_data(profile, [geography])
+    children_indicator_data = get_profile_data(profile, geography.get_children())
 
-    sorters = ProfileIndicatorSorter(profile)
-
-    indicator_data = get_indicator_data(profile, geography)
-    indicator_data = rearrange_group(indicator_data)
-    indicator_data = sorters.sort(indicator_data)
-
-    children_indicator_data = get_child_indicator_data(profile, geography)
-    children_indicator_data = rearrange_group(children_indicator_data)
-    children_indicator_data = sorters.sort(children_indicator_data)
-
+    dataset_groups_dict = get_dataset_groups(profile)
     indicator_data2 = list(expand_nested_list(indicator_data, "jsdata"))
 
     subcategories = (models.IndicatorSubcategory.objects.filter(category__profile=profile)
-        .order_by("category__order", "order")
-        .select_related("category")
-    )
+                     .order_by("category__order", "order")
+                     .select_related("category")
+                     )
 
     c = qsdict(subcategories,
-        lambda x: x.category.name,
-        lambda x: {"description": x.category.description}
-    )
+               lambda x: x.category.name,
+               lambda x: {"description": x.category.description}
+               )
 
     s = qsdict(subcategories,
-        lambda x: x.category.name,
-        lambda x: "subcategories",
-        "name",
-        lambda x: {"description": x.description}
-    )
+               lambda x: x.category.name,
+               lambda x: "subcategories",
+               "name",
+               lambda x: {"description": x.description}
+               )
 
-    d_groups = qsdict(indicator_data,
-        "category",
-        lambda x: "subcategories",
-        "subcategory",
-        lambda x: "indicators",
-        "profile_indicator_label",
-        lambda x: "groups",
-        lambda x: x["jsdata"]["groups"]
-    )
+    d_metadata = []
+    for d in [children_indicator_data, indicator_data2]:
+        d_metadatum = qsdict(d,
+                             "category",
+                             lambda x: "subcategories",
+                             "subcategory",
+                             lambda x: "indicators",
+                             "profile_indicator_label",
+                             lambda x: {
+                                 "id": x["profile_indicator_id"],
+                                 "description": x["description"],
+                                 "choropleth_method": x["choropleth_method"],
+                                 "last_updated_at": x["last_updated_at"],
+                                 "metadata": {
+                                     "source": x["metadata_source"],
+                                     "description": x["metadata_description"],
+                                     "url": x["metadata_url"],
+                                     "licence": {
+                                         "name": x["licence_name"],
+                                         "url": x["licence_url"]
+                                     },
+                                     "primary_group": x["primary_group"][0],
+                                     "groups": dataset_groups_dict[x["dataset"]],
+                                 },
+                                 "content_type": x["content_type"],
+                                 "dataset_content_type": x["dataset_content_type"],
+                                 "chart_configuration": x["indicator_chart_configuration"],
+                             },
+                             )
+        d_metadata.append(d_metadatum)
 
-    d_groups2 = qsdict(children_indicator_data,
-        "category",
-        lambda x: "subcategories",
-        "subcategory",
-        lambda x: "indicators",
-        "profile_indicator_label",
-        lambda x: "groups",
-        lambda x: "children",
-        "geography_code",
-        lambda x: x["jsdata"]["groups"]
-    )
-    d_groups2 = pivot(d_groups2, [0, 1, 2, 3, 4, 5, 8, 9, 10, 6, 7])
+    d4 = qsdict(indicator_data,
+                "category",
+                lambda x: "subcategories",
+                "subcategory",
+                lambda x: "indicators",
+                "profile_indicator_label",
+                lambda x: "data",
+                "jsdata",
+                )
 
-    d_subindicators = qsdict(indicator_data,
-        "category",
-        lambda x: "subcategories",
-        "subcategory",
-        lambda x: "indicators",
-        "profile_indicator_label",
-        lambda x: "subindicators",
-        lambda x: "count",
-        lambda x: dict(x["jsdata"]["subindicators"]),
-    )
-
-    d_subindicators = pivot(d_subindicators, [0, 1, 2, 3, 4, 5, 7, 6])
-
-    d_children = qsdict(children_indicator_data,
-        "category",
-        lambda x: "subcategories",
-        "subcategory",
-        lambda x: "indicators",
-        "profile_indicator_label",
-        lambda x: "subindicators",
-        "geography_code",
-        lambda x: "children",
-        lambda x: x["jsdata"]["subindicators"]
-    )
-
-    d_children = pivot(d_children, [0, 1, 2, 3, 4, 5, 8, 7, 6])
-
-    # This is needed in additio to d3 in case the parent geography does not have this indicator
-    # In which case it won't return metadata
-    d_children2 = qsdict(children_indicator_data,
-        "category",
-        lambda x: "subcategories",
-        "subcategory",
-        lambda x: "indicators",
-        "profile_indicator_label",
-        lambda x: {
-            "description": x["description"],
-            "choropleth_method": x["choropleth_method"],
-            "metadata": {
-                "source": x["metadata_source"],
-                "description": x["metadata_description"],
-                "licence": {
-                    "name": x["licence_name"],
-                    "url": x["licence_url"]
-                }
-            },
-            "chart_configuration": x["indicator_chart_configuration"],
-        },
-    )
-
-    d3 = qsdict(indicator_data2,
-        "category",
-        lambda x: "subcategories",
-        "subcategory",
-        lambda x: "indicators",
-        "profile_indicator_label",
-        lambda x: {
-            "description": x["description"],
-            "choropleth_method": x["choropleth_method"],
-            "metadata": {
-                "source": x["metadata_source"],
-                "description": x["metadata_description"],
-                "licence": {
-                    "name": x["licence_name"],
-                    "url": x["licence_url"]
-                }
-            },
-            "chart_configuration": x["indicator_chart_configuration"],
-        },
-    )
-
+    d5 = qsdict(children_indicator_data,
+                "category",
+                lambda x: "subcategories",
+                "subcategory",
+                lambda x: "indicators",
+                "profile_indicator_label",
+                lambda x: "child_data",
+                "geography_code",
+                "jsdata",
+                )
 
     new_dict = {}
     mergedict(new_dict, c)
     mergedict(new_dict, s)
-    mergedict(new_dict, d_groups)
-    mergedict(new_dict, d_groups2)
-    mergedict(new_dict, d_subindicators)
-    mergedict(new_dict, d_children)
-    mergedict(new_dict, d_children2)
-    mergedict(new_dict, d3)
+    mergedict(new_dict, d_metadata[0])
+    mergedict(new_dict, d_metadata[1])
+    mergedict(new_dict, d4)
+    mergedict(new_dict, d5)
 
     return new_dict

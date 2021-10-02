@@ -1,0 +1,15 @@
+{% extends "admin/change_form.html" %}
+{% block content %}
+{{ block.super }}
+<div>
+  <h2>Indicator Category Resources</h2>
+  <h3>Indicator subcategories</h3>
+  <table>
+    {% for subcategory in original.indicatorsubcategory_set.all %}
+    <tr>
+      <td><a href="{% url 'admin:profile_indicatorsubcategory_change' subcategory.pk %}">{{ subcategory.name }}</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

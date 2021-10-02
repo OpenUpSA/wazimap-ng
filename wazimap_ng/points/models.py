@@ -1,34 +1,38 @@
 import os
-import uuid
 
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
+from tinymce.models import HTMLField
 
 import pandas as pd
 from io import BytesIO
 from wazimap_ng.profile.models import Profile
 from django_q.models import Task
 from wazimap_ng import utils
-from wazimap_ng.datasets.models import Licence
 from wazimap_ng.general.models import BaseModel
 from wazimap_ng.config.common import PERMISSION_TYPES
+from colorfield.fields import ColorField
+
+
 
 def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)
     return os.path.join('points', filename)
 
+
 class Theme(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=30)
     icon = models.CharField(max_length=30, null=True, blank=True)
+    order = models.PositiveIntegerField(default=0, blank=False, null=False)
 
     def __str__(self):
         return f"{self.profile} | {self.name}"
 
     class Meta:
-        ordering = ["profile__name"]
+        ordering = ["order"]
 
 
 class Category(BaseModel):
@@ -43,6 +47,7 @@ class Category(BaseModel):
     class Meta:
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
+
 
 class Location(BaseModel):
     name = models.CharField(max_length=255)
@@ -66,8 +71,11 @@ class ProfileCategory(BaseModel):
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, related_name="profile_categories")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="collection")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
-    description = models.TextField(blank=True)
+    description = HTMLField(blank=True)
     icon = models.CharField(max_length=30, null=True, blank=True)
+    order = models.PositiveIntegerField(default=0, blank=False, null=False)
+    color = ColorField(blank=True)
+    visible_tooltip_attributes = JSONField(default=list, null=True, blank=True)
 
     def __str__(self):
         return self.label
@@ -75,6 +83,13 @@ class ProfileCategory(BaseModel):
     class Meta:
         verbose_name = "Profile Collection"
         verbose_name_plural = "Profile Collections"
+        ordering = ["order"]
+
+    @property
+    def location_attributes(self):
+        locations = Location.objects.filter(category=self.category).values_list('data', flat=True)
+        f = [data.get('key') for location in locations for data in location]
+        return list(set(f))
 
 class CoordinateFile(BaseModel):
     document = models.FileField(

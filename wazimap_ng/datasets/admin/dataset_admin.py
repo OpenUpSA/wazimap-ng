@@ -47,8 +47,8 @@ class DatasetAdmin(DatasetBaseAdminModel):
     actions = (set_to_public, set_to_private, delete_selected_data,)
     list_display = ("name", "permission_type", "geography_hierarchy", "profile", description("source", get_source))
     list_filter = (
-        PermissionTypeFilter, filters.GeographyHierarchyFilter,
-        filters.ProfileFilter, filters.DatasetMetaDataFilter
+        PermissionTypeFilter, filters.GeographyHierarchyFilter, "content_type",
+        filters.ProfileFilter, filters.DatasetMetaDataFilter,
     )
     form = DatasetAdminForm
     search_fields = ("name", )
@@ -62,7 +62,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
         }),
         ("Dataset Imports", {
             "fields": (
-                "import_dataset", "imported_dataset",
+                "content_type", "import_dataset", "imported_dataset",
             )
         }),
     )
@@ -111,7 +111,8 @@ class DatasetAdmin(DatasetBaseAdminModel):
         super().save_model(request, obj, form, change)
 
         if is_new or is_profile_updated:
-            assign_perms_to_group(obj.profile.name, obj, is_profile_updated)
+            if obj.profile is not None:
+                assign_perms_to_group(obj.profile.name, obj, is_profile_updated)
 
         dataset_import_file = form.cleaned_data.get("import_dataset", None)
 

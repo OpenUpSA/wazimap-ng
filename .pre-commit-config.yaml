@@ -1,0 +1,23 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-yaml
+      - id: end-of-file-fixer
+        exclude: (^.*\b(migrations)\b.*$|^.*\b(__init__)\b.*$)
+      - id: pretty-format-json
+        exclude: Pipfile.lock
+      - id: trailing-whitespace
+        exclude: (^.*\b(migrations)\b.*$|^.*\b(__init__)\b.*$)
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.5.2
+    hooks:
+      - id: isort
+        exclude: (^.*\b(migrations)\b.*$|^.*\b(__init__)\b.*$)
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: '3.8.3'
+    hooks:
+      - id: flake8
+        exclude: (^.*\b(migrations)\b.*$|^.*\b(__init__)\b.*$)

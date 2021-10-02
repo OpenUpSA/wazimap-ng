@@ -4,47 +4,35 @@ from wazimap_ng.datasets.models import IndicatorData
 
 from .. import models
 
-def get_subindicator(metric):
-    subindicators = metric.variable.subindicators
-    idx = metric.subindicator if metric.subindicator is not None else 0
-    return subindicators[idx]
+from .helpers import get_subindicator, get_sum, MetricCalculator
 
-def sibling(profile_key_metric, geography):
-    siblings = geography.get_siblings()
-    
-    indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography__in=siblings)
+def get_indicator_data(profile_key_metric, geographies):
+    indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography__in=geographies)
+    return indicator_data
+
+def get_data_for_key_metric_and_geographies(profile_key_metric, geographies):
+    indicator_data = get_indicator_data(profile_key_metric, geographies)
     if indicator_data.count() > 0:
-        subindicator = get_subindicator(profile_key_metric)
-        numerator = None
-        denominator = 0
-        for datum in indicator_data:
-            if datum.geography == geography:
-                numerator = datum.data["subindicators"].get(subindicator, 0)
-            s = datum.data["subindicators"]
-            denominator += s[subindicator]
-
-        if denominator > 0 and numerator is not None:
-            return numerator / denominator
+        return indicator_data.first().data
     return None
 
 def absolute_value(profile_key_metric, geography):
-    indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography=geography)
-    if indicator_data.count() > 0:
-        subindicator = get_subindicator(profile_key_metric)
-        data = indicator_data.first().data # TODO what to do with multiple results
-        return data["subindicators"][subindicator]
+    indicator_data = get_data_for_key_metric_and_geographies(profile_key_metric, [geography])
+    if indicator_data != None:
+        return MetricCalculator.absolute_value(indicator_data, profile_key_metric, geography)
     return None
 
 def subindicator(profile_key_metric, geography):
-    indicator_data = IndicatorData.objects.filter(indicator__profilekeymetrics=profile_key_metric, geography=geography)
-    if indicator_data.count() > 0:
-        indicator_data = indicator_data.first() # Fix this need to cater for multiple results
-        subindicator = get_subindicator(profile_key_metric)
-        numerator = indicator_data.data["subindicators"].get(subindicator, 0)
-        denominator = sum(indicator_data.data["subindicators"].values())
+    indicator_data = get_data_for_key_metric_and_geographies(profile_key_metric, [geography])
+    if indicator_data != None:
+        return MetricCalculator.subindicator(indicator_data, profile_key_metric, geography)
+    return None
 
-        if denominator > 0 and numerator is not None:
-            return numerator / denominator
+def sibling(profile_key_metric, geography):
+    siblings = geography.get_siblings()
+    data = get_indicator_data(profile_key_metric, [geography] + siblings)
+    if data.count() > 0:
+        return MetricCalculator.sibling(data, profile_key_metric, geography)
     return None
 
 algorithms = {

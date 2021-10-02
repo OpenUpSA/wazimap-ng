@@ -14,5 +14,7 @@ class QCluster:
     # }
 
     Q_CLUSTER = {
-        "redis": os.environ.get("REDIS_URL")
+        "redis": os.environ.get("REDIS_URL"),
+        "workers": int(os.environ.get("Q_CLUSTER_WORKERS", 4)),
+        "recycle": int(os.environ.get("Q_CLUSTER_RECYCLE", 10)),
     }

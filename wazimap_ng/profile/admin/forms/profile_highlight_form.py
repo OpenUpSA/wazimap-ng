@@ -26,6 +26,9 @@ class ProfileHighlightForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         is_saving_new_item = "indicator" in self.data
         is_editing_item = self.instance.pk is not None
+        self.fields['indicator'].queryset = Indicator.objects.filter(
+            dataset__content_type="quantitative"
+        )
 
         try:
             if is_saving_new_item:

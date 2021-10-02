@@ -71,7 +71,7 @@ def get_objects_for_user(
         queryset = model.objects.all()
 
     if not hasattr(model, 'permission_type'):
-        return model.objects.none()
+        return queryset
 
     model_name, app_label = get_model_info(model)
     codename = get_permission_codename(perm, model._meta)

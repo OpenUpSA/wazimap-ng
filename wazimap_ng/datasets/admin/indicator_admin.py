@@ -65,7 +65,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            to_add = ('dataset',"groups", "universe",)
+            to_add = ('dataset',"groups",)
             return self.readonly_fields + to_add
         return self.readonly_fields
 
