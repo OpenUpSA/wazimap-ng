@@ -115,8 +115,8 @@ class Common(QCluster, Configuration):
             conn_max_age=int(os.getenv("POSTGRES_CONN_MAX_AGE", 600))
         )
     }
-
-    ATOMIC_REQUESTS = truthy(os.environ.get("ATOMIC_REQUESTS", False))
+    DATABASES['default']['ATOMIC_REQUESTS'] = True
+    DATABASES['default']['ENGINE'] = "django.contrib.gis.db.backends.postgis"
 
     CACHES = {
         'default': {

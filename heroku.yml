@@ -1,16 +1,3 @@
-setup:
-  addons:
-    - plan: heroku-postgresql
-      as: DATABASE
-  config:
-    POSTGRES_MULTIPLE_EXTENSIONS: "postgis,pg_trgm"
-    POSTGRES_DBNAME: wazimap_ng
-    POSTGRES_USER: wazimap_ng
-    POSTGRES_PASS: wazimap_ng
-    AWS_ACCESS_KEY_ID: 1234
-    AWS_SECRET_ACCESS_KEY: "1234"
-    AWS_STORAGE_BUCKET_NAME: "1234"
-    AWS_S3_REGION_NAME: "1234"
 build:
   docker:
     web: Dockerfile
