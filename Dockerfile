@@ -16,5 +16,4 @@ COPY ./nginx.conf.d/ /app/nginx.conf.d
 COPY ./ /app
 WORKDIR /app
 RUN rm -rf .git
-RUN DJANGO_SECRET_KEY=not-secret-at-build python3 manage.py collectstatic --noinput
 CMD ["tail", "-f", "/dev/null"]
