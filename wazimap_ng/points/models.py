@@ -76,6 +76,7 @@ class ProfileCategory(BaseModel):
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     color = ColorField(blank=True)
     visible_tooltip_attributes = JSONField(default=list, null=True, blank=True)
+    configuration = JSONField(default=dict, blank=True)
 
     def __str__(self):
         return self.label

@@ -1,6 +1,9 @@
 from adminsortable2.admin import SortableAdminMixin
 from django.contrib.gis import admin
 from django import forms
+from django.contrib.postgres import fields
+
+from django_json_widget.widgets import JSONEditorWidget
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.services.permissions import assign_perms_to_group
@@ -9,7 +12,6 @@ from wazimap_ng.general.admin import filters
 from .. import models
 
 from icon_picker_widget.widgets import IconPickerWidget
-from django_admin_json_editor import JSONEditorWidget
 
 
 class ProfileCategoryAdminForm(forms.ModelForm):
@@ -48,11 +50,14 @@ class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel):
           'fields': ('label', 'description',)
         }),
         ("Point Collection configuration", {
-            'fields': ('visible_tooltip_attributes',)
+            'fields': ('visible_tooltip_attributes', 'configuration')
         }),
     )
     form = ProfileCategoryAdminForm
     search_fields = ("label", )
+    formfield_overrides = {
+        fields.JSONField: {"widget": JSONEditorWidget},
+    }
 
     class Media:
         css = {

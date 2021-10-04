@@ -67,7 +67,8 @@ class TestProfileCollectionSerializer:
             "theme": theme_serializer.data,
             "metadata": metadata_serializer.data,
             'visible_tooltip_attributes': ['point_attribute'],
-            "color": "red"
+            "color": "red",
+            "configuration": {}
         }
 
 class TestLocationSerializer:
@@ -122,6 +123,7 @@ class TestProfileCategorySerializer:
         assert "theme" in serializer.data
         assert "metadata" in serializer.data
         assert "visible_tooltip_attributes" in serializer.data
+        assert "configuration" in serializer.data
 
     def test_attributes(self):
         pf = ProfileCategoryFactory()
