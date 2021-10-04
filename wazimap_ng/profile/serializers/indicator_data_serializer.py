@@ -89,7 +89,7 @@ def IndicatorDataSerializer(profile, geography):
 
     c = qsdict(subcategories,
                lambda x: x.category.name,
-               lambda x: {"description": x.category.description}
+               lambda x: {"description": x.category.description, "icon": x.category.icon.url if x.category.icon else ""},
                )
 
     s = qsdict(subcategories,
