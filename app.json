@@ -2,7 +2,8 @@
   "scripts": {
     "dokku": {
       "predeploy": "/app/scripts/django/predeploy.sh"
-    }
+    },
+    "release": "echo 'hello world release'"
   },
   "stack": "container",
   "environments": {
