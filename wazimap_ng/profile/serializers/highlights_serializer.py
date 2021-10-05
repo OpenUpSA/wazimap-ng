@@ -26,7 +26,7 @@ def subindicator(highlight, geography):
 
 
 def sibling(highlight, geography):
-    siblings = list(geography.get_siblings()
+    siblings = list(geography.get_siblings())
     indicator_data = get_indicator_data(highlight, [geography] + siblings)
 
     if indicator_data:
