@@ -67,9 +67,17 @@ def consolidated_profile(request, profile_id, geography_code):
 @api_view()
 def boundary_point_count(request, profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
-    version = profile.geography_hierarchy.root_geography.version
-    geography = dataset_models.Geography.objects.get(code=geography_code, version=version)
-    return Response(point_views.boundary_point_count_helper(profile, geography))
+
+    version = request.GET.get('version', None)
+    versions_list = profile.geography_hierarchy.configuration.get("versions", [])
+    if not version:
+        version = profile.geography_hierarchy.configuration.get("default_version", None)
+    if not version or version not in versions_list:
+        raise Http40
+    version = get_object_or_404(dataset_models.Version, name=version)
+
+    geography = dataset_models.Geography.objects.get(code=geography_code, versions=version)
+    return Response(point_views.boundary_point_count_helper(profile, geography, version))
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
