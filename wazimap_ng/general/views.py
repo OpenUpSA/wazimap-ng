@@ -24,16 +24,15 @@ from django_q.tasks import result, fetch
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-def consolidated_profile_helper(profile_id, geography_code, version):
+def consolidated_profile_helper(profile_id, geography_code, version_name):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
     versions_list = profile.geography_hierarchy.configuration.get("versions", [])
-    if not version:
-        version = profile.geography_hierarchy.configuration.get("default_version", None)
-    if not version or version not in versions_list:
+    if not version_name:
+        version_name = profile.geography_hierarchy.configuration.get("default_version", None)
+    if not version_name or version_name not in versions_list:
         raise Http404
 
-
-    version = get_object_or_404(dataset_models.Version, name=version)
+    version = get_object_or_404(dataset_models.Version, name=version_name)
     geography = dataset_models.Geography.objects.get(code=geography_code, versions=version)
     profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, [version])
     boundary_js = boundaries_views.geography_item_helper(geography_code, version)

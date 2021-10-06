@@ -41,8 +41,7 @@ class Command(BaseCommand):
         if not g:
             g = Geography.add_root(**fields)
         g.versions.add(version)
-        if GeographyBoundary.objects.filter(geography=g, version=version).count() == 0:
-            GeographyBoundary.objects.create(geography=g, geom=geo_shape, area=area, version=version)
+        GeographyBoundary.objects.create(geography=g, geom=geo_shape, area=area, version=version)
 
     def process_node(self, fields, geo_shape, version):
         parent_code = fields.pop("parent_code")
@@ -122,4 +121,3 @@ class Command(BaseCommand):
             self.process_shape(s, field_map, level, version, quiet)
 
             print(f"{idx + 1} geographies successfully loaded")
-

@@ -151,7 +151,7 @@ class DatasetIndicatorsList(generics.ListAPIView):
 
     def get(self, request, dataset_id):
         if models.Dataset.objects.filter(id=dataset_id).count() == 0:
-            raise Http404 
+            raise Http404
 
         queryset = self.get_queryset().filter(dataset=dataset_id)
         queryset = self.paginate_queryset(queryset)
@@ -176,19 +176,19 @@ class GeographyHierarchyViewset(viewsets.ReadOnlyModelViewSet):
 def search_geography(request, profile_id):
     """
     Search autocompletion - provides recommendations from place names
-    Prioritises higher-level geographies in the results, e.g. 
-    Provinces of Municipalities. 
+    Prioritises higher-level geographies in the results, e.g.
+    Provinces of Municipalities.
 
     Querystring parameters
     q - search string
-    max-results number of results to be returned [default is 30] 
+    max-results number of results to be returned [default is 30]
     """
     profile = get_object_or_404(Profile, pk=profile_id)
-    version = request.GET.get("version", None)
+    version_name = request.GET.get("version", None)
     if not version:
-        version = profile.geography_hierarchy.configuration.get("default_version", None)
-    version = get_object_or_404(models.Version, name=version)
-    
+        version_name = profile.geography_hierarchy.configuration.get("default_version", None)
+    version = get_object_or_404(models.Version, name=version_name)
+
     default_results = 30
     max_results = request.GET.get("max_results", default_results)
     try:
@@ -208,7 +208,7 @@ def search_geography(request, profile_id):
             return 0
 
         else:
-            # TODO South Africa specific geography 
+            # TODO South Africa specific geography
             return {
                 "province": 1,
                 "district": 2,
@@ -231,7 +231,7 @@ def geography_ancestors(request, geography_code, version):
     """
     geos = models.Geography.objects.filter(code=geography_code, versions__name=version)
     if geos.count() == 0:
-        raise Http404 
+        raise Http404
 
     geography = geos.first()
     geo_js = AncestorGeographySerializer().to_representation(geography)

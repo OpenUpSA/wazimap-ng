@@ -7,6 +7,11 @@ from wazimap_ng.profile.models import ProfileIndicator
 
 from .indicator_data_serializer import get_indicator_data
 
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 class ProfileIndicatorSerializer(serializers.ModelSerializer):
     subcategory = serializers.SerializerMethodField()
@@ -39,7 +44,7 @@ class FullProfileIndicatorSerializer(serializers.Serializer):
         version = indicator.dataset.version
 
         try:
-            indicator_json = get_indicator_data(profile, [indicator], [self.geography], [version])
+            indicator_json = get_indicator_data(profile, [indicator], [self.geography], version)
 
             if len(indicator_json) == 0:
                 return {}
@@ -58,8 +63,9 @@ class FullProfileIndicatorSerializer(serializers.Serializer):
         version = indicator.dataset.version
 
         try:
-            children_indicator_json = get_indicator_data(profile, [indicator], self.geography.get_children(), [version])
+            children_indicator_json = get_indicator_data(profile, [indicator], self.geography.get_child_geographies(version), version)
             children_indicator_json = {j["geography_code"]: j["jsdata"] for j in children_indicator_json}
             return children_indicator_json
-        except IndicatorData.DoesNotExist:
+        except IndicatorData.DoesNotExist as e:
+            logger.info(f"{e} for profile {profile}, indicator {indicator}, version {version}")
             return {}

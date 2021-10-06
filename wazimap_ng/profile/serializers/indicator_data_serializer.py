@@ -14,18 +14,18 @@ from .. import models
 logger = logging.getLogger(__name__)
 
 
-def get_profile_data(profile, geographies, versions):
-    return get_indicator_data(profile, profile.indicators.all(), geographies, versions)
+def get_profile_data(profile, geographies, version):
+    return get_indicator_data(profile, profile.indicators.all(), geographies, version)
 
 
-def get_indicator_data(profile, indicators, geographies, versions):
+def get_indicator_data(profile, indicators, geographies, version):
 
     data = (IndicatorData.objects
             .filter(
                 indicator__in=indicators,
                 indicator__profileindicator__profile=profile,
                 geography__in=geographies,
-                indicator__dataset__version__in=versions,
+                indicator__dataset__version=version,
             )
             .values(
                 profile_indicator_id=F("indicator__profileindicator__id"),
@@ -78,10 +78,10 @@ def get_dataset_groups(profile: Profile) -> Dict:
     return dataset_groups_dict
 
 
-def IndicatorDataSerializer(profile, geography, versions):
-    indicator_data = get_profile_data(profile, [geography], versions)
-    children = geography.get_child_geographies(versions)
-    children_indicator_data = get_profile_data(profile, children, versions)
+def IndicatorDataSerializer(profile, geography, version):
+    indicator_data = get_profile_data(profile, [geography], version)
+    children = geography.get_child_geographies(version)
+    children_indicator_data = get_profile_data(profile, children, version)
 
     dataset_groups_dict = get_dataset_groups(profile)
     indicator_data2 = list(expand_nested_list(indicator_data, "jsdata"))

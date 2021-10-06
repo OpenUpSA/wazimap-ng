@@ -12,7 +12,7 @@ from wazimap_ng.general.models import BaseModel
 
 
 class Version(BaseModel):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
         return self.name
@@ -53,12 +53,9 @@ class Geography(MP_Node, BaseModel):
         ]
         ordering = ["id"]
 
-    def get_siblings(self, versions=None):
+    def get_siblings(self, version):
         siblings = super(Geography, self).get_siblings()
-        if versions:
-            if not isinstance(versions, list):
-                versions = list(versions)
-            siblings = siblings.filter(versions__in=versions)
+        siblings = siblings.filter(version=version)
         return siblings
 
     def get_child_boundaries(self, version):
@@ -84,22 +81,16 @@ class Geography(MP_Node, BaseModel):
         return child_types
 
 
-    def get_child_geographies(self, versions=None):
+    def get_child_geographies(self, version=None):
         """
         Get Child geographies.
 
-        if versions is not passed : get all children for every version
-        version can be passed as a obj or list of obj for fetching
-        children of same geo code but different versions.
+        if version is not passed : get all children, otherwise return only
+        geographies of the passed version.
         """
         child_geographies = self.get_children()
-        if versions:
-            if not isinstance(versions, list):
-                versions = [versions]
-
-            child_geographies = child_geographies.filter(
-                versions__in=versions
-            )
+        if version:
+            child_geographies = child_geographies.filter(versions=versions)
         return child_geographies
 
 
@@ -115,7 +106,7 @@ class GeographyHierarchy(BaseModel):
 
     def help_text(self):
         return f"{self.name} : {self.description}"
-    
+
 
     def __str__(self):
         return f"{self.name}"
