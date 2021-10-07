@@ -81,16 +81,8 @@ class Geography(MP_Node, BaseModel):
         return child_types
 
 
-    def get_child_geographies(self, version=None):
-        """
-        Get Child geographies.
-
-        if version is not passed : get all children, otherwise return only
-        geographies of the passed version.
-        """
-        child_geographies = self.get_children()
-        if version:
-            child_geographies = child_geographies.filter(versions=versions)
+    def get_child_geographies(self, version):
+        child_geographies = self.get_children().filter(versions=version)
         return child_geographies
 
 

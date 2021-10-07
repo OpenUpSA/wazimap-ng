@@ -69,7 +69,7 @@ def profile_geography_data(request, profile_id, geography_code):
     version = get_object_or_404(Version, name=version_name)
     geography = get_object_or_404(Geography, code=geography_code, versions=version)
 
-    js = serializers.ExtendedProfileSerializer(profile, geography, [version])
+    js = serializers.ExtendedProfileSerializer(profile, geography, version)
     return Response(js)
 
 class ProfileCategoriesList(generics.ListAPIView):
