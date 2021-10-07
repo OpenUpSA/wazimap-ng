@@ -11,14 +11,22 @@ def update_geographies_and_related_data(apps, schema_editor):
     GeographyBoundary = apps.get_model("boundaries", "GeographyBoundary")
     IndicatorData = apps.get_model("datasets", "IndicatorData")
 
+    kept_geos_by_code = dict()
+    geo_ids_to_delete = set()
 
+    # Order by depth so that we decide which parent to keep before
+    # deciding which children to keep and can move kept children to kept parents.
     geo_codes = Geography.objects.all().values_list(
         "code", flat=True
-    ).order_by("code").distinct()
+    ).order_by("depth", "code").distinct()
 
     for code in geo_codes:
         geography_objs = Geography.objects.filter(code=code)
         first_geo_obj = geography_objs.first()
+        keepers_by_code[code] = first_geo_obj;
+
+        # update parent to the one we're keeping which has the same code
+        first_geo_obj.move(kept_geos_by_code[first_geo_obj.get_parent().code], 'last-child')
 
         # get versions and assign it to first geo obj
         version_list = geography_objs.values_list("version", flat=True).order_by("version").distinct()
@@ -42,8 +50,9 @@ def update_geographies_and_related_data(apps, schema_editor):
         )
 
         # Change related data to geo objs that will be deleted
-        geography_objs = geography_objs.exclude(id=first_geo_obj.id)
-        for geo_obj in geography_objs:
+        geography_objs_to_delete = geography_objs.exclude(id=first_geo_obj.id)
+        for geo_obj in geography_objs_to_delete:
+            geo_ids_to_delete.add(geo_obj.id)
             version = versions_qs.get(name=geo_obj.version)
             # Update boundaries
             GeographyBoundary.objects.filter(geography=geo_obj).update(
@@ -65,7 +74,8 @@ def update_geographies_and_related_data(apps, schema_editor):
                 configuration={"versions": [geo_obj.version]}, root_geography=first_geo_obj
             )
 
-        geography_objs.delete()
+    for id in geo_ids_to_delete:
+        Geography.objects.filter(id=id).delete()
 
 
 
