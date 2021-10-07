@@ -13,25 +13,21 @@ def update_geographies_and_related_data(apps, schema_editor):
     IndicatorData = apps.get_model("datasets", "IndicatorData")
 
     kept_geos_by_code = dict()
+    kept_geo_parents_by_id = dict()
     geo_ids_to_delete = set()
 
     # Order by depth so that we decide which parent to keep before
     # deciding which children to keep and can move kept children to kept parents.
     geo_codes = Geography.objects.all().values_list(
         "code", flat=True
-    ).order_by("depth", "code")
+    ).order_by("code").distinct()
 
     for code in geo_codes:
-        if code in kept_geos_by_code:
-            continue
-
         geography_objs = Geography.objects.filter(code=code)
         first_geo_obj = geography_objs.first()
         kept_geos_by_code[code] = first_geo_obj;
+        kept_geos_parent_code_by_id[first_geo_obj.id] = first_geo_obj.get_parent().code
         print(f"Keeping {code} with id {first_geo_obj.id}")
-
-        # update parent to the one we're keeping which has the same code
-        first_geo_obj.move(kept_geos_by_code[first_geo_obj.get_parent().code], 'last-child')
 
         # get versions and assign it to first geo obj
         version_list = geography_objs.values_list("version", flat=True).order_by("version").distinct()
@@ -81,6 +77,10 @@ def update_geographies_and_related_data(apps, schema_editor):
 
     for id in geo_ids_to_delete:
         Geography.objects.filter(id=id).delete()
+
+    for geo in Geography.objects.all():
+        # update parent to the one we're keeping which has the same code
+        geo.move(kept_geos_by_code[kept_geos_parent_code_by_id[geo.id]], 'last-child')
 
 
 
