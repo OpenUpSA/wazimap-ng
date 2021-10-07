@@ -19,9 +19,12 @@ def update_geographies_and_related_data(apps, schema_editor):
     # deciding which children to keep and can move kept children to kept parents.
     geo_codes = Geography.objects.all().values_list(
         "code", flat=True
-    ).order_by("depth", "code").distinct()
+    ).order_by("depth", "code")
 
     for code in geo_codes:
+        if code in kept_geos_by_code:
+            continue
+
         geography_objs = Geography.objects.filter(code=code)
         first_geo_obj = geography_objs.first()
         kept_geos_by_code[code] = first_geo_obj;
