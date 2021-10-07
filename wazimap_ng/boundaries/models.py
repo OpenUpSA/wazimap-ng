@@ -19,4 +19,3 @@ class GeographyBoundary(BaseModel):
         constraints = [
             models.UniqueConstraint(fields=["version", "geography"], name="unique_geography_version")
         ]
-  

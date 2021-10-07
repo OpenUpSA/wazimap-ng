@@ -27,7 +27,7 @@ django-cors-headers==3.2.0
 
 # Developer Tools
 ipdb==0.11
-ipython==7.2.0
+ipython==7.28.0
 mkdocs==1.0.4
 flake8==3.7.5
 django-debug-toolbar==2.2.1

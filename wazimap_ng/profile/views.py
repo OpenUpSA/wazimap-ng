@@ -62,14 +62,14 @@ class ProfileByUrl(generics.RetrieveAPIView):
 @api_view()
 def profile_geography_data(request, profile_id, geography_code):
     profile = get_object_or_404(models.Profile, pk=profile_id)
-    version = request.GET.get("version", None)
-    if not version:
-        version = profile.geography_hierarchy.configuration.get("default_version", None)
+    version_name = request.GET.get("version", None)
+    if not version_name:
+        version_name = profile.geography_hierarchy.configuration.get("default_version", None)
 
-    version = get_object_or_404(Version, name=version)
+    version = get_object_or_404(Version, name=version_name)
     geography = get_object_or_404(Geography, code=geography_code, versions=version)
 
-    js = serializers.ExtendedProfileSerializer(profile, geography, [version])
+    js = serializers.ExtendedProfileSerializer(profile, geography, version)
     return Response(js)
 
 class ProfileCategoriesList(generics.ListAPIView):
@@ -118,5 +118,5 @@ def profile_geography_indicator_data(request, profile_id, geography_code, profil
     profile_indicator = get_object_or_404(models.ProfileIndicator, profile=profile, pk=profile_indicator_id)
 
     js = serializers.FullProfileIndicatorSerializer(instance=profile_indicator, geography=geography).data
-    
+
     return Response(js)

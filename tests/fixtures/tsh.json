@@ -10,8 +10,7 @@
 			"updated": "2020-08-29T20:07:14.732Z",
 			"name": "City of Tshwane",
 			"code": "TSH",
-			"level": "district",
-			"version": "2011 Boundaries"
+			"level": "district"
 		}
 	}, {
 		"model": "boundaries.geographyboundary",

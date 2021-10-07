@@ -1,6 +1,6 @@
 from wazimap_ng.utils import mergedict
 
-from wazimap_ng.datasets.models import IndicatorData 
+from wazimap_ng.datasets.models import IndicatorData
 
 from .. import models
 
@@ -28,8 +28,8 @@ def subindicator(profile_key_metric, geography):
         return MetricCalculator.subindicator(indicator_data, profile_key_metric, geography)
     return None
 
-def sibling(profile_key_metric, geography):
-    siblings = geography.get_siblings()
+def sibling(profile_key_metric, geography, version):
+    siblings = geography.get_version_siblings(version)
     data = get_indicator_data(profile_key_metric, [geography] + siblings)
     if data.count() > 0:
         return MetricCalculator.sibling(data, profile_key_metric, geography)

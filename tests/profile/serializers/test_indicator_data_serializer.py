@@ -61,7 +61,7 @@ class TestGetProfileData:
         pi2.save()
 
         version = geography.versions.first()
-        output = get_profile_data(profile, [geography], [version])
+        output = get_profile_data(profile, [geography], version)
         print(output)
         assert output[0]["profile_indicator_label"] == "PI1"
         assert output[1]["profile_indicator_label"] == "PI2"
@@ -72,14 +72,14 @@ class TestGetProfileData:
         pi2.order = 1
         pi2.save()
 
-        output = get_profile_data(profile, [geography], [version])
+        output = get_profile_data(profile, [geography], version)
         assert output[0]["profile_indicator_label"] == "PI2"
         assert output[1]["profile_indicator_label"] == "PI1"
 
     def test_profile_indicator_metadata(self, geography, profile_indicators, metadata):
         profile = profile_indicators[0].profile
         version = geography.versions.first()
-        output = get_profile_data(profile, [geography], [version])
+        output = get_profile_data(profile, [geography], version)
         assert output[0]["metadata_source"] == metadata.source
         assert output[0]["metadata_description"] == metadata.description
         assert output[0]["metadata_url"] == metadata.url
@@ -92,7 +92,7 @@ class TestGetProfileData:
 
         profile2 = ProfileFactory()
         pi3 = ProfileIndicatorFactory(indicator=pi1.indicator, label="PI3", profile=profile2)
-        results = get_profile_data(profile, [geography], [version])
+        results = get_profile_data(profile, [geography], version)
         assert len(results) == 2
 
 
@@ -121,7 +121,7 @@ def test_get_dataset_groups(profile: Profile):
 class TestIndicatorSerializer:
     def test(self, profile, geography, version, profile_indicator, category, subcategory):
 
-        serializer = IndicatorDataSerializer(profile, geography, [version])
+        serializer = IndicatorDataSerializer(profile, geography, version)
         pi_data = serializer[category.name]["subcategories"][subcategory.name]["indicators"][profile_indicator.label]
         assert pi_data["id"] == profile_indicator.id
         assert pi_data["dataset_content_type"] == "quantitative"
@@ -132,7 +132,7 @@ class TestQualitativeData:
 
     @pytest.mark.usefixtures("qualitative_indicatordata")
     def test_with_qualitative_data(self, profile, geography, version, qualitative_profile_indicator):
-        serializer = IndicatorDataSerializer(profile, geography, [version])
+        serializer = IndicatorDataSerializer(profile, geography, version)
         subcategory = qualitative_profile_indicator.subcategory
         pi_data = serializer[subcategory.category.name]["subcategories"][subcategory.name]["indicators"][qualitative_profile_indicator.label]
         assert pi_data["dataset_content_type"] == "qualitative"
