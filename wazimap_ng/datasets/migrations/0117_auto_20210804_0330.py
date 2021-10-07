@@ -13,7 +13,7 @@ def update_geographies_and_related_data(apps, schema_editor):
     IndicatorData = apps.get_model("datasets", "IndicatorData")
 
     kept_geos_by_code = dict()
-    kept_geo_parents_by_id = dict()
+    kept_geos_parent_code_by_id = dict()
     geo_ids_to_delete = set()
 
     # Order by depth so that we decide which parent to keep before
