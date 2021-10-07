@@ -25,6 +25,7 @@ def update_geographies_and_related_data(apps, schema_editor):
         geography_objs = Geography.objects.filter(code=code)
         first_geo_obj = geography_objs.first()
         kept_geos_by_code[code] = first_geo_obj;
+        print(f"Keeping {code} with id {first_geo_obj.id}")
 
         # update parent to the one we're keeping which has the same code
         first_geo_obj.move(kept_geos_by_code[first_geo_obj.get_parent().code], 'last-child')
