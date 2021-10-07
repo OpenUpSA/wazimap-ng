@@ -53,7 +53,7 @@ class Geography(MP_Node, BaseModel):
         ]
         ordering = ["id"]
 
-    def get_siblings(self, version):
+    def get_version_siblings(self, version):
         siblings = super(Geography, self).get_siblings()
         siblings = siblings.filter(version=version)
         return siblings
