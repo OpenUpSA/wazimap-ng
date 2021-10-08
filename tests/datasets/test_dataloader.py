@@ -23,7 +23,7 @@ def test_correct_geography_cache(mock_objects):
 
     p = ("X", "Z")
     assert  dataloader.load_geography(*p) == p
-    
+
     q = ("Z", "Y")
     assert  dataloader.load_geography(*q) == q
 
@@ -171,7 +171,7 @@ class TestLoadData:
 
 @pytest.fixture
 def dataset():
-    return DatasetFactory()
+    return DatasetFactory(version=VersionFactory())
 
 @pytest.fixture
 def datasetData(dataset):
@@ -271,7 +271,7 @@ class TestCreateGroups:
 
     def test_new_dataset_same_group_name(self, dataset, datasetData, subindicatorGroup):
         # Make sure new datasets with the same group name do not have subindicators from previous datasets
-        new_dataset = DatasetFactory()
+        new_dataset = DatasetFactory(version=VersionFactory())
 
         DatasetDataFactory(
             dataset=new_dataset, data={
@@ -289,7 +289,7 @@ class TestCreateGroups:
 
     def test_old_dataset_does_not_include_new_subindicators(self, dataset, datasetData, subindicatorGroup):
         # Make sure same group names from a previous dataset does not have subindicators leaking into it
-        new_dataset = DatasetFactory()
+        new_dataset = DatasetFactory(version=VersionFactory())
 
         DatasetDataFactory(
             dataset=new_dataset, data={
@@ -308,4 +308,3 @@ class TestCreateGroups:
         assert groups[0].subindicators != ["D"]
         assert groups[1].subindicators == ["X", "Y"]
         assert groups[1].subindicators != ["W"]
-

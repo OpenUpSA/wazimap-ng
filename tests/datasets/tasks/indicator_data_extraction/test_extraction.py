@@ -2,7 +2,6 @@ import pytest
 
 from tests.datasets.factories import (
     DatasetDataFactory,
-    DatasetFactory,
     DatasetFileFactory,
     GeographyFactory,
     GeographyHierarchyFactory,

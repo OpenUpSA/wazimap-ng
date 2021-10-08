@@ -10,7 +10,7 @@ from wazimap_ng.general.models import BaseModel
 
 class GeographyBoundary(BaseModel):
     geography = models.ForeignKey(Geography, on_delete=models.PROTECT, null=False)
-    version = models.ForeignKey(Version, on_delete=models.PROTECT, null=True)
+    version = models.ForeignKey(Version, on_delete=models.PROTECT)
     area = models.FloatField()
     geom = models.MultiPolygonField(srid=4326, null=True)
     geom_cache = CachedMultiPolygonField(field_name="geom")

@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch
-from wazimap_ng.profile.serializers.metrics_serializer import absolute_value, subindicator, sibling 
+from wazimap_ng.profile.serializers.metrics_serializer import absolute_value, subindicator, sibling
 
 from tests.datasets.factories import GeographyFactory, IndicatorDataFactory
 
@@ -53,7 +53,7 @@ class TestSubindicator:
         expected_value = female_total / total
 
         actual_value = subindicator(profile_key_metric, geography)
-        
+
         assert expected_value == actual_value
 
     def test_returns_none_for_missing_data(self, profile_key_metric, indicatordata_json):
@@ -80,7 +80,7 @@ class TestSibling:
         num_geographies = len(other_geographies) + 1
         with patch.object(geography, "get_siblings", side_effect=lambda: other_geographies):
             expected_value = 1 / num_geographies
-            actual_value = sibling(profile_key_metric, geography)
+            actual_value = sibling(profile_key_metric, geography, version)
             assert pytest.approx(expected_value, abs=1e-2) == actual_value
 
     def test_sibling_calculation(self, profile_key_metric, indicator, additional_data_json):
@@ -169,4 +169,3 @@ def test_sibling_not_none(profile_key_metric, geography, other_geographies):
     with patch.object(geography, "get_siblings", side_effect=lambda: other_geographies):
         sibling_data = sibling(profile_key_metric, geography)
         assert sibling_data != None
-

@@ -5,7 +5,7 @@ from io import BytesIO
 import pytest
 
 from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv
-from tests.datasets.factories import DatasetFactory, GeographyFactory, GeographyHierarchyFactory, DatasetFileFactory
+from tests.datasets.factories import DatasetFactory, GeographyFactory, GeographyHierarchyFactory, DatasetFileFactory, VersionFactory
 
 def generate_file(data, header, encoding="utf8"):
     buffer = BytesIO()
@@ -90,7 +90,7 @@ class TestQualitativeFileUpload:
         assert str(e_info.value) == "'count'"
 
         # Change content type to qualitative
-        dataset2 = DatasetFactory(profile=dataset.profile, content_type="qualitative")
+        dataset2 = DatasetFactory(profile=dataset.profile, content_type="qualitative", version=VersionFactory())
         process_csv(dataset2, datasetfile.document.open("rb"))
         datasetdata = dataset2.datasetdata_set.all()
 
