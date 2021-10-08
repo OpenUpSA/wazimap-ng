@@ -27,7 +27,7 @@ class Command(BaseCommand):
         fields = ["name", "code", "parent_code", "area"]
         for f in fields:
             if f not in field_map.values():
-                raise CommandError(f"Expected the following fields {fields}.")
+                raise CommandError(f"Expected the following fields to be values {fields} but found {field_map}.")
 
     def check_shapefile(self, shapefile_path):
         if not os.path.exists(shapefile_path):
@@ -116,4 +116,3 @@ class Command(BaseCommand):
             self.process_shape(s, field_map, level, version, quiet)
 
             print(f"{idx + 1} geographies successfully loaded")
-
