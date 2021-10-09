@@ -43,6 +43,7 @@ class Common(QCluster, Configuration):
         "django.contrib.gis",
         "django.contrib.staticfiles",
 
+        'django_extensions',
 
         # Third party apps
         "rest_framework",            # utilities for rest apis

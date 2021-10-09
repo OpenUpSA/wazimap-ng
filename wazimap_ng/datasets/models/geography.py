@@ -55,7 +55,7 @@ class Geography(MP_Node, BaseModel):
 
     def get_version_siblings(self, version):
         siblings = super(Geography, self).get_siblings()
-        siblings = siblings.filter(version=version)
+        siblings = siblings.filter(geographyboundary__version=version)
         return siblings
 
     def get_child_boundaries(self, version):
@@ -82,8 +82,13 @@ class Geography(MP_Node, BaseModel):
 
 
     def get_child_geographies(self, version):
-        child_geographies = self.get_children().filter(versions=version)
+        child_geographies = self.get_children().filter(geographyboundary__version=version)
         return child_geographies
+
+    @property
+    def versions(self):
+        return []
+        return Version.objects.filter(geographyboundary__geography=self)
 
 
 class GeographyHierarchy(BaseModel):
@@ -93,8 +98,8 @@ class GeographyHierarchy(BaseModel):
     configuration = JSONField(default=dict, blank=True)
 
     @property
-    def version(self):
-        return self.root_geography.configuration.get("default_version", "")
+    def default_version(self):
+        return self.configuration.get("default_version")
 
     def help_text(self):
         return f"{self.name} : {self.description}"

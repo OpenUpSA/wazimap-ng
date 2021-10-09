@@ -26,14 +26,10 @@ logger.setLevel(logging.DEBUG)
 
 def consolidated_profile_helper(profile_id, geography_code, version_name):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
-    versions_list = profile.geography_hierarchy.configuration.get("versions", [])
-    if not version_name:
-        version_name = profile.geography_hierarchy.configuration.get("default_version", None)
-    if not version_name or version_name not in versions_list:
-        raise Http404
-
+    if version_name is None:
+        version_name = profile.geography_hierarchy.default_version
     version = get_object_or_404(dataset_models.Version, name=version_name)
-    geography = dataset_models.Geography.objects.get(code=geography_code, versions=version)
+    geography = dataset_models.Geography.objects.get(code=geography_code, geographyboundary__version=version)
     profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, version)
     boundary_js = boundaries_views.geography_item_helper(geography_code, version)
     children_boundary_js = boundaries_views.geography_children_helper(geography_code, version)
@@ -67,15 +63,12 @@ def consolidated_profile(request, profile_id, geography_code):
 def boundary_point_count(request, profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
 
-    version = request.GET.get('version', None)
-    versions_list = profile.geography_hierarchy.configuration.get("versions", [])
-    if not version:
-        version = profile.geography_hierarchy.configuration.get("default_version", None)
-    if not version or version not in versions_list:
-        raise Http40
-    version = get_object_or_404(dataset_models.Version, name=version)
+    version_name = request.GET.get('version', None)
+    if not version_name:
+        version_name = profile.geography_hierarchy.default_version
+    version = get_object_or_404(dataset_models.Version, name=version_name)
 
-    geography = dataset_models.Geography.objects.get(code=geography_code, versions=version)
+    geography = dataset_models.Geography.objects.get(code=geography_code, geographyboundary__version=version)
     return Response(point_views.boundary_point_count_helper(profile, geography, version))
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
