@@ -24,6 +24,7 @@ class GeographyBoundaryInline(admin.TabularInline):
     def has_add_permission(self, request, obj):
         return False
 
+
 @admin.register(models.Geography)
 class GeographyAdmin(TreeAdmin):
     form = movenodeform_factory(models.Geography)
@@ -39,6 +40,7 @@ class GeographyAdmin(TreeAdmin):
     list_filter = ("level", "geographyboundary__version")
 
     inlines = (GeographyBoundaryInline,)
+
 
 @admin.register(models.GeographyHierarchy)
 class GeographyHierarchyAdmin(admin.ModelAdmin):

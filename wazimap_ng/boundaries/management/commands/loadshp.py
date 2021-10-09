@@ -78,7 +78,7 @@ class Command(BaseCommand):
             return
 
         try:
-            geography = hierarchy.root_geography.get_descendants().get(code__iexact=fields["code"], geographyboundary__version=version)
+            geography = parent_geography.get_descendants().get(code__iexact=fields["code"])
         except Geography.DoesNotExist:
             geography = parent_geography.add_child(**fields)
 
