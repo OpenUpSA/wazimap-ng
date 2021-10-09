@@ -59,26 +59,36 @@ class Command(BaseCommand):
         area = fields.pop("area")
 
         try:
-            parent_geography = Geography.objects.get(code__iexact=parent_code, versions=version)
-        except Geography.DoesNotExist:
-            print(f"Can't find parent geography: {parent_code} ({version})")
+            hierarchy = GeographyHierarchy.objects.get(name=hierarchy_name)
+        except GeographyHierarchy.DoesNotExist:
+            print(f"Can't find hierarchy '{hierarchy_name}'. Ensure that exists by creating the root geography first.")
             return
 
-        geography = None
-        for geo in Geography.objects.filter(code__iexact=fields["code"]):
-            matching_hierarchies = geo.get_root().geographyhierarchy_set.filter(hierarchy=hierarchy_name)
-            if matches.count() == 1:
-                if geography:
-                    raise CommandError("Shouldn't find more than one matching geography")
-                geography = geo
-            elif matches.count() > 1:
-                raise CommandError("Shouldn't find more than one matching hierarchy")
-        if geography is None:
+        try:
+            if hierarchy.root_geography.code.lower() == parent_code.lower() \
+               and hierarchy.root_geography.geographyboundary_set.filter(version=version):
+                parent_geography = hierarchy.root_geography
+            else:
+                parent_geography = hierarchy.root_geography.get_descendants().get(code__iexact=parent_code, geographyboundary__version=version)
+        except Geography.DoesNotExist:
+            parent_geography = None
+
+        if parent_geography is None:
+            print(f"Can't find parent geography: {parent_code} ({version}) in {hierarchy_name}")
+            return
+
+        try:
+            geography = hierarchy.root_geography.get_descendants().get(code__iexact=fields["code"], geographyboundary__version=version)
+        except Geography.DoesNotExist:
             geography = parent_geography.add_child(**fields)
 
         # geography.versions.add(version)
         if GeographyBoundary.objects.filter(geography=geography, version=version).count() == 0:
             GeographyBoundary.objects.create(geography=geography, geom=geo_shape, area=area, version=version)
+        else:
+            print(f"Not re-adding already-existing {version} boundary to {geography} in {hierarchy_name}")
+
+        return True
 
     def extract_fields(self, field_map, properties):
         reverse_map = dict(zip(field_map.values(), field_map.keys()))
@@ -127,8 +137,8 @@ class Command(BaseCommand):
         field_map = dict(pair.split("=") for pair in options["field_map"].split(","))
         hierarchy_name = options["hierarchy"]
         level = options["level"]
-        version = options["version"]
-        version, created = Version.objects.get_or_create(name=version)
+        version_name = options["version"]
+        version, created = Version.objects.get_or_create(name=version_name)
 
         self.check_shapefile(shapefile_path)
         self.check_field_map(field_map)

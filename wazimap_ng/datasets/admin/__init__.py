@@ -27,12 +27,16 @@ class GeographyBoundaryInline(admin.TabularInline):
 @admin.register(models.Geography)
 class GeographyAdmin(TreeAdmin):
     form = movenodeform_factory(models.Geography)
+
+    def hierarchy(obj):
+        return ", ".join(h.name for h in obj.get_root().geographyhierarchy_set.all())
+
     list_display = (
-        "name", "code", "level", "created", "updated"
+        "name", "code", "level", hierarchy, "created", "updated"
     )
 
     search_fields = ("name", "code")
-    list_filter = ("level", "geographyboundary__version", "geographyhierarchy")
+    list_filter = ("level", "geographyboundary__version")
 
     inlines = (GeographyBoundaryInline,)
 
