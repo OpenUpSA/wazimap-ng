@@ -185,7 +185,7 @@ def search_geography(request, profile_id):
     """
     profile = get_object_or_404(Profile, pk=profile_id)
     version_name = request.GET.get("version", None)
-    if not version:
+    if not version_name:
         version_name = profile.geography_hierarchy.configuration.get("default_version", None)
     version = get_object_or_404(models.Version, name=version_name)
 
@@ -200,7 +200,7 @@ def search_geography(request, profile_id):
 
     q = request.GET.get("q", "")
 
-    geographies = models.Geography.objects.filter(versions=version).search(q)[0:max_results]
+    geographies = models.Geography.objects.filter(geographyboundary__version=version).search(q)[0:max_results]
 
     def sort_key(x):
         exact_match = x.name.lower() == q.lower()
