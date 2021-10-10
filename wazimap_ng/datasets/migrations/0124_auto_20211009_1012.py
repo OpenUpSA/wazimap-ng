@@ -11,10 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='geography',
-            name='versions',
-        ),
         migrations.AlterField(
             model_name='geographyhierarchy',
             name='root_geography',
