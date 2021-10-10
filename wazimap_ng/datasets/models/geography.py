@@ -41,7 +41,8 @@ class Geography(MP_Node, BaseModel):
     # versions = models.ManyToManyField(Version, blank=True)
 
     def __str__(self):
-        return f"{self.name}"
+        hierarchies_str = ", ".join(h.name for h in self.get_root().geographyhierarchy_set.all())
+        return f"{self.name} ({ hierarchies_str })"
 
     objects = GeographyManager()
 

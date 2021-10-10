@@ -12,21 +12,23 @@ def update_geographies_and_related_data(apps, schema_editor):
     cached_version_by_name = {v.name: v for v in Version.objects.all()}
 
     for boundary in GeographyBoundary.objects.all():
-        boundary.version = cached_version_by_name[boundary.dataset.version]
+        boundary.version = cached_version_by_name[boundary.geography.version]
+        boundary.save()
 
     for dataset in Dataset.objects.all():
         hierarchy_version_name = dataset.geography_hierarchy.root_geography.version
         dataset.version = cached_version_by_name[hierarchy_version_name]
+        dataset.save()
 
     for hierarchy in GeographyHierarchy.objects.all():
         hierarchy.configuration["default_version"] = hierarchy.root_geography.version
+        hierarchy.save()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
         ('datasets', '0116_auto_20210803_2049'),
-        ('datasets', '0116_assert_unique_version_per_hierarchy'),
     ]
 
     operations = [
