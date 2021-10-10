@@ -26,9 +26,4 @@ class Migration(migrations.Migration):
             name='description',
             field=tinymce.models.HTMLField(blank=True),
         ),
-        migrations.AlterField(
-            model_name='version',
-            name='name',
-            field=models.CharField(max_length=255, unique=True),
-        ),
     ]

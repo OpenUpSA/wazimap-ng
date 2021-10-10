@@ -3,9 +3,10 @@ from .models.geography import Geography
 from . import models
 
 class GeographySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Geography
-        fields = ["name", "code", "level", "versions"]
+        fields = ["name", "code", "level"]
 
 class GeographyHierarchySerializer(serializers.ModelSerializer):
     root_geography = GeographySerializer()

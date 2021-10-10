@@ -38,10 +38,11 @@ class Geography(MP_Node, BaseModel):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=20)
     level = models.CharField(max_length=20)
-    versions = models.ManyToManyField(Version, blank=True)
+    # versions = models.ManyToManyField(Version, blank=True)
 
     def __str__(self):
-        return f"{self.name}"
+        hierarchies_str = ", ".join(h.name for h in self.get_root().geographyhierarchy_set.all())
+        return f"{self.name} ({ hierarchies_str })"
 
     objects = GeographyManager()
 
@@ -55,7 +56,7 @@ class Geography(MP_Node, BaseModel):
 
     def get_version_siblings(self, version):
         siblings = super(Geography, self).get_siblings()
-        siblings = siblings.filter(version=version)
+        siblings = siblings.filter(geographyboundary__version=version)
         return siblings
 
     def get_child_boundaries(self, version):
@@ -82,19 +83,24 @@ class Geography(MP_Node, BaseModel):
 
 
     def get_child_geographies(self, version):
-        child_geographies = self.get_children().filter(versions=version)
+        child_geographies = self.get_children().filter(geographyboundary__version=version)
         return child_geographies
+
+    @property
+    def versions(self):
+        return []
+        return Version.objects.filter(geographyboundary__geography=self)
 
 
 class GeographyHierarchy(BaseModel):
-    name = models.CharField(max_length=50)
-    root_geography = models.ForeignKey(Geography, null=False, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50, unique=True)
+    root_geography = models.ForeignKey(Geography, null=False, on_delete=models.CASCADE, unique=True)
     description = HTMLField(blank=True)
     configuration = JSONField(default=dict, blank=True)
 
     @property
-    def version(self):
-        return self.root_geography.configuration.get("default_version", "")
+    def default_version(self):
+        return self.configuration.get("default_version")
 
     def help_text(self):
         return f"{self.name} : {self.description}"

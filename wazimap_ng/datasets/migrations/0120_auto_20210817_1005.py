@@ -7,7 +7,7 @@ import tinymce.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0119_auto_20210817_0704'),
+        ('datasets', '0118_remove_geography_version'),
     ]
 
     operations = [
