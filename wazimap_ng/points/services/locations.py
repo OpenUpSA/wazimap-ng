@@ -15,12 +15,10 @@ def get_locations(
     if category is not None:
         queryset = queryset.filter(category=category)
 
-    version = Version.objects.get(name=version_name)
     if geography_code is not None:
-        geography = Geography.objects.get(
-            code=geography_code, versions=version
-        )
-        boundary = GeographyBoundary.objects.get(geography=geography)
+        version = Version.objects.get(name=version_name)
+        boundary = GeographyBoundary.objects.get(geography__code=geography_code, version=version)
+        geography = boundary.geography
 
         queryset = queryset.filter(coordinates__within=boundary.geom)
     return queryset

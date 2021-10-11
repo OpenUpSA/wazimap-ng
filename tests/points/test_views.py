@@ -33,11 +33,10 @@ class TestCategoryView(APITestCase):
         self.assert_http_200_ok()
 
     def test_category_points_geography_list(self):
-        geography = GeographyFactory(versions=[self.version.name])
+        geography = GeographyFactory()
         GeographyBoundaryFactory(geography=geography, version=self.version)
         hierarchy = GeographyHierarchyFactory(root_geography=geography, configuration={
             "default_version": self.version.name,
-            "versions": [self.version.name]
         })
         profile = ProfileFactory(geography_hierarchy=hierarchy)
         profile_category = ProfileCategoryFactory(profile=profile)
@@ -47,7 +46,7 @@ class TestCategoryView(APITestCase):
         self.assert_http_200_ok()
 
     def test_category_points_geography_not_found(self):
-        geography = GeographyFactory(versions=[self.version.name])
+        geography = GeographyFactory()
         self.get('category-points-geography', profile_id=self.profile.pk, profile_category_id=self.profile_category.pk, geography_code=geography.code, extra={'format': 'json'})
         self.assert_http_404_not_found()
 
@@ -55,7 +54,9 @@ class TestCategoryView(APITestCase):
         call_command('loaddata', 'tests/fixtures/tsh.json', verbosity=0)
 
         geography = Geography.objects.get(code="TSH")
-        hierarchy = GeographyHierarchyFactory(root_geography=geography)
+        hierarchy = GeographyHierarchyFactory(root_geography=geography, configuration={
+            "default_version": "2016 boundaries"
+        })
         profile = ProfileFactory(geography_hierarchy=hierarchy)
         profile_category = ProfileCategoryFactory(profile=profile)
         point_included = (28.545164737571984, -25.560137611089647)
@@ -76,7 +77,9 @@ class TestCategoryView(APITestCase):
         call_command('loaddata', 'tests/fixtures/tsh.json', verbosity=0)
 
         geography = Geography.objects.get(code="TSH")
-        hierarchy = GeographyHierarchyFactory(root_geography=geography)
+        hierarchy = GeographyHierarchyFactory(root_geography=geography, configuration={
+            "default_version": "2016 boundaries"
+        })
         profile = ProfileFactory(geography_hierarchy=hierarchy)
         profile_category = ProfileCategoryFactory(profile=profile, label="test")
         point_included = (28.545164737571984, -25.560137611089647)
@@ -97,7 +100,7 @@ class TestCategoryView(APITestCase):
         coordinates = features[0]["geometry"]["coordinates"]
         assert coordinates == list(point_included)
 
-@pytest.mark.django_db   
+@pytest.mark.django_db
 class TestThemeView:
 
     def test_points_themes_list(self, tp_api, profile_category):
@@ -115,10 +118,10 @@ class TestLocationView(APITestCase):
 
     def setUp(self):
         self.version = VersionFactory()
-        self.geography = GeographyFactory(versions=[self.version.name])
+        self.geography = GeographyFactory()
+        self.geographyboundary = GeographyBoundaryFactory(geography=self.geography, version=self.version)
         hierarchy = GeographyHierarchyFactory(root_geography=self.geography, configuration={
             "default_version": self.version.name,
-            "versions": [self.version.name]
         })
         self.profile = ProfileFactory(geography_hierarchy=hierarchy)
         self.theme = ThemeFactory(profile=self.profile)
@@ -183,17 +186,16 @@ class TestLocationView(APITestCase):
 
     def test_category_points_no_locations(self):
         """
-        category-points returns no locations when there are no locations 
+        category-points returns no locations when there are no locations
         linked to category of profile category
         """
-        profile = ProfileFactory()
-        category = CategoryFactory(profile=profile)
+        category = CategoryFactory(profile=self.profile)
         profile_category = ProfileCategoryFactory(
-            profile=profile, category=category
+            profile=self.profile, category=category
         )
 
         response = self.get(
-            "category-points", profile_id=profile.id,
+            "category-points", profile_id=self.profile.id,
             profile_category_id=profile_category.id
         )
         data = response.data
@@ -209,7 +211,6 @@ class TestLocationView(APITestCase):
         MultiPolygon([Polygon( ((0.0, 0.0), (0.0, 50.0), (50.0, 50.0), (50.0, 0.0), (0.0, 0.0)) )])
         default Location: Point(1.0, 1.0)
         """
-        GeographyBoundaryFactory(geography=self.geography, version=self.version)
         response = self.get(
             "category-points-geography", profile_id=self.profile.id,
             profile_category_id=self.profile_category.id,
@@ -227,10 +228,13 @@ class TestLocationView(APITestCase):
         category-points-geography returns no locations when
         the geography code is not linked to the profile
         """
+        other_version = VersionFactory()
+        other_geography = GeographyFactory()
+        other_boundary = GeographyBoundaryFactory(geography=other_geography, version=other_version)
         response = self.get(
             "category-points-geography", profile_id=self.profile.id,
             profile_category_id=self.profile_category.id,
-            geography_code=self.geography.code
+            geography_code=other_geography.code
         )
         self.assert_http_404_not_found()
 
@@ -239,13 +243,14 @@ class TestLocationView(APITestCase):
         new geography with different boundary should not return location
 
         """
-        geography = GeographyFactory(
-            code="ABC",
-            versions=[self.version.name]
+        geography = GeographyFactory(code="ABC")
+        GeographyBoundaryFactory(
+            geography=geography,
+            version=self.version,
+            geom=MultiPolygon([
+                Polygon( ((5.0, 5.0), (5.0, 50.0), (50.0, 50.0), (50.0, 5.0), (5.0, 5.0)) )
+            ])
         )
-        GeographyBoundaryFactory(geography=geography, version=self.version, geom=MultiPolygon([
-            Polygon( ((5.0, 5.0), (5.0, 50.0), (50.0, 50.0), (50.0, 5.0), (5.0, 5.0)) )
-        ]))
 
         response = self.get(
             "category-points-geography", profile_id=self.profile.id,
@@ -266,7 +271,6 @@ class TestLocationView(APITestCase):
         profile_category = ProfileCategoryFactory(
             profile=self.profile, category=category, theme=self.theme
         )
-        GeographyBoundaryFactory(geography=self.geography, version=self.version)
         location = LocationFactory(category=category, coordinates=Point(70.0, 70.0))
 
         response = self.get(
@@ -288,7 +292,6 @@ class TestLocationView(APITestCase):
             profile=self.profile, category=category, theme=self.theme,
             label="Pc Label 2"
         )
-        GeographyBoundaryFactory(geography=self.geography, version=self.version)
         LocationFactory(category=category, coordinates=Point(2.0, 2.0))
 
         response = self.get(
@@ -328,4 +331,3 @@ class TestPointThemes:
         js_data = response.json()
         assert js_data[0]["id"] == theme1.id
         assert js_data[1]["id"] == theme2.id
-
