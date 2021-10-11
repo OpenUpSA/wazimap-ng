@@ -118,9 +118,9 @@ def version():
 
 @pytest.fixture
 def geographies(version):
-    root = GeographyFactory(code="ROOT_GEOGRAPHY", versions=[version.name])
-    geo1 = GeographyFactory(code="GEOCODE_1", versions=[version.name])
-    geo2 = GeographyFactory(code="GEOCODE_2", versions=[version.name])
+    root = GeographyFactory(code="ROOT_GEOGRAPHY")
+    geo1 = GeographyFactory(code="GEOCODE_1")
+    geo2 = GeographyFactory(code="GEOCODE_2")
 
     return [root, geo1, geo2]
 
