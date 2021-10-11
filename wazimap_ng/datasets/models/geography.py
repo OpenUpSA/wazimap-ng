@@ -93,7 +93,7 @@ class Geography(MP_Node, BaseModel):
 
 
 class GeographyHierarchy(BaseModel):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50)
     root_geography = models.ForeignKey(Geography, null=False, on_delete=models.CASCADE, unique=True)
     description = HTMLField(blank=True)
     configuration = JSONField(default=dict, blank=True)

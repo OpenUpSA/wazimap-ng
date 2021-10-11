@@ -30,6 +30,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('datasets', '0116_auto_20210803_2049'),
     ]
+    #run_before = [('boundaries', '0029_auto_20211008_0540'),]
 
     operations = [
         migrations.RunPython(update_geographies_and_related_data),
