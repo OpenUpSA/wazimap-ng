@@ -18,13 +18,12 @@ class TestConsolidatedProfileView(APITestCase):
 
     def setUp(self):
         self.version = VersionFactory()
-        self.geography = GeographyFactory(versions=[self.version.name])
+        self.geography = GeographyFactory()
         GeographyBoundaryFactory(geography=self.geography, version=self.version)
         self.hierarchy = GeographyHierarchyFactory(
             root_geography=self.geography,
             configuration = {
                 "default_version": self.version.name,
-                "versions": [self.version.name]
             }
         )
         self.profile = ProfileFactory(geography_hierarchy=self.hierarchy)
