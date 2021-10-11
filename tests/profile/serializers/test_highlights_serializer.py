@@ -45,11 +45,11 @@ def test_subindicator_without_indicatordata(profile_highlight_without_data, geog
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("other_geographies_indicatordata")
-def test_sibling(profile_highlight, geography, other_geographies):
+def test_sibling(profile_highlight, geography, version, other_geographies):
     num_geographies = len(other_geographies) + 1
-    with patch.object(geography, "get_siblings", side_effect=lambda: other_geographies):
+    with patch.object(geography, "get_version_siblings", side_effect=lambda _version: other_geographies):
         expected_value = 1 / num_geographies
-        actual_value = sibling(profile_highlight, geography)
+        actual_value = sibling(profile_highlight, geography, version)
         assert pytest.approx(expected_value, abs=1e-1) == actual_value
 
 
