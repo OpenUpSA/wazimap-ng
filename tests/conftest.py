@@ -22,6 +22,7 @@ from tests.profile.factories import (
     ProfileIndicatorFactory,
     ProfileKeyMetricsFactory
 )
+from tests.boundaries.factories import GeographyBoundaryFactory
 from wazimap_ng.datasets.models import Geography, GeographyHierarchy
 from wazimap_ng.profile.models import Profile
 
@@ -121,6 +122,9 @@ def geographies(version):
     root = GeographyFactory(code="ROOT_GEOGRAPHY")
     geo1 = GeographyFactory(code="GEOCODE_1")
     geo2 = GeographyFactory(code="GEOCODE_2")
+    GeographyBoundaryFactory(geography=root, version=version)
+    GeographyBoundaryFactory(geography=geo1, version=version)
+    GeographyBoundaryFactory(geography=geo2, version=version)
 
     return [root, geo1, geo2]
 
