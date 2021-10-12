@@ -22,7 +22,8 @@ class Command(BaseCommand):
         parser.add_argument("hierarchy", type=str, help="Geography hierarchy name, e.g 'South Africa' or 'World'")
         parser.add_argument("level", type=str, help="Geography level, e.g. province, municipality, ...")
         parser.add_argument("version", type=str, help="Geography version, e.g. 'census 2016'...")
-        parser.add_argument("--quiet", action='store_true', help="Load the shape file silently, with default responses.")
+        parser.add_argument("--allow-root", action='store_true', help="Allow creating shape as root node without prompting")
+        parser.add_argument("--create-hierarchy", action='store_true', help="Create the hierarchy if it doesn't exist without prompting")
 
     def check_field_map(self, field_map):
         fields = ["name", "code", "parent_code", "area"]
@@ -34,15 +35,18 @@ class Command(BaseCommand):
         if not os.path.exists(shapefile_path):
             raise CommandError(f"Can't find shapefile: {shapefile_path}")
 
-    def ensure_hierachy_exists(self, hierarchy_name, root_geography):
+    def ensure_hierachy_exists(self, hierarchy_name, create_hierarchy, root_geography):
         try:
             return GeographyHierarchy.objects.get(name=hierarchy_name)
         except GeographyHierarchy.DoesNotExist:
-            should_create = input(f"""Geography Hierarchy '{hierarchy_name}' not found. Create it? (Y/n)?""")
-            if not should_create.lower().startswith('n'):
+            if not create_hierarchy:
+                should_create = input(f"""Geography Hierarchy '{hierarchy_name}' not found. Create it? (Y/n)?""")
+                if not should_create.lower().startswith('n'):
+                    create_hierarchy = True
+            if create_hierarchy:
                 return GeographyHierarchy.objects.create(name=hierarchy_name, root_geography=root_geography)
 
-    def process_root(self, fields, geo_shape, hierarchy_name, version):
+    def process_root(self, fields, geo_shape, hierarchy_name, create_hierarchy, version):
         fields.pop("parent_code")
         area = fields.pop("area")
 
@@ -50,7 +54,7 @@ class Command(BaseCommand):
             g = Geography.objects.get(code=fields["code"], geographyhierarchy__name=hierarchy_name)
         except Geography.DoesNotExist:
             g = Geography.add_root(**fields)
-            self.ensure_hierachy_exists(hierarchy_name, g)
+            self.ensure_hierachy_exists(hierarchy_name, create_hierarchy, g)
         # g.versions.add(version)
         return GeographyBoundary.objects.create(geography=g, geom=geo_shape, area=area, version=version)
 
@@ -106,7 +110,7 @@ class Command(BaseCommand):
         }
 
 
-    def process_shape(self, shape, field_map, hierarchy_name, level, version):
+    def process_shape(self, shape, field_map, allow_root, hierarchy_name, create_hierarchy, level, version):
         properties = shape["properties"]
 
         fields = self.extract_fields(field_map, properties)
@@ -124,9 +128,15 @@ class Command(BaseCommand):
             geo_shape = geometry
 
         if fields["parent_code"] is None :
-            process_as_root = input(f"""Geography '{fields["code"]}' does not have a parent. Load it as a root geography? (Y/n)?""")
-            if not process_as_root.lower().startswith('n'):
-                return self.process_root(fields, geo_shape, hierarchy_name, version)
+            if not allow_root:
+                process_as_root = input(
+                    f"""Geography '{fields["code"]}' does nothave a parent."""
+                    """Load it as a root geography? (Y/n)?"""
+                )
+                if not process_as_root.lower().startswith('n'):
+                    allow_root = True
+            if allow_root:
+                return self.process_root(fields, geo_shape, hierarchy_name, create_hierarchy, version)
             return
         else:
             return self.process_node(fields, geo_shape, hierarchy_name, version)
@@ -138,6 +148,8 @@ class Command(BaseCommand):
         hierarchy_name = options["hierarchy"]
         level = options["level"]
         version_name = options["version"]
+        create_hierarchy = options["create_hierarchy"]
+        allow_root = options["allow_root"]
         version, created = Version.objects.get_or_create(name=version_name)
 
         self.check_shapefile(shapefile_path)
@@ -145,5 +157,13 @@ class Command(BaseCommand):
 
         shapefile = fiona.open(shapefile_path)
         for idx, shape in enumerate(shapefile):
-            successful = self.process_shape(shape, field_map, hierarchy_name, level, version)
+            successful = self.process_shape(
+                shape,
+                field_map,
+                allow_root,
+                hierarchy_name,
+                create_hierarchy,
+                level,
+                version
+            )
             print(f"Loading shape {idx + 1} {'succeeded' if successful else 'failed'}")
