@@ -10,6 +10,7 @@ from tests.datasets.factories import (
     DatasetFactory, IndicatorFactory, IndicatorDataFactory, GroupFactory, VersionFactory, GeographyHierarchyFactory,
     GeographyFactory
 )
+from tests.boundaries.factories import GeographyBoundaryFactory
 
 from wazimap_ng.profile.views import ProfileByUrl
 
@@ -18,12 +19,12 @@ class TestProfileGeographyData(APITestCase):
 
     def setUp(self):
         version = VersionFactory()
-        geography = GeographyFactory(versions=[version])
+        geography = GeographyFactory()
+        geographyboundary = GeographyBoundaryFactory(geography=geography, version=version)
         hierarchy = GeographyHierarchyFactory(
             root_geography=geography,
             configuration={
                 "default_version": version.name,
-                "versions": [version.name]
             }
         )
         self.profile = ProfileFactory(geography_hierarchy=hierarchy)
@@ -45,7 +46,7 @@ class TestProfileGeographyData(APITestCase):
             {"age group": "15-19", "gender": "F", "count": 9.62006},
             {"age group": "15-19", "gender": "M", "count": 8.79722},
         ]
-            
+
         IndicatorDataFactory(indicator=indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
 
     def test_profile_geography_data_(self):
@@ -76,6 +77,3 @@ class TestProfileByUrl:
 
         response.render()
         assert "configuration" in str(response.content)
-
-
-

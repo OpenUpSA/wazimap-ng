@@ -5,7 +5,7 @@
 		"fields": {
 			"created": "2020-07-16T06:47:39.762Z",
 			"updated": "2020-08-29T20:07:14.732Z",
-			"name": "2016 boundaries",
+			"name": "2016 boundaries"
 		}
 	}, {
 		"model": "datasets.geography",

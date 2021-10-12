@@ -8,15 +8,24 @@ from wazimap_ng.datasets import dataloader
 from wazimap_ng.datasets import models
 from .factories import GroupFactory, VersionFactory
 from tests.datasets.factories import DatasetFactory, DatasetDataFactory
+from tests.boundaries.factories import GeographyBoundaryFactory
+
 
 pytestmark = pytest.mark.django_db
 
-@patch('wazimap_ng.datasets.models.Geography.objects.get', side_effect=lambda code, versions: (code, versions))
+@patch(
+    'wazimap_ng.datasets.models.Geography.objects.get',
+    side_effect=lambda code, geographyboundary__version: (code, geographyboundary__version)
+)
 def test_load_geography(mock_objects):
     o = ("X", "Y")
     assert  dataloader.load_geography(*o) == o
 
-@patch('wazimap_ng.datasets.models.Geography.objects.get', side_effect=lambda code, versions: (code, versions))
+
+@patch(
+    'wazimap_ng.datasets.models.Geography.objects.get',
+    side_effect=lambda code, geographyboundary__version: (code, geographyboundary__version)
+)
 def test_correct_geography_cache(mock_objects):
     o = ("X", "Y")
     assert  dataloader.load_geography(*o) == o
@@ -49,8 +58,9 @@ def create_geography_code(version):
         name='Test Location', code='sa',
         level='B', depth=50
     )
-    data.versions.add(version)
+    boundary = GeographyBoundaryFactory(version=version, geography=data)
     yield
+    boundary.delete()
     data.delete()
 
 @pytest.mark.django_db
@@ -94,7 +104,7 @@ class TestLoadData:
         code = 'sa'
         try:
             data = dataloader.load_geography(code, version)
-            assert data.code == code and data.versions.filter(id=version.id).exists()
+            assert data.code == code and data.geographyboundary_set.filter(version=version).exists()
         except models.Geography.DoesNotExist:
             pytest.fail('Unexpected Geography not found error...')
 

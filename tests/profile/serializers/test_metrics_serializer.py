@@ -76,14 +76,14 @@ class TestSubindicator:
 @pytest.mark.django_db
 @pytest.mark.usefixtures("other_geographies_indicatordata")
 class TestSibling:
-    def test_sibling(self, profile_key_metric, geography, other_geographies):
+    def test_sibling(self, profile_key_metric, geography, other_geographies, version):
         num_geographies = len(other_geographies) + 1
-        with patch.object(geography, "get_siblings", side_effect=lambda: other_geographies):
+        with patch.object(geography, "get_version_siblings", side_effect=lambda _version: other_geographies):
             expected_value = 1 / num_geographies
             actual_value = sibling(profile_key_metric, geography, version)
             assert pytest.approx(expected_value, abs=1e-2) == actual_value
 
-    def test_sibling_calculation(self, profile_key_metric, indicator, additional_data_json):
+    def test_sibling_calculation(self, profile_key_metric, indicator, additional_data_json, version):
         data1 = additional_data_json[0]
         data2 = additional_data_json[1]
 
@@ -98,30 +98,30 @@ class TestSibling:
 
         expected_value = total_female1 / (total_female1 + total_female2)
 
-        with patch.object(geography, "get_siblings", side_effect=lambda: [other_geography]):
-            actual_value = sibling(profile_key_metric, geography)
+        with patch.object(geography, "get_version_siblings", side_effect=lambda _version: [other_geography]):
+            actual_value = sibling(profile_key_metric, geography, version)
             assert pytest.approx(expected_value, abs=1e-3) == actual_value
 
 
-    def test_returns_none_if_geography_missing_data(self, profile_key_metric, indicatordata_json, other_geographies):
+    def test_returns_none_if_geography_missing_data(self, profile_key_metric, indicatordata_json, other_geographies, version):
         new_geography = GeographyFactory()
-        with patch.object(new_geography, "get_siblings", side_effect=lambda: other_geographies):
+        with patch.object(new_geography, "get_version_siblings", side_effect=lambda _version: other_geographies):
             expected_value = None
-            actual_value = sibling(profile_key_metric, new_geography)
+            actual_value = sibling(profile_key_metric, new_geography, version)
             assert expected_value == actual_value
 
-    def test_returns_none_if_geography_and_siblings_missing_data(self, profile_key_metric, indicatordata_json):
+    def test_returns_none_if_geography_and_siblings_missing_data(self, profile_key_metric, indicatordata_json, version):
         new_geography = GeographyFactory()
         other_geographies = [
             GeographyFactory(),
             GeographyFactory()
         ]
-        with patch.object(new_geography, "get_siblings", side_effect=lambda: other_geographies):
+        with patch.object(new_geography, "get_version_siblings", side_effect=lambda _version: other_geographies):
             expected_value = None
-            actual_value = sibling(profile_key_metric, new_geography)
+            actual_value = sibling(profile_key_metric, new_geography, version)
             assert expected_value == actual_value
 
-    def test_returns_none_if_metric_has_invalid_subindicator(self, profile_key_metric, indicatordata_json):
+    def test_returns_none_if_metric_has_invalid_subindicator(self, profile_key_metric, indicatordata_json, version):
         new_geography = GeographyFactory()
         other_geographies = [
             GeographyFactory(),
@@ -131,9 +131,9 @@ class TestSibling:
         profile_key_metric.subindicator = invalid_subindicator
         profile_key_metric.save()
 
-        with patch.object(new_geography, "get_siblings", side_effect=lambda: other_geographies):
+        with patch.object(new_geography, "get_version_siblings", side_effect=lambda _version: other_geographies):
             expected_value = None
-            actual_value = sibling(profile_key_metric, new_geography)
+            actual_value = sibling(profile_key_metric, new_geography, version)
             assert expected_value == actual_value
 
 
@@ -164,8 +164,8 @@ def test_absolute_value_none(profile_key_metric, other_geographies):
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("other_geographies_indicatordata")
-def test_sibling_not_none(profile_key_metric, geography, other_geographies):
+def test_sibling_not_none(profile_key_metric, geography, other_geographies, version):
     # Check expected function of sibling that it returns some value
-    with patch.object(geography, "get_siblings", side_effect=lambda: other_geographies):
-        sibling_data = sibling(profile_key_metric, geography)
+    with patch.object(geography, "get_version_siblings", side_effect=lambda _version: other_geographies):
+        sibling_data = sibling(profile_key_metric, geography, version)
         assert sibling_data != None

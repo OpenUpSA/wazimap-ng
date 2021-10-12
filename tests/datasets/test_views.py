@@ -9,8 +9,9 @@ from tests.profile.factories import ProfileFactory
 from tests.datasets.factories import (
     GeographyFactory, GeographyHierarchyFactory, DatasetFactory,
     DatasetDataFactory, IndicatorFactory, IndicatorDataFactory,
-    VersionFactory
+    VersionFactory,
 )
+from tests.boundaries.factories import GeographyBoundaryFactory
 
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
@@ -30,12 +31,12 @@ class TestDatasetUploadView(APITestCase):
     def setUp(self):
         # General data
         self.version = VersionFactory()
-        geography = GeographyFactory(code="ZA", versions=[self.version.name])
+        geography = GeographyFactory(code="ZA")
+        GeographyBoundaryFactory(geography=geography, version=self.version)
         self.geography_hierarchy = GeographyHierarchyFactory(
             root_geography=geography,
             configuration={
                 "default_version": self.version.name,
-                "versions": [self.version.name]
             }
         )
         self.profile = ProfileFactory(geography_hierarchy=self.geography_hierarchy)
@@ -57,7 +58,7 @@ class TestDatasetUploadView(APITestCase):
             indicator=self.variable, geography=geography,
             data=[{'test': 'y1', 'count': '22'}]
         )
-        
+
         # Upload csv related data
         data = [
             ["Geography", "test", "Count"],
@@ -168,7 +169,7 @@ class TestDatasetUploadView(APITestCase):
         client = APIClient()
         client.force_authenticate(user=user1, token=token)
         url = reverse('dataset-upload', args=(self.dataset.id,))
-        
+
         response = client.post(url, data={
             "file": self.csv_file,
         }, format='multipart')
@@ -179,7 +180,7 @@ class TestDatasetUploadView(APITestCase):
         task = fetch(response.data["upload_task_id"])
         assert task.success == True
         assert task.name == "Uploading data: dataset-1"
-        
+
         assert self.dataset.id == response.data["id"]
         assert DatasetData.objects.filter(dataset=self.dataset).count() == 2
         data = DatasetData.objects.filter(dataset=self.dataset)
@@ -195,7 +196,7 @@ class TestDatasetUploadView(APITestCase):
         client = APIClient()
         client.force_authenticate(user=user1, token=token)
         url = reverse('dataset-upload', args=(self.dataset.id,))
-        
+
 
         assert DatasetData.objects.filter(dataset=self.dataset).count() == 1
         data = DatasetData.objects.filter(dataset=self.dataset).first()

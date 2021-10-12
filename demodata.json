@@ -466,6 +466,15 @@
   }
 },
 {
+  "model": "datasets.version",
+  "pk": 1,
+  "fields": {
+    "created": "2021-08-12T16:36:05.326Z",
+    "updated": "2021-08-12T16:36:05.326Z",
+    "name": "South Africa 2016 boundaries"
+  }
+},
+{
   "model": "datasets.geography",
   "pk": 1,
   "fields": {
@@ -476,8 +485,7 @@
     "updated": "2021-08-12T16:36:05.326Z",
     "name": "South Africa",
     "code": "ZA",
-    "level": "country",
-    "version": "demo_version"
+    "level": "country"
   }
 },
 {
@@ -491,8 +499,7 @@
     "updated": "2021-08-12T16:36:07.921Z",
     "name": "Eastern Cape",
     "code": "EC",
-    "level": "province",
-    "version": "demo_version"
+    "level": "province"
   }
 },
 {
@@ -506,8 +513,7 @@
     "updated": "2021-08-12T16:36:07.952Z",
     "name": "Free State",
     "code": "FS",
-    "level": "province",
-    "version": "demo_version"
+    "level": "province"
   }
 },
 {
@@ -521,8 +527,7 @@
     "updated": "2021-08-12T16:36:07.960Z",
     "name": "Gauteng",
     "code": "GT",
-    "level": "province",
-    "version": "demo_version"
+    "level": "province"
   }
 },
 {
@@ -536,8 +541,7 @@
     "updated": "2021-08-12T16:36:07.970Z",
     "name": "KwaZulu-Natal",
     "code": "KZN",
-    "level": "province",
-    "version": "demo_version"
+    "level": "province"
   }
 },
 {
@@ -551,8 +555,7 @@
     "updated": "2021-08-12T16:36:07.979Z",
     "name": "Limpopo",
     "code": "LIM",
-    "level": "province",
-    "version": "demo_version"
+    "level": "province"
   }
 },
 {
@@ -566,8 +569,7 @@
     "updated": "2021-08-12T16:36:07.990Z",
     "name": "Mpumalanga",
     "code": "MP",
-    "level": "province",
-    "version": "demo_version"
+    "level": "province"
   }
 },
 {
@@ -581,8 +583,7 @@
     "updated": "2021-08-12T16:36:08.000Z",
     "name": "North West",
     "code": "NW",
-    "level": "province",
-    "version": "demo_version"
+    "level": "province"
   }
 },
 {
@@ -596,8 +597,7 @@
     "updated": "2021-08-12T16:36:08.011Z",
     "name": "Northen Cape",
     "code": "NC",
-    "level": "province",
-    "version": "demo_version"
+    "level": "province"
   }
 },
 {
@@ -611,8 +611,7 @@
     "updated": "2021-08-12T16:36:08.023Z",
     "name": "Western Cape",
     "code": "WC",
-    "level": "province",
-    "version": "demo_version"
+    "level": "province"
   }
 },
 {
@@ -635,7 +634,7 @@
     "profile": 1,
     "name": "Language dataset",
     "groups": "[\"age\", \"language\", \"race\", \"gender\"]",
-    "geography_hierarchy": 1,
+    "version": 1,
     "permission_type": "public"
   }
 },
@@ -5157,6 +5156,7 @@
   "model": "boundaries.geographyboundary",
   "pk": 1,
   "fields": {
+    "version_id": 1,
     "created": "2021-08-12T16:36:05.332Z",
     "updated": "2021-08-12T16:36:05.332Z",
     "geography": 1,
@@ -5169,6 +5169,7 @@
   "model": "boundaries.geographyboundary",
   "pk": 2,
   "fields": {
+    "version_id": 1,
     "created": "2021-08-12T16:36:07.927Z",
     "updated": "2021-08-12T16:36:07.927Z",
     "geography": 2,
@@ -5181,6 +5182,7 @@
   "model": "boundaries.geographyboundary",
   "pk": 3,
   "fields": {
+    "version_id": 1,
     "created": "2021-08-12T16:36:07.956Z",
     "updated": "2021-08-12T16:36:07.956Z",
     "geography": 3,
@@ -5193,6 +5195,7 @@
   "model": "boundaries.geographyboundary",
   "pk": 4,
   "fields": {
+    "version_id": 1,
     "created": "2021-08-12T16:36:07.964Z",
     "updated": "2021-08-12T16:36:07.964Z",
     "geography": 4,
@@ -5205,6 +5208,7 @@
   "model": "boundaries.geographyboundary",
   "pk": 5,
   "fields": {
+    "version_id": 1,
     "created": "2021-08-12T16:36:07.973Z",
     "updated": "2021-08-12T16:36:07.973Z",
     "geography": 5,
@@ -5217,6 +5221,7 @@
   "model": "boundaries.geographyboundary",
   "pk": 6,
   "fields": {
+    "version_id": 1,
     "created": "2021-08-12T16:36:07.984Z",
     "updated": "2021-08-12T16:36:07.984Z",
     "geography": 6,
@@ -5229,6 +5234,7 @@
   "model": "boundaries.geographyboundary",
   "pk": 7,
   "fields": {
+    "version_id": 1,
     "created": "2021-08-12T16:36:07.994Z",
     "updated": "2021-08-12T16:36:07.994Z",
     "geography": 7,
@@ -5241,6 +5247,7 @@
   "model": "boundaries.geographyboundary",
   "pk": 8,
   "fields": {
+    "version_id": 1,
     "created": "2021-08-12T16:36:08.004Z",
     "updated": "2021-08-12T16:36:08.004Z",
     "geography": 8,
@@ -5253,6 +5260,7 @@
   "model": "boundaries.geographyboundary",
   "pk": 9,
   "fields": {
+    "version_id": 1,
     "created": "2021-08-12T16:36:08.015Z",
     "updated": "2021-08-12T16:36:08.015Z",
     "geography": 9,
@@ -5265,6 +5273,7 @@
   "model": "boundaries.geographyboundary",
   "pk": 10,
   "fields": {
+    "version_id": 1,
     "created": "2021-08-12T16:36:08.027Z",
     "updated": "2021-08-12T16:36:08.027Z",
     "geography": 10,

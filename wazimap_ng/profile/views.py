@@ -67,7 +67,7 @@ def profile_geography_data(request, profile_id, geography_code):
         version_name = profile.geography_hierarchy.configuration.get("default_version", None)
 
     version = get_object_or_404(Version, name=version_name)
-    geography = get_object_or_404(Geography, code=geography_code, versions=version)
+    geography = get_object_or_404(Geography, code=geography_code, geographyboundary__version=version)
 
     js = serializers.ExtendedProfileSerializer(profile, geography, version)
     return Response(js)

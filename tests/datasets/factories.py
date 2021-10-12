@@ -12,16 +12,6 @@ class GeographyFactory(factory.django.DjangoModelFactory):
     path = factory.Sequence(lambda n: 'path_%d' % n)
     code = factory.Sequence(lambda n: 'code_%d' % n)
 
-    @factory.post_generation
-    def versions(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for version in extracted:
-                version = VersionFactory(name=version)
-                self.versions.add(version)
-
 
 class VersionFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -35,10 +25,9 @@ class GeographyHierarchyFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.GeographyHierarchy
 
-    root_geography = factory.SubFactory(GeographyFactory, versions=["version_0", "version_1"])
+    root_geography = factory.SubFactory(GeographyFactory)
     configuration = {
         "default_version": "version_0",
-        "versions": ["version_0", "version_1"]
     }
 
 
@@ -47,6 +36,7 @@ class DatasetFactory(factory.django.DjangoModelFactory):
         model = models.Dataset
 
     profile = factory.SubFactory("tests.profile.factories.ProfileFactory")
+    version = factory.SubFactory(VersionFactory)
     groups = ["age group"]
 
 
