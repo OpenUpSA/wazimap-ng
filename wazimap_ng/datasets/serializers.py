@@ -14,7 +14,7 @@ class GeographyHierarchySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.GeographyHierarchy
-        fields = ["id", "name", "root_geography", "description"]
+        fields = ["id", "name", "root_geography", "description", "configuration"]
 
 class AncestorGeographySerializer(serializers.ModelSerializer):
     parents = GeographySerializer(source="get_ancestors", many=True)
