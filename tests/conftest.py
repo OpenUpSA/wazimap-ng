@@ -119,9 +119,9 @@ def version():
 
 @pytest.fixture
 def geographies(version):
-    root = GeographyFactory(code="ROOT_GEOGRAPHY")
-    geo1 = GeographyFactory(code="GEOCODE_1")
-    geo2 = GeographyFactory(code="GEOCODE_2")
+    root = Geography.add_root(code="ROOT_GEOGRAPHY")
+    geo1 = root.add_child(code=f"GEOCODE_1")
+    geo2 = root.add_child(code=f"GEOCODE_2")
     GeographyBoundaryFactory(geography=root, version=version)
     GeographyBoundaryFactory(geography=geo1, version=version)
     GeographyBoundaryFactory(geography=geo2, version=version)
@@ -135,8 +135,13 @@ def geography(geographies):
 
 
 @pytest.fixture
-def other_geographies(geographies):
+def child_geographies(geographies):
     return geographies[1:]
+
+
+@pytest.fixture
+def other_geographies(child_geographies):
+    return child_geographies
 
 
 @pytest.fixture
@@ -149,16 +154,6 @@ def geography_hierarchy(geography, version):
         }
     )
     return hierarchy
-
-
-@pytest.fixture
-def child_geographies(geography, version):
-    child_geographies = []
-    for i in range(2):
-        obj = geography.add_child(code=f"child{i}_geo")
-        obj.versions.add(version)
-        child_geographies.append(obj)
-    return child_geographies
 
 
 @pytest.fixture
@@ -263,8 +258,14 @@ def child_datasetdata(datasetdata, geography):
 
 
 @pytest.fixture
-def metadata(licence):
-    return MetaDataFactory(source="XYZ", url="http://example.com", description="ABC", licence=licence)
+def metadata(licence, dataset):
+    return MetaDataFactory(
+        source="XYZ",
+        url="http://example.com",
+        description="ABC",
+        licence=licence,
+        dataset=dataset,
+    )
 
 
 @pytest.fixture

@@ -36,6 +36,7 @@ class DatasetFactory(factory.django.DjangoModelFactory):
         model = models.Dataset
 
     profile = factory.SubFactory("tests.profile.factories.ProfileFactory")
+    version = factory.SubFactory(VersionFactory)
     groups = ["age group"]
 
 

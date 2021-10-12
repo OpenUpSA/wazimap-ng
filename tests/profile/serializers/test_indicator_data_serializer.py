@@ -3,9 +3,16 @@ import pytest
 from tests.datasets.factories import (
     GeographyFactory,
     IndicatorDataFactory,
-    MetaDataFactory
+    MetaDataFactory,
+    DatasetFactory,
+    IndicatorFactory,
 )
-from tests.profile.factories import ProfileFactory, ProfileIndicatorFactory
+from tests.profile.factories import (
+    ProfileFactory,
+    ProfileIndicatorFactory,
+    IndicatorCategoryFactory,
+    IndicatorSubcategoryFactory,
+)
 from wazimap_ng.datasets.models.group import Group
 from wazimap_ng.profile.models import Profile
 from wazimap_ng.profile.serializers.indicator_data_serializer import (
@@ -20,8 +27,15 @@ from wazimap_ng.profile.serializers.profile_indicator_serializer import (
 
 @pytest.fixture
 def profile_indicators(profile):
-    pi1 = ProfileIndicatorFactory(profile=profile, label="PI1")
-    pi2 = ProfileIndicatorFactory(profile=profile, label="PI2")
+    version = profile.geography_hierarchy.root_geography.geographyboundary_set.get().version
+    dataset1 = DatasetFactory(profile=profile, version=version)
+    dataset2 = DatasetFactory(profile=profile, version=version)
+    indicator1 = IndicatorFactory(dataset=dataset1)
+    indicator2 = IndicatorFactory(dataset=dataset2)
+    category = IndicatorCategoryFactory(profile=profile)
+    subcategory = IndicatorSubcategoryFactory(category=category)
+    pi1 = ProfileIndicatorFactory(profile=profile, label="PI1", subcategory=subcategory)
+    pi2 = ProfileIndicatorFactory(profile=profile, label="PI2", subcategory=subcategory)
     return [
         pi1, pi2
     ]
@@ -60,7 +74,7 @@ class TestGetProfileData:
         pi2.order = 2
         pi2.save()
 
-        version = geography.versions.first()
+        version = geography.geographyboundary_set.get().version
         output = get_profile_data(profile, [geography], version)
         print(output)
         assert output[0]["profile_indicator_label"] == "PI1"
@@ -78,7 +92,7 @@ class TestGetProfileData:
 
     def test_profile_indicator_metadata(self, geography, profile_indicators, metadata):
         profile = profile_indicators[0].profile
-        version = geography.versions.first()
+        version = geography.geographyboundary_set.get().version
         output = get_profile_data(profile, [geography], version)
         assert output[0]["metadata_source"] == metadata.source
         assert output[0]["metadata_description"] == metadata.description
@@ -87,7 +101,7 @@ class TestGetProfileData:
     def test_get_profile_data(self, geography, profile_indicators):
 
         profile = profile_indicators[0].profile
-        version = geography.versions.first()
+        version = geography.geographyboundary_set.get().version
         pi1, pi2 = profile_indicators
 
         profile2 = ProfileFactory()

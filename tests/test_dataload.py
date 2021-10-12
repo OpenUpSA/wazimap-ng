@@ -11,24 +11,22 @@ class SiteTests(TestCase):
 
     def testProfile(self):
         profile = Profile.objects.get(pk=1)
-        self.assertEquals(profile.name, 'Demo profile')
-        
+        self.assertEqual(profile.name, 'Demo profile')
+
     def testBoundaries(self):
         boundary = GeographyBoundary.objects.get(pk=1)
         self.assertIsNotNone(boundary.geography)
 
     def testDataset(self):
         geography = Geography.objects.get(pk=1)
-        self.assertEquals(geography.name, 'South Africa')
-        
+        self.assertEqual(geography.name, 'South Africa')
+
         dataset = Dataset.objects.get(pk=1)
-        self.assertEquals(dataset.name, 'Language dataset')
-    
+        self.assertEqual(dataset.name, 'Language dataset')
+
     def testPoints(self):
         collection = Category.objects.get(pk=1)
-        self.assertEquals(collection.name, 'University collection')
-        
-        theme = Theme.objects.get(pk=1)
-        self.assertEquals(theme.name, 'Education theme')
-        
+        self.assertEqual(collection.name, 'University collection')
 
+        theme = Theme.objects.get(pk=1)
+        self.assertEqual(theme.name, 'Education theme')
