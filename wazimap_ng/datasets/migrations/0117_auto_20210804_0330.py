@@ -7,13 +7,8 @@ def update_geographies_and_related_data(apps, schema_editor):
     GeographyHierarchy = apps.get_model("datasets", "GeographyHierarchy")
     Geography = apps.get_model("datasets", "Geography")
     Dataset = apps.get_model("datasets", "Dataset")
-    GeographyBoundary = apps.get_model("boundaries", "GeographyBoundary")
 
     cached_version_by_name = {v.name: v for v in Version.objects.all()}
-
-    for boundary in GeographyBoundary.objects.all():
-        boundary.version = cached_version_by_name[boundary.geography.version]
-        boundary.save()
 
     for dataset in Dataset.objects.all():
         hierarchy_version_name = dataset.geography_hierarchy.root_geography.version
@@ -30,7 +25,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('datasets', '0116_auto_20210803_2049'),
     ]
-    #run_before = [('boundaries', '0029_auto_20211008_0540'),]
 
     operations = [
         migrations.RunPython(update_geographies_and_related_data),
