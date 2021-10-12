@@ -20,7 +20,7 @@ jobs:
       - name: Migrate schema
         run: docker-compose run --rm web python manage.py migrate
       - name: Loading a shapefile
-        run: docker-compose run --rm web python manage.py loadshp /scripts/shapefiles/country.shp code=code,parent_cod=parent_code,name=name,area=area "demo hierarchy" country demo_version --allow-root --create-hierarchy | grep "success"
+        run: docker-compose run --rm web python manage.py loadshp /scripts/shapefiles/country.shp code=code,parent_cod=parent_code,name=name,area=area "demo hierarchy" country demo_version --allow-root --create-hierarchy | grep "Loading shape 1 succeeded"
       - name: Load demo data fixture
         run: docker-compose run --rm web python manage.py loaddata demodata.json
       - name: Start server
