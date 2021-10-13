@@ -44,6 +44,45 @@ class TestConsolidatedProfileView(APITestCase):
             )
         return pcs
 
+    def test_basic_all_details_default_version(self):
+        response = self.get(
+            'all-details',
+            profile_id=self.profile.pk,
+            geography_code=self.geography.code,
+            data={
+                'format': 'json',
+            },
+        )
+        self.assert_http_200_ok()
+
+    def test_all_details_one_version(self):
+        response = self.get(
+            'all-details',
+            profile_id=self.profile.pk,
+            geography_code=self.geography.code,
+            data={
+                'format': 'json',
+                'version': self.version.name
+            },
+        )
+        self.assert_http_200_ok()
+
+    def test_all_details_version_exists_but_not_this_geo(self):
+        other_version = VersionFactory()
+        other_geography = GeographyFactory()
+        other_boundary = GeographyBoundaryFactory(version=other_version, geography=other_geography)
+        response = self.get(
+            'all-details',
+            profile_id=self.profile.pk,
+            geography_code=self.geography.code,
+            data={
+                'format': 'json',
+                'version': other_version.name
+            },
+        )
+        print(response)
+        self.assert_http_404_not_found()
+
     def test_profile_theme_data(self):
         theme1 = ThemeFactory(profile=self.profile, name="TH1", order=0)
         theme2 = ThemeFactory(profile=self.profile, name="TH2", order=1)

@@ -29,7 +29,11 @@ def consolidated_profile_helper(profile_id, geography_code, version_name):
     if version_name is None:
         version_name = profile.geography_hierarchy.default_version
     version = get_object_or_404(dataset_models.Version, name=version_name)
-    geography = dataset_models.Geography.objects.get(code=geography_code, geographyboundary__version=version)
+    geography = get_object_or_404(
+        dataset_models.Geography,
+        code=geography_code,
+        geographyboundary__version=version
+    )
     profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, version)
     boundary_js = boundaries_views.geography_item_helper(geography_code, version)
     children_boundary_js = boundaries_views.geography_children_helper(geography_code, version)
