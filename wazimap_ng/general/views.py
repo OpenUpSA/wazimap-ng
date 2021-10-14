@@ -77,23 +77,6 @@ def boundary_point_count(request, profile_id, geography_code):
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
-def consolidated_versioned_data(request, profile_id, geography_code):
-    profile = get_object_or_404(profile_models.Profile, pk=profile_id)
-    codes = geography_code.split(":")
-    geo_code, versions = codes[0], codes[1:]
-    versions_list = profile.geography_hierarchy.configuration.get("versions", [])
-    versions = list(set(versions_list).intersection(versions))
-    version_objs = list(dataset_models.Version.objects.filter(name__in=versions))
-
-    geography = dataset_models.Geography.objects.get(code=geo_code)
-
-    if not version_objs or not geography:
-        raise Http404
-    js = profile_serializers.ExtendedProfileSerializer(profile, geography, version_objs)
-    return Response(js)
-
-@condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
-@api_view()
 def consolidated_profile_test(request, profile_id, geography_code):
     js = consolidated_profile_helper(profile_id, geography_code)
     return Response("test2")
