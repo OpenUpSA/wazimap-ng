@@ -219,7 +219,7 @@ def search_geography(request, profile_id):
             }.get(x.level, 7)
 
     geogs = sorted(geographies, key=sort_key)
-    serializer = serializers.AncestorGeographySerializer(geogs, many=True)
+    serializer = serializers.AncestorGeographySerializer(geogs, many=True, context={"version": version})
 
     return Response(serializer.data)
 
