@@ -43,7 +43,7 @@ def ExtendedProfileSerializer(profile, geography, version):
     profile_data = IndicatorDataSerializer(profile, geography, version)
     metrics_data = MetricsSerializer(profile, geography, version)
     logo_json = ProfileLogoSerializer(profile)
-    highlights = HighlightsSerializer(profile, geography)
+    highlights = HighlightsSerializer(profile, geography, version)
     overview = OverviewSerializer(profile)
 
     geo_js = AncestorGeographySerializer().to_representation(geography)

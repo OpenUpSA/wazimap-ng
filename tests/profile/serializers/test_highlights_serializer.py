@@ -12,34 +12,34 @@ def profile_highlight_without_data(profile, indicator):
     )
 
 @pytest.mark.django_db
-def test_absolute_value(profile_highlight, indicatordata_json, geography):
+def test_absolute_value(profile_highlight, indicatordata_json, geography, version):
     expected_value = sum(el["count"] for el in indicatordata_json if el["gender"] == "female")
-    actual_value = absolute_value(profile_highlight, geography)
+    actual_value = absolute_value(profile_highlight, geography, version)
     assert expected_value == actual_value
 
 
 @pytest.mark.django_db
-def test_absolute_value_without_indicatordata(profile_highlight_without_data, geography):
+def test_absolute_value_without_indicatordata(profile_highlight_without_data, geography, version):
     expected_value = None
-    actual_value = absolute_value(profile_highlight_without_data, geography)
+    actual_value = absolute_value(profile_highlight_without_data, geography, version)
     assert expected_value == actual_value
 
 
 @pytest.mark.django_db
-def test_subindicator(profile_highlight, indicatordata_json, geography):
+def test_subindicator(profile_highlight, indicatordata_json, geography, version):
     female_total = sum(el["count"] for el in indicatordata_json if el["gender"] == "female")
     total = sum(el["count"] for el in indicatordata_json)
     expected_value = female_total / total
 
-    actual_value = subindicator(profile_highlight, geography)
+    actual_value = subindicator(profile_highlight, geography, version)
 
     assert expected_value == actual_value
 
 
 @pytest.mark.django_db
-def test_subindicator_without_indicatordata(profile_highlight_without_data, geography):
+def test_subindicator_without_indicatordata(profile_highlight_without_data, geography, version):
     expected_value = None
-    actual_value = subindicator(profile_highlight_without_data, geography)
+    actual_value = subindicator(profile_highlight_without_data, geography, version)
     assert expected_value == actual_value
 
 
