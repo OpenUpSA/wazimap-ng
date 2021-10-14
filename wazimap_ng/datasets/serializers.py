@@ -5,22 +5,27 @@ from . import models
 class GeographySerializer(serializers.ModelSerializer):
     class Meta:
         model = Geography
-        fields = ["name", "code", "level", "version"]
+        fields = ["name", "code", "level"]
 
 class GeographyHierarchySerializer(serializers.ModelSerializer):
     root_geography = GeographySerializer()
 
-
     class Meta:
         model = models.GeographyHierarchy
-        fields = ["id", "name", "root_geography", "description"]
+        fields = ["id", "name", "root_geography", "description", "configuration"]
 
 class AncestorGeographySerializer(serializers.ModelSerializer):
-    parents = GeographySerializer(source="get_ancestors", many=True)
+    def to_representation(self, instance):
+        serialised = super().to_representation(instance)
+        serialised["parents"] = [
+            GeographySerializer().to_representation(g)
+            for g in instance.get_version_ancestors(self.context["version"])
+        ]
+        return serialised
 
     class Meta:
         model = Geography
-        fields = ["name", "code", "level", "version", "parents"]
+        fields = ["name", "code", "level", "versions"]
 
 class DatasetSerializer(serializers.ModelSerializer):
 	class Meta:

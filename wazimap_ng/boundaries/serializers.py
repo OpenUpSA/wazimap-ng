@@ -61,7 +61,7 @@ class GeographyBoundarySerializer(GeographySerializer):
         return obj.geography.name
 
     def get_version(self, obj):
-        return obj.geography.version
+        return obj.version.name
 
     class Meta:
         model = models.GeographyBoundary

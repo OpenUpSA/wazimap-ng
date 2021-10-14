@@ -14,16 +14,18 @@ from .. import models
 logger = logging.getLogger(__name__)
 
 
-def get_profile_data(profile, geographies):
-    return get_indicator_data(profile, profile.indicators.all(), geographies)
+def get_profile_data(profile, geographies, version):
+    return get_indicator_data(profile, profile.indicators.all(), geographies, version)
 
 
-def get_indicator_data(profile, indicators, geographies):
+def get_indicator_data(profile, indicators, geographies, version):
+
     data = (IndicatorData.objects
             .filter(
                 indicator__in=indicators,
                 indicator__profileindicator__profile=profile,
-                geography__in=geographies
+                geography__in=geographies,
+                indicator__dataset__version=version,
             )
             .values(
                 profile_indicator_id=F("indicator__profileindicator__id"),
@@ -36,6 +38,7 @@ def get_indicator_data(profile, indicators, geographies):
                 category=F("indicator__profileindicator__subcategory__category__name"),
                 choropleth_method=F("indicator__profileindicator__choropleth_method__name"),
                 dataset=F("indicator__dataset"),
+                version_name=F("indicator__dataset__version__name"),
                 metadata_source=F("indicator__dataset__metadata__source"),
                 metadata_description=F("indicator__dataset__metadata__description"),
                 metadata_url=F("indicator__dataset__metadata__url"),
@@ -75,9 +78,10 @@ def get_dataset_groups(profile: Profile) -> Dict:
     return dataset_groups_dict
 
 
-def IndicatorDataSerializer(profile, geography):
-    indicator_data = get_profile_data(profile, [geography])
-    children_indicator_data = get_profile_data(profile, geography.get_children())
+def IndicatorDataSerializer(profile, geography, version):
+    indicator_data = get_profile_data(profile, [geography], version)
+    children = geography.get_child_geographies(version)
+    children_indicator_data = get_profile_data(profile, children, version)
 
     dataset_groups_dict = get_dataset_groups(profile)
     indicator_data2 = list(expand_nested_list(indicator_data, "jsdata"))
@@ -125,6 +129,7 @@ def IndicatorDataSerializer(profile, geography):
                                  },
                                  "content_type": x["content_type"],
                                  "dataset_content_type": x["dataset_content_type"],
+                                 "version": x["version_name"],
                                  "chart_configuration": x["indicator_chart_configuration"],
                              },
                              )

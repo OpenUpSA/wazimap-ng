@@ -58,10 +58,13 @@ class LocationList(generics.ListAPIView):
             profile_category = models.ProfileCategory.objects.get(
                 id=profile_category_id, profile_id=profile_id
             )
+            version_name = request.GET.get('version', None)
+            if not version_name:
+                version_name = profile.geography_hierarchy.configuration.get("default_version", None)
 
             queryset = get_locations(
                 self.get_queryset(), profile, profile_category.category,
-                geography_code
+                geography_code, version_name
             )
             serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
@@ -74,9 +77,9 @@ class LocationList(generics.ListAPIView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-def boundary_point_count_helper(profile, geography):
-
-    locations = models.Location.objects.filter(coordinates__within=geography.geographyboundary.geom)
+def boundary_point_count_helper(profile, geography, version):
+    boundary = geography.geographyboundary_set.filter(version=version).first()
+    locations = models.Location.objects.filter(coordinates__within=boundary.geom)
     location_count = (
         locations
             .filter(category__profilecategory__profile=profile)
@@ -175,11 +178,16 @@ class GeoLocationList(generics.ListAPIView):
             profile_categories = models.ProfileCategory.objects.filter(
                 profile_id=profile_id
             )
+            version_name = request.GET.get('version', None)
+            if not version_name:
+                version_name = profile.geography_hierarchy.configuration.get(
+                    "default_version", None
+                )
 
             for profile_category in profile_categories:
                 queryset = get_locations(
                     self.get_queryset(), profile, profile_category.category,
-                    geography_code
+                    geography_code, version_name
                 )
                 serializer = self.get_serializer(queryset, many=True)
                 location_data = serializer.data

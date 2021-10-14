@@ -36,9 +36,6 @@ class PermissionTypeFilter(filters.DatasetFilter):
 class IndicatorProfileFilter(filters.ProfileFilter):
     parameter_name = 'dataset__profile'
 
-class IndicatorGeographyHierarchyFilter(filters.GeographyHierarchyFilter):
-    parameter_name = 'dataset__geography_hierarchy_id'
-
 
 @admin.register(models.Indicator)
 class IndicatorAdmin(DatasetBaseAdminModel):
@@ -48,8 +45,7 @@ class IndicatorAdmin(DatasetBaseAdminModel):
     )
 
     list_filter = (
-        PermissionTypeFilter, IndicatorProfileFilter,
-        IndicatorGeographyHierarchyFilter
+        PermissionTypeFilter, IndicatorProfileFilter
     )
 
     form = IndicatorAdminForm

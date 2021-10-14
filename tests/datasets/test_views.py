@@ -8,8 +8,10 @@ from wazimap_ng.datasets.models import DatasetData, Dataset
 from tests.profile.factories import ProfileFactory
 from tests.datasets.factories import (
     GeographyFactory, GeographyHierarchyFactory, DatasetFactory,
-    DatasetDataFactory, IndicatorFactory, IndicatorDataFactory
+    DatasetDataFactory, IndicatorFactory, IndicatorDataFactory,
+    VersionFactory,
 )
+from tests.boundaries.factories import GeographyBoundaryFactory
 
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
@@ -27,17 +29,23 @@ class TestDatasetUploadView(APITestCase):
         return csvfile.getvalue()
 
     def setUp(self):
-
         # General data
+        self.version = VersionFactory()
         geography = GeographyFactory(code="ZA")
-        self.geography_hierarchy = GeographyHierarchyFactory(root_geography=geography)
+        GeographyBoundaryFactory(geography=geography, version=self.version)
+        self.geography_hierarchy = GeographyHierarchyFactory(
+            root_geography=geography,
+            configuration={
+                "default_version": self.version.name,
+            }
+        )
         self.profile = ProfileFactory(geography_hierarchy=self.geography_hierarchy)
         self.group = Group.objects.create(name=self.profile.name)
 
         # Dataset specific data
         self.dataset = DatasetFactory(
             name="dataset-1", profile=self.profile, groups=["test"],
-            geography_hierarchy=self.geography_hierarchy
+            version=self.version
         )
         DatasetDataFactory(
             dataset=self.dataset, geography=geography,
@@ -50,7 +58,7 @@ class TestDatasetUploadView(APITestCase):
             indicator=self.variable, geography=geography,
             data=[{'test': 'y1', 'count': '22'}]
         )
-        
+
         # Upload csv related data
         data = [
             ["Geography", "test", "Count"],
@@ -68,6 +76,7 @@ class TestDatasetUploadView(APITestCase):
             "geography_hierarchy": self.geography_hierarchy.id,
             "profile": self.profile.id,
             "name": "dataset-2",
+            "version": self.version.id
         })
 
         assert response.status_code == 403
@@ -97,6 +106,7 @@ class TestDatasetUploadView(APITestCase):
             "geography_hierarchy": self.geography_hierarchy.id,
             "profile": self.profile.id,
             "name": "dataset-2",
+            "version": self.version.id
         }, format='multipart')
 
         assert response.status_code == 403
@@ -134,6 +144,7 @@ class TestDatasetUploadView(APITestCase):
             "geography_hierarchy": self.geography_hierarchy.id,
             "profile": self.profile.id,
             "name": "dataset-2",
+            "version": self.version.id
         }, format='multipart')
 
         assert response.status_code == 201
@@ -158,7 +169,7 @@ class TestDatasetUploadView(APITestCase):
         client = APIClient()
         client.force_authenticate(user=user1, token=token)
         url = reverse('dataset-upload', args=(self.dataset.id,))
-        
+
         response = client.post(url, data={
             "file": self.csv_file,
         }, format='multipart')
@@ -169,7 +180,7 @@ class TestDatasetUploadView(APITestCase):
         task = fetch(response.data["upload_task_id"])
         assert task.success == True
         assert task.name == "Uploading data: dataset-1"
-        
+
         assert self.dataset.id == response.data["id"]
         assert DatasetData.objects.filter(dataset=self.dataset).count() == 2
         data = DatasetData.objects.filter(dataset=self.dataset)
@@ -185,7 +196,7 @@ class TestDatasetUploadView(APITestCase):
         client = APIClient()
         client.force_authenticate(user=user1, token=token)
         url = reverse('dataset-upload', args=(self.dataset.id,))
-        
+
 
         assert DatasetData.objects.filter(dataset=self.dataset).count() == 1
         data = DatasetData.objects.filter(dataset=self.dataset).first()

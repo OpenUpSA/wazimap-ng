@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from wazimap_ng.utils import mergedict 
+from wazimap_ng.utils import mergedict
 from wazimap_ng.datasets.serializers import AncestorGeographySerializer
 
 from wazimap_ng.datasets.serializers import GeographyHierarchySerializer
@@ -37,16 +37,16 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'permission_type', 'requires_authentication', 'geography_hierarchy', 'description', 'configuration')
 
 
-def ExtendedProfileSerializer(profile, geography):
+def ExtendedProfileSerializer(profile, geography, version):
     models.ProfileKeyMetrics.objects.filter(subcategory__category__profile=profile)
 
-    profile_data = IndicatorDataSerializer(profile, geography)
-    metrics_data = MetricsSerializer(profile, geography)
+    profile_data = IndicatorDataSerializer(profile, geography, version)
+    metrics_data = MetricsSerializer(profile, geography, version)
     logo_json = ProfileLogoSerializer(profile)
-    highlights = HighlightsSerializer(profile, geography)
+    highlights = HighlightsSerializer(profile, geography, version)
     overview = OverviewSerializer(profile)
 
-    geo_js = AncestorGeographySerializer().to_representation(geography)
+    geo_js = AncestorGeographySerializer(context={"version": version}).to_representation(geography)
 
     mergedict(profile_data, metrics_data)
 

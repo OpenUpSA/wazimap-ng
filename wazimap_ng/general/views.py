@@ -4,7 +4,7 @@ from django.views.decorators.http import condition
 from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import user_passes_test
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -24,12 +24,17 @@ from django_q.tasks import result, fetch
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-def consolidated_profile_helper(profile_id, geography_code):
+def consolidated_profile_helper(profile_id, geography_code, version_name):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
-    version = profile.geography_hierarchy.root_geography.version
-    geography = dataset_models.Geography.objects.get(code=geography_code, version=version)
-
-    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography)
+    if version_name is None:
+        version_name = profile.geography_hierarchy.default_version
+    version = get_object_or_404(dataset_models.Version, name=version_name)
+    geography = get_object_or_404(
+        dataset_models.Geography,
+        code=geography_code,
+        geographyboundary__version=version
+    )
+    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, version)
     boundary_js = boundaries_views.geography_item_helper(geography_code, version)
     children_boundary_js = boundaries_views.geography_children_helper(geography_code, version)
 
@@ -52,7 +57,8 @@ def consolidated_profile_helper(profile_id, geography_code):
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
 def consolidated_profile(request, profile_id, geography_code):
-    js = consolidated_profile_helper(profile_id, geography_code)
+    version = request.GET.get('version', None)
+    js = consolidated_profile_helper(profile_id, geography_code, version)
     return Response(js)
 
 
@@ -60,9 +66,14 @@ def consolidated_profile(request, profile_id, geography_code):
 @api_view()
 def boundary_point_count(request, profile_id, geography_code):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
-    version = profile.geography_hierarchy.root_geography.version
-    geography = dataset_models.Geography.objects.get(code=geography_code, version=version)
-    return Response(point_views.boundary_point_count_helper(profile, geography))
+
+    version_name = request.GET.get('version', None)
+    if not version_name:
+        version_name = profile.geography_hierarchy.default_version
+    version = get_object_or_404(dataset_models.Version, name=version_name)
+
+    geography = dataset_models.Geography.objects.get(code=geography_code, geographyboundary__version=version)
+    return Response(point_views.boundary_point_count_helper(profile, geography, version))
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
@@ -84,7 +95,7 @@ def authenticate_admin(user):
 def notifications_view(request):
     messages = request.session.pop("notifications", [])
     task_list = request.session.get("task_list", [])
-    
+
     if messages and task_list:
         for message in messages:
             if "task_id" in message:

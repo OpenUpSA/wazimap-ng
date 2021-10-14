@@ -11,7 +11,8 @@ from tests.datasets.factories import (
     IndicatorDataFactory,
     IndicatorFactory,
     LicenceFactory,
-    MetaDataFactory
+    MetaDataFactory,
+    VersionFactory
 )
 from tests.profile.factories import (
     IndicatorCategoryFactory,
@@ -21,6 +22,7 @@ from tests.profile.factories import (
     ProfileIndicatorFactory,
     ProfileKeyMetricsFactory
 )
+from tests.boundaries.factories import GeographyBoundaryFactory
 from wazimap_ng.datasets.models import Geography, GeographyHierarchy
 from wazimap_ng.profile.models import Profile
 
@@ -112,10 +114,17 @@ def licence():
 
 
 @pytest.fixture
-def geographies():
-    root = GeographyFactory(code="ROOT_GEOGRAPHY")
-    geo1 = GeographyFactory(code="GEOCODE_1", version=root.version)
-    geo2 = GeographyFactory(code="GEOCODE_2", version=root.version)
+def version():
+    return VersionFactory()
+
+@pytest.fixture
+def geographies(version):
+    root = Geography.add_root(code="ROOT_GEOGRAPHY")
+    geo1 = root.add_child(code=f"GEOCODE_1")
+    geo2 = root.add_child(code=f"GEOCODE_2")
+    GeographyBoundaryFactory(geography=root, version=version)
+    GeographyBoundaryFactory(geography=geo1, version=version)
+    GeographyBoundaryFactory(geography=geo2, version=version)
 
     return [root, geo1, geo2]
 
@@ -126,23 +135,25 @@ def geography(geographies):
 
 
 @pytest.fixture
-def other_geographies(geographies):
+def child_geographies(geographies):
     return geographies[1:]
 
 
 @pytest.fixture
-def geography_hierarchy(geography):
-    hierarchy = GeographyHierarchyFactory(root_geography=geography)
-
-    return hierarchy
+def other_geographies(child_geographies):
+    return child_geographies
 
 
 @pytest.fixture
-def child_geographies(geography):
-    return [
-        geography.add_child(code=f"child{i}_geo", version=geography.version)
-        for i in range(2)
-    ]
+def geography_hierarchy(geography, version):
+    hierarchy = GeographyHierarchyFactory(
+        root_geography=geography,
+        configuration = {
+            "default_version": version.name,
+            "versions": [version.name]
+        }
+    )
+    return hierarchy
 
 
 @pytest.fixture
@@ -179,8 +190,8 @@ def private_profile_group(private_profile):
 
 
 @pytest.fixture
-def dataset(profile):
-    return DatasetFactory(profile=profile)
+def dataset(profile, version):
+    return DatasetFactory(profile=profile, version=version)
 
 
 @pytest.fixture
@@ -247,8 +258,14 @@ def child_datasetdata(datasetdata, geography):
 
 
 @pytest.fixture
-def metadata(licence):
-    return MetaDataFactory(source="XYZ", url="http://example.com", description="ABC", licence=licence)
+def metadata(licence, dataset):
+    return MetaDataFactory(
+        source="XYZ",
+        url="http://example.com",
+        description="ABC",
+        licence=licence,
+        dataset=dataset,
+    )
 
 
 @pytest.fixture
@@ -338,8 +355,11 @@ def profile_highlight(profile, indicatordata):
 # Qualitative content indicator
 
 @pytest.fixture
-def qualitative_dataset(profile):
-    return DatasetFactory(profile=profile, content_type="qualitative")
+def qualitative_dataset(profile, version):
+    return DatasetFactory(
+        profile=profile, content_type="qualitative",
+        version=version
+    )
 
 @pytest.fixture
 def qualitative_groups(qualitative_dataset):

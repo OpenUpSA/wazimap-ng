@@ -45,7 +45,7 @@ class DatasetAdmin(DatasetBaseAdminModel):
     exclude = ("groups", )
     inlines = (MetaDataInline,)
     actions = (set_to_public, set_to_private, delete_selected_data,)
-    list_display = ("name", "permission_type", "geography_hierarchy", "profile", description("source", get_source))
+    list_display = ("name", "permission_type", "profile", description("source", get_source))
     list_filter = (
         PermissionTypeFilter, filters.GeographyHierarchyFilter, "content_type",
         filters.ProfileFilter, filters.DatasetMetaDataFilter,
@@ -56,21 +56,17 @@ class DatasetAdmin(DatasetBaseAdminModel):
     fieldsets = (
         ("", {
             "fields": (
-                "profile", "name", "geography_hierarchy",
-                "permission_type"
+                "profile", "name", "permission_type"
             )
         }),
         ("Dataset Imports", {
             "fields": (
-                "content_type", "import_dataset", "imported_dataset",
+                "version", "content_type", "import_dataset", "imported_dataset",
             )
         }),
     )
 
     readonly_fields = ("imported_dataset", )
-
-    class Media:
-        js = ("/static/js/geography_hierarchy.js",)
 
 
     def imported_dataset(self, obj):

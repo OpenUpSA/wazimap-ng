@@ -38,7 +38,7 @@ class ProfileKeyMetricsForm(forms.ModelForm):
             elif is_editing_item:
                 indicator = Indicator.objects.get(pk=self.instance.variable.pk)
             else:
-                logger.warn("Unsure how to handle creating ProfileHighlightForm")
+                logger.warning("Unsure how to handle creating ProfileHighlightForm")
                 return
             self.fields['subindicator'].choices = [(idx, s) for (idx, s) in enumerate(indicator.subindicators)]
         except Exception as e:

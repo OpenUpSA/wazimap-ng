@@ -148,7 +148,6 @@ urlpatterns = [
         cache(general_views.consolidated_profile),
         name="all-details"
     ),
-
     path(
         "api/v1/all_details/profile/<int:profile_id>/geography/<str:geography_code>/test/",
         cache(general_views.consolidated_profile_test),
