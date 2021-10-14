@@ -41,10 +41,10 @@ algorithms = {
     "subindicators": subindicator
 }
 
-def MetricsSerializer(profile, geography):
+def MetricsSerializer(profile, geography, version):
     out_js = {}
     profile_key_metrics = (models.ProfileKeyMetrics.objects
-        .filter(profile=profile)
+        .filter(profile=profile, variable__dataset__version=version)
         .order_by("order")
         .select_related("subcategory", "subcategory__category")
     )
