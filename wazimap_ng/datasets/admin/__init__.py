@@ -45,6 +45,9 @@ class GeographyAdmin(TreeAdmin):
 @admin.register(models.GeographyHierarchy)
 class GeographyHierarchyAdmin(admin.ModelAdmin):
     autocomplete_fields = ['root_geography']
+    formfield_overrides = {
+        fields.JSONField: {"widget": JSONEditorWidget},
+    }
     list_display = (
         "name", "created", "updated"
     )
