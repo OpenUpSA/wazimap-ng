@@ -59,6 +59,11 @@ class Geography(MP_Node, BaseModel):
         siblings = siblings.filter(geographyboundary__version=version)
         return siblings
 
+    def get_version_ancestors(self, version):
+        ancestors = super(Geography, self).get_ancestors()
+        ancestors = ancestors.filter(geographyboundary__version=version)
+        return ancestors
+
     def get_child_boundaries(self, version):
         from ...boundaries.models import GeographyBoundary
 

@@ -46,7 +46,7 @@ def ExtendedProfileSerializer(profile, geography, version):
     highlights = HighlightsSerializer(profile, geography, version)
     overview = OverviewSerializer(profile)
 
-    geo_js = AncestorGeographySerializer().to_representation(geography)
+    geo_js = AncestorGeographySerializer(context={"version": version}).to_representation(geography)
 
     mergedict(profile_data, metrics_data)
 
