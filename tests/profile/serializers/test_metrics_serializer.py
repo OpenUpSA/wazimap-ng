@@ -23,18 +23,18 @@ def additional_data_json():
 
 @pytest.mark.django_db
 class TestAbsoluteValue:
-    def test_absolute_value(self, profile_key_metric, indicatordata_json, geography):
+    def test_absolute_value(self, profile_key_metric, indicatordata_json, geography, version):
         expected_value = sum(el["count"] for el in indicatordata_json if el["gender"] == "female")
-        actual_value = absolute_value(profile_key_metric, geography)
+        actual_value = absolute_value(profile_key_metric, geography, version)
         assert expected_value == actual_value
 
-    def test_returns_none_for_missing_data(self, profile_key_metric, indicatordata_json):
+    def test_returns_none_for_missing_data(self, profile_key_metric, indicatordata_json, version):
         new_geography = GeographyFactory()
         expected_value = None
-        actual_value = absolute_value(profile_key_metric, new_geography)
+        actual_value = absolute_value(profile_key_metric, new_geography, version)
         assert expected_value == actual_value
 
-    def test_returns_none_if_metric_has_invalid_subindicator(self, profile_key_metric, indicatordata_json):
+    def test_returns_none_if_metric_has_invalid_subindicator(self, profile_key_metric, indicatordata_json, version):
         new_geography = GeographyFactory()
         expected_value = None
 
@@ -42,27 +42,27 @@ class TestAbsoluteValue:
         profile_key_metric.subindicator = invalid_subindicator
         profile_key_metric.save()
 
-        actual_value = absolute_value(profile_key_metric, new_geography)
+        actual_value = absolute_value(profile_key_metric, new_geography, version)
         assert expected_value == actual_value
 
 @pytest.mark.django_db
 class TestSubindicator:
-    def test_subindicator(self, profile_key_metric, indicatordata_json, geography):
+    def test_subindicator(self, profile_key_metric, indicatordata_json, geography, version):
         female_total = sum(el["count"] for el in indicatordata_json if el["gender"] == "female")
         total = sum(el["count"] for el in indicatordata_json)
         expected_value = female_total / total
 
-        actual_value = subindicator(profile_key_metric, geography)
+        actual_value = subindicator(profile_key_metric, geography, version)
 
         assert expected_value == actual_value
 
-    def test_returns_none_for_missing_data(self, profile_key_metric, indicatordata_json):
+    def test_returns_none_for_missing_data(self, profile_key_metric, indicatordata_json, version):
         new_geography = GeographyFactory()
         expected_value = None
-        actual_value = subindicator(profile_key_metric, new_geography)
+        actual_value = subindicator(profile_key_metric, new_geography, version)
         assert expected_value == actual_value
 
-    def test_returns_none_if_metric_has_invalid_subindicator(self, profile_key_metric, indicatordata_json):
+    def test_returns_none_if_metric_has_invalid_subindicator(self, profile_key_metric, indicatordata_json, version):
         new_geography = GeographyFactory()
         expected_value = None
 
@@ -70,7 +70,7 @@ class TestSubindicator:
         profile_key_metric.subindicator = invalid_subindicator
         profile_key_metric.save()
 
-        actual_value = subindicator(profile_key_metric, new_geography)
+        actual_value = subindicator(profile_key_metric, new_geography, version)
         assert expected_value == actual_value
 
 @pytest.mark.django_db
@@ -139,27 +139,27 @@ class TestSibling:
 
 
 @pytest.mark.django_db
-def test_subindicator_not_none(profile_key_metric, geography):
+def test_subindicator_not_none(profile_key_metric, geography, version):
     # Check expected function of subindicator that it returns some value
-    subindicator_data = subindicator(profile_key_metric, geography)
+    subindicator_data = subindicator(profile_key_metric, geography, version)
     assert subindicator_data != None
 
 @pytest.mark.django_db
-def test_subindicator_none(profile_key_metric, other_geographies):
+def test_subindicator_none(profile_key_metric, other_geographies, version):
     # Check that an incorrect geography, without a subindicator returns None
-    subindicator_data = subindicator(profile_key_metric, other_geographies[0])
+    subindicator_data = subindicator(profile_key_metric, other_geographies[0], version)
     assert subindicator_data == None
 
 @pytest.mark.django_db
-def test_absolute_value_not_none(profile_key_metric, geography):
+def test_absolute_value_not_none(profile_key_metric, geography, version):
     # Check expected function of absolute_value that it returns some value
-    absolute_value_data = absolute_value(profile_key_metric, geography)
+    absolute_value_data = absolute_value(profile_key_metric, geography, version)
     assert absolute_value_data != None
 
 @pytest.mark.django_db
-def test_absolute_value_none(profile_key_metric, other_geographies):
+def test_absolute_value_none(profile_key_metric, other_geographies, version):
     # Check that an incorrect geography, without a subindicator returns None
-    absolute_value_data = absolute_value(profile_key_metric, other_geographies[0])
+    absolute_value_data = absolute_value(profile_key_metric, other_geographies[0], version)
     assert absolute_value_data == None
 
 @pytest.mark.django_db
