@@ -39,6 +39,16 @@ urlpatterns = [
         "api/v1/datasets/<int:dataset_id>/upload/", dataset_views.dataset_upload,
         name="dataset-upload"
     ),
+    path(
+        "api/v1/versions/",
+        dataset_views.VersionViewset.as_view({"get":"list"}),
+        name="versions",
+    ),
+    path(
+        "api/v1/version/<int:pk>/",
+        dataset_views.VersionViewset.as_view({"get":"retrieve"}),
+        name="version",
+    ),
     path("api/v1/universe/", dataset_views.UniverseListView.as_view(), name="universe"),
     path(
         "api/v1/datasets/<int:dataset_id>/indicators/",
@@ -71,6 +81,11 @@ urlpatterns = [
         "api/v1/profiles/<int:pk>/",
         cache(profile_views.ProfileDetail.as_view()),
         name="profile-detail",
+    ),
+    path(
+        "api/v1/profile/<int:profile_id>/versions/",
+        dataset_views.VersionViewset.as_view({"get":"list"}),
+        name="versions-by-profile",
     ),
     path(
         "api/v1/profiles/<int:profile_id>/categories/",

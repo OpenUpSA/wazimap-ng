@@ -32,6 +32,11 @@ class DatasetSerializer(serializers.ModelSerializer):
 		model = models.Dataset
 		fields = "__all__"
 
+class VersionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Version
+        fields = "__all__"
+
 class DatasetDetailViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Dataset

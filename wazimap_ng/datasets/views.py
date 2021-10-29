@@ -184,6 +184,29 @@ class GeographyHierarchyViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.GeographyHierarchySerializer
 
 
+class VersionViewset(viewsets.ReadOnlyModelViewSet):
+    queryset = models.Version.objects.all()
+    serializer_class = serializers.VersionSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        profile_id = self.kwargs.get("profile_id", None)
+        if profile_id:
+            profile = get_object_or_404(Profile, pk=profile_id)
+            versions = profile.geography_hierarchy.configuration.get(
+                "versions", []
+            )
+            default_version = profile.geography_hierarchy.configuration.get(
+                "default_version",  None
+            )
+            if default_version and default_version not in versions:
+                versions.append(default_version)
+            queryset = queryset.filter(name__in=versions)
+
+        return queryset
+
+
 @api_view()
 def search_geography(request, profile_id):
     """
