@@ -1,6 +1,6 @@
 import operator
 from functools import reduce
-
+from rest_framework import serializers as rest_serializer
 from django.http import Http404
 from django.views.decorators.http import condition
 from django.shortcuts import get_object_or_404
@@ -41,17 +41,22 @@ class DatasetList(generics.ListCreateAPIView):
         response = self.create(request, *args, **kwargs)
 
         dataset_obj = models.Dataset.objects.filter(id=response.data["id"]).first()
-
         # Assign dataset object permission to profile group
         assign_perms_to_group(profile.name, dataset_obj, False)
 
         # Get and create dataset file if user has sent file while creating dataset
         file_obj = request.data.get('file', None)
         if file_obj:
-            datasetfile_obj = models.DatasetFile.objects.create(
-                name=dataset_obj.name,
-                document=file_obj,
-                dataset_id=dataset_obj.id
+            try:
+                datasetfile_obj = models.DatasetFile.objects.create(
+                    name=dataset_obj.name,
+                    document=file_obj,
+                    dataset_id=dataset_obj.id
+                )
+            except Exception as err:
+                return Response({
+                    'detail': ', '.join(err.messages)
+                }, status=status.HTTP_400_BAD_REQUEST
             )
 
             task = async_task(
@@ -90,11 +95,18 @@ def dataset_upload(request, dataset_id):
         )
     response = serializers.DatasetDetailViewSerializer(dataset).data
 
-    datasetfile_obj = models.DatasetFile.objects.create(
-        name=dataset.name,
-        document=file_obj,
-        dataset_id=dataset.id
+    try:
+        datasetfile_obj = models.DatasetFile.objects.create(
+            name=dataset.name,
+            document=file_obj,
+            dataset_id=dataset.id
+        )
+    except Exception as err:
+        return Response({
+            'detail': ', '.join(err.messages)
+        }, status=status.HTTP_400_BAD_REQUEST
     )
+
     update_indicators = request.POST.get('update', False)
     overwrite = request.POST.get('overwrite', False)
 

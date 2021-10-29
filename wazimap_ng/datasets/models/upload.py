@@ -17,6 +17,7 @@ from .dataset import Dataset
 
 from wazimap_ng import utils
 from wazimap_ng.general.models import BaseModel
+from wazimap_ng.config.common import QUANTITATIVE
 
 
 max_filesize = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
@@ -50,6 +51,10 @@ class DatasetFile(BaseModel):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
     def clean(self):
         """
         Cleaner for Document model.
@@ -60,9 +65,9 @@ class DatasetFile(BaseModel):
         try:
             if "xls" in document_name or "xlsx" in document_name:
                 book = xlrd.open_workbook(file_contents=self.document.read())
-                headers = pd.read_excel(book, nrows=1, dtype=str).columns.str.lower()
+                headers = pd.read_excel(book, nrows=1, dtype=str).columns.str.lower().str.strip()
             elif "csv" in document_name:
-                headers = pd.read_csv(BytesIO(self.document.read()), nrows=1, dtype=str).columns.str.lower()
+                headers = pd.read_csv(BytesIO(self.document.read()), nrows=1, dtype=str).columns.str.lower().str.strip()
         except pd.errors.ParserError as e:
             raise ValidationError(
                 "Not able to parse passed file. Error while reading file: %s" % str(e)
@@ -72,7 +77,19 @@ class DatasetFile(BaseModel):
                 "File seems to be empty. Error while reading file: %s" % str(e)
             )
 
-        required_headers = ["geography", "count"]
+        required_headers = ["geography"]
+        try:
+            dataset = Dataset.objects.get(id=self.dataset_id)
+        except Dataset.DoesNotExist:
+            # Fail safe
+            raise ValidationError(
+                "Datset not found while uploading dataset file"
+            )
+
+        if dataset.content_type == QUANTITATIVE:
+            required_headers.append("count")
+        else:
+            required_headers.append("content")
 
         for required_header in required_headers:
             if required_header not in headers:

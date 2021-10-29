@@ -75,8 +75,8 @@ class DatasetFileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.DatasetFile
 
+    name = factory.Sequence(lambda n: 'dataset_file_%d' % n)
     document = factory.django.FileField()
-
 
 class DatasetDataFactory(factory.django.DjangoModelFactory):
     class Meta:
