@@ -176,7 +176,7 @@ class TestDatasetUploadView(APITestCase):
 
         assert response.status_code == 400
         assert (
-            response.data["detail"] == 
+            response.data["detail"] ==
             "Invalid File passed. We were not able to find Required header : Geography "
         )
 
@@ -194,7 +194,7 @@ class TestDatasetUploadView(APITestCase):
 
         assert response.status_code == 400
         assert (
-            response.data["detail"] == 
+            response.data["detail"] ==
             "Invalid File passed. We were not able to find Required header : Count "
         )
 
@@ -471,3 +471,45 @@ class TestDatasetUploadView(APITestCase):
             {'contents': 'This is an example'},
         ]
         assert self.qualitative_dataset.datasetdata_set.count() == 1
+
+
+class TestVersionData(APITestCase):
+    def setUp(self):
+        self.version1 = VersionFactory()
+        self.version2 = VersionFactory()
+        hierarchy = GeographyHierarchyFactory(
+            configuration={
+                "default_version": self.version1.name,
+            }
+        )
+        self.profile = ProfileFactory(geography_hierarchy=hierarchy)
+
+    def test_version_list_view(self):
+        response = self.get(
+            'versions', extra={'format': 'json'}
+        )
+
+        assert response.status_code == 200
+        data = response.data
+        assert data["count"] == 2
+
+    def test_version_detail_view(self):
+        response = self.get(
+            'version', pk=self.version1.id,
+            extra={'format': 'json'}
+        )
+
+        assert response.status_code == 200
+        data = response.data
+        assert data["id"] == self.version1.id
+
+    def test_version_by_profile_view(self):
+        response = self.get(
+            'versions-by-profile', profile_id=self.profile.id,
+            extra={'format': 'json'}
+        )
+
+        assert response.status_code == 200
+        data = response.data
+        assert data["count"] == 1
+        assert data["results"][0]["id"] == self.version1.id
