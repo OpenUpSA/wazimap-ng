@@ -1,49 +1,48 @@
 import csv
 import codecs
-from io import StringIO
+from io import BytesIO
 
 import pytest
-
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv
 from tests.datasets.factories import DatasetFactory, GeographyFactory, GeographyHierarchyFactory, DatasetFileFactory, VersionFactory
 
+def generate_file(data, header, encoding="utf8"):
+    buffer = BytesIO()
+    StreamWriter = codecs.getwriter(encoding)
+    text_buffer = StreamWriter(buffer)
 
-def create_csv_file(data):
-    csvfile = StringIO()
-    csv.writer(csvfile).writerows(data)
-    return csvfile.getvalue()
+    writer = csv.writer(text_buffer)
+    writer.writerow(header)
+    writer.writerows(data)
 
-def create_datasetfile(file_data, encoding, header, dataset_id):
-    file_data = [header] + file_data
-    content = create_csv_file(file_data).encode("utf-8")
-    csv_file = SimpleUploadedFile(
-        name="test.csv", content=content, content_type='text/csv'
-    )
-    return DatasetFileFactory(
-        document=csv_file, dataset_id=dataset_id
-    )
+    buffer.seek(0)
+    return buffer
+
+
+def create_datasetfile(csv_data, encoding, header):
+    buffer = generate_file(csv_data, header, encoding)
+    return DatasetFileFactory(document__data=buffer.read())
+
 
 good_data = [
-    ["GEOCODE_1", "F1_value_1", "F2_value_1", 111],
-    ["GEOCODE_2", "F1_value_2", "F2_value_2", 222],
+    ("GEOCODE_1", "F1_value_1", "F2_value_1", 111),
+    ("GEOCODE_2", "F1_value_2", "F2_value_2", 222),
 ]
 
 data_with_different_case = [
-    ["GEOCODE_1", "f1_VALue_1", "F2_value_1", 111],
-    ["GEOCODE_2", "F1_value_2", "f2_valUE_2", 222],
+    ("GEOCODE_1", "f1_VALue_1", "F2_value_1", 111),
+    ("GEOCODE_2", "F1_value_2", "f2_valUE_2", 222),
 ]
 
 data_with_different_encodings = [
-    ["GEOCODE_1", "‘F1_value_1", "F2_value_1’", 111],
-    ["GEOCODE_2", "€ŠF1_value_2", "F2_value_2®®", 222],
+    ("GEOCODE_1", "‘F1_value_1", "F2_value_1’", 111),
+    ("GEOCODE_2", "€ŠF1_value_2", "F2_value_2®®", 222),
 ]
 
 good_header = ["Geography", "field1", "field2", "count"]
 
 to_be_fixed_header = ["Geography", "field1", "field2", "count "]
-
 
 @pytest.fixture(params=[(good_data, good_header, "utf8"), (good_data, to_be_fixed_header, "utf8"), (data_with_different_case, good_header, "utf8"), (data_with_different_encodings, good_header, "Windows-1252")])
 def data(request):
@@ -63,9 +62,9 @@ def qualitative_data():
 
 @pytest.mark.django_db
 class TestUploadFile:
-    def test_process_csv(self, dataset, data, geographies, version):
+    def test_process_csv(self, dataset, data, geographies):
         csv_data, header, encoding = data
-        datasetfile = create_datasetfile(csv_data, encoding, header, dataset.id)
+        datasetfile = create_datasetfile(csv_data, encoding, header)
 
         process_csv(dataset, datasetfile.document.open("rb"))
         datasetdata = dataset.datasetdata_set.all()
@@ -80,18 +79,18 @@ class TestUploadFile:
 
 @pytest.mark.django_db
 class TestQualitativeFileUpload:
-    def test_process_csv(self, dataset, qualitative_data, geographies, version):
+    def test_process_csv(self, dataset, qualitative_data, geographies):
         csv_data, header, encoding = qualitative_data
+        datasetfile = create_datasetfile(csv_data, encoding, header)
 
         # Check if quantative data can be uploaded without count
         assert dataset.content_type == "quantitative"
-        with pytest.raises(Exception) as e_info:
-            datasetfile = create_datasetfile(csv_data, encoding, header, dataset.id)
-        assert "Count" in e_info.value.messages[0]
+        with pytest.raises(KeyError) as e_info:
+            process_csv(dataset, datasetfile.document.open("rb"))
+        assert str(e_info.value) == "'count'"
 
         # Change content type to qualitative
-        dataset2 = DatasetFactory(profile=dataset.profile, content_type="qualitative", version=version)
-        datasetfile = create_datasetfile(csv_data, encoding, header, dataset2.id)
+        dataset2 = DatasetFactory(profile=dataset.profile, content_type="qualitative", version=VersionFactory())
         process_csv(dataset2, datasetfile.document.open("rb"))
         datasetdata = dataset2.datasetdata_set.all()
 
