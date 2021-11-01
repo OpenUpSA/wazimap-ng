@@ -54,7 +54,7 @@ qualitative_content = [
     ("GEOCODE_1", "F1_value_1"),
     ("GEOCODE_2", "F1_value_2"),
 ]
-qualitative_data_header = ["Geography", "Contents"]
+qualitative_data_header = ["Geography", "content"]
 
 @pytest.fixture
 def qualitative_data():
@@ -97,4 +97,4 @@ class TestQualitativeFileUpload:
 
         for dd, ed in zip(datasetdata, csv_data):
             assert dd.geography.code == ed[0]
-            assert dd.data["contents"] == ed[1]
+            assert dd.data["content"] == ed[1]

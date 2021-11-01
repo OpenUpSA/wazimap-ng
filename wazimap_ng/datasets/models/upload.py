@@ -89,7 +89,7 @@ class DatasetFile(BaseModel):
         if dataset.content_type == QUANTITATIVE:
             required_headers.append("count")
         else:
-            required_headers.append("contents")
+            required_headers.append("content")
 
         for required_header in required_headers:
             if required_header not in headers:

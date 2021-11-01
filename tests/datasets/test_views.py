@@ -70,7 +70,7 @@ class TestDatasetUploadView(APITestCase):
         )
 
         qualitative_content = [
-            ["Geography", "Contents"],
+            ["Geography", "content"],
             ["ZA", "This is an example"]
         ]
 
@@ -80,12 +80,12 @@ class TestDatasetUploadView(APITestCase):
         )
 
         self.qualitative_dataset = DatasetFactory(
-            name="dataset-2", profile=self.profile, groups=["Contents"],
+            name="dataset-2", profile=self.profile, groups=["content"],
             version=self.version, content_type="qualitative"
         )
         DatasetDataFactory(
             dataset=self.qualitative_dataset, geography=geography,
-            data={'contents': 'Example'}
+            data={'content': 'Example'}
         )
 
         # Indicator specific data
@@ -94,7 +94,7 @@ class TestDatasetUploadView(APITestCase):
         )
         IndicatorDataFactory(
             indicator=self.qualitative_variable, geography=geography,
-            data=[{'contents': 'Example'}]
+            data=[{'content': 'Example'}]
         )
 
 
@@ -411,7 +411,7 @@ class TestDatasetUploadView(APITestCase):
         assert response.status_code == 400
         assert (
             response.data["detail"] ==
-            "Invalid File passed. We were not able to find Required header : Contents "
+            "Invalid File passed. We were not able to find Required header : Content "
         )
 
     def test_request_for_adding_qualitative_dataset(self):
@@ -444,7 +444,7 @@ class TestDatasetUploadView(APITestCase):
         dataset = Dataset.objects.get(id=response.data["id"])
         assert DatasetData.objects.filter(dataset=dataset).count() == 1
         data = DatasetData.objects.filter(dataset=dataset).first()
-        assert data.data == {'contents': 'This is an example'}
+        assert data.data == {'content': 'This is an example'}
 
     def test_updating_qualitative_dataset(self):
         user1 = self.make_user("user1")
@@ -468,6 +468,6 @@ class TestDatasetUploadView(APITestCase):
 
         data = self.qualitative_variable.indicatordata_set.first()
         assert data.data == [
-            {'contents': 'This is an example'},
+            {'content': 'This is an example'},
         ]
         assert self.qualitative_dataset.datasetdata_set.count() == 1
