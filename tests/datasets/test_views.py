@@ -69,38 +69,11 @@ class TestDatasetUploadView(APITestCase):
                 name="test.csv", content=content, content_type='text/csv'
         )
 
-        qualitative_content = [
-            ["Geography", "content"],
-            ["ZA", "This is an example"]
-        ]
-
-        content = self.create_csv_file(qualitative_content).encode("utf-8")
-        self.qualitative_csv_file = SimpleUploadedFile(
-            name="qualitative.csv", content=content, content_type='text/csv'
-        )
-
-        self.qualitative_dataset = DatasetFactory(
-            name="dataset-2", profile=self.profile, groups=["content"],
-            version=self.version, content_type="qualitative"
-        )
-        DatasetDataFactory(
-            dataset=self.qualitative_dataset, geography=geography,
-            data={'content': 'Example'}
-        )
-
-        # Indicator specific data
-        self.qualitative_variable = IndicatorFactory(
-            dataset=self.qualitative_dataset, name="test-indicator"
-        )
-        IndicatorDataFactory(
-            indicator=self.qualitative_variable, geography=geography,
-            data=[{'content': 'Example'}]
-        )
-
 
     def test_anonymous_user_request_for_new_dataset(self):
         response = self.post("dataset", data={
             "file": self.csv_file,
+            "geography_hierarchy": self.geography_hierarchy.id,
             "profile": self.profile.id,
             "name": "dataset-2",
             "version": self.version.id
@@ -130,6 +103,7 @@ class TestDatasetUploadView(APITestCase):
 
         response = client.post(url, data={
             "file": self.csv_file,
+            "geography_hierarchy": self.geography_hierarchy.id,
             "profile": self.profile.id,
             "name": "dataset-2",
             "version": self.version.id
@@ -154,67 +128,6 @@ class TestDatasetUploadView(APITestCase):
         assert response.status_code == 403
         assert response.data["detail"] == "You do not have permission to upload to this profile"
 
-    def test_invalid_file_for_new_dataset(self):
-        user1 = self.make_user("user1")
-        self.group.user_set.add(user1)
-        token, created = Token.objects.get_or_create(user=user1)
-        client = APIClient()
-        client.force_authenticate(user=user1, token=token)
-        url = reverse('dataset')
-
-        data = [["test"], ["x1"]]
-        content = self.create_csv_file(data).encode("utf-8")
-        csv_file = SimpleUploadedFile(
-                name="invalid.csv", content=content, content_type='text/csv'
-        )
-        response = client.post(url, data={
-            "file": csv_file,
-            "profile": self.profile.id,
-            "name": "dataset-2",
-            "version": self.version.id
-        }, format='multipart')
-
-        assert response.status_code == 400
-        assert (
-            response.data["detail"] == 
-            "Invalid File passed. We were not able to find Required header : Geography "
-        )
-
-        data = [["Geography", "test"], ["ZA", "x1"]]
-        content = self.create_csv_file(data).encode("utf-8")
-        csv_file = SimpleUploadedFile(
-                name="invalid.csv", content=content, content_type='text/csv'
-        )
-        response = client.post(url, data={
-            "file": csv_file,
-            "profile": self.profile.id,
-            "name": "dataset-2",
-            "version": self.version.id
-        }, format='multipart')
-
-        assert response.status_code == 400
-        assert (
-            response.data["detail"] == 
-            "Invalid File passed. We were not able to find Required header : Count "
-        )
-
-    def test_validation_for_creating_dataset(self):
-
-        user1 = self.make_user("user1")
-        self.group.user_set.add(user1)
-        token, created = Token.objects.get_or_create(user=user1)
-        client = APIClient()
-        client.force_authenticate(user=user1, token=token)
-        url = reverse('dataset')
-
-        response = client.post(url, data={
-            "file": self.csv_file,
-            "profile": self.profile.id,
-        }, format='multipart')
-
-        assert response.status_code == 400
-        assert str(response.data["name"][0]) == "This field is required."
-        assert str(response.data["version"][0]) == "This field is required."
 
     def test_successful_request_for_new_dataset(self):
         user1 = self.make_user("user1")
@@ -224,23 +137,24 @@ class TestDatasetUploadView(APITestCase):
         client.force_authenticate(user=user1, token=token)
         url = reverse('dataset')
 
-        assert Dataset.objects.filter(name="dataset-3").exists() == False
+        assert Dataset.objects.filter(name="dataset-2").exists() == False
 
         response = client.post(url, data={
             "file": self.csv_file,
+            "geography_hierarchy": self.geography_hierarchy.id,
             "profile": self.profile.id,
-            "name": "dataset-3",
+            "name": "dataset-2",
             "version": self.version.id
         }, format='multipart')
 
         assert response.status_code == 201
-        assert response.data["name"] == "dataset-3"
-        assert Dataset.objects.filter(name="dataset-3").exists() == True
+        assert response.data["name"] == "dataset-2"
+        assert Dataset.objects.filter(name="dataset-2").exists() == True
         self.assertTrue("upload_task_id" in response.data)
 
         task = fetch(response.data["upload_task_id"])
         assert task.success == True
-        assert task.name == "Uploading data: dataset-3"
+        assert task.name == "Uploading data: dataset-2"
 
         dataset = Dataset.objects.get(id=response.data["id"])
         assert DatasetData.objects.filter(dataset=dataset).count() == 1
@@ -338,6 +252,7 @@ class TestDatasetUploadView(APITestCase):
         ]
         assert self.dataset.datasetdata_set.count() == 2
 
+
     def test_updating_dataset_with_indicator_update_and_overwrite(self):
 
         user1 = self.make_user("user1")
@@ -367,107 +282,3 @@ class TestDatasetUploadView(APITestCase):
         data = self.variable.indicatordata_set.all().first()
         assert data.data == [{'test': 'x1', 'count': '11'}]
         assert self.dataset.datasetdata_set.count() == 1
-
-    def test_invalid_file_for_qualitative_dataset_upload(self):
-        user1 = self.make_user("user1")
-        self.group.user_set.add(user1)
-        token, created = Token.objects.get_or_create(user=user1)
-        client = APIClient()
-        client.force_authenticate(user=user1, token=token)
-        url = reverse('dataset')
-
-        data = [["test"], ["x1"]]
-        content = self.create_csv_file(data).encode("utf-8")
-        csv_file = SimpleUploadedFile(
-                name="invalid.csv", content=content, content_type='text/csv'
-        )
-        response = client.post(url, data={
-            "file": csv_file,
-            "profile": self.profile.id,
-            "name": "dataset-2",
-            "version": self.version.id,
-            "content_type": "qualitative"
-        }, format='multipart')
-
-        assert response.status_code == 400
-        assert (
-            response.data["detail"] ==
-            "Invalid File passed. We were not able to find Required header : Geography "
-        )
-
-        data = [["Geography", "test"], ["ZA", "x1"]]
-        content = self.create_csv_file(data).encode("utf-8")
-        csv_file = SimpleUploadedFile(
-                name="invalid.csv", content=content, content_type='text/csv'
-        )
-        response = client.post(url, data={
-            "file": csv_file,
-            "profile": self.profile.id,
-            "name": "dataset-2",
-            "version": self.version.id,
-            "content_type": "qualitative"
-        }, format='multipart')
-
-        assert response.status_code == 400
-        assert (
-            response.data["detail"] ==
-            "Invalid File passed. We were not able to find Required header : Content "
-        )
-
-    def test_request_for_adding_qualitative_dataset(self):
-        user1 = self.make_user("user1")
-        self.group.user_set.add(user1)
-        token, created = Token.objects.get_or_create(user=user1)
-        client = APIClient()
-        client.force_authenticate(user=user1, token=token)
-        url = reverse('dataset')
-
-        assert Dataset.objects.filter(name="dataset-3").exists() == False
-
-        response = client.post(url, data={
-            "file": self.qualitative_csv_file,
-            "profile": self.profile.id,
-            "name": "dataset-3",
-            "version": self.version.id,
-            "content_type": "qualitative"
-        }, format='multipart')
-
-        assert response.status_code == 201
-        assert response.data["name"] == "dataset-3"
-        assert Dataset.objects.filter(name="dataset-3").exists() == True
-        self.assertTrue("upload_task_id" in response.data)
-
-        task = fetch(response.data["upload_task_id"])
-        assert task.success == True
-        assert task.name == "Uploading data: dataset-3"
-
-        dataset = Dataset.objects.get(id=response.data["id"])
-        assert DatasetData.objects.filter(dataset=dataset).count() == 1
-        data = DatasetData.objects.filter(dataset=dataset).first()
-        assert data.data == {'content': 'This is an example'}
-
-    def test_updating_qualitative_dataset(self):
-        user1 = self.make_user("user1")
-        self.group.user_set.add(user1)
-        token, created = Token.objects.get_or_create(user=user1)
-        client = APIClient()
-        client.force_authenticate(user=user1, token=token)
-
-        url = reverse('dataset-upload', args=(self.qualitative_dataset.id,))
-        response = client.post(url, data={
-            "file": self.qualitative_csv_file,
-            "update": True,
-            "overwrite": True
-        }, format='multipart')
-        assert response.status_code == 200
-        self.assertTrue("upload_task_id" in response.data)
-
-        task = fetch(response.data["upload_task_id"])
-        assert task.success == True
-        assert self.qualitative_dataset.id == response.data["id"]
-
-        data = self.qualitative_variable.indicatordata_set.first()
-        assert data.data == [
-            {'content': 'This is an example'},
-        ]
-        assert self.qualitative_dataset.datasetdata_set.count() == 1

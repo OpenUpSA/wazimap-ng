@@ -17,7 +17,6 @@ from .dataset import Dataset
 
 from wazimap_ng import utils
 from wazimap_ng.general.models import BaseModel
-from wazimap_ng.config.common import QUANTITATIVE
 
 
 max_filesize = getattr(settings, "FILE_SIZE_LIMIT", 1024 * 1024 * 20)
@@ -51,10 +50,6 @@ class DatasetFile(BaseModel):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        return super().save(*args, **kwargs)
-
     def clean(self):
         """
         Cleaner for Document model.
@@ -77,19 +72,7 @@ class DatasetFile(BaseModel):
                 "File seems to be empty. Error while reading file: %s" % str(e)
             )
 
-        required_headers = ["geography"]
-        try:
-            dataset = Dataset.objects.get(id=self.dataset_id)
-        except Dataset.DoesNotExist:
-            # Fail safe
-            raise ValidationError(
-                "Datset not found while uploading dataset file"
-            )
-
-        if dataset.content_type == QUANTITATIVE:
-            required_headers.append("count")
-        else:
-            required_headers.append("content")
+        required_headers = ["geography", "count"]
 
         for required_header in required_headers:
             if required_header not in headers:
