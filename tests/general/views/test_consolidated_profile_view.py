@@ -500,6 +500,7 @@ class TestParentLayersData(ConsolidatedProfileViewBase):
         # Add sibling but with same version
         self.create_boundary(self.dc1, version1)
 
+        self.tearDown()
         response = self.get(
             'all-details',
             profile_id=profile.pk,
@@ -517,8 +518,8 @@ class TestParentLayersData(ConsolidatedProfileViewBase):
         assert parent_layers[0]["features"][0]["properties"]["code"] == self.geo1.code
         assert parent_layers[0]["features"][1]["properties"]["code"] == self.geo2.code
         assert len(parent_layers[1]["features"]) == 2
-        assert parent_layers[1]["features"][0]["properties"]["code"] == geography.code
-        assert parent_layers[1]["features"][1]["properties"]["code"] == dc1.code
+        assert parent_layers[1]["features"][0]["properties"]["code"] == self.dc1.code
+        assert parent_layers[1]["features"][1]["properties"]["code"] == geography.code
 
 class TestChildrenData(ConsolidatedProfileViewBase):
 

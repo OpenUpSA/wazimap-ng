@@ -1,4 +1,5 @@
 from test_plus import APITestCase
+from django.core.cache import cache
 
 from tests.profile.factories import (
     ProfileFactory, ProfileHighlightFactory,
@@ -39,6 +40,9 @@ class ConsolidatedProfileViewBase(APITestCase):
         self.profile = ProfileFactory(geography_hierarchy=self.hierarchy)
         self.category = CategoryFactory(profile=self.profile)
         self.location = LocationFactory(category=self.category)
+
+    def tearDown(self):
+        cache.clear()
 
     def create_boundary(self, geography, version):
         return GeographyBoundaryFactory(
