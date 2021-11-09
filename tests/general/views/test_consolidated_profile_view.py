@@ -498,8 +498,7 @@ class TestParentLayersData(ConsolidatedProfileViewBase):
         # Add boundary for version & parent sibling
         self.create_boundary(self.geo2, version1)
         # Add sibling but with same version
-        dc1 = self.geo1.add_child(code="DC1", level="muni")
-        self.create_boundary(dc1, version1)
+        self.create_boundary(self.dc1, version1)
 
         response = self.get(
             'all-details',
@@ -562,6 +561,5 @@ class TestChildrenData(ConsolidatedProfileViewBase):
 
         # assert children
         assert "muni" in response.data["children"]
-        print(response.data["children"]["muni"]["features"])
         assert len(response.data["children"]["muni"]["features"]) == 1
         assert response.data["children"]["muni"]["features"][0]["properties"]["code"] == geography.code

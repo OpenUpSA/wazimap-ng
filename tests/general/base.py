@@ -28,6 +28,7 @@ class ConsolidatedProfileViewBase(APITestCase):
         self.root = Geography.add_root(code="ZA", level="country")
         self.geo1 = self.root.add_child(code="WC", level="province")
         self.geo2 = self.root.add_child(code="EC", level="province")
+        self.dc1 = self.geo1.add_child(code="DC1", level="muni")
         self.create_boundary(self.root, self.version)
         self.create_boundary(self.geo1, self.version)
         self.create_boundary(self.geo2, self.version)
