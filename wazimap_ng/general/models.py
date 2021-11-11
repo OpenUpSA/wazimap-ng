@@ -10,7 +10,10 @@ class BaseModel(models.Model):
         abstract = True
 
 class SimpleHistory(models.Model):
-    history = HistoricalRecords(inherit=True)
+    history = HistoricalRecords(
+        inherit=True,
+        history_change_reason_field=models.TextField(null=True)
+    )
 
     class Meta:
         abstract = True

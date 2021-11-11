@@ -15,6 +15,7 @@ from django_q.tasks import async_task
 
 from wazimap_ng.general.services import permissions
 from simple_history.admin import SimpleHistoryAdmin
+from wazimap_ng.datasets.models import Dataset
 
 
 class HistoryAdmin(SimpleHistoryAdmin):
@@ -26,11 +27,13 @@ class HistoryAdmin(SimpleHistoryAdmin):
         new_fieldsets.append(['Change reason', { 'fields': fields }])
         return new_fieldsets
 
+    def get_changed_fields(self, obj, form):
+        return form.changed_data
+
     def save_model(self, request, obj, form, change):
         if change:
             change_reason = form.cleaned_data.get("change_reason")
-            fields = [f.name for f in obj._meta.get_fields()]
-            changed_fields = [f for f in form.changed_data if f in fields]
+            changed_fields = self.get_changed_fields(obj, form)
             obj._change_reason = json.dumps({
                 "reason": change_reason or "Reason not provided",
                 "changed_fields": changed_fields,
