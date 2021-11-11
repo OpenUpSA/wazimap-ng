@@ -19,6 +19,7 @@ from wazimap_ng.datasets.models import Dataset
 
 
 class HistoryAdmin(SimpleHistoryAdmin):
+    exclude_change_fields = ["change_reason"]
 
     def get_fieldsets(self, request, obj=None):
         fieldsets = super().get_fieldsets(request, obj)
@@ -28,7 +29,10 @@ class HistoryAdmin(SimpleHistoryAdmin):
         return new_fieldsets
 
     def get_changed_fields(self, obj, form):
-        return form.changed_data
+        fields = list(
+            set(form.changed_data) - set(self.exclude_change_fields)
+        )
+        return fields
 
     def save_model(self, request, obj, form, change):
         if change:

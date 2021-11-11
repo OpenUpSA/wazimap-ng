@@ -17,7 +17,7 @@ class TestDatasetAdminHistory:
         assert bool("change_reason" in fields) == True
 
     def test_history_for_dataset_creation_from_admin_without_reason(
-        self, client, superuser, profile
+        self, client, superuser, profile, version
     ):
         Dataset.objects.count() == 0
         client.force_login(user=superuser)
@@ -25,7 +25,7 @@ class TestDatasetAdminHistory:
         data={
             'name': 'Test Dataset',
             'profile': profile.id,
-            'geography_hierarchy': profile.geography_hierarchy_id,
+            'version': version.id,
             'permission_type': 'public',
             'content_type': 'quantitative',
             'metadata-TOTAL_FORMS': 0,
@@ -47,7 +47,7 @@ class TestDatasetAdminHistory:
         assert history.history_type == "+"
 
     def test_history_for_dataset_creation_from_admin_with_reason(
-        self, client, superuser, profile
+        self, client, superuser, profile, version
     ):
         Dataset.objects.count() == 0
         client.force_login(user=superuser)
@@ -55,7 +55,7 @@ class TestDatasetAdminHistory:
         data={
             'name': 'Test Dataset',
             'profile': profile.id,
-            'geography_hierarchy': profile.geography_hierarchy_id,
+            'version': version.id,
             'permission_type': 'public',
             'content_type': 'quantitative',
             'change_reason': 'New Object',
@@ -79,7 +79,7 @@ class TestDatasetAdminHistory:
 
 
     def test_history_for_dataset_edit_from_admin(
-        self, client, superuser, dataset
+        self, client, superuser, dataset, version
     ):
 
         client.force_login(user=superuser)
@@ -87,7 +87,7 @@ class TestDatasetAdminHistory:
         data={
             'name': 'Test Dataset',
             'profile': dataset.profile_id,
-            'geography_hierarchy': dataset.geography_hierarchy_id,
+            'version': version.id,
             'permission_type': dataset.permission_type,
             'content_type': dataset.content_type,
             'change_reason': 'Changed Name',

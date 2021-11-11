@@ -36,5 +36,8 @@ class TestIndicatorAdminHistory:
         assert universe.history.all().count() == 2
         history = universe.history.first()
         assert history.history_user_id == superuser.id
-        assert history.history_change_reason == '{"reason": "Changed Label", "changed_fields": ["label", "filters"]}'
+        changes = json.loads(history.history_change_reason)
+        assert changes["reason"] == "Changed Label"
+        assert "filters" in changes["changed_fields"]
+        assert "label" in changes["changed_fields"]
         assert history.history_type == "~"
