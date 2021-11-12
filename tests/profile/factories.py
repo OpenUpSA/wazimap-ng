@@ -3,6 +3,8 @@ import factory
 from tests.datasets import factories as datasets_factoryboy
 from wazimap_ng.profile import models
 
+from django.core.files.base import ContentFile
+
 
 class ProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -10,6 +12,20 @@ class ProfileFactory(factory.django.DjangoModelFactory):
 
     name = "Profile"
     geography_hierarchy = factory.SubFactory(datasets_factoryboy.GeographyHierarchyFactory)
+
+
+class LogoFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Logo
+
+    profile = factory.SubFactory(ProfileFactory)
+    logo = factory.LazyAttribute(
+        lambda _: ContentFile(
+            factory.django.ImageField()._make_data(
+                {'width': 1024, 'height': 768}
+            ), 'example.jpg'
+        )
+    )
 
 
 class IndicatorCategoryFactory(factory.django.DjangoModelFactory):

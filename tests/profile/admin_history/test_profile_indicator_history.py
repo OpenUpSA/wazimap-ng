@@ -1,3 +1,4 @@
+import json
 import pytest
 
 from django.contrib.admin.sites import AdminSite
@@ -40,5 +41,8 @@ class TestProfileIndicatorAdminHistory:
         assert profile_indicator.history.all().count() == 2
         history = profile_indicator.history.first()
         assert history.history_user_id == superuser.id
-        assert history.history_change_reason == '{"reason": "Changed Label", "changed_fields": ["label", "chart_configuration"]}'
+        changed_data = json.loads(history.history_change_reason)
+        assert changed_data["reason"] == "Changed Label" 
+        assert "label" in changed_data["changed_fields"]
+        assert "chart_configuration"in changed_data["changed_fields"]
         assert history.history_type == "~"
