@@ -18,7 +18,6 @@ class TestProfileIndicatorAdmin:
         ma = ProfileIndicatorAdmin(ProfileIndicator, AdminSite())
         base_fields = list(ma.get_form(mocked_request, profile_indicator).base_fields)
 
-        print(base_fields)
         assert base_fields == [
             'indicator', 'content_type', 'label', 'subcategory', 'description',
             'choropleth_method', 'chart_configuration', 'change_reason'
