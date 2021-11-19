@@ -475,7 +475,7 @@ class TestDatasetUploadView(APITestCase):
 
 class TestVersionData(APITestCase):
     def setUp(self):
-        self.version1 = VersionFactory()
+        self.version1 = VersionFactory(name="test")
         self.version2 = VersionFactory()
         hierarchy = GeographyHierarchyFactory(
             configuration={
@@ -502,6 +502,7 @@ class TestVersionData(APITestCase):
         assert response.status_code == 200
         data = response.data
         assert data["id"] == self.version1.id
+        assert data["name"] == "test"
 
     def test_version_by_profile_view(self):
         response = self.get(
@@ -513,3 +514,4 @@ class TestVersionData(APITestCase):
         data = response.data
         assert data["count"] == 1
         assert data["results"][0]["id"] == self.version1.id
+        assert data["results"][0]["name"] == "test"
