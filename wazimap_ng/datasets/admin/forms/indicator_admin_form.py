@@ -1,7 +1,8 @@
 from django import forms
 from ... import models
+from wazimap_ng.general.admin.forms import HistoryAdminForm
 
-class IndicatorAdminForm(forms.ModelForm):
+class IndicatorAdminForm(HistoryAdminForm):
     groups = forms.ChoiceField(required=True)
     class Meta:
         model = models.Indicator

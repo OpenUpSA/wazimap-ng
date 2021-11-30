@@ -5,7 +5,7 @@ from ... import models
 from ..forms import ProfileKeyMetricsForm
 from wazimap_ng.general.widgets import customTitledFilter, description
 from wazimap_ng.datasets.models import Indicator, Dataset
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin.admin_base import BaseAdminModel, HistoryAdmin
 from wazimap_ng.general.admin import filters
 
 
@@ -14,7 +14,7 @@ class CategoryMetricsFilter(filters.CategoryFilter):
     parameter_name = 'subcategory__category__id'
 
 @admin.register(models.ProfileKeyMetrics)
-class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel):
+class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
 
     exclude_common_list_display = True
     list_display = (

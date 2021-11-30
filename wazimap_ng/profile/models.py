@@ -4,12 +4,12 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from tinymce.models import HTMLField
 
 from wazimap_ng.datasets.models import Indicator, GeographyHierarchy
-from wazimap_ng.general.models import BaseModel
+from wazimap_ng.general.models import BaseModel, SimpleHistory
 from wazimap_ng.config.common import (
     DENOMINATOR_CHOICES, PERMISSION_TYPES, PI_CONTENT_TYPE
 )
 
-class Profile(BaseModel):
+class Profile(BaseModel, SimpleHistory):
     name = models.CharField(max_length=50)
     indicators = models.ManyToManyField(Indicator, through="profile.ProfileIndicator", verbose_name="variables")
     geography_hierarchy = models.ForeignKey(GeographyHierarchy, on_delete=models.PROTECT, null=False)
@@ -23,7 +23,7 @@ class Profile(BaseModel):
     class Meta:
         ordering = ["id"]
 
-class Logo(BaseModel):
+class Logo(BaseModel, SimpleHistory):
     profile = models.OneToOneField(Profile, null=False, on_delete=models.CASCADE)
     logo = models.ImageField(upload_to="logos/")
     url = models.CharField(max_length=255, blank=True, null=True)
@@ -40,7 +40,7 @@ class ChoroplethMethod(BaseModel):
 
 
 
-class IndicatorCategory(BaseModel):
+class IndicatorCategory(BaseModel, SimpleHistory):
     name = models.CharField(max_length=255)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     description = HTMLField(blank=True)
@@ -55,7 +55,7 @@ class IndicatorCategory(BaseModel):
         ordering = ["order"]
 
 
-class IndicatorSubcategory(BaseModel):
+class IndicatorSubcategory(BaseModel, SimpleHistory):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(IndicatorCategory, on_delete=models.CASCADE)
     description = HTMLField(blank=True)
@@ -68,7 +68,7 @@ class IndicatorSubcategory(BaseModel):
         verbose_name_plural = "Indicator Subcategories"
         ordering = ["order"]
 
-class ProfileKeyMetrics(BaseModel):
+class ProfileKeyMetrics(BaseModel, SimpleHistory):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     variable = models.ForeignKey(Indicator, on_delete=models.CASCADE, )
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
@@ -89,7 +89,7 @@ class ProfileKeyMetrics(BaseModel):
         ordering = ["order"]
         verbose_name_plural = "Profile key metrics"
 
-class ProfileHighlight(BaseModel):
+class ProfileHighlight(BaseModel, SimpleHistory):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, help_text="Indicator on which this highlight is based on.", verbose_name="variable")
     # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.
@@ -105,7 +105,7 @@ class ProfileHighlight(BaseModel):
         ordering = ["order"]
 
 
-class ProfileIndicator(BaseModel):
+class ProfileIndicator(BaseModel, SimpleHistory):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     indicator = models.ForeignKey(
         Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.", verbose_name="variable"

@@ -1,3 +1,5 @@
+import json
+
 from django.contrib import admin, messages
 from django.contrib.admin.options import DisallowedModelAdminToField
 from django.contrib.admin.utils import unquote
@@ -12,6 +14,42 @@ from django.template.loader import render_to_string
 from django_q.tasks import async_task
 
 from wazimap_ng.general.services import permissions
+from simple_history.admin import SimpleHistoryAdmin
+from wazimap_ng.datasets.models import Dataset
+
+
+class HistoryAdmin(SimpleHistoryAdmin):
+    exclude_change_fields = ["change_reason"]
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        new_fieldsets = list(fieldsets)
+        fields = ['change_reason']
+        new_fieldsets.append(['Change reason', { 'fields': fields }])
+        return new_fieldsets
+
+    def get_changed_fields(self, obj, form):
+        fields = list(
+            set(form.changed_data) - set(self.exclude_change_fields)
+        )
+        return fields
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            change_reason = form.cleaned_data.get("change_reason")
+            changed_fields = self.get_changed_fields(obj, form)
+            obj._change_reason = json.dumps({
+                "reason": change_reason or "Reason not provided",
+                "changed_fields": changed_fields,
+            })
+        else:
+            change_reason = form.cleaned_data.get("change_reason", None)
+            if change_reason:
+                obj._change_reason = json.dumps({
+                    "reason": change_reason,
+                })
+
+        super().save_model(request, obj, form, change)
 
 
 class BaseAdminModel(admin.ModelAdmin):

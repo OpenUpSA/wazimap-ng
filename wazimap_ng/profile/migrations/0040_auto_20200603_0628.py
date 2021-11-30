@@ -157,6 +157,7 @@ def create_permissions_for_profile_collection(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('guardian', '0001_initial'),
         ('profile', '0039_remove_profilehighlight_name'),
     ]
 

@@ -17,9 +17,10 @@ class TestProfileIndicatorAdmin:
     def test_fieldset(self, mocked_request, profile_indicator):
         ma = ProfileIndicatorAdmin(ProfileIndicator, AdminSite())
         base_fields = list(ma.get_form(mocked_request, profile_indicator).base_fields)
+
         assert base_fields == [
             'indicator', 'content_type', 'label', 'subcategory', 'description',
-            'choropleth_method', 'chart_configuration'
+            'choropleth_method', 'chart_configuration', 'change_reason'
         ]
 
     def test_subcategories_queryset_for_indicator(self, mocked_request, profile_indicator, subcategory):

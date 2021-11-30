@@ -5,10 +5,11 @@ from django import forms
 from ... import models
 from wazimap_ng.datasets.models import Indicator
 from wazimap_ng.general.widgets import VariableFilterWidget
+from wazimap_ng.general.admin.forms import HistoryAdminForm
 
 logger = logging.getLogger(__name__)
 
-class ProfileKeyMetricsForm(forms.ModelForm):
+class ProfileKeyMetricsForm(HistoryAdminForm):
     MY_CHOICES = (
         (None, '-------------'),
     )

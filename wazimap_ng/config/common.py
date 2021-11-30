@@ -68,6 +68,7 @@ class Common(QCluster, Configuration):
         "guardian",
         "icon_picker_widget",
         "colorfield",
+        "simple_history",
 
         # Your apps
         "wazimap_ng.datasets",
@@ -94,6 +95,7 @@ class Common(QCluster, Configuration):
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "django.middleware.cache.FetchFromCacheMiddleware",
+        "simple_history.middleware.HistoryRequestMiddleware",
     ]
 
     ALLOWED_HOSTS = ["*"]
