@@ -7,12 +7,12 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
 
-from wazimap_ng.general.admin.admin_base import BaseAdminModel, HistoryAdmin
+from wazimap_ng.general.admin.admin_base import BaseAdminModel
 from wazimap_ng.general.admin.forms import HistoryAdminForm
 
 
 @admin.register(models.CoordinateFile)
-class CoordinateFileAdmin(BaseAdminModel, HistoryAdmin):
+class CoordinateFileAdmin(BaseAdminModel):
     fieldsets = (
         ("Uploaded Dataset", {
             "fields": ("name", "get_document",)

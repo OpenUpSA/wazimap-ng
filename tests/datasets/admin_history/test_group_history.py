@@ -37,5 +37,7 @@ class TestGroupAdminHistory:
 
         history = group.history.first()
         assert history.history_user_id == superuser.id
-        assert history.history_change_reason == '{"reason": "Changed can_aggregate", "changed_fields": ["can_aggregate"]}'
+        assert history.history_change_reason == "Changed can_aggregate"
+        admin = GroupAdmin(Group, AdminSite())
+        assert admin.changed_fields(history) == "can_aggregate"
         assert history.history_type == "~"

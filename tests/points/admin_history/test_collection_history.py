@@ -44,7 +44,9 @@ class TestCategoryAdminHistory:
 
         assert history.history_user_id == superuser.id
         assert history.history_type == "+"
-        assert history.history_change_reason == '{"reason": "New Object"}'
+        assert history.history_change_reason == "New Object"
+        admin = CategoryAdmin(Category, AdminSite())
+        assert admin.changed_fields(history) == "Not Available"
 
 
     def test_history_for_category_edit_from_admin(
@@ -74,7 +76,7 @@ class TestCategoryAdminHistory:
         history = category.history.first()
 
         assert history.history_user_id == superuser.id
+        admin = CategoryAdmin(Category, AdminSite())
+        assert history.history_change_reason == "Changed Object"
+        assert admin.changed_fields(history) == "name"
         assert history.history_type == "~"
-        change_reason = json.loads(history.history_change_reason)
-        assert  change_reason["reason"] == "Changed Object"
-        assert "name" in change_reason["changed_fields"]

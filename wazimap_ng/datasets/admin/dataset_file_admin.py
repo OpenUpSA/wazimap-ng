@@ -11,7 +11,6 @@ from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
 from wazimap_ng.general.services import permissions
 from wazimap_ng.general.admin import filters
-from wazimap_ng.general.admin.admin_base import HistoryAdmin
 
 
 # Filters
@@ -54,7 +53,7 @@ class CustomMetadataFilter(filters.DatasetMetaDataFilter):
 
 
 @admin.register(models.DatasetFile)
-class DatasetFileAdmin(BaseAdminModel, HistoryAdmin):
+class DatasetFileAdmin(BaseAdminModel):
     form = DatasetFileAdminForm
     fieldsets = (
         ("Uploaded Dataset", {

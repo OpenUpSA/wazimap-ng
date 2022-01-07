@@ -44,8 +44,7 @@ class TestProfileKeyMetricsAdminHistory:
         assert profile_key_metric.history.all().count() == 2
         history = profile_key_metric.history.first()
         assert history.history_user_id == superuser.id
-        changed_data = json.loads(history.history_change_reason)
-        assert changed_data["reason"] == "Changed Label"
-        assert "label" in changed_data["changed_fields"]
-        assert "denominator" in changed_data["changed_fields"]
+        assert history.history_change_reason == "Changed Label"
+        admin = ProfileKeyMetricsAdmin(ProfileKeyMetrics, AdminSite())
+        assert admin.changed_fields(history) == "denominator, label"
         assert history.history_type == "~"

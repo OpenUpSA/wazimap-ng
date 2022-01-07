@@ -49,7 +49,9 @@ class TestProfileCategoryAdminHistory:
 
         assert history.history_user_id == superuser.id
         assert history.history_type == "+"
-        assert history.history_change_reason == '{"reason": "New Object"}'
+        assert history.history_change_reason == "New Object"
+        admin = ProfileCategoryAdmin(ProfileCategory, AdminSite())
+        assert admin.changed_fields(history) == "Not Available"
 
 
     def test_history_for_pc_edit_from_admin(
@@ -82,4 +84,6 @@ class TestProfileCategoryAdminHistory:
 
         assert history.history_user_id == superuser.id
         assert history.history_type == "~"
-        assert history.history_change_reason == '{"reason": "Changed Object", "changed_fields": ["label"]}'
+        admin = ProfileCategoryAdmin(ProfileCategory, AdminSite())
+        assert admin.changed_fields(history) == "label"
+        assert history.history_change_reason == "Changed Object"

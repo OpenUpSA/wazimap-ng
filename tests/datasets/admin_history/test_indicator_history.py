@@ -34,5 +34,7 @@ class TestIndicatorAdminHistory:
 
         history = indicator.history.first()
         assert history.history_user_id == superuser.id
-        assert history.history_change_reason == '{"reason": "changed object", "changed_fields": ["name"]}'
+        assert history.history_change_reason == "changed object"
+        admin = IndicatorAdmin(Indicator, AdminSite())
+        assert admin.changed_fields(history) == "name"
         assert history.history_type == "~"
