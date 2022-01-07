@@ -24,7 +24,7 @@ from django_q.tasks import result, fetch
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-def consolidated_profile_helper(profile_id, geography_code, version_name):
+def consolidated_profile_helper(profile_id, geography_code, version_name, indicator_children=True):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
     if version_name is None:
         version_name = profile.geography_hierarchy.default_version
@@ -34,7 +34,7 @@ def consolidated_profile_helper(profile_id, geography_code, version_name):
         code=geography_code,
         geographyboundary__version=version
     )
-    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, version)
+    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, version, indicator_children)
     boundary_js = boundaries_views.geography_item_helper(geography_code, version)
     children_boundary_js = boundaries_views.geography_children_helper(geography_code, version)
 
@@ -60,6 +60,29 @@ def consolidated_profile(request, profile_id, geography_code):
     version = request.GET.get('version', None)
     js = consolidated_profile_helper(profile_id, geography_code, version)
     return Response(js)
+
+@condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
+@api_view()
+def consolidated_profile_without_children(request, profile_id, geography_code):
+    version = request.GET.get('version', None)
+    js = consolidated_profile_helper(profile_id, geography_code, version, False)
+    return Response(js)
+
+@condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
+@api_view()
+def consolidated_profile_only_for_children(request, profile_id, geography_code):
+    version_name = request.GET.get('version', None)
+    profile = get_object_or_404(profile_models.Profile, pk=profile_id)
+    if version_name is None:
+        version_name = profile.geography_hierarchy.default_version
+    version = get_object_or_404(dataset_models.Version, name=version_name)
+    geography = get_object_or_404(
+        dataset_models.Geography,
+        code=geography_code,
+        geographyboundary__version=version
+    )
+    profile_js = profile_serializers.IndicatorDataSerializerForChildren(profile, geography, version)
+    return Response(profile_js)
 
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)

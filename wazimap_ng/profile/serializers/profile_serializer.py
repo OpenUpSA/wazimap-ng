@@ -6,7 +6,10 @@ from wazimap_ng.datasets.serializers import AncestorGeographySerializer
 from wazimap_ng.datasets.serializers import GeographyHierarchySerializer
 from wazimap_ng.cms.serializers import ContentSerializer
 from .. import models
-from . import IndicatorDataSerializer, MetricsSerializer, ProfileLogoSerializer, HighlightsSerializer, OverviewSerializer
+from . import (
+    IndicatorDataSerializer, MetricsSerializer, ProfileLogoSerializer,
+    HighlightsSerializer, OverviewSerializer, IndicatorDataSerializerWithoutChildren
+)
 from . import ProfileIndicatorSerializer
 
 class SimpleProfileSerializer(serializers.ModelSerializer):
@@ -37,10 +40,13 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'permission_type', 'requires_authentication', 'geography_hierarchy', 'description', 'configuration')
 
 
-def ExtendedProfileSerializer(profile, geography, version):
+def ExtendedProfileSerializer(profile, geography, version, indicator_children=True):
     models.ProfileKeyMetrics.objects.filter(subcategory__category__profile=profile)
 
-    profile_data = IndicatorDataSerializer(profile, geography, version)
+    if indicator_children:
+        profile_data = IndicatorDataSerializer(profile, geography, version)
+    else:
+        profile_data = IndicatorDataSerializerWithoutChildren(profile, geography, version)
     metrics_data = MetricsSerializer(profile, geography, version)
     logo_json = ProfileLogoSerializer(profile)
     highlights = HighlightsSerializer(profile, geography, version)
