@@ -24,7 +24,10 @@ from django_q.tasks import result, fetch
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-def consolidated_profile_helper(profile_id, geography_code, version_name, indicator_children=True):
+def consolidated_profile_helper(
+    profile_id, geography_code, version_name, indicator_children=True,
+    child_boundaries=True
+):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
     if version_name is None:
         version_name = profile.geography_hierarchy.default_version
@@ -36,7 +39,9 @@ def consolidated_profile_helper(profile_id, geography_code, version_name, indica
     )
     profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, version, indicator_children)
     boundary_js = boundaries_views.geography_item_helper(geography_code, version)
-    children_boundary_js = boundaries_views.geography_children_helper(geography_code, version)
+    children_boundary_js = None
+    if child_boundaries:
+        children_boundary_js = boundaries_views.geography_children_helper(geography_code, version)
 
     parent_layers = []
     parents = profile_js["geography"]["parents"]
@@ -46,13 +51,16 @@ def consolidated_profile_helper(profile_id, geography_code, version_name, indica
         layer = boundaries_views.geography_children_helper(parent["code"], version)
         if children_level in layer:
             parent_layers.append(layer[children_level])
-
-    return ({
+    data = {
         "profile": profile_js,
         "boundary": boundary_js,
-        "children": children_boundary_js,
+
         "parent_layers": parent_layers,
-    })
+    }
+
+    if child_boundaries:
+        data["children"] = children_boundary_js,
+    return data
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
@@ -66,6 +74,13 @@ def consolidated_profile(request, profile_id, geography_code):
 def consolidated_profile_without_children(request, profile_id, geography_code):
     version = request.GET.get('version', None)
     js = consolidated_profile_helper(profile_id, geography_code, version, False)
+    return Response(js)
+
+@condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
+@api_view()
+def consolidated_profile_without_child_boundaries(request, profile_id, geography_code):
+    version = request.GET.get('version', None)
+    js = consolidated_profile_helper(profile_id, geography_code, version, False, False)
     return Response(js)
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)

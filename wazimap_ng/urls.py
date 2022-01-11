@@ -169,6 +169,11 @@ urlpatterns = [
         cache(general_views.consolidated_profile_only_for_children),
         name="all-details2"
     ),
+    path(
+        "api/v1/all_details2/profile/<int:profile_id>/geography/<str:geography_code>/exclude_child_boundaries/",
+        cache(general_views.consolidated_profile_without_child_boundaries),
+        name="all-details2"
+    ),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
