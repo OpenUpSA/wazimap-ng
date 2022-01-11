@@ -54,6 +54,7 @@ class Production(Common):
     AWS_STORAGE_BUCKET_NAME = Common.get_env_value('AWS_STORAGE_BUCKET_NAME')
     AWS_S3_REGION_NAME = Common.get_env_value('AWS_S3_REGION_NAME')
     AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = os.environ.get("AWS_QUERYSTRING_AUTH", False)
 
     MAP_WIDGETS = {
         "GooglePointFieldWidget": (
