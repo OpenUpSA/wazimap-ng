@@ -37,7 +37,7 @@ def port_admin_log_to_simple_history(apps, schema_editor):
 
         history_date = getattr(instance, action_type, timezone.now())
         history_user = log_entry.user
-        history_change_reason = log_entry.change_message
+        history_change_reason = log_entry.get_change_message()
         history_type = history_type
 
         history_instance = manager.model(
