@@ -9,7 +9,10 @@ def port_admin_log_to_simple_history(apps, schema_editor):
 
     for log_entry in LogEntry.objects.all():
         ct = log_entry.content_type
-        instance_model = apps.get_model(ct.app_label, ct.model)
+        try:
+            instance_model = apps.get_model(ct.app_label, ct.model)
+        except:
+            continue
         try:
             instance = instance_model.objects.get(id=log_entry.object_id)
         except (instance_model.DoesNotExist, FieldError):
