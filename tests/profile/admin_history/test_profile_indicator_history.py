@@ -41,8 +41,7 @@ class TestProfileIndicatorAdminHistory:
         assert profile_indicator.history.all().count() == 2
         history = profile_indicator.history.first()
         assert history.history_user_id == superuser.id
-        changed_data = json.loads(history.history_change_reason)
-        assert changed_data["reason"] == "Changed Label" 
-        assert "label" in changed_data["changed_fields"]
-        assert "chart_configuration"in changed_data["changed_fields"]
+        assert history.history_change_reason == "Changed Label"
+        admin = ProfileIndicatorAdmin(ProfileIndicator, AdminSite())
+        assert admin.changed_fields(history) == "label"
         assert history.history_type == "~"

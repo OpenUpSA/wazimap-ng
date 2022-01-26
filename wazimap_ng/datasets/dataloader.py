@@ -28,6 +28,7 @@ def create_groups(dataset, group_names):
             name=g, dataset=dataset
         )
         group.subindicators = subindicators
+        group._change_reason = "Group updated by dataloader task."
         group.save()
         groups.append(group)
     return groups
