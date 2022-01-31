@@ -316,7 +316,6 @@ class TestLocationView(APITestCase):
         assert results[1]["features"][0]["geometry"]["coordinates"] == [2.0, 2.0]
         assert results[1]["category"] == "Pc Label 2"
 
-@pytest.mark.focus
 @pytest.mark.django_db
 class TestPointThemes:
     def test_order_themes(self, tp, tp_api):

@@ -2,6 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from wazimap_ng.general.widgets import VariableFilterWidget
+from wazimap_ng.general.admin.forms import HistoryAdminForm
 from django_json_widget.widgets import JSONEditorWidget
 
 from ... import models
@@ -11,7 +12,7 @@ from wazimap_ng.config.common import (
 )
 
 
-class ProfileIndicatorAdminForm(forms.ModelForm):
+class ProfileIndicatorAdminForm(HistoryAdminForm):
 
     class Meta:
         model = models.ProfileIndicator

@@ -13,6 +13,9 @@ from .group_admin import GroupAdmin
 from .. import models
 from ...boundaries.models import GeographyBoundary
 
+from wazimap_ng.general.admin.admin_base import HistoryAdmin
+from wazimap_ng.general.admin.forms import HistoryAdminForm
+
 
 class GeographyBoundaryInline(admin.TabularInline):
     model = GeographyBoundary
@@ -42,8 +45,9 @@ class GeographyAdmin(TreeAdmin):
     inlines = (GeographyBoundaryInline,)
 
 
+
 @admin.register(models.GeographyHierarchy)
-class GeographyHierarchyAdmin(admin.ModelAdmin):
+class GeographyHierarchyAdmin(HistoryAdmin):
     autocomplete_fields = ['root_geography']
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
@@ -51,16 +55,34 @@ class GeographyHierarchyAdmin(admin.ModelAdmin):
     list_display = (
         "name", "created", "updated"
     )
+    fieldsets = (
+        ("", {
+            "fields": (
+                "name", "root_geography", "description", "configuration"
+            )
+        }),
+    )
+    form = HistoryAdminForm
+
 
 
 @admin.register(models.Universe)
-class UniverseAdmin(admin.ModelAdmin):
-  formfield_overrides = {
-    fields.JSONField: {"widget": JSONEditorWidget},
-  }
-  list_display = (
+class UniverseAdmin(HistoryAdmin):
+    formfield_overrides = {
+        fields.JSONField: {"widget": JSONEditorWidget},
+    }
+    list_display = (
         "label", "created", "updated"
     )
+    fieldsets = (
+        ("", {
+            "fields": (
+                "label", "filters",
+            )
+        }),
+    )
+    form = HistoryAdminForm
+
 
 @admin.register(models.Licence)
 class LicenceAdmin(admin.ModelAdmin):

@@ -17,6 +17,7 @@ from wazimap_ng.general.widgets import description
 
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import HistoryAdmin
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ def set_to_private(modeladmin, request, queryset):
 def get_source(dataset):
     if hasattr(dataset, "metadata"):
         return dataset.metadata.source
-    return None 
+    return None
 
 class PermissionTypeFilter(filters.DatasetFilter):
     title = "Permission Type"
@@ -41,7 +42,7 @@ class PermissionTypeFilter(filters.DatasetFilter):
 
 
 @admin.register(models.Dataset)
-class DatasetAdmin(DatasetBaseAdminModel):
+class DatasetAdmin(DatasetBaseAdminModel, HistoryAdmin):
     exclude = ("groups", )
     inlines = (MetaDataInline,)
     actions = (set_to_public, set_to_private, delete_selected_data,)
@@ -103,24 +104,23 @@ class DatasetAdmin(DatasetBaseAdminModel):
     def save_model(self, request, obj, form, change):
         is_new = obj.pk == None and change == False
         is_profile_updated = change and "profile" in form.changed_data
+        dataset_import_file = form.cleaned_data.get("import_dataset", None)
+        if change and dataset_import_file:
+            obj._change_reason = "New Dataset uploaded."
 
         super().save_model(request, obj, form, change)
-
         if is_new or is_profile_updated:
             if obj.profile is not None:
                 assign_perms_to_group(obj.profile.name, obj, is_profile_updated)
 
-        dataset_import_file = form.cleaned_data.get("import_dataset", None)
-
-        logger.debug(f"Dataset import file: {dataset_import_file}")
-
         if dataset_import_file:
+            logger.debug(f"Dataset import file: {dataset_import_file}")
             datasetfile_obj = models.DatasetFile.objects.create(
                 name=obj.name,
                 document=dataset_import_file,
                 dataset_id=obj.id
             )
-            logger.debug(f"""Starting async task: 
+            logger.debug(f"""Starting async task:
                 Task name: wazimap_ng.datasets.tasks.process_uploaded_file
                 Datasetfile_obj: {datasetfile_obj}
                 Object: {obj}
@@ -163,4 +163,3 @@ class DatasetAdmin(DatasetBaseAdminModel):
             #queryset = queryset.exclude(id__in=in_progress_uploads)
 
         return queryset, use_distinct
-        

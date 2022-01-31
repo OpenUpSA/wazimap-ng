@@ -7,12 +7,12 @@ from ..forms import ProfileHighlightForm
 from wazimap_ng.general.widgets import customTitledFilter, description
 from wazimap_ng.datasets.models import Indicator, Dataset
 from wazimap_ng.general.services import permissions
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin.admin_base import BaseAdminModel, HistoryAdmin
 from wazimap_ng.general.admin import filters
 
 
 @admin.register(models.ProfileHighlight)
-class ProfileHighlightAdmin(SortableAdminMixin, BaseAdminModel):
+class ProfileHighlightAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
 
     list_filter = (filters.ProfileNameFilter, )
 

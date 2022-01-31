@@ -8,7 +8,7 @@ from treebeard.mp_tree import MP_NodeManager, MP_NodeQuerySet
 
 from django.contrib.postgres.search import TrigramSimilarity
 from wazimap_ng.extensions.index import GinTrgmIndex
-from wazimap_ng.general.models import BaseModel
+from wazimap_ng.general.models import BaseModel, SimpleHistory
 
 
 class Version(BaseModel):
@@ -86,7 +86,6 @@ class Geography(MP_Node, BaseModel):
                 )
         return child_types
 
-
     def get_child_geographies(self, version):
         child_geographies = self.get_children().filter(geographyboundary__version=version)
         return child_geographies
@@ -97,7 +96,7 @@ class Geography(MP_Node, BaseModel):
         return Version.objects.filter(geographyboundary__geography=self)
 
 
-class GeographyHierarchy(BaseModel):
+class GeographyHierarchy(BaseModel, SimpleHistory):
     name = models.CharField(max_length=50)
     root_geography = models.ForeignKey(Geography, null=False, on_delete=models.CASCADE, unique=True)
     description = HTMLField(blank=True)

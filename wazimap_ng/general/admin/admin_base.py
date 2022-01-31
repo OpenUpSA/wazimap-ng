@@ -1,3 +1,5 @@
+import json
+
 from django.contrib import admin, messages
 from django.contrib.admin.options import DisallowedModelAdminToField
 from django.contrib.admin.utils import unquote
@@ -12,6 +14,36 @@ from django.template.loader import render_to_string
 from django_q.tasks import async_task
 
 from wazimap_ng.general.services import permissions
+from simple_history.admin import SimpleHistoryAdmin
+from wazimap_ng.datasets.models import Dataset
+
+
+class HistoryAdmin(SimpleHistoryAdmin):
+    exclude_change_fields = ["change_reason"]
+    history_list_display = ["changed_fields"]
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        new_fieldsets = list(fieldsets)
+        fields = ['change_reason']
+        new_fieldsets.append(['Change reason', { 'fields': fields }])
+        return new_fieldsets
+
+    def save_model(self, request, obj, form, change):
+        change_reason = form.cleaned_data.get("change_reason", None)
+        if change_reason:
+            obj._change_reason = change_reason
+        super().save_model(request, obj, form, change)
+
+    def changed_fields(self, record):
+        prev_record = record.prev_record
+        if prev_record:
+            delta = record.diff_against(prev_record)
+            changes = [change.field for change in delta.changes]
+            if not changes:
+                return "-"
+            return ", ".join(changes)
+        return 'Not Available'
 
 
 class BaseAdminModel(admin.ModelAdmin):
@@ -19,7 +51,7 @@ class BaseAdminModel(admin.ModelAdmin):
 
     Base Admin Model Permissions
 
-    custom_queryset_fun: 
+    custom_queryset_fun:
         * This is the function you want to call to get your queryset.
         * Set to None if you want original queryset or change name and
           add new custom queryset function in services/permissions
@@ -29,7 +61,7 @@ class BaseAdminModel(admin.ModelAdmin):
 
         Name of the custom filter should be : get_filters_for_{model_name}
 
-    exclude_fk_filters: 
+    exclude_fk_filters:
         * This is the list of foreign key to exclude from filtering fks
         If fk for a model is not added here than it will be filtered out
         using get_custom_queryset function.

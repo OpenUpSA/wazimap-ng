@@ -3,6 +3,8 @@ import pandas as pd
 
 from .. import models
 from .base_admin_model import BaseAdminModel
+from .forms import DatasetFileAdminForm
+
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -52,7 +54,7 @@ class CustomMetadataFilter(filters.DatasetMetaDataFilter):
 
 @admin.register(models.DatasetFile)
 class DatasetFileAdmin(BaseAdminModel):
-
+    form = DatasetFileAdminForm
     fieldsets = (
         ("Uploaded Dataset", {
             "fields": ("name", "get_document", "get_dataset_link",)

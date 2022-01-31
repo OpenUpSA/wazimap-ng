@@ -10,6 +10,8 @@ from .. import models
 from .base_admin_model import DatasetBaseAdminModel
 
 from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import HistoryAdmin
+from wazimap_ng.general.admin.forms import HistoryAdminForm
 
 class GroupDatasetFilter(filters.DatasetFilter):
     parameter_name = 'dataset_id'
@@ -21,7 +23,7 @@ class GroupProfileFilter(filters.ProfileFilter):
 
 
 
-class GroupAdminForm(forms.ModelForm):
+class GroupAdminForm(HistoryAdminForm):
     class Meta:
         model = models.Group
         fields = '__all__'
@@ -37,7 +39,7 @@ class GroupAdminForm(forms.ModelForm):
         return []
 
 @admin.register(models.Group)
-class GroupAdmin(DatasetBaseAdminModel):
+class GroupAdmin(DatasetBaseAdminModel, HistoryAdmin):
     list_display = (
         "name",
         "dataset", 
