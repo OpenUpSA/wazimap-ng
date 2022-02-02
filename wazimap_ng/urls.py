@@ -167,7 +167,7 @@ urlpatterns = [
     path(
         "api/v1/children-indicators/profile/<int:profile_id>/geography/<str:geography_code>/",
         cache(general_views.indicator_data_for_children),
-        name="all-details2"
+        name="children-indicators"
     ),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
