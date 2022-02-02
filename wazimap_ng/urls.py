@@ -161,12 +161,12 @@ urlpatterns = [
     path('sentry-debug/', trigger_error),
     path(
         "api/v1/all_details2/profile/<int:profile_id>/geography/<str:geography_code>/",
-        cache(general_views.consolidated_profile_without_children),
+        cache(general_views.consolidated_profile_for_specific_geography),
         name="all-details2"
     ),
     path(
         "api/v1/children-indicators/profile/<int:profile_id>/geography/<str:geography_code>/",
-        cache(general_views.consolidated_profile_only_for_children),
+        cache(general_views.indicator_data_for_children),
         name="all-details2"
     ),
 

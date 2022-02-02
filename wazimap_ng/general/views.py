@@ -63,14 +63,14 @@ def consolidated_profile(request, profile_id, geography_code):
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
-def consolidated_profile_without_children(request, profile_id, geography_code):
+def consolidated_profile_for_specific_geography(request, profile_id, geography_code):
     version = request.GET.get('version', None)
     js = consolidated_profile_helper(profile_id, geography_code, version, False)
     return Response(js)
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
-def consolidated_profile_only_for_children(request, profile_id, geography_code):
+def indicator_data_for_children(request, profile_id, geography_code):
     version_name = request.GET.get('version', None)
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
     if version_name is None:
@@ -81,7 +81,9 @@ def consolidated_profile_only_for_children(request, profile_id, geography_code):
         code=geography_code,
         geographyboundary__version=version
     )
-    profile_js = profile_serializers.IndicatorDataSerializerForChildren(profile, geography, version)
+    profile_js = profile_serializers.IndicatorDataSerializerForChildren(
+        profile, geography, version
+    )
     return Response(profile_js)
 
 
