@@ -162,7 +162,6 @@ class TestIndicatorSerializerForChildren:
         category = pi.subcategory.category
         subcategory = pi.subcategory
         data = IndicatorDataSerializerForChildren(profile, root_geo, version2)
-        print(dict(data))
         pi_data = data[category.name]["subcategories"][subcategory.name]["indicators"][pi.label]["data"]
         assert "WC" in pi_data
         assert "EC" in pi_data
