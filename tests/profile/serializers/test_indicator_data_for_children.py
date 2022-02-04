@@ -149,6 +149,8 @@ class TestIndicatorSerializerForChildren:
         subcategory = pi.subcategory
         data = IndicatorDataSerializerForChildren(profile, root_geo, version1)
         pi_data = data[category.name]["subcategories"][subcategory.name]["indicators"][pi.label]["data"]
+        assert len(pi_data) == 1
+        assert "EC" not in pi_data
         assert "WC" in pi_data
         assert pi_data["WC"] == pi.indicator.indicatordata_set.get(geography__code="WC").data
 
