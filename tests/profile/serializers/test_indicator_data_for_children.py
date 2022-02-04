@@ -131,6 +131,9 @@ def indicator_data_geo2(geo2, profile_indicators, indicatordata_json):
     return idata
 
 @pytest.mark.django_db
+
+@pytest.mark.usefixtures("create_boundaries")
+@pytest.mark.usefixtures("indicator_data")
 class TestIndicatorSerializerForChildren:
     def test_children_indicator_data_for_version1(
         self, profile, root_geo, version1, profile_indicators, create_boundaries,
@@ -143,15 +146,16 @@ class TestIndicatorSerializerForChildren:
         """
         pi = profile_indicators[0]
         category = pi.subcategory.category
-        subcategory =pi.subcategory
+        subcategory = pi.subcategory
         data = IndicatorDataSerializerForChildren(profile, root_geo, version1)
         pi_data = data[category.name]["subcategories"][subcategory.name]["indicators"][pi.label]["data"]
         assert "WC" in pi_data
         assert pi_data["WC"] == pi.indicator.indicatordata_set.get(geography__code="WC").data
 
+    @pytest.mark.usefixtures("create_boundaries")
+    @pytest.mark.usefixtures("indicator_data")
     def test_children_indicator_data_for_version2(
-        self, profile, root_geo, version2, profile_indicators, create_boundaries,
-        indicator_data
+        self, profile, root_geo, version2, profile_indicators
     ):
         """
         For version2
@@ -163,6 +167,7 @@ class TestIndicatorSerializerForChildren:
         subcategory = pi.subcategory
         data = IndicatorDataSerializerForChildren(profile, root_geo, version2)
         pi_data = data[category.name]["subcategories"][subcategory.name]["indicators"][pi.label]["data"]
+        assert len(pi_data) == 2
         assert "WC" in pi_data
         assert "EC" in pi_data
         assert pi_data["WC"] == pi.indicator.indicatordata_set.get(geography__code="WC").data

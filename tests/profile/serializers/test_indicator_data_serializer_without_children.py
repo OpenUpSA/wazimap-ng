@@ -98,7 +98,7 @@ class TestExtendedProfileSerializer:
         geography = indicator.indicatordata_set.first().geography
 
         data = ExtendedProfileSerializer(
-            profile, geography, version, indicator_children=False
+            profile, geography, version, skip_children=True
         )
 
         # assert logo

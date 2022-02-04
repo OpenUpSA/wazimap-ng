@@ -24,7 +24,7 @@ from django_q.tasks import result, fetch
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-def consolidated_profile_helper(profile_id, geography_code, version_name, indicator_children=True):
+def consolidated_profile_helper(profile_id, geography_code, version_name, skip_children=False):
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
     if version_name is None:
         version_name = profile.geography_hierarchy.default_version
@@ -34,7 +34,7 @@ def consolidated_profile_helper(profile_id, geography_code, version_name, indica
         code=geography_code,
         geographyboundary__version=version
     )
-    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, version, indicator_children)
+    profile_js = profile_serializers.ExtendedProfileSerializer(profile, geography, version, skip_children)
     boundary_js = boundaries_views.geography_item_helper(geography_code, version)
     children_boundary_js = boundaries_views.geography_children_helper(geography_code, version)
 
@@ -58,14 +58,10 @@ def consolidated_profile_helper(profile_id, geography_code, version_name, indica
 @api_view()
 def consolidated_profile(request, profile_id, geography_code):
     version = request.GET.get('version', None)
-    js = consolidated_profile_helper(profile_id, geography_code, version)
-    return Response(js)
-
-@condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
-@api_view()
-def consolidated_profile_for_specific_geography(request, profile_id, geography_code):
-    version = request.GET.get('version', None)
-    js = consolidated_profile_helper(profile_id, geography_code, version, False)
+    skip_children = request.GET.get("skip-children", False)
+    js = consolidated_profile_helper(
+        profile_id, geography_code, version, skip_children
+    )
     return Response(js)
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)

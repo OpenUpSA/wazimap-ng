@@ -40,13 +40,13 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'permission_type', 'requires_authentication', 'geography_hierarchy', 'description', 'configuration')
 
 
-def ExtendedProfileSerializer(profile, geography, version, indicator_children=True):
+def ExtendedProfileSerializer(profile, geography, version, skip_children=False):
     models.ProfileKeyMetrics.objects.filter(subcategory__category__profile=profile)
-
-    if indicator_children:
-        profile_data = IndicatorDataSerializer(profile, geography, version)
-    else:
+    if skip_children:
         profile_data = IndicatorDataSerializerWithoutChildren(profile, geography, version)
+    else:
+        profile_data = IndicatorDataSerializer(profile, geography, version)
+
     metrics_data = MetricsSerializer(profile, geography, version)
     logo_json = ProfileLogoSerializer(profile)
     highlights = HighlightsSerializer(profile, geography, version)

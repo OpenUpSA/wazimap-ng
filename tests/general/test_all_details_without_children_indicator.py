@@ -40,10 +40,11 @@ class TestConsolidatedProfileViewWithoutChildren(APITestCase):
 
     def test_basic_all_details_default_version(self):
         response = self.get(
-            'all-details2',
+            'all-details',
             profile_id=self.profile.pk,
             geography_code=self.geography.code,
             data={
+                'skip-children': True,
                 'format': 'json',
             },
         )
@@ -51,10 +52,11 @@ class TestConsolidatedProfileViewWithoutChildren(APITestCase):
 
     def test_all_details_one_version(self):
         response = self.get(
-            'all-details2',
+            'all-details',
             profile_id=self.profile.pk,
             geography_code=self.geography.code,
             data={
+                'skip-children': True,
                 'format': 'json',
                 'version': self.version.name
             },
@@ -66,10 +68,11 @@ class TestConsolidatedProfileViewWithoutChildren(APITestCase):
         other_geography = GeographyFactory()
         other_boundary = GeographyBoundaryFactory(version=other_version, geography=other_geography)
         response = self.get(
-            'all-details2',
+            'all-details',
             profile_id=self.profile.pk,
             geography_code=self.geography.code,
             data={
+                'skip-children': True,
                 'format': 'json',
                 'version': other_version.name
             },
