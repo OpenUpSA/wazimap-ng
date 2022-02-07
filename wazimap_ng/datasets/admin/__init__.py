@@ -58,7 +58,8 @@ class GeographyHierarchyAdmin(HistoryAdmin):
     fieldsets = (
         ("", {
             "fields": (
-                "name", "root_geography", "description", "configuration"
+                "name", "root_geography", "description",
+                "configuration"
             )
         }),
     )
