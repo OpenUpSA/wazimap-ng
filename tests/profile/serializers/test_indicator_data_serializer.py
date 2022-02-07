@@ -16,12 +16,14 @@ from tests.profile.factories import (
 from wazimap_ng.datasets.models.group import Group
 from wazimap_ng.profile.models import Profile
 from wazimap_ng.profile.serializers.indicator_data_serializer import (
-    IndicatorDataSerializer,
+    IndicatorDataSerializer
+)
+from wazimap_ng.profile.serializers.utils import (
     get_dataset_groups,
     get_profile_data
 )
-from wazimap_ng.profile.serializers.profile_indicator_serializer import (
-    FullProfileIndicatorSerializer
+from wazimap_ng.profile.serializers import (
+    FullProfileIndicatorSerializer, ExtendedProfileSerializer
 )
 
 
@@ -76,7 +78,6 @@ class TestGetProfileData:
 
         version = geography.geographyboundary_set.get().version
         output = get_profile_data(profile, [geography], version)
-        print(output)
         assert output[0]["profile_indicator_label"] == "PI1"
         assert output[1]["profile_indicator_label"] == "PI2"
 
@@ -181,3 +182,54 @@ class TestFullProfileIndicatorSerializer:
         for g in geography.get_children():
             assert g.code in child_data
             assert indicator.indicatordata_set.get(geography=g).data == child_data[g.code]
+
+@pytest.mark.django_db
+class TestExtendedProfileSerializer:
+    def test_basic_serializer(
+        self, profile, profile_indicator, groups, indicatordata_json, child_indicatordata
+    ):
+        version = profile.geography_hierarchy.root_geography.geographyboundary_set.get().version
+        indicator = profile_indicator.indicator
+        geography = indicator.indicatordata_set.first().geography
+
+        data = ExtendedProfileSerializer(
+            profile, geography, version, skip_children=False
+        )
+
+        # assert logo
+        assert "logo" in data
+        assert data["logo"]["url"] == "/"
+
+        # assert geography
+        assert "geography" in data
+        assert data["geography"]["code"] == geography.code
+
+        # assert profile data
+        assert "profile_data" in data
+        profile_data = data["profile_data"]
+
+        category_name = profile_indicator.subcategory.category.name
+        subcategory_name = profile_indicator.subcategory.name
+        assert category_name in profile_data
+        assert "subcategories" in profile_data[category_name]
+        assert subcategory_name in profile_data[category_name]["subcategories"]
+        assert "indicators" in profile_data[category_name]["subcategories"][subcategory_name]
+        indicator_data = profile_data[category_name]["subcategories"][subcategory_name]["indicators"]
+        assert "child_data" in indicator_data[profile_indicator.label]
+        assert "data" in indicator_data[profile_indicator.label]
+        assert indicator_data[profile_indicator.label]["data"] == indicatordata_json
+
+        # Assert child data
+        child_data = indicator_data[profile_indicator.label]["child_data"]
+        assert len(child_data) == 2
+        for g in geography.get_children():
+            assert g.code in child_data
+            assert indicator.indicatordata_set.get(geography=g).data == child_data[g.code]
+
+        # assert highlight
+        assert "highlights" in data
+        assert data["highlights"] == []
+
+        # assert overview
+        assert "overview" in data
+        assert data["overview"]["name"] == "Profile"
