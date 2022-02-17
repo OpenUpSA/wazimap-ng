@@ -7,36 +7,45 @@ from tests.profile.factories import (
     IndicatorSubcategoryFactory
 )
 from tests.points.factories import (
-    ProfileCategoryFactory, ThemeFactory, CategoryFactory, LocationFactory
+    CategoryFactory, LocationFactory
 )
 from tests.datasets.factories import (
-    GeographyFactory, GeographyHierarchyFactory,
-    VersionFactory, DatasetFactory, GroupFactory,
-    DatasetDataFactory, IndicatorFactory
+    GeographyHierarchyFactory,
+    VersionFactory, DatasetFactory,IndicatorFactory
 )
 from tests.boundaries.factories import GeographyBoundaryFactory
-from wazimap_ng.datasets.models import Group, Geography
+from wazimap_ng.datasets.models import Geography
 from wazimap_ng.datasets.tasks.indicator_data_extraction import (
     indicator_data_extraction
 )
-
+from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv
+from tests.datasets.tasks.test_process_uploaded_file import create_datasetfile
 
 
 class ConsolidatedProfileViewBase(APITestCase):
 
     def setUp(self):
-        self.version = VersionFactory()
-        self.root = Geography.add_root(code="ZA", level="country")
-        self.geo1 = self.root.add_child(code="WC", level="province")
-        self.geo2 = self.root.add_child(code="EC", level="province")
-        self.dc1 = self.geo1.add_child(code="DC1", level="muni")
-        self.create_boundary(self.root, self.version)
-        self.create_boundary(self.geo1, self.version)
-        self.create_boundary(self.geo2, self.version)
+        """
+        Create Data for default_version
+        """
+        self.default_version = VersionFactory(name="default_version")
 
+        # Create Geography Structure with boundary objects
+        self.root = Geography.add_root(code="ROOT", level="country")
+        self.geo1 = self.root.add_child(code="CHILD1", level="province")
+        self.geo2 = self.root.add_child(code="CHILD2", level="province")
+        self.geo3 = self.root.add_child(code="CHILD3", level="province")
+
+        self.create_boundary(self.root, self.default_version)
+        self.create_boundary(self.geo1, self.default_version)
+        self.create_boundary(self.geo2, self.default_version)
+
+        # Create hierarchy
         self.hierarchy = self.create_hierarchy(
-            self.root, self.version
+            self.root, self.default_version, versions=["default_version"]
         )
+
+        # Create Profile Related Data
         self.profile = ProfileFactory(geography_hierarchy=self.hierarchy)
         self.category = CategoryFactory(profile=self.profile)
         self.location = LocationFactory(category=self.category)
@@ -59,65 +68,26 @@ class ConsolidatedProfileViewBase(APITestCase):
             configuration=configuration
         )
 
-    def create_pc(self, theme, order=0, label="pc label"):
-        return ProfileCategoryFactory(
-            profile=self.profile, category=self.category, theme=theme,
-            label=label, order=order
-        )
+    def update_hierarchy_versions(self, hierarchy, version):
+        configuration = hierarchy.configuration
+        configuration["versions"].append(version.name)
+        hierarchy.configuration = configuration
+        hierarchy.save()
 
-    def create_multiple_profile_categories(self, theme, count=2):
-        pcs = []
-        for i in range(0, count):
-            pcs.append(
-                self.create_pc(theme, i, F"pc{i}_{theme.name}")
-            )
-        return pcs
-
-    def create_dataset(self, profile, version):
-        return DatasetFactory(
+    def create_dataset(self, profile, version, data):
+        dataset = DatasetFactory(
             profile=profile, version=version
         )
-
-    def create_datasetdata(
-            self, dataset, geography, data={},
-            create_groups=True
-        ):
-        obj = DatasetDataFactory(
-            dataset=dataset, geography=geography, data=data
-        )
-
-        if create_groups:
-            keys = data.keys()
-
-            for key in keys:
-                if key == "count":
-                    continue
-
-                group = Group.objects.filter(dataset=dataset, name=key).first()
-                if not group:
-                    group = GroupFactory(
-                        dataset=dataset, name="gender", subindicators=[],
-                        can_aggregate=True, can_filter=True
-                    )
-
-                if data[key] not in group.subindicators:
-                    subindicators = group.subindicators
-                    subindicators.append(data[key])
-                    group.subindicators = subindicators
-                    group.save()
-        return obj
-
-    def multiple_datasetdata(self, dataset, geography, datalist=[]):
-        objs = []
-        for data in datalist:
-            objs.append(self.create_datasetdata(dataset, geography, data))
-        return objs
+        header = list(data[0])
+        csv_data = data[1:]
+        datasetfile = create_datasetfile(csv_data, "utf-8", header)
+        process_csv(dataset, datasetfile.document.open("rb"))
+        return dataset
 
     def create_indicator(self, dataset, group):
         indicator = IndicatorFactory(dataset=dataset, groups=[group])
         indicator_data_extraction(indicator)
         return indicator
-
 
     def create_highlight(
             self, profile, indicator, subindicator,
@@ -148,53 +118,9 @@ class ConsolidatedProfileViewBase(APITestCase):
             label=label, subcategory=subcategory
         )
 
-    def create_base_data(
-            self, version=None, geography=None,
-            hierarchy=None, profile=None,
-            create_version=True, create_boundary=True
-        ):
-
-        if create_version:
-            version = VersionFactory(name=version)
-
-        if not geography:
-            geography = self.geo1.add_child(
-                code="CPT", level="muni"
-            )
-
-        self.create_boundary(geography, version)
-        self.create_boundary(self.geo1, version)
-        self.create_boundary(self.root, version)
-        if not hierarchy:
-            hierarchy = self.create_hierarchy(
-                geography, version, versions=[version.name]
-            )
-        else:
-            configuration = hierarchy.configuration
-            if "versions" in configuration:
-                versions = configuration["versions"]
-                versions.append(version.name)
-                configuration["versions"] = versions
-                hierarchy.configuration = configuration
-                hierarchy.save()
-        if not profile:
-            profile = ProfileFactory(
-                geography_hierarchy=hierarchy
-            )
-
-        return version, geography, hierarchy, profile
-
-    def create_versioned_data(
-        self, version, geography, profile, data=[],
-        subindicator="gender", val="female",
+    def create_dataset_and_indicator(
+        self, version, profile, data, subindicator
     ):
-        dataset = self.create_dataset(profile, version)
-        if not data:
-            data = [
-                {"gender": "male", "age": "15", "count": 1},
-                {"gender": "female", "age": "16", "count": 2},
-            ]
-
-        self.multiple_datasetdata(dataset, geography, data)
+        dataset = self.create_dataset(profile, version, data)
         indicator = self.create_indicator(dataset, subindicator)
         return indicator
