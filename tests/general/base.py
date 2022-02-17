@@ -80,7 +80,7 @@ class ConsolidatedProfileViewBase(APITestCase):
         )
         header = list(data[0])
         csv_data = data[1:]
-        datasetfile = create_datasetfile(csv_data, "utf-8", header)
+        datasetfile = create_datasetfile(csv_data, "utf-8", header, dataset.id)
         process_csv(dataset, datasetfile.document.open("rb"))
         return dataset
 

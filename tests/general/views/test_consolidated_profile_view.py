@@ -920,8 +920,7 @@ class TestParentLayersData(ConsolidatedProfileViewBase):
             assert when requested data for MUNI1:
                 parent_layers should have 2 objects
                 Inside first object there should 2 features
-                    - feature 1: CHILD1
-                    - feature 2: CHILD2
+                    - features list: [CHILD1, CHILD2]
                 Inside second object there should 1 feature
                     - feature 1: MUNI1
 
@@ -934,9 +933,7 @@ class TestParentLayersData(ConsolidatedProfileViewBase):
             assert when requested data for MUNI1:
                 parent_layers should have 2 objects
                 Inside first object there should 3 features
-                    feature 1: CHILD3
-                    feature 2: CHILD2
-                    feature 3: CHILD1
+                    features list: [CHILD1, CHILD2, CHILD3]
                 Inside second object there should 1 feature
                     - feature 1: MUNI1
         """
@@ -969,8 +966,11 @@ class TestParentLayersData(ConsolidatedProfileViewBase):
         assert len(parent_layers) == 2
         assert len(parent_layers[0]["features"]) == 2
         assert len(parent_layers[1]["features"]) == 1
-        assert parent_layers[0]["features"][0]["properties"]["code"] == "CHILD1"
-        assert parent_layers[0]["features"][1]["properties"]["code"] == "CHILD2"
+
+        feature_geography_codes = sorted([
+            feature["properties"]["code"] for feature in parent_layers[0]["features"]
+        ])
+        assert feature_geography_codes == ["CHILD1", "CHILD2"]
         assert parent_layers[1]["features"][0]["properties"]["code"] == "MUNI1"
 
         # Api request for version - v1
@@ -989,9 +989,10 @@ class TestParentLayersData(ConsolidatedProfileViewBase):
         assert len(parent_layers) == 2
         assert len(parent_layers[0]["features"]) == 3
         assert len(parent_layers[1]["features"]) == 1
-        assert parent_layers[0]["features"][0]["properties"]["code"] == "CHILD1"
-        assert parent_layers[0]["features"][1]["properties"]["code"] == "CHILD2"
-        assert parent_layers[0]["features"][2]["properties"]["code"] == "CHILD3"
+        feature_geography_codes = sorted([
+            feature["properties"]["code"] for feature in parent_layers[0]["features"]
+        ])
+        assert feature_geography_codes == ["CHILD1", "CHILD2", "CHILD3"]
         assert parent_layers[1]["features"][0]["properties"]["code"] == "MUNI1"
 
 
@@ -1055,8 +1056,10 @@ class TestChildrenData(ConsolidatedProfileViewBase):
         self.assertTrue("province" in children)
         self.assertFalse("muni" in children)
         assert len(children["province"]["features"]) == 2
-        assert children["province"]["features"][0]["properties"]["code"] == "CHILD1"
-        assert children["province"]["features"][1]["properties"]["code"] == "CHILD2"
+        feature_geography_codes = sorted([
+            feature["properties"]["code"] for feature in children["province"]["features"]
+        ])
+        assert feature_geography_codes == ["CHILD1", "CHILD2"]
 
         # Api request for version - v1
         response = self.get(
@@ -1074,7 +1077,10 @@ class TestChildrenData(ConsolidatedProfileViewBase):
         self.assertTrue("province" in children)
         self.assertTrue("muni" in children)
         assert len(children["province"]["features"]) == 2
-        assert children["province"]["features"][0]["properties"]["code"] == "CHILD1"
-        assert children["province"]["features"][1]["properties"]["code"] == "CHILD3"
+        feature_geography_codes = sorted([
+            feature["properties"]["code"] for feature in children["province"]["features"]
+        ])
+        assert feature_geography_codes == ["CHILD1", "CHILD3"]
+
         assert len(children["muni"]["features"]) == 1
         assert children["muni"]["features"][0]["properties"]["code"] == "MUNI1"
