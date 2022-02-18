@@ -6,7 +6,7 @@
 {% for choice in choices %}
 	<option
 		value="{{ choice.id }}"
-        title="{{ choice }}"
+		title="{{ choice }}"
 		data-type="{{ choice.dataset.permission_type }}"
 		class="{% if permission_type != choice.dataset.permission_type %} hidden {% endif %}"
 		{% if value.id == choice.id %} selected {% endif %}
