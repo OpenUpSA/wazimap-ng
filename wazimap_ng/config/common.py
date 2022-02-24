@@ -112,11 +112,6 @@ class Common(QCluster, Configuration):
     EMAIL_USE_TLS = True
     DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 
-    ADMINS = (
-        ("Author", "adi@openup.org.za"),
-    )
-
-
     # Postgres
     DATABASES = {
         "default": dj_database_url.config(
