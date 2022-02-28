@@ -31,7 +31,7 @@ class TestGeneralViews(ConsolidatedProfileViewBase):
             },
         )
         self.assert_http_200_ok()
-        assert response.data["boundary"]["properties"]["version"] == "default_version"
+        assert response.data["boundary"]["properties"]["version"] == "v1"
 
     def test_all_details_one_version(self):
         """
@@ -48,13 +48,13 @@ class TestGeneralViews(ConsolidatedProfileViewBase):
             geography_code=self.geo1.code,
             data={
                 'format': 'json',
-                'version': self.default_version.name
+                'version': self.version_v1.name
             },
         )
         self.assert_http_200_ok()
         hierarchy_config = self.profile.geography_hierarchy.configuration
         self.assertTrue(
-            self.default_version.name in hierarchy_config["versions"]
+            self.version_v1.name in hierarchy_config["versions"]
         )
 
     def test_all_details_version_exists_but_not_this_geo(self):
@@ -327,7 +327,7 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
             (self.geo1.code, "female", "16", 2),
         ]
         indicator = self.create_dataset_and_indicator(
-            self.default_version, self.profile, data, "gender"
+            self.version_v1, self.profile, data, "gender"
         )
         self.create_highlight(
             self.profile, indicator, "female", "highlight"
@@ -356,7 +356,7 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
         Test to check if highlights returned in all_details change when you
         pass different versions to the api.
 
-        Test data for version - default_version:
+        Test data for version - version_v1:
             create highlight for:
                 - subindicator group: female, denominator : absolute_value
         assert:
@@ -364,16 +364,16 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
             param is passed to api
             - label : highlight for default version, value : 2.0
 
-        Test data for version - v1:
+        Test data for version - v2:
             create highlight for:
                 - subindicator group: female, denominator : absolute_value
         assert:
-            - Highlight created for default version_v1 is passed when version_v1
+            - Highlight created for default version_v2 is passed when version_v2
             name is passed as param for version
-            - label : highlight for v1, value : 3.0
+            - label : highlight for v2, value : 3.0
         """
         # Data creation
-        # version - default_version
+        # version - version_v1
         data = [
             ("Geography", "gender", "age", "count"),
             (self.geo1.code, "male", "15", 1),
@@ -381,17 +381,17 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
         ]
 
         indicator = self.create_dataset_and_indicator(
-            self.default_version, self.profile, data, "gender"
+            self.version_v1, self.profile, data, "gender"
         )
         self.create_highlight(
             self.profile, indicator, "female", "highlight for default version"
         )
 
-        # Version - v1 data
-        version_v1 = VersionFactory(name="v1")
-        self.create_boundary(self.geo1, version_v1)
+        # Version - v2 data
+        version_v2 = VersionFactory(name="v2")
+        self.create_boundary(self.geo1, version_v2)
         self.update_hierarchy_versions(
-            self.profile.geography_hierarchy, version_v1
+            self.profile.geography_hierarchy, version_v2
         )
         data = [
             ("Geography", "gender", "age", "count"),
@@ -399,13 +399,13 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
             (self.geo1.code, "female", "16", 3),
         ]
         indicator = self.create_dataset_and_indicator(
-            version_v1, self.profile, data, "gender"
+            version_v2, self.profile, data, "gender"
         )
         self.create_highlight(
-            self.profile, indicator, "female", "highlight for v1"
+            self.profile, indicator, "female", "highlight for v2"
         )
 
-        # Api Request without any version - default_version
+        # Api Request without any version - version_v1
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
@@ -422,13 +422,13 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
         assert highlights[0]["value"] == 2.0
         assert highlights[0]["method"] == "absolute_value"
 
-        # Api Request for version_v1
+        # Api Request for version_v2
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
             geography_code=self.geo1.code,
             data={
-                'version': version_v1.name,
+                'version': version_v2.name,
                 'format': 'json',
             },
         )
@@ -437,7 +437,7 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
         # Asserts
         highlights = response.data["profile"]["highlights"]
         assert len(highlights) == 1
-        assert highlights[0]["label"] == "highlight for v1"
+        assert highlights[0]["label"] == "highlight for v2"
         assert highlights[0]["value"] == 3.0
         assert highlights[0]["method"] == "absolute_value"
 
@@ -448,13 +448,13 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
         is affected if geography structure is different for versions.
 
         Geography structure for versions:
-            - default_version : ROOT > CHILD1 & CHILD2
-            - version - v1 : ROOT > CHILD1 & CHILD3
+            - version - v1 : ROOT > CHILD1 & CHILD2
+            - version - v2 : ROOT > CHILD1 & CHILD3
 
         Formula for sibling calculation:
             (count for requested geo)/(Total sum of count of sibling geographies)
 
-        Test data for version - default_version:
+        Test data for version - v1:
             create highlight for:
                 - subindicator group: female, denominator : sibling
         assert:
@@ -462,18 +462,18 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
               In this case : CHILD1 has only one sibling CHILD2
               value = (CHILD1_COUNT)/(CHILD1_COUNT + CHILD2_COUNT) => 2/6 = 0.3
 
-        Test data for version - v1:
-            - create version - v1
-            - add boundaries for v1 to CHILD1 & CHILD3
+        Test data for version - v2:
+            - create version - v2
+            - add boundaries for v2 to CHILD1 & CHILD3
             - create highlight for:
                 - subindicator group: female, denominator : sibling
         assert:
-            - label : highlight for v1, value : 0.25
+            - label : highlight for v2, value : 0.25
               In this case : CHILD1 has only one sibling CHILD3
               value = (CHILD1_COUNT)/(CHILD1_COUNT + CHILD3_COUNT) => 2/8 = 0.25
         """
         # Data Creation
-        # default_version
+        # version - v1 data
         data = [
             ("Geography", "gender", "age", "count"),
             (self.geo1.code, "female", "16", 2),
@@ -481,19 +481,19 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
         ]
 
         indicator = self.create_dataset_and_indicator(
-            self.default_version, self.profile, data, "gender"
+            self.version_v1, self.profile, data, "gender"
         )
         self.create_highlight(
             self.profile, indicator, "female", "highlight for default version",
             "sibling"
         )
 
-        # Version - v1 data
-        version_v1 = VersionFactory(name="v1")
-        self.create_boundary(self.geo1, version_v1)
-        self.create_boundary(self.geo3, version_v1)
+        # Version - v2 data
+        version_v2 = VersionFactory(name="v2")
+        self.create_boundary(self.geo1, version_v2)
+        self.create_boundary(self.geo3, version_v2)
         self.update_hierarchy_versions(
-            self.profile.geography_hierarchy, version_v1
+            self.profile.geography_hierarchy, version_v2
         )
         data = [
             ("Geography", "gender", "age", "count"),
@@ -501,13 +501,13 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
             (self.geo3.code, "female", "16", 6),
         ]
         indicator = self.create_dataset_and_indicator(
-            version_v1, self.profile, data, "gender"
+            version_v2, self.profile, data, "gender"
         )
         self.create_highlight(
-            self.profile, indicator, "female", "highlight for v1", "sibling"
+            self.profile, indicator, "female", "highlight for v2", "sibling"
         )
 
-        # Api request for default_version
+        # Api request for version - v1
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
@@ -524,13 +524,13 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
         assert highlights[0]["value"] == 0.3333333333333333
         assert highlights[0]["method"] == "sibling"
 
-        # Api request for version - v1
+        # Api request for version - v2
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
             geography_code=self.geo1.code,
             data={
-                'version': version_v1.name,
+                'version': version_v2.name,
                 'format': 'json',
             },
         )
@@ -538,7 +538,7 @@ class TestProfileHighlightData(ConsolidatedProfileViewBase):
         highlights = response.data["profile"]["highlights"]
         # Asserts
         assert len(highlights) == 1
-        assert highlights[0]["label"] == "highlight for v1"
+        assert highlights[0]["label"] == "highlight for v2"
         assert highlights[0]["value"] == 0.25
         assert highlights[0]["method"] == "sibling"
 
@@ -567,7 +567,7 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
                 method : return denominator (absolute_value)
         """
         # Data creation
-        # version - default_version
+        # version - v1
         data = [
             ("Geography", "gender", "age", "count"),
             (self.geo1.code, "male", "15", 1),
@@ -575,7 +575,7 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
         ]
 
         indicator = self.create_dataset_and_indicator(
-            self.default_version, self.profile, data, "gender"
+            self.version_v1, self.profile, data, "gender"
         )
         self.create_key_metrics(
             self.profile, indicator, "female", "Key metric for default version"
@@ -603,7 +603,7 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
         Test to check if key metrics returned in all_details change when you
         pass different versions to the api.
 
-        Test data for version - default_version:
+        Test data for version - v1:
             create key metric for:
                 - subindicator group: female, denominator : absolute_value
         assert:
@@ -611,16 +611,16 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
             param is passed to api
             - label : key metric for default version, value : 2.0
 
-        Test data for version - v1:
+        Test data for version - v2:
             create key metric for:
                 - subindicator group: female, denominator : absolute_value
         assert:
-            - key metric created for default version_v1 is passed when version_v1
+            - key metric created for default version_v2 is passed when version_v2
             name is passed as param for version
-            - label : key metric for v1, value : 3.0
+            - label : key metric for v2, value : 3.0
         """
         # Data creation
-        # version - default_version
+        # version - v1
         data = [
             ("Geography", "gender", "age", "count"),
             (self.geo1.code, "male", "15", 1),
@@ -628,17 +628,17 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
         ]
 
         indicator = self.create_dataset_and_indicator(
-            self.default_version, self.profile, data, "gender"
+            self.version_v1, self.profile, data, "gender"
         )
         self.create_key_metrics(
             self.profile, indicator, "female", "key metric for default version"
         )
 
-        # Version - v1 data
-        version_v1 = VersionFactory(name="v1")
-        self.create_boundary(self.geo1, version_v1)
+        # Version - v2 data
+        version_v2 = VersionFactory(name="v2")
+        self.create_boundary(self.geo1, version_v2)
         self.update_hierarchy_versions(
-            self.profile.geography_hierarchy, version_v1
+            self.profile.geography_hierarchy, version_v2
         )
         data = [
             ("Geography", "gender", "age", "count"),
@@ -646,13 +646,13 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
             (self.geo1.code, "female", "16", 3),
         ]
         indicator = self.create_dataset_and_indicator(
-            version_v1, self.profile, data, "gender"
+            version_v2, self.profile, data, "gender"
         )
         self.create_key_metrics(
-            self.profile, indicator, "female", "key metric for v1"
+            self.profile, indicator, "female", "key metric for v2"
         )
 
-        # Api request for default_version
+        # Api request for version - v1
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
@@ -669,13 +669,13 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
         assert key_metrics[0]["value"] == 2.0
         assert key_metrics[0]["method"] == "absolute_value"
 
-        # Api request for version - v1
+        # Api request for version - v2
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
             geography_code=self.geo1.code,
             data={
-                'version': version_v1.name,
+                'version': version_v2.name,
                 'format': 'json',
             },
         )
@@ -683,7 +683,7 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
         key_metrics = response.data["profile"]["profile_data"]["category-female"]["subcategories"]["subcategory-female"]["key_metrics"]
         # asserts
         assert len(key_metrics) == 1
-        assert key_metrics[0]["label"] == "key metric for v1"
+        assert key_metrics[0]["label"] == "key metric for v2"
         assert key_metrics[0]["value"] == 3.0
         assert key_metrics[0]["method"] == "absolute_value"
 
@@ -694,13 +694,13 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
         is affected if geography structure is different for versions.
 
         Geography structure for versions:
-            - default_version : ROOT > CHILD1 & CHILD2
-            - version - v1 : ROOT > CHILD1 & CHILD3
+            - version - v1 : ROOT > CHILD1 & CHILD2
+            - version - v2 : ROOT > CHILD1 & CHILD3
 
         Formula for sibling calculation:
             (count for requested geo)/(Total sum of count of sibling geographies)
 
-        Test data for version - default_version:
+        Test data for version - v1:
             create key metric for:
                 - subindicator group: female, denominator : sibling
         assert:
@@ -708,18 +708,18 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
               In this case : CHILD1 has only one sibling CHILD2
               value = (CHILD1_COUNT)/(CHILD1_COUNT + CHILD2_COUNT) => 2/6 = 0.3
 
-        Test data for version - v1:
-            - create version - v1
-            - add boundaries for v1 to CHILD1 & CHILD3
+        Test data for version - v2:
+            - create version - v2
+            - add boundaries for v2 to CHILD1 & CHILD3
             - create key metric for:
                 - subindicator group: female, denominator : sibling
         assert:
-            - label : key metric for v1, value : 0.25
+            - label : key metric for v2, value : 0.25
               In this case : CHILD1 has only one sibling CHILD3
               value = (CHILD1_COUNT)/(CHILD1_COUNT + CHILD3_COUNT) => 2/8 = 0.25
         """
         # Data Creation
-        # default_version
+        # version - v1 data
         data = [
             ("Geography", "gender", "age", "count"),
             (self.geo1.code, "female", "16", 2),
@@ -727,19 +727,19 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
         ]
 
         indicator = self.create_dataset_and_indicator(
-            self.default_version, self.profile, data, "gender"
+            self.version_v1, self.profile, data, "gender"
         )
         self.create_key_metrics(
             self.profile, indicator, "female", "key metric for default version",
             "sibling"
         )
 
-        # Version - v1 data
-        version_v1 = VersionFactory(name="v1")
-        self.create_boundary(self.geo1, version_v1)
-        self.create_boundary(self.geo3, version_v1)
+        # Version - v2 data
+        version_v2 = VersionFactory(name="v2")
+        self.create_boundary(self.geo1, version_v2)
+        self.create_boundary(self.geo3, version_v2)
         self.update_hierarchy_versions(
-            self.profile.geography_hierarchy, version_v1
+            self.profile.geography_hierarchy, version_v2
         )
         data = [
             ("Geography", "gender", "age", "count"),
@@ -747,13 +747,13 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
             (self.geo3.code, "female", "16", 6),
         ]
         indicator = self.create_dataset_and_indicator(
-            version_v1, self.profile, data, "gender"
+            version_v2, self.profile, data, "gender"
         )
         self.create_key_metrics(
-            self.profile, indicator, "female", "key metric for v1", "sibling"
+            self.profile, indicator, "female", "key metric for v2", "sibling"
         )
 
-        # Api request for default_version
+        # Api request for version_v1
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
@@ -770,13 +770,13 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
         assert key_metrics[0]["value"] == 0.3333333333333333
         assert key_metrics[0]["method"] == "sibling"
 
-        # Api request for version - v1
+        # Api request for version - v2
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
             geography_code=self.geo1.code,
             data={
-                'version': version_v1.name,
+                'version': version_v2.name,
                 'format': 'json',
             },
         )
@@ -784,7 +784,7 @@ class TestProfileKeyMetricsData(ConsolidatedProfileViewBase):
         key_metrics = response.data["profile"]["profile_data"]["category-female"]["subcategories"]["subcategory-female"]["key_metrics"]
         # asserts
         assert len(key_metrics) == 1
-        assert key_metrics[0]["label"] == "key metric for v1"
+        assert key_metrics[0]["label"] == "key metric for v2"
         assert key_metrics[0]["value"] == 0.25
         assert key_metrics[0]["method"] == "sibling"
 
@@ -803,27 +803,27 @@ class TestProfileParentData(ConsolidatedProfileViewBase):
         for default version:
             ROOT > CHILD1 > MUNI1
             - Create a child for CHILD1 with code MUNI1
-            - Create boundary for geograpy MUNI1 with default_version
+            - Create boundary for geograpy MUNI1 with version_v1
 
             assert when requested data for MUNI1:
                 parent in profile contains 2 objects
                 first : ROOT geograpy
                 Second : CHILD1 geography
 
-        for version - v1
+        for version - v2
             ROOT > CHILD2 > MUNI1
             - Create a child for CHILD2 with code MUNI1
-            - Create boundary for geograpy MUNI1 with v1
+            - Create boundary for geograpy MUNI1 with v2
 
             assert when requested data for MUNI1:
                 parent in profile contains 2 objects
                 first : ROOT geograpy
                 Second : CHILD2 geography
 
-        for version - v2
+        for version - v3
             ROOT > MUNI1
             - Create a child for ROOT with code MUNI1
-            - Create boundary for geograpy MUNI1 with v2
+            - Create boundary for geograpy MUNI1 with v3
 
             assert when requested data for MUNI1:
                 parent in profile contains 1 objects : ROOT geograpy
@@ -833,24 +833,24 @@ class TestProfileParentData(ConsolidatedProfileViewBase):
         """
         # Data Creation
 
-        # version - default_version
-        muni_default_version = self.geo1.add_child(code="MUNI1", level="muni")
-        self.create_boundary(muni_default_version, self.default_version)
-
-        # version - v1
-        version_v1 = VersionFactory(name="v1")
-        self.update_hierarchy_versions(self.profile.geography_hierarchy, version_v1)
-        muni_version_v1 = self.geo2.add_child(code="MUNI1", level="muni")
-        self.create_boundary(self.root, version_v1)
-        self.create_boundary(self.geo2, version_v1)
-        self.create_boundary(muni_version_v1, version_v1)
+        # version - version_v1
+        muni_version_v1 = self.geo1.add_child(code="MUNI1", level="muni")
+        self.create_boundary(muni_version_v1, self.version_v1)
 
         # version - v2
         version_v2 = VersionFactory(name="v2")
         self.update_hierarchy_versions(self.profile.geography_hierarchy, version_v2)
-        muni_version_v2 = self.root.add_child(code="MUNI1", level="muni")
+        muni_version_v2 = self.geo2.add_child(code="MUNI1", level="muni")
         self.create_boundary(self.root, version_v2)
+        self.create_boundary(self.geo2, version_v2)
         self.create_boundary(muni_version_v2, version_v2)
+
+        # version - v3
+        version_v3 = VersionFactory(name="v3")
+        self.update_hierarchy_versions(self.profile.geography_hierarchy, version_v3)
+        muni_version_v3 = self.root.add_child(code="MUNI1", level="muni")
+        self.create_boundary(self.root, version_v3)
+        self.create_boundary(muni_version_v3, version_v3)
 
 
         # Api request for default version
@@ -869,13 +869,13 @@ class TestProfileParentData(ConsolidatedProfileViewBase):
         assert geo_data["parents"][0]["code"] == self.root.code
         assert geo_data["parents"][1]["code"] == self.geo1.code
 
-        # Api request for version - v1
+        # Api request for version - v2
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
             geography_code="MUNI1",
             data={
-                'version': version_v1.name,
+                'version': version_v2.name,
                 'format': 'json'
             },
         )
@@ -886,13 +886,13 @@ class TestProfileParentData(ConsolidatedProfileViewBase):
         assert geo_data["parents"][0]["code"] == self.root.code
         assert geo_data["parents"][1]["code"] == self.geo2.code
 
-        # Api request for version - v2
+        # Api request for version - v3
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
             geography_code="MUNI1",
             data={
-                'version': version_v2.name,
+                'version': version_v3.name,
                 'format': 'json'
             },
         )
@@ -916,7 +916,7 @@ class TestParentLayersData(ConsolidatedProfileViewBase):
             ROOT > CHILD1 > MUNI1
             ROOT > CHILD2
             - Create a child for CHILD1 with code MUNI1
-            - Create boundary for geograpy MUNI1 with default_version
+            - Create boundary for geograpy MUNI1 with version_v1
             assert when requested data for MUNI1:
                 parent_layers should have 2 objects
                 Inside first object there should 2 features
@@ -924,11 +924,11 @@ class TestParentLayersData(ConsolidatedProfileViewBase):
                 Inside second object there should 1 feature
                     - feature 1: MUNI1
 
-        for version - v1
+        for version - v2
             ROOT > CHILD1 > MUNI1
             ROOT > CHILD2
             ROOT > CHILD3
-            - Create boundary for geograpy MUNI1, CHILD1, CHILD2, ROOT with v1
+            - Create boundary for geograpy MUNI1, CHILD1, CHILD2, ROOT with v2
 
             assert when requested data for MUNI1:
                 parent_layers should have 2 objects
@@ -939,17 +939,17 @@ class TestParentLayersData(ConsolidatedProfileViewBase):
         """
         # Data Creation
         muni_geo = self.geo1.add_child(code="MUNI1", level="muni")
-        # version - default_version
-        self.create_boundary(muni_geo, self.default_version)
+        # version - version_v1
+        self.create_boundary(muni_geo, self.version_v1)
 
-        # version - v1
-        version_v1 = VersionFactory(name="v1")
-        self.update_hierarchy_versions(self.profile.geography_hierarchy, version_v1)
-        self.create_boundary(self.root, version_v1)
-        self.create_boundary(self.geo1, version_v1)
-        self.create_boundary(self.geo2, version_v1)
-        self.create_boundary(self.geo3, version_v1)
-        self.create_boundary(muni_geo, version_v1)
+        # version - v2
+        version_v2 = VersionFactory(name="v2")
+        self.update_hierarchy_versions(self.profile.geography_hierarchy, version_v2)
+        self.create_boundary(self.root, version_v2)
+        self.create_boundary(self.geo1, version_v2)
+        self.create_boundary(self.geo2, version_v2)
+        self.create_boundary(self.geo3, version_v2)
+        self.create_boundary(muni_geo, version_v2)
 
         # Api request for default version
         response = self.get(
@@ -973,13 +973,13 @@ class TestParentLayersData(ConsolidatedProfileViewBase):
         assert feature_geography_codes == ["CHILD1", "CHILD2"]
         assert parent_layers[1]["features"][0]["properties"]["code"] == "MUNI1"
 
-        # Api request for version - v1
+        # Api request for version - v2
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
             geography_code="MUNI1",
             data={
-                'version': version_v1.name,
+                'version': version_v2.name,
                 'format': 'json'
             },
         )
@@ -1007,7 +1007,7 @@ class TestChildrenData(ConsolidatedProfileViewBase):
         """
         Test children for requested geography.
 
-        for version default_version
+        for version version_v1
             ROOT > CHILD1
             ROOT > CHILD2
         assert: request for root geography:
@@ -1016,13 +1016,13 @@ class TestChildrenData(ConsolidatedProfileViewBase):
             - Feature 1 should be CHILD1
             - Feature 2 should be CHILD2
 
-        for version - v1
+        for version - v2
             ROOT > CHILD1
             ROOT > CHILD3
             ROOT > MUNI1
-            - create version v1
+            - create version v2
             - create a child of ROOT with level muni
-            - Create boundaries of root, CHILD1, CHILD3, muni with version_v1
+            - Create boundaries of root, CHILD1, CHILD3, muni with version_v2
         assert: request for root geography:
             - children should have geography level province & muni
             - Length of features in province should be 2
@@ -1033,13 +1033,13 @@ class TestChildrenData(ConsolidatedProfileViewBase):
         """
         # Data Creation
         muni1 = self.root.add_child(code="MUNI1", level="muni")
-        # version - v1
-        version_v1 = VersionFactory(name="v1")
-        self.update_hierarchy_versions(self.profile.geography_hierarchy, version_v1)
-        self.create_boundary(self.root, version_v1)
-        self.create_boundary(self.geo1, version_v1)
-        self.create_boundary(self.geo3, version_v1)
-        self.create_boundary(muni1, version_v1)
+        # version - v2
+        version_v2 = VersionFactory(name="v2")
+        self.update_hierarchy_versions(self.profile.geography_hierarchy, version_v2)
+        self.create_boundary(self.root, version_v2)
+        self.create_boundary(self.geo1, version_v2)
+        self.create_boundary(self.geo3, version_v2)
+        self.create_boundary(muni1, version_v2)
 
         # Api request for default version
         response = self.get(
@@ -1061,13 +1061,13 @@ class TestChildrenData(ConsolidatedProfileViewBase):
         ])
         assert feature_geography_codes == ["CHILD1", "CHILD2"]
 
-        # Api request for version - v1
+        # Api request for version - v2
         response = self.get(
             'all-details',
             profile_id=self.profile.pk,
             geography_code=self.root.code,
             data={
-                'version': version_v1.name,
+                'version': version_v2.name,
                 'format': 'json'
             },
         )

@@ -28,7 +28,7 @@ class ConsolidatedProfileViewBase(APITestCase):
         """
         Create Data for default_version
         """
-        self.default_version = VersionFactory(name="default_version")
+        self.version_v1 = VersionFactory(name="v1")
 
         # Create Geography Structure with boundary objects
         self.root = Geography.add_root(code="ROOT", level="country")
@@ -36,13 +36,13 @@ class ConsolidatedProfileViewBase(APITestCase):
         self.geo2 = self.root.add_child(code="CHILD2", level="province")
         self.geo3 = self.root.add_child(code="CHILD3", level="province")
 
-        self.create_boundary(self.root, self.default_version)
-        self.create_boundary(self.geo1, self.default_version)
-        self.create_boundary(self.geo2, self.default_version)
+        self.create_boundary(self.root, self.version_v1)
+        self.create_boundary(self.geo1, self.version_v1)
+        self.create_boundary(self.geo2, self.version_v1)
 
         # Create hierarchy
         self.hierarchy = self.create_hierarchy(
-            self.root, self.default_version, versions=["default_version"]
+            self.root, self.version_v1, versions=["v1"]
         )
 
         # Create Profile Related Data
