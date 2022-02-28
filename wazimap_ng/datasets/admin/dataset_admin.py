@@ -69,9 +69,11 @@ class DatasetAdmin(DatasetBaseAdminModel, HistoryAdmin):
 
     readonly_fields = ("imported_dataset", )
 
+    class Media:
+        js = ("/static/js/dataset-admin.js",)
+
 
     def imported_dataset(self, obj):
-
         def get_url(file_obj):
             return '<a href="%s">%s</a>' % (reverse(
                 'admin:%s_%s_change' % (
