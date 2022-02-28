@@ -42,9 +42,19 @@ def profile_admin_group():
     return AuthGroupFactory(name="ProfileAdmin")
 
 @pytest.fixture
+def data_admin_group():
+    return AuthGroupFactory(name="DataAdmin")
+
+@pytest.fixture
 def profile_admin_user(profile_admin_group):
     user = UserFactory(is_staff=True)
     user.groups.add(profile_admin_group)
+    return user
+
+@pytest.fixture
+def data_admin_user(data_admin_group):
+    user = UserFactory(is_staff=True)
+    user.groups.add(data_admin_group)
     return user
 
 @pytest.fixture
@@ -68,6 +78,13 @@ def mocked_request_profileadmin(factory, profile_admin_user):
     request = factory.get('/get/request')
     request.method = 'GET'
     request.user = profile_admin_user
+    return request
+
+@pytest.fixture
+def mocked_request_dataadmin(factory, data_admin_user):
+    request = factory.get('/get/request')
+    request.method = 'GET'
+    request.user = data_admin_user
     return request
 
 
