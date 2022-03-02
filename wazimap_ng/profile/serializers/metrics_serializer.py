@@ -46,7 +46,8 @@ def MetricsSerializer(profile, geography, version):
     profile_key_metrics = (models.ProfileKeyMetrics.objects
         .filter(profile=profile, variable__dataset__version=version)
         .order_by("order")
-        .select_related("subcategory", "subcategory__category")
+        .select_related("subcategory", "subcategory__category", "variable__dataset__metadata" )
+
     )
     for profile_key_metric in profile_key_metrics:
         denominator = profile_key_metric.denominator
@@ -60,7 +61,12 @@ def MetricsSerializer(profile, geography, version):
                             "key_metrics": [{
                                 "label": profile_key_metric.label,
                                 "value": val,
-                                "method": denominator
+                                "method": denominator,
+                                "metadata": {
+                                    "description": profile_key_metric.variable.dataset.metadata.description,
+                                    "source": profile_key_metric.variable.dataset.metadata.source,
+                                    "url": profile_key_metric.variable.dataset.metadata.url,
+                                }
                             }]
                         }
                     }
