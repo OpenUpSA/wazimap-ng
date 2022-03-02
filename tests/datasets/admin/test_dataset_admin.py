@@ -84,7 +84,7 @@ class TestDatasetAdminInitialForm:
         assert list(profile_form_field.queryset) == [profile, private_profile]
         assert profile_form_field.initial == None
 
-    def test_version_field_with_single_profile_single_verion(
+    def test_version_field_with_single_profile_single_version(
         self, mocked_request, profile
     ):
         """
@@ -105,7 +105,7 @@ class TestDatasetAdminInitialForm:
         assert version_form_field.queryset.first() == versions.first()
         assert version_form_field.initial == versions.first()
 
-    def test_version_field_with_single_profile_multiple_verion(
+    def test_version_field_with_single_profile_multiple_version(
         self, mocked_request, multiversion_profile, version1, version2
     ):
         """
@@ -123,7 +123,7 @@ class TestDatasetAdminInitialForm:
         assert list(version_form_field.queryset) == [version1, version2]
         assert version_form_field.initial == None
 
-    def test_version_field_with_multiple_profile_multiple_verion(
+    def test_version_field_with_multiple_profile_multiple_version(
         self, mocked_request, profile, private_profile
     ):
         """
