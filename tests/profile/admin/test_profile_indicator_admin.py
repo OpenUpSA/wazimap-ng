@@ -1,7 +1,8 @@
 import pytest
 from django.contrib.admin.sites import AdminSite
 
-from tests.profile.factories import ProfileIndicatorFactory, ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory
+from tests.profile.factories import ProfileIndicatorFactory, ProfileFactory, IndicatorCategoryFactory, \
+    IndicatorSubcategoryFactory
 from tests.datasets.factories import DatasetFactory, IndicatorFactory
 from wazimap_ng.profile.models import ProfileIndicator, IndicatorSubcategory
 from wazimap_ng.profile.admin.admins import ProfileIndicatorAdmin
@@ -12,16 +13,14 @@ class TestProfileIndicatorAdmin:
 
     def test_modeladmin_str(self):
         ma = ProfileIndicatorAdmin(ProfileIndicator, AdminSite())
-        assert str(ma) =='profile.ProfileIndicatorAdmin'
+        assert str(ma) == 'profile.ProfileIndicatorAdmin'
 
     def test_fieldset(self, mocked_request, profile_indicator):
         ma = ProfileIndicatorAdmin(ProfileIndicator, AdminSite())
         base_fields = list(ma.get_form(mocked_request, profile_indicator).base_fields)
 
-        assert base_fields == [
-            'indicator', 'content_type', 'label', 'subcategory', 'description',
-            'choropleth_method', 'chart_configuration', 'change_reason'
-        ]
+        assert base_fields == ['subcategory', 'label', 'indicator', 'content_type', 'choropleth_method', 'description',
+                               'chart_configuration', 'change_reason']
 
     def test_subcategories_queryset_for_indicator(self, mocked_request, profile_indicator, subcategory):
         ma = ProfileIndicatorAdmin(ProfileIndicator, AdminSite())
@@ -29,7 +28,6 @@ class TestProfileIndicatorAdmin:
         queryset = form.fields["subcategory"].queryset
         assert queryset.count() == 1
         assert queryset.first() == subcategory
-
 
     def test_subcategories_empty_queryset_for_new_obj(self, mocked_request, profile_indicator, subcategory):
         ma = ProfileIndicatorAdmin(ProfileIndicator, AdminSite())
