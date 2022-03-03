@@ -36,10 +36,10 @@ class Indicator(BaseModel, SimpleHistory):
             logger.debug(f"Updating subindicators for indicator: {self.name} ({self.id})")
             self.subindicators = self.get_unique_subindicators()
         super().save(*args, **kwargs)
-        
+
 
     def __str__(self):
-        return f"{self.dataset.name} -> {self.name}"
+        return f"{self.dataset.profile} : {self.dataset.name} -> {self.name}"
 
     class Meta:
         ordering = ["id"]

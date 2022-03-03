@@ -19,3 +19,7 @@
 select[name="content_indicator"] {
   margin-left: 160px;
 }
+
+select#id_indicator{
+    max-width: 700px;
+}
