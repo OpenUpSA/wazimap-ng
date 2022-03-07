@@ -11,7 +11,8 @@ from tests.points.factories import (
 )
 from tests.datasets.factories import (
     GeographyHierarchyFactory,
-    VersionFactory, DatasetFactory,IndicatorFactory
+    VersionFactory, DatasetFactory,IndicatorFactory,
+    MetaDataFactory
 )
 from tests.boundaries.factories import GeographyBoundaryFactory
 from wazimap_ng.datasets.models import Geography
@@ -112,6 +113,12 @@ class ConsolidatedProfileViewBase(APITestCase):
         subcategory = IndicatorSubcategoryFactory(
             category=category, name=f'subcategory-{subindicator}'
         )
+        metadata = MetaDataFactory(
+            source="A source", url="http://example.com", 
+            description="A description", dataset=indicator.dataset
+        )
+        indicator.dataset.metadata = metadata
+        
         return ProfileKeyMetricsFactory(
             profile=profile, variable=indicator,
             subindicator=subindicator_index, denominator=denominator,
