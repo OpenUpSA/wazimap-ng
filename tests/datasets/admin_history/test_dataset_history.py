@@ -74,7 +74,7 @@ class TestDatasetAdminHistory:
         history = dataset.history.first()
 
         assert history.history_user_id == superuser.id
-        assert history.history_change_reason == '{"reason": "New Object"}'
+        assert history.history_change_reason == "New Object"
         assert history.history_type == "+"
 
 
@@ -103,5 +103,7 @@ class TestDatasetAdminHistory:
         history = dataset.history.first()
 
         assert history.history_user_id == superuser.id
-        assert history.history_change_reason == '{"reason": "Changed Name", "changed_fields": ["name"]}'
+        assert history.history_change_reason == "Changed Name"
+        admin = DatasetAdmin(Dataset, AdminSite())
+        assert admin.changed_fields(history) == "name"
         assert history.history_type == "~"

@@ -96,6 +96,7 @@ def process_uploaded_file(dataset_file, dataset, **kwargs):
     groups = [group for group in columns.to_list() if group not in ["geography", "count"]]
 
     dataset.groups = list(set(groups + dataset.groups))
+    dataset._change_reason = "Dataset updated on task completion to update groups."
     dataset.save()
 
     error_file_log = incorrect_file_log = None

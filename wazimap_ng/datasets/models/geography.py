@@ -106,6 +106,14 @@ class GeographyHierarchy(BaseModel, SimpleHistory):
     def default_version(self):
         return self.configuration.get("default_version")
 
+    @property
+    def get_version_names(self):
+        versions = self.configuration.get("versions", [])
+        default_version = self.configuration.get("default_version", "")
+        if default_version and default_version not in versions:
+            versions.append(default_version)
+        return versions
+
     def help_text(self):
         return f"{self.name} : {self.description}"
 

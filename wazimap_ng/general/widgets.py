@@ -47,9 +47,13 @@ class VariableFilterWidget(Widget):
 
     def get_context(self, name, value, attrs=None):
 
-        CHOICES = [('public', 'Public'), ('private', 'Private')]
+        CHOICES = [('public', 'All public variables'), ('private', 'Private variables of the selected profile')]
         choice_field = forms.fields.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
-        queryset = self.choices.queryset
+        queryset = self.choices.queryset.order_by(
+            'dataset__profile__name',
+            'dataset__name',
+            'name'
+        )
         selected_permission = "public"
         if value:
             value = queryset.get(id=value)

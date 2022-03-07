@@ -33,5 +33,7 @@ class TestIndicatorCategoryAdminHistory:
         assert category.history.all().count() == 2
         history = category.history.first()
         assert history.history_user_id == superuser.id
-        assert history.history_change_reason == '{"reason": "Changed name", "changed_fields": ["name"]}'
+        assert history.history_change_reason == "Changed name"
+        admin = IndicatorCategoryAdmin(IndicatorCategory, AdminSite())
+        assert admin.changed_fields(history) == "name"
         assert history.history_type == "~"

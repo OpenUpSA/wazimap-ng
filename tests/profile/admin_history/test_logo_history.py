@@ -35,5 +35,7 @@ class TestLogoAdminHistory:
         assert logo.history.all().count() == 2
         history = logo.history.first()
         assert history.history_user_id == superuser.id
-        assert history.history_change_reason == '{"reason": "Added url", "changed_fields": ["url"]}'
+        assert history.history_change_reason == "Added url"
+        admin =LogoAdmin(Logo, AdminSite())
+        assert admin.changed_fields(history) == "url"
         assert history.history_type == "~"

@@ -34,5 +34,7 @@ class TestProfileAdminHistory:
         assert profile.history.all().count() == 2
         history = profile.history.first()
         assert history.history_user_id == superuser.id
-        assert history.history_change_reason == '{"reason": "Reason not provided", "changed_fields": ["name"]}'
+        assert history.history_change_reason == None
+        admin = ProfileAdmin(Profile, AdminSite())
+        assert admin.changed_fields(history) == "name"
         assert history.history_type == "~"

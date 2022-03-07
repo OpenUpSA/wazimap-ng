@@ -59,11 +59,12 @@ class GeographyHierarchyAdmin(HistoryAdmin):
         ("", {
             "fields": (
                 "name", "root_geography", "description",
+                "configuration"
             )
         }),
     )
     form = HistoryAdminForm
-    
+
 
 
 @admin.register(models.Universe)

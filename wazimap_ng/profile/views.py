@@ -20,6 +20,7 @@ from . import serializers
 from ..cache import etag_profile_updated, last_modified_profile_updated
 
 from wazimap_ng.datasets.models import Geography, Version
+from wazimap_ng.datasets.serializers import VersionSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -119,4 +120,12 @@ def profile_geography_indicator_data(request, profile_id, geography_code, profil
 
     js = serializers.FullProfileIndicatorSerializer(instance=profile_indicator, geography=geography).data
 
+    return Response(js)
+
+@api_view()
+def profile_versions(request, profile_id):
+    profile = get_object_or_404(models.Profile, pk=profile_id)
+    version_names = profile.geography_hierarchy.get_version_names
+    versions = Version.objects.filter(name__in=version_names)
+    js = VersionSerializer(versions, many=True).data
     return Response(js)

@@ -16,20 +16,20 @@ def get_data_for_key_metric_and_geographies(profile_key_metric, geographies):
         return indicator_data.first().data
     return None
 
-def absolute_value(profile_key_metric, geography):
+def absolute_value(profile_key_metric, geography, version):
     indicator_data = get_data_for_key_metric_and_geographies(profile_key_metric, [geography])
     if indicator_data != None:
         return MetricCalculator.absolute_value(indicator_data, profile_key_metric, geography)
     return None
 
-def subindicator(profile_key_metric, geography):
+def subindicator(profile_key_metric, geography, version):
     indicator_data = get_data_for_key_metric_and_geographies(profile_key_metric, [geography])
     if indicator_data != None:
         return MetricCalculator.subindicator(indicator_data, profile_key_metric, geography)
     return None
 
 def sibling(profile_key_metric, geography, version):
-    siblings = geography.get_version_siblings(version)
+    siblings = list(geography.get_version_siblings(version))
     data = get_indicator_data(profile_key_metric, [geography] + siblings)
     if data.count() > 0:
         return MetricCalculator.sibling(data, profile_key_metric, geography)
@@ -52,7 +52,7 @@ def MetricsSerializer(profile, geography, version):
     for profile_key_metric in profile_key_metrics:
         denominator = profile_key_metric.denominator
         method = algorithms.get(denominator, absolute_value)
-        val = method(profile_key_metric, geography)
+        val = method(profile_key_metric, geography, version)
         if val is not None:
             js = {
                 profile_key_metric.subcategory.category.name: {

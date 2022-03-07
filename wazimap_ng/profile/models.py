@@ -106,13 +106,13 @@ class ProfileHighlight(BaseModel, SimpleHistory):
 
 
 class ProfileIndicator(BaseModel, SimpleHistory):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, help_text="The profile to which this profile indicator belongs")
     indicator = models.ForeignKey(
-        Indicator, on_delete=models.CASCADE, help_text="Indicator on which this indicator is based on.", verbose_name="variable"
+        Indicator, on_delete=models.CASCADE, verbose_name="variable"
     )
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
     label = models.CharField(max_length=255, null=False, blank=True, help_text="Label for the indicator displayed on the front-end")
-    description = HTMLField(blank=True)
+    description = HTMLField(blank=True, help_text="Use this to help your users interpret the indicator effectively")
     subindicators = JSONField(default=list, blank=True)
     choropleth_method = models.ForeignKey(ChoroplethMethod, null=False, on_delete=models.CASCADE)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)

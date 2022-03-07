@@ -80,3 +80,8 @@ class MetaDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.MetaData
         fields = ('source', 'description', 'licence', 'url')
+
+class VersionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Version
+        fields = ("id", "name",)

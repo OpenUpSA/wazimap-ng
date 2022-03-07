@@ -73,6 +73,11 @@ urlpatterns = [
         name="profile-detail",
     ),
     path(
+        "api/v1/profiles/<int:profile_id>/versions/",
+        cache(profile_views.profile_versions),
+        name="profile-versions",
+    ),
+    path(
         "api/v1/profiles/<int:profile_id>/categories/",
         cache(profile_views.ProfileCategoriesList.as_view()),
         name="profile-categories",
@@ -159,8 +164,15 @@ urlpatterns = [
     ),
     path("api/v1/tasks/<str:task_id>/", task_status, name="task_status"),
     path('sentry-debug/', trigger_error),
+    path(
+        "api/v1/children-indicators/profile/<int:profile_id>/geography/<str:geography_code>/",
+        cache(general_views.indicator_data_for_children),
+        name="children-indicators"
+    ),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+admin.site.site_header = 'Wazimap Administration'
 
 if settings.DEBUG:
     import debug_toolbar
