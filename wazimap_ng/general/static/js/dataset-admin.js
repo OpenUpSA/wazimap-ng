@@ -31,6 +31,10 @@
                         $.each(data, function (key, value) {
                             appendOptionEl($versionEl, value.id, value.name)
                         });
+                    },
+                    error: function (jqXHR, exception) {
+                      clearVersions();
+                      toastr["error"]("Something went wrong while fetching versions.")
                     }
                 })
             } else {

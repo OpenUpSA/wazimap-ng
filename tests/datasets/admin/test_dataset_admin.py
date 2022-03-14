@@ -282,3 +282,26 @@ class TestDatasetAdminFormValidations:
         with pytest.raises(ValidationError) as e_info:
             form.clean()
         assert str(e_info.value.args[0]) == 'Version version1 not valid for profile Profile'
+
+    def test_version_queryset_when_error_in_form(
+        self, client, superuser, profile, version1
+    ):
+        """
+        Test queryset of version field when there is error in form submission
+        """
+        client.force_login(user=superuser)
+        url = reverse("admin:datasets_dataset_add")
+        data={
+            'profile': profile.id,
+            'metadata-TOTAL_FORMS': 0,
+            'metadata-INITIAL_FORMS': 0,
+        }
+        res = client.post(url, data, follow=True)
+
+        assert res.status_code == 200
+        form = res.context['adminform'].form
+        versions = form.fields["version"].queryset
+        versions_qs = Version.objects.filter(
+            name__in=profile.geography_hierarchy.get_version_names
+        )
+        assert list(versions) == list(versions_qs)
