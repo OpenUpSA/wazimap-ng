@@ -16,27 +16,22 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 
 from django.contrib.auth.models import User
-
 from tests.profile.factories import ProfileFactory
-from tests.points.factories import (
-    ProfileCategoryFactory, CategoryFactory, LocationFactory
-)
 from tests.datasets.factories import (
-    GeographyFactory, GeographyHierarchyFactory, VersionFactory
-)
-from tests.boundaries.factories import GeographyBoundaryFactory
-from tests.general.factories import (
-    UserFactory, AuthGroupFactory
+    GeographyHierarchyFactory,
+    VersionFactory,
 )
 
 
-@override_settings(ALLOWED_HOSTS=['*'])  # Disable ALLOW_HOSTS
+@override_settings(ALLOWED_HOSTS=["*"])  # Disable ALLOW_HOSTS
 class BaseTestCase(LiveServerTestCase):
     """
     Provides base test class which connects to the Docker
     container running Selenium.
     """
-    host = '0.0.0.0'  # Bind to 0.0.0.0 to allow external access
+
+    host = "0.0.0.0"  # Bind to 0.0.0.0 to allow external access
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -48,10 +43,9 @@ class BaseTestCase(LiveServerTestCase):
             #  Set to: htttp://{selenium-container-name}:port/wd/hub
             #  In our example, the container is named `selenium`
             #  and runs on port 4444
-            command_executor='http://selenium:4444/wd/hub',
+            command_executor="http://selenium:4444/wd/hub",
             # Set to CHROME since we are using the Chrome container
             desired_capabilities=DesiredCapabilities.CHROME,
-
         )
 
     def setUp(self):
@@ -60,30 +54,29 @@ class BaseTestCase(LiveServerTestCase):
         self.version2 = VersionFactory(name="version2")
         self.version3 = VersionFactory(name="version3")
         self.public_profile_hierarchy = GeographyHierarchyFactory(
-            configuration = {
+            configuration={
                 "default_version": self.version1.name,
-                "versions": [self.version1.name, self.version2.name]
+                "versions": [self.version1.name, self.version2.name],
             }
         )
         self.public_profile = ProfileFactory(
-            name="public_profile",
-            geography_hierarchy=self.public_profile_hierarchy
+            name="public_profile", geography_hierarchy=self.public_profile_hierarchy
         )
 
         self.private_profile_hierarchy = GeographyHierarchyFactory(
-            configuration = {
+            configuration={
                 "default_version": self.version3.name,
-                "versions": [self.version3.name]
+                "versions": [self.version3.name],
             }
         )
         self.private_profile = ProfileFactory(
             name="private_profile",
             permission_type="private",
-            geography_hierarchy=self.private_profile_hierarchy
+            geography_hierarchy=self.private_profile_hierarchy,
         )
 
         # Create superuser
-        self.user_password = 'mypassword'
+        self.user_password = "mypassword"
         self.superuser = User.objects.create_user(
             "superuser", "superuser@testwazi.com", self.user_password
         )
@@ -97,9 +90,7 @@ class BaseTestCase(LiveServerTestCase):
 
     def get_element(self, id, delay=3):
         try:
-            element = WebDriverWait(
-                self.selenium, delay
-            ).until(
+            element = WebDriverWait(self.selenium, delay).until(
                 EC.presence_of_element_located((By.ID, id))
             )
             return element
@@ -107,9 +98,7 @@ class BaseTestCase(LiveServerTestCase):
             raise "Loading took too much time!"
 
     def find_by_id(self, id):
-        return self.selenium.find_element(
-            by=By.ID, value=id
-        )
+        return self.selenium.find_element(by=By.ID, value=id)
 
     def login_into_adminpanel(self):
         url = self.get_url("/admin/")
@@ -123,7 +112,7 @@ class BaseTestCase(LiveServerTestCase):
         # Login
         username_field = self.find_by_id("id_username")
         passowrd_field = self.find_by_id("id_password")
-        username_field.send_keys('superuser')
+        username_field.send_keys("superuser")
         passowrd_field.send_keys(self.user_password)
         passowrd_field.send_keys(Keys.ENTER)
 

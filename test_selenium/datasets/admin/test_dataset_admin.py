@@ -18,10 +18,8 @@ class TestProfileVerisons(BaseTestCase):
         header_text = main_div.find_element(by=By.TAG_NAME, value="h1").text
         assert header_text == "Add dataset"
 
-        profile_field = WebDriverWait(
-            self.selenium, 2
-        ).until(
-            EC.element_to_be_clickable((By.ID, 'id_profile'))
+        profile_field = WebDriverWait(self.selenium, 2).until(
+            EC.element_to_be_clickable((By.ID, "id_profile"))
         )
         assert profile_field.get_attribute("required") == "true"
         profile_field = Select(profile_field)
@@ -31,10 +29,8 @@ class TestProfileVerisons(BaseTestCase):
         assert profile_options[1].text == "private_profile"
         assert profile_options[2].text == "public_profile"
 
-        version_field = WebDriverWait(
-            self.selenium, 2
-        ).until(
-            EC.element_to_be_clickable((By.ID, 'id_version'))
+        version_field = WebDriverWait(self.selenium, 2).until(
+            EC.element_to_be_clickable((By.ID, "id_version"))
         )
         assert version_field.get_attribute("required") == "true"
         version_field = Select(version_field)
@@ -43,10 +39,8 @@ class TestProfileVerisons(BaseTestCase):
         assert version_options[0].text == "---------"
 
         profile_field.select_by_visible_text("public_profile")
-        version_field = WebDriverWait(
-            self.selenium, 2
-        ).until(
-            EC.element_to_be_clickable((By.ID, 'id_version'))
+        version_field = WebDriverWait(self.selenium, 2).until(
+            EC.element_to_be_clickable((By.ID, "id_version"))
         )
         version_field = Select(version_field)
         assert len(version_field.options) == 3
@@ -57,10 +51,8 @@ class TestProfileVerisons(BaseTestCase):
 
         profile_field.select_by_visible_text("private_profile")
 
-        version_field = WebDriverWait(
-            self.selenium, 2
-        ).until(
-            EC.element_to_be_clickable((By.ID, 'id_version'))
+        version_field = WebDriverWait(self.selenium, 2).until(
+            EC.element_to_be_clickable((By.ID, "id_version"))
         )
         version_field = Select(version_field)
         assert len(version_field.options) == 2
@@ -76,10 +68,8 @@ class TestProfileVerisons(BaseTestCase):
         header_text = main_div.find_element(by=By.TAG_NAME, value="h1").text
         assert header_text == "Add dataset"
 
-        profile_field = WebDriverWait(
-            self.selenium, 2
-        ).until(
-            EC.element_to_be_clickable((By.ID, 'id_profile'))
+        profile_field = WebDriverWait(self.selenium, 2).until(
+            EC.element_to_be_clickable((By.ID, "id_profile"))
         )
         assert profile_field.get_attribute("required") == "true"
         profile_field = Select(profile_field)
@@ -94,9 +84,7 @@ class TestProfileVerisons(BaseTestCase):
         )
         profile_field.select_by_visible_text("private_profile")
 
-        toast = WebDriverWait(
-            self.selenium, 3
-        ).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'toast-message'))
+        toast = WebDriverWait(self.selenium, 3).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "toast-message"))
         )
         assert toast.text == "Something went wrong while fetching versions."
