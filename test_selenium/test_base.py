@@ -55,7 +55,7 @@ class BaseTestCase(LiveServerTestCase):
         )
 
     def setUp(self):
-        self.site_header_text = "Django administration"
+        self.site_header_text = "Wazimap Administration"
         self.version1 = VersionFactory(name="version1")
         self.version2 = VersionFactory(name="version2")
         self.version3 = VersionFactory(name="version3")
