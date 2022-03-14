@@ -14,9 +14,10 @@ class Test(Common):
         BASE_DIR,
         '-s',
         '--nologcapture',
-        '--with-coverage',
+        # '--with-coverage',
         '--with-progressive',
-        '--cover-package=wazimap_ng'
+        '--cover-package=wazimap_ng',
+        '--cover-html'
     ]
 
     # Mail
