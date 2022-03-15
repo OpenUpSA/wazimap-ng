@@ -23,7 +23,7 @@ class TestProfileVersions:
         assert response.status_code == 401
         assert str(response.data["detail"]) == "Authentication credentials were not provided."
 
-    def test_privare_profile_versions_for_superuser(
+    def test_private_profile_versions_for_superuser(
         self, client, superuser, private_profile, version
     ):
         client.force_login(user=superuser)
@@ -34,7 +34,7 @@ class TestProfileVersions:
         assert response.data[0]["id"] == version.id
         assert response.data[0]["name"] == version.name
 
-    def test_privare_profile_versions_for_dataadmin(
+    def test_private_profile_versions_for_dataadmin(
         self, client, data_admin_user, private_profile, version
     ):
         client.force_login(user=data_admin_user)
@@ -43,7 +43,7 @@ class TestProfileVersions:
         assert response.status_code == 403
         assert str(response.data["detail"]) == "You do not have permission to perform this action."
 
-    def test_privare_profile_versions_for_dataadmin_with_permissions(
+    def test_private_profile_versions_for_dataadmin_with_permissions(
         self, client, data_admin_user, private_profile, version,
         private_profile_group
     ):
