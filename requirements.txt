@@ -85,5 +85,5 @@ lorem==0.1.1
 chardet==3.0.4
 
 django-admin-json-editor==0.2.3
-django-tinymce==3.3.0
+django-tinymce==3.4.0
 django-simple-history==3.0.0
