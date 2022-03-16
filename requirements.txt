@@ -22,7 +22,7 @@ djangorestframework==3.11.2
 djangorestframework-csv==2.1.0
 django-rest-auth==0.9.5
 Markdown==3.0.1
-django-filter==2.1.0
+django-filter==2.4.0
 django-cors-headers==3.2.0
 
 # Developer Tools
