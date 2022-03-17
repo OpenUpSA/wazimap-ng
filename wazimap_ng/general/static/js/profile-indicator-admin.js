@@ -4,6 +4,7 @@
         const $subcategoryEl = $(document).find("#id_subcategory");
         const $emptyOptionEl = $("<option></option>");
         const $permissionOptionEl = $(document).find("#variable-permission-filter");
+        const permissionTypes = {public: 'public', private: 'private'};
 
         filterVariables($profileEl.val(), $permissionOptionEl.find("input:checked").val());
 
@@ -49,11 +50,31 @@
             }
         }
 
-        function filterVariables(selectedProfile, permissionType) {
+        function filterVariables(selectedProfile, selectedPermissionType) {
+            if (selectedProfile === '' && selectedPermissionType === permissionTypes.private) {
+                $('select#id_indicator').prop('disabled', true);
+            } else {
+                $('select#id_indicator').prop('disabled', false);
+            }
+
             $('select#id_indicator option').each(function () {
                 if (this.value !== '') {
                     //filter out the first option
-                    console.log({'this.value': this})
+                    let optionPermissionType = $(this).attr('data-type');
+                    let optionProfile = $(this).attr('data-profileid');
+
+                    let isHidden = false;
+                    if (selectedPermissionType === permissionTypes.public && optionPermissionType !== permissionTypes.public) {
+                        isHidden = true;
+                    } else if (selectedPermissionType === permissionTypes.private && (optionProfile !== selectedProfile || optionPermissionType !== permissionTypes.private)) {
+                        isHidden = true;
+                    }
+
+                    if (isHidden) {
+                        $(this).addClass('hidden');
+                    } else {
+                        $(this).removeClass('hidden');
+                    }
                 }
             })
         }

@@ -20,6 +20,8 @@ from tests.profile.factories import ProfileFactory
 from tests.datasets.factories import (
     GeographyHierarchyFactory,
     VersionFactory,
+    DatasetFactory,
+    IndicatorFactory,
 )
 
 
@@ -59,8 +61,17 @@ class BaseTestCase(LiveServerTestCase):
                 "versions": [self.version1.name, self.version2.name],
             }
         )
+        self.public_profile_hierarchy2 = GeographyHierarchyFactory(
+            configuration={
+                "default_version": self.version2.name,
+                "versions": [self.version2.name, self.version3.name],
+            }
+        )
         self.public_profile = ProfileFactory(
             name="public_profile", geography_hierarchy=self.public_profile_hierarchy
+        )
+        self.public_profile2 = ProfileFactory(
+            name="public_profile2", geography_hierarchy=self.public_profile_hierarchy2
         )
 
         self.private_profile_hierarchy = GeographyHierarchyFactory(
@@ -74,6 +85,18 @@ class BaseTestCase(LiveServerTestCase):
             permission_type="private",
             geography_hierarchy=self.private_profile_hierarchy,
         )
+
+        self.dataset1 = DatasetFactory(name="dataset1", profile=self.public_profile, permission_type="public")
+        self.indicator1 = IndicatorFactory(name="indicator1", dataset=self.dataset1)
+
+        self.dataset2 = DatasetFactory(name="dataset2", profile=self.public_profile, permission_type="private")
+        self.indicator2 = IndicatorFactory(name="indicator2", dataset=self.dataset2)
+
+        self.dataset3 = DatasetFactory(name="dataset3", profile=self.public_profile2, permission_type="public")
+        self.indicator3 = IndicatorFactory(name="indicator3", dataset=self.dataset3)
+
+        self.dataset4 = DatasetFactory(name="dataset4", profile=self.public_profile2, permission_type="private")
+        self.indicator4 = IndicatorFactory(name="indicator4", dataset=self.dataset4)
 
         # Create superuser
         self.user_password = "mypassword"
