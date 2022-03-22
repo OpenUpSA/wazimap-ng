@@ -24,6 +24,7 @@ services:
     command: python manage.py runserver_plus 0.0.0.0:8000
     depends_on:
      - db
+     - selenium
     ports:
       - "8000:8000"
     env_file:
@@ -59,5 +60,12 @@ services:
       - AWS_S3_REGION_NAME
       - DATABASE_URL
       - DJANGO_CONFIGURATION
+
+  selenium:
+    image: selenium/standalone-chrome:98.0.4758.102
+    ports:
+      - "4444:4444"
+      - "5900:5900"
+
 volumes:
   wazimap-data:

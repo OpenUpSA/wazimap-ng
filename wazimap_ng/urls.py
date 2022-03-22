@@ -73,6 +73,11 @@ urlpatterns = [
         name="profile-detail",
     ),
     path(
+        "api/v1/profiles/<int:profile_id>/versions/",
+        cache(profile_views.profile_versions),
+        name="profile-versions",
+    ),
+    path(
         "api/v1/profiles/<int:profile_id>/categories/",
         cache(profile_views.ProfileCategoriesList.as_view()),
         name="profile-categories",

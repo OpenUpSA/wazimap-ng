@@ -16,6 +16,12 @@ jobs:
       - run: docker-compose run --rm web python manage.py collectstatic --no-input
       - name: Run tests
         run: docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
+      - name: Run instance monitoring
+        run: docker-compose run --rm web df -h
+      - name: Run selenium tests
+        run: docker-compose run --rm -e DJANGO_CONFIGURATION=Test web python3 manage.py test test_selenium
+      - name: Run instance monitoring
+        run: docker-compose run --rm web df -h
 
         # Dev environment smoke test
       - name: Migrate schema

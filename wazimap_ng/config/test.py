@@ -1,4 +1,5 @@
 import os
+import dj_database_url
 from .common import Common
 from configurations import Configuration, values
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,11 +14,19 @@ class Test(Common):
     NOSE_ARGS = [
         BASE_DIR,
         '-s',
-        '--nologcapture',
-        '--with-coverage',
-        '--with-progressive',
-        '--cover-package=wazimap_ng'
+        # '--nologcapture',
+        # '--with-coverage',
+        # '--with-progressive',
+        '--cover-package=wazimap_ng',
+        '--cover-html'
     ]
+
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=os.getenv("DATABASE_URL", "postgis://postgres:@postgres:5432/postgres"),
+            conn_max_age=0
+        )
+    }
 
     # Mail
     EMAIL_HOST = 'localhost'

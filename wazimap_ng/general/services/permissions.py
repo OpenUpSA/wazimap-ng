@@ -18,6 +18,11 @@ def get_user_group(user):
         name__in=STAFF_GROUPS
     ).first()
 
+def get_user_groups(user):
+    return user.groups.all().exclude(
+        name__in=STAFF_GROUPS
+    )
+
 def assign_perms_to_group(
     profile_name, obj, remove_previous_perms=False
 ):
