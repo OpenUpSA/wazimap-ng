@@ -38,6 +38,10 @@ class BaseTestCase(LiveServerTestCase):
         # Set host to externally accessible web server address
         cls.host = socket.gethostbyname(socket.gethostname())
 
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument('no-sandbox')
+        chrome_options.add_argument('disable-dev-shm-usage')
+
         # Instantiate the remote WebDriver
         cls.selenium = webdriver.Remote(
             #  Set to: htttp://{selenium-container-name}:port/wd/hub
@@ -46,7 +50,10 @@ class BaseTestCase(LiveServerTestCase):
             command_executor="http://selenium:4444/wd/hub",
             # Set to CHROME since we are using the Chrome container
             desired_capabilities=DesiredCapabilities.CHROME,
+            options=chrome_options
         )
+
+        print(cls.selenium.capabilities)
 
     def setUp(self):
         self.site_header_text = "Wazimap Administration"

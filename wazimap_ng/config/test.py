@@ -14,9 +14,9 @@ class Test(Common):
     NOSE_ARGS = [
         BASE_DIR,
         '-s',
-        '--nologcapture',
+        # '--nologcapture',
         # '--with-coverage',
-        '--with-progressive',
+        # '--with-progressive',
         '--cover-package=wazimap_ng',
         '--cover-html'
     ]

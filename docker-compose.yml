@@ -62,7 +62,7 @@ services:
       - DJANGO_CONFIGURATION
 
   selenium:
-    image: selenium/standalone-chrome
+    image: selenium/standalone-chrome:98.0.4758.102
     ports:
       - "4444:4444"
       - "5900:5900"
