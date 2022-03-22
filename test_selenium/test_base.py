@@ -53,6 +53,8 @@ class BaseTestCase(LiveServerTestCase):
             options=chrome_options
         )
 
+        print(cls.selenium.capabilities)
+
     def setUp(self):
         self.site_header_text = "Wazimap Administration"
         self.version1 = VersionFactory(name="version1")
