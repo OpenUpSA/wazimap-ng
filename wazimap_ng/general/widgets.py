@@ -9,14 +9,17 @@ from django import forms
 
 from wazimap_ng.general.services import permissions
 
+
 def customTitledFilter(title):
     class Wrapper(admin.FieldListFilter):
         def __new__(cls, *args, **kwargs):
             instance = admin.FieldListFilter.create(*args, **kwargs)
             instance.title = title
             return instance
+
     return Wrapper
-    
+
+
 def description(description, func):
     func.short_description = description
     return func
@@ -38,6 +41,7 @@ class SortableWidget(Widget):
             'values': values
         }}
 
+
 class VariableFilterWidget(Widget):
     template_name = 'widgets/VariableFilterWidget.html'
 
@@ -46,9 +50,9 @@ class VariableFilterWidget(Widget):
         js = ("/static/js/variable-filter-widget.js",)
 
     def get_context(self, name, value, attrs=None):
-
         CHOICES = [('public', 'All public variables'), ('private', 'Private variables of the selected profile')]
         choice_field = forms.fields.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
+
         queryset = self.choices.queryset.order_by(
             'dataset__profile__name',
             'dataset__name',
