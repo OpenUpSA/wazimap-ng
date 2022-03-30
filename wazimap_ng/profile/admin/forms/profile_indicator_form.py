@@ -18,6 +18,12 @@ class ProfileIndicatorAdminForm(HistoryAdminForm):
         model = models.ProfileIndicator
         fields = '__all__'
         widgets = {
-            'indicator': VariableFilterWidget,
             'chart_configuration': JSONEditorWidget,
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            self.fields['indicator'].widget = VariableFilterWidget(
+                instance=self.instance
+            )
