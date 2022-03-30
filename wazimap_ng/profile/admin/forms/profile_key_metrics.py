@@ -20,7 +20,6 @@ class ProfileKeyMetricsForm(HistoryAdminForm):
         model = models.ProfileKeyMetrics
         fields = "__all__"
         widgets = {
-            'variable': VariableFilterWidget
         }
 
     def __init__(self, *args, **kwargs):
@@ -31,6 +30,11 @@ class ProfileKeyMetricsForm(HistoryAdminForm):
         self.fields['variable'].queryset = Indicator.objects.filter(
             dataset__content_type="quantitative"
         )
+        
+        if self.instance:
+            self.fields['variable'].widget = VariableFilterWidget(
+                instance=self.instance
+            )
 
         try:
             if is_saving_new_item:

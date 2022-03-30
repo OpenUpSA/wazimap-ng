@@ -31,6 +31,10 @@ class ProfileHighlightForm(HistoryAdminForm):
             dataset__content_type="quantitative"
         )
 
+        self.fields['indicator'].widget = VariableFilterWidget(
+            instance=self.instance
+        )
+
         try:
             if is_saving_new_item:
                 variable_id = int(self.data.get('indicator'))

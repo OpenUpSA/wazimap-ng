@@ -1,7 +1,12 @@
 <div id="variable-permission-filter">
     {{ choice_field }}
 </div>
-<select id="id_indicator" required name="{{ name }}">
+<input type="hidden" name="selected_profile_id" value="{{ profile_id }}">
+<select
+        id="id_indicator"
+        required
+        name="{{ name }}"
+>
     <option value=''>-------------</option>
     {% for choice in choices %}
         <option
