@@ -18,7 +18,7 @@ from wazimap_ng.datasets.tasks.indicator_data_extraction import (
 class TestIndicatorDataExtraction:
     def test_basic_extraction(self, indicator, geography, indicatordata_json):
 
-        indicator_data_items = indicator_data_extraction(indicator)
+        indicator_data_extraction(indicator)
 
         indicator_data = IndicatorData.objects.get(geography=geography)
 
@@ -28,9 +28,7 @@ class TestIndicatorDataExtraction:
         def no_data(x): return len(x.data) == 0
 
         assert IndicatorData.objects.count() == 0
-
-        indicator_data_items = indicator_data_extraction(indicator)
-        assert len(indicator_data_items) == 1
+        indicator_data_extraction(indicator)
         assert IndicatorData.objects.count() == 1
 
         assert all(no_data(idata) for idata in IndicatorData.objects.exclude(geography=geography))
@@ -40,21 +38,18 @@ class TestIndicatorDataExtraction:
 
         assert IndicatorData.objects.count() == 0
 
-        indicator_data_items = indicator_data_extraction(indicator)
-        assert len(indicator_data_items) == 1
+        indicator_data_extraction(indicator)
         assert IndicatorData.objects.count() == 1
 
-        indicator_data_items = indicator_data_extraction(indicator)
-        assert len(indicator_data_items) == 1
+        indicator_data_extraction(indicator)
         assert IndicatorData.objects.count() == 1
 
     @pytest.mark.usefixtures("child_datasetdata")
     @pytest.mark.usefixtures("child_geographies")
     def test_three_geographies(self, indicator, geography):
-        indicator_data_items = indicator_data_extraction(indicator)
+        indicator_data_extraction(indicator)
         num_geographies = 1 + geography.get_children().count()
         assert IndicatorData.objects.count() == num_geographies
-        assert len(indicator_data_items) == num_geographies
 
         new_geographies = geography.get_children()
 
