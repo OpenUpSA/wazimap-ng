@@ -26,6 +26,7 @@ def indicator_data_extraction(indicator, *args, universe={}, **kwargs):
                 models.DatasetData.objects.filter(
                     dataset=indicator.dataset, geography_id=g
                 )
+                .filter(**universe)
                 .order_by("id")
                 .values_list("data", flat=True)
             ),
