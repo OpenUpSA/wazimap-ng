@@ -7,27 +7,26 @@ from .. import models
 
 logger = logging.getLogger(__name__)
 
+
 @transaction.atomic
-def indicator_data_extraction(indicator, *args, universe=None, **kwargs):
-
+def indicator_data_extraction(indicator, *args, universe={}, **kwargs):
     indicator.indicatordata_set.all().delete()
-
-    data_rows = []
-    datasetdata_qs = models.DatasetData.objects.filter(dataset=indicator.dataset).order_by("geography", "id")
-
-    if universe is not None:
-        datasetdata_qs = datasetdata_qs.filter(**universe)
-
-    grouped_datasetdata = groupby(datasetdata_qs, lambda dd: dd.geography)
-
-    for g, geography_data in grouped_datasetdata:
-        indicator_data = models.IndicatorData(indicator=indicator, geography=g)
-        indicator_data.data = [
-            dd.data for dd in geography_data
-        ]
-
-        data_rows.append(indicator_data)
-
-    objs = models.IndicatorData.objects.bulk_create(data_rows, 1000)
-
-    return objs
+    geography_ids = (
+        models.DatasetData.objects.filter(dataset=indicator.dataset)
+        .filter(**universe)
+        .values_list("geography_id", flat=True)
+        .order_by("geography_id")
+        .distinct()
+    )
+    for g in geography_ids:
+        models.IndicatorData.objects.create(
+            indicator=indicator,
+            geography_id=g,
+            data=list(
+                models.DatasetData.objects.filter(
+                    dataset=indicator.dataset, geography_id=g
+                )
+                .order_by("id")
+                .values_list("data", flat=True)
+            ),
+        )
