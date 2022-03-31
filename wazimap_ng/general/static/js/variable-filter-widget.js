@@ -35,15 +35,12 @@
                 let profileId;
                 if ($profileEl.length > 0) {
                     profileId = $profileEl.val();
-                } else {
-                    profileId = $('input[name=selected_profile_id]').val();
                 }
 
                 return profileId;
             }
 
             function filterVariables(selectedProfile, selectedPermissionType, changeSelectedOption) {
-                console.log({selectedProfile, selectedPermissionType})
                 if (selectedProfile === '' && selectedPermissionType === permissionTypes.private) {
                     $('select#id_indicator').prop('disabled', true);
                 } else {
@@ -57,9 +54,9 @@
                         let optionProfile = $(this).attr('data-profileid');
 
                         let isHidden = false;
-                        if (selectedPermissionType === permissionTypes.public && optionPermissionType !== permissionTypes.public) {
+                        if (selectedProfile !== undefined && selectedPermissionType === permissionTypes.private && optionProfile !== selectedProfile) {
                             isHidden = true;
-                        } else if (selectedPermissionType === permissionTypes.private && (optionProfile !== selectedProfile || optionPermissionType !== permissionTypes.private)) {
+                        } else if (optionPermissionType !== selectedPermissionType) {
                             isHidden = true;
                         }
 

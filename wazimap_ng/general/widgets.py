@@ -6,6 +6,7 @@ from guardian.shortcuts import (
     get_group_perms, get_perms_for_model, get_groups_with_perms
 )
 from django import forms
+from django.db.models import Q
 
 from wazimap_ng.general.services import permissions
 from wazimap_ng.datasets.models import Indicator
@@ -68,15 +69,17 @@ class VariableFilterWidget(Widget):
             value = queryset.get(id=value)
             selected_permission = value.dataset.permission_type
 
-        profile_id = None
         if self.instance is not None:
             profile_id = self.instance.profile_id
+            if profile_id is not None:
+                queryset = queryset.filter(
+                    Q(dataset__permission_type="public") | Q(dataset__permission_type="private",
+                                                             dataset__profile_id=profile_id))
 
         return {
             'name': name,
             'value': value,
             'choices': queryset,
             'permission_type': selected_permission,
-            "choice_field": choice_field.widget.render(f"{name}_variable_type", selected_permission),
-            "profile_id": profile_id
+            "choice_field": choice_field.widget.render(f"{name}_variable_type", selected_permission)
         }
