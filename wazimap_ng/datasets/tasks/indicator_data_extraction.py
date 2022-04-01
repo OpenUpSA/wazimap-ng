@@ -9,8 +9,15 @@ logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def indicator_data_extraction(indicator, *args, universe={}, **kwargs):
+def indicator_data_extraction(indicator, *args, **kwargs):
     indicator.indicatordata_set.all().delete()
+
+    universe = {}
+    if indicator.universe and isinstance(indicator.universe.filters, dict):
+        universe = {
+            f"data__{key}": value for key, value in indicator.universe.filters.items()
+        }
+
     geography_ids = (
         models.DatasetData.objects.filter(dataset=indicator.dataset)
         .filter(**universe)
