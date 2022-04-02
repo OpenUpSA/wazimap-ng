@@ -5,13 +5,20 @@ from tests.datasets.factories import (
     DatasetFileFactory,
     GeographyFactory,
     GeographyHierarchyFactory,
-    IndicatorFactory
+    IndicatorFactory,
+    UniverseFactory
 )
 from wazimap_ng.datasets.models import Geography, IndicatorData
 from wazimap_ng.datasets.tasks.indicator_data_extraction import (
     indicator_data_extraction
 )
 
+
+@pytest.fixture
+def universe():
+    return UniverseFactory(
+        filters={"gender": "female", "age__lt": "17"}
+    )
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("datasetdata")
@@ -57,8 +64,10 @@ class TestIndicatorDataExtraction:
             idata = IndicatorData.objects.get(geography=g)
             assert idata.data[0]["geography"] == g.pk
 
-    def test_universe(self, indicator, geography):
-        universe = {"data__gender": "female", "data__age__lt": "17"}
+    def test_universe(self, indicator, geography, universe):
+        # Add universe to indicator
+        indicator.universe = universe
+        indicator.save()
 
         indicator_data_extraction(indicator, universe=universe)
         indicator_data = IndicatorData.objects.get(geography=geography)
