@@ -1,4 +1,6 @@
 import pytest
+import csv
+from io import StringIO
 from django.contrib.admin.sites import AdminSite
 from django.urls import reverse
 from django.core.exceptions import ValidationError
@@ -7,6 +9,7 @@ from wazimap_ng.datasets.admin.dataset_admin import DatasetAdmin
 from wazimap_ng.datasets.admin.forms import DatasetAdminForm
 
 from wazimap_ng.datasets.models import Dataset, Version
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from tests.datasets.factories import (
     DatasetFactory,
@@ -305,3 +308,141 @@ class TestDatasetAdminFormValidations:
             name__in=profile.geography_hierarchy.get_version_names
         )
         assert list(versions) == list(versions_qs)
+
+
+@pytest.mark.django_db
+class TestDatasetUploadValidations:
+
+    def create_csv_file(self, data):
+        csvfile = StringIO()
+        csv.writer(csvfile).writerows(data)
+        return csvfile.getvalue()
+
+    def test_uploading_file_with_empty_data(
+        self, client, superuser
+    ):
+        """
+        Test validation for empty imported file
+        """
+        client.force_login(user=superuser)
+        url = reverse("admin:datasets_dataset_add")
+        data = []
+        content = self.create_csv_file(data).encode("utf-8")
+        csv_file = SimpleUploadedFile(
+            name="test.csv", content=content, content_type='text/csv'
+        )
+        data={
+            'metadata-TOTAL_FORMS': 0,
+            'metadata-INITIAL_FORMS': 0,
+            'import_dataset': csv_file
+        }
+        res = client.post(url, data, follow=True)
+
+        assert res.status_code == 200
+        form = res.context['adminform'].form
+        errors = form.errors
+        assert errors["import_dataset"].data[0].message == 'The submitted file is empty.'
+
+    def test_uploading_file_with_wrong_extension(
+        self, client, superuser
+    ):
+        """
+        Test validation for invalid imported file
+        """
+        client.force_login(user=superuser)
+        url = reverse("admin:datasets_dataset_add")
+        data = ["test"]
+        content = self.create_csv_file(data).encode("utf-8")
+        pdf_file = SimpleUploadedFile(
+            name="test.pdf", content=content, content_type='application/pdf'
+        )
+        data={
+            'metadata-TOTAL_FORMS': 0,
+            'metadata-INITIAL_FORMS': 0,
+            'import_dataset': pdf_file
+        }
+        res = client.post(url, data, follow=True)
+
+        assert res.status_code == 200
+        form = res.context['adminform'].form
+        errors = form.errors
+        assert errors["import_dataset"].data[0].message == "File extension '%(extension)s' is not allowed. Allowed extensions are: '%(allowed_extensions)s'."
+
+    def test_uploading_file_with_no_geography(
+        self, client, superuser
+    ):
+        """
+        Test validation for uploaded data without header geography
+        """
+        client.force_login(user=superuser)
+        url = reverse("admin:datasets_dataset_add")
+        data = [["test", "Count"], ["x1", 5]]
+        content = self.create_csv_file(data).encode("utf-8")
+        csv_file = SimpleUploadedFile(
+            name="test.csv", content=content, content_type='text/csv'
+        )
+        data={
+            'metadata-TOTAL_FORMS': 0,
+            'metadata-INITIAL_FORMS': 0,
+            'import_dataset': csv_file
+        }
+        res = client.post(url, data, follow=True)
+
+        assert res.status_code == 200
+        form = res.context['adminform'].form
+        errors = form.errors
+        assert errors["__all__"].data[0].message == 'Invalid File passed. We were not able to find Required header : Geography'
+
+    def test_uploading_file_with_no_count(
+        self, client, superuser
+    ):
+        """
+        Test validation for uploaded quantitative data without count
+        header
+        """
+        client.force_login(user=superuser)
+        url = reverse("admin:datasets_dataset_add")
+        data = [["Geography", "test"], ["ZA", "x1"]]
+        content = self.create_csv_file(data).encode("utf-8")
+        csv_file = SimpleUploadedFile(
+            name="test.csv", content=content, content_type='text/csv'
+        )
+        data={
+            'metadata-TOTAL_FORMS': 0,
+            'metadata-INITIAL_FORMS': 0,
+            'import_dataset': csv_file,
+            'content_type': "quantitative",
+        }
+        res = client.post(url, data, follow=True)
+
+        assert res.status_code == 200
+        form = res.context['adminform'].form
+        errors = form.errors
+        assert errors["__all__"].data[0].message == 'Invalid File passed. We were not able to find Required header : Count'
+
+    def test_uploading_file_without_header_contents(
+        self, client, superuser
+    ):
+        """
+        Test validation for uploaded qualitative data without contents
+        header
+        """
+        client.force_login(user=superuser)
+        url = reverse("admin:datasets_dataset_add")
+        data = [["Geography", "test"], ["ZA", "x1"]]
+        content = self.create_csv_file(data).encode("utf-8")
+        csv_file = SimpleUploadedFile(
+            name="test.csv", content=content, content_type='text/csv'
+        )
+        data={
+            'metadata-TOTAL_FORMS': 0,
+            'metadata-INITIAL_FORMS': 0,
+            'import_dataset': csv_file,
+            'content_type': "qualitative",
+        }
+        res = client.post(url, data, follow=True)
+
+        assert res.status_code == 200
+        form = res.context['adminform'].form
+        errors = form.errors
+        assert errors["__all__"].data[0].message == 'Invalid File passed. We were not able to find Required header : Contents'
