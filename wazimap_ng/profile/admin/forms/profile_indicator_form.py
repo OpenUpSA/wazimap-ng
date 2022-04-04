@@ -13,13 +13,25 @@ from wazimap_ng.config.common import (
 
 
 class ProfileIndicatorAdminForm(HistoryAdminForm):
-
     class Meta:
         model = models.ProfileIndicator
         fields = '__all__'
         widgets = {
             'chart_configuration': JSONEditorWidget,
         }
+
+    def clean(self):
+        cleaned_data = super(ProfileIndicatorAdminForm, self).clean()
+        indicator = cleaned_data.get('indicator', None)
+
+        permission_type = indicator.dataset.permission_type
+        current_profile_id = self.instance.profile_id
+        indicator_profile_id = indicator.dataset.profile_id
+
+        if permission_type == "private" and current_profile_id != indicator_profile_id:
+            raise forms.ValidationError(
+                f"Private indicator {indicator} is not valid for the selected profile"
+            )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
