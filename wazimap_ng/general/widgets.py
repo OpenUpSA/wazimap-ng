@@ -51,15 +51,11 @@ class VariableFilterWidget(Widget):
         css = {'all': ("/static/css/variable-filter-widget.css",)}
         js = ("/static/js/variable-filter-widget.js",)
 
-    def __init__(self, attrs=None, instance=None):
-        self.instance = instance
-        super().__init__(attrs=attrs)
-
-    def get_context(self, name, value, attrs=None, instance=None):
+    def get_context(self, name, value, attrs=None):
         CHOICES = [('public', 'All public variables'), ('private', 'Private variables of the selected profile')]
 
         choice_field = forms.fields.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
-        queryset = Indicator.objects.all().order_by(
+        queryset = self.choices.queryset.order_by(
             'dataset__profile__name',
             'dataset__name',
             'name'
@@ -68,13 +64,6 @@ class VariableFilterWidget(Widget):
         if value:
             value = queryset.get(id=value)
             selected_permission = value.dataset.permission_type
-
-        if self.instance is not None:
-            profile_id = self.instance.profile_id
-            if profile_id is not None:
-                queryset = queryset.filter(
-                    Q(dataset__permission_type="public") | Q(dataset__permission_type="private",
-                                                             dataset__profile_id=profile_id))
 
         return {
             'name': name,
