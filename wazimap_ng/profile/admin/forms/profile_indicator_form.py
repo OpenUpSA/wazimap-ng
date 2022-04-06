@@ -25,11 +25,6 @@ class ProfileIndicatorAdminForm(HistoryAdminForm):
 
     def clean(self):
         cleaned_data = super(ProfileIndicatorAdminForm, self).clean()
-        if "indicator" not in cleaned_data:
-            raise forms.ValidationError(
-                f"Invalid value selected for variable."
-            )
-
         indicator = cleaned_data.get('indicator', None)
         profile = cleaned_data.get('profile', None)
 
