@@ -61,9 +61,12 @@ class VariableFilterWidget(Widget):
             'name'
         )
         selected_permission = "public"
-        value = queryset.filter(id=value).first()
-        if value:
-            selected_permission = value.dataset.permission_type
+
+        try:
+            value = queryset.get(id=value)
+            selected_permission = value and value.dataset.permission_type
+        except:
+            pass
 
         return {
             'name': name,

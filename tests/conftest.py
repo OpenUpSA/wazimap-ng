@@ -143,7 +143,11 @@ def profile(geography_hierarchy):
         "urls": ["some_domain.com"]
     }
 
-    return ProfileFactory(geography_hierarchy=geography_hierarchy, configuration=configuration)
+    return ProfileFactory(
+        name="Profile",
+        geography_hierarchy=geography_hierarchy,
+        configuration=configuration
+    )
 
 @pytest.fixture
 def profile_group(profile):

@@ -28,14 +28,15 @@ class ProfileIndicatorAdminForm(HistoryAdminForm):
         indicator = cleaned_data.get('indicator', None)
         profile = cleaned_data.get('profile', None)
 
-        if not profile and self.instance:
+        if not profile and self.instance.id:
             profile = self.instance.profile
-    
-        permission_type = indicator.dataset.permission_type
-        if permission_type == "private" and profile != indicator.dataset.profile:
-            raise forms.ValidationError(
-                f"Private indicator {indicator} is not valid for the selected profile"
-            )
+
+        if indicator:
+            permission_type = indicator.dataset.permission_type
+            if permission_type == "private" and profile != indicator.dataset.profile:
+                raise forms.ValidationError(
+                    f"Private indicator {indicator} is not valid for the selected profile"
+                )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
