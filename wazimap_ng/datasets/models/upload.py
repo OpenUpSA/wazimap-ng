@@ -78,13 +78,8 @@ class DatasetFile(BaseModel, SimpleHistory):
     name = name = models.CharField(max_length=60)
     dataset_id = models.PositiveSmallIntegerField(null=True, blank=True)
 
-
     def __str__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        return super().save(*args, **kwargs)
 
     def clean(self):
         """

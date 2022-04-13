@@ -21,9 +21,11 @@ def create_datasetfile(file_data, encoding, header, dataset_id):
     csv_file = SimpleUploadedFile(
         name="test.csv", content=content, content_type='text/csv'
     )
-    return DatasetFileFactory(
+    file_obj = DatasetFileFactory(
         document=csv_file, dataset_id=dataset_id
     )
+    file_obj.full_clean()
+    return file_obj
 
 good_data = [
     ["GEOCODE_1", "F1_value_1", "F2_value_1", 111],
