@@ -52,11 +52,11 @@ def validate_uploaded_file(document, content_type):
     else:
         required_headers.append("contents")
 
-    for required_header in required_headers:
-        if required_header not in headers:
-            raise ValidationError(
-                "Invalid File passed. We were not able to find Required header : %s" % required_header.capitalize()
-            )
+    missing_headers = [h.capitalize() for h in list(set(required_headers) - set(headers))]
+    if missing_headers:
+        raise ValidationError(
+            f"Invalid File passed. We were not able to find Required header : {', ' .join(missing_headers)}"
+        )
 
 def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)

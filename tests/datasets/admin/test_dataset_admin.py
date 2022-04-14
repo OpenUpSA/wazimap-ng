@@ -384,7 +384,8 @@ class TestDatasetUploadValidations:
         data={
             'metadata-TOTAL_FORMS': 0,
             'metadata-INITIAL_FORMS': 0,
-            'import_dataset': csv_file
+            'import_dataset': csv_file,
+            'content_type': "quantitative",
         }
         res = client.post(url, data, follow=True)
 
