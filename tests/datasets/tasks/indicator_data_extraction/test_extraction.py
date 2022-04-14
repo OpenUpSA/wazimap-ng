@@ -20,6 +20,15 @@ def universe():
         filters={"gender": "female", "age__lt": "17"}
     )
 
+@pytest.fixture
+def indicator_with_universe(dataset, universe):
+    subindicators = ["male", "female"]
+    groups = ["gender"]
+    return IndicatorFactory(
+        dataset=dataset, subindicators=subindicators, groups=groups,
+        universe=universe
+    )
+
 @pytest.mark.django_db
 @pytest.mark.usefixtures("datasetdata")
 class TestIndicatorDataExtraction:
@@ -64,12 +73,8 @@ class TestIndicatorDataExtraction:
             idata = IndicatorData.objects.get(geography=g)
             assert idata.data[0]["geography"] == g.pk
 
-    def test_universe(self, indicator, geography, universe):
-        # Add universe to indicator
-        indicator.universe = universe
-        indicator.save()
-
-        indicator_data_extraction(indicator, universe=universe)
+    def test_universe(self, geography, indicator_with_universe):
+        indicator_data_extraction(indicator_with_universe)
         indicator_data = IndicatorData.objects.get(geography=geography)
 
         assert indicator_data.data == [
