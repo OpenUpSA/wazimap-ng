@@ -68,7 +68,7 @@ class TestProfileIndicatorAdmin:
         ]
 
     def test_subcategories_queryset_for_indicator(
-        self, mocked_request, profile_indicator, subcategory
+            self, mocked_request, profile_indicator, subcategory
     ):
         ma = ProfileIndicatorAdmin(ProfileIndicator, AdminSite())
         form = ma.get_form(mocked_request, profile_indicator)()
@@ -77,7 +77,7 @@ class TestProfileIndicatorAdmin:
         assert queryset.first() == subcategory
 
     def test_subcategories_empty_queryset_for_new_obj(
-        self, mocked_request, profile_indicator, subcategory
+            self, mocked_request, profile_indicator, subcategory
     ):
         ma = ProfileIndicatorAdmin(ProfileIndicator, AdminSite())
         form = ma.get_form(mocked_request)()
@@ -97,27 +97,27 @@ class TestProfileIndicatorAdmin:
         assert queryset.count() == 2
         # assert if quantative indicator in queryset
         assert (
-            queryset.filter(dataset__content_type="quantitative").first() == indicator
+                queryset.filter(dataset__content_type="quantitative").first() == indicator
         )
         # assert if qualitative indicator in queryset
         assert (
-            queryset.filter(dataset__content_type="qualitative").first()
-            == qualitative_indicator
+                queryset.filter(dataset__content_type="qualitative").first()
+                == qualitative_indicator
         )
 
 
 @pytest.mark.django_db
 class TestProfileIndicatorAdminChangeForm:
     def test_indicator_field_for_existing_object(
-        self,
-        client,
-        superuser,
-        profile_indicator,
-        profile,
-        indicator,
-        qualitative_indicator,
-        private_indicator_profile2,
-        public_indicator_profile2,
+            self,
+            client,
+            superuser,
+            profile_indicator,
+            profile,
+            indicator,
+            qualitative_indicator,
+            private_indicator_profile2,
+            public_indicator_profile2,
     ):
         """
         Test indicator field for existing profile indictaor
@@ -185,12 +185,12 @@ class TestProfileIndicatorAdminFormValidations:
         form = res.context["adminform"].form
         errors = form.errors
         assert (
-            errors["indicator"].data[0].message
-            == "Select a valid choice. That choice is not one of the available choices."
+                errors["indicator"].data[0].message
+                == "Select a valid choice. That choice is not one of the available choices."
         )
 
     def test_adding_private_indicator_from_different_profile(
-        self, client, superuser, profile, private_indicator_profile2
+            self, client, superuser, profile, private_indicator_profile2
     ):
         client.force_login(user=superuser)
         url = reverse("admin:profile_profileindicator_add")
@@ -207,6 +207,44 @@ class TestProfileIndicatorAdminFormValidations:
         form = res.context["adminform"].form
         errors = form.errors
         assert (
-            errors["__all__"].data[0].message
-            == "Private indicator private profile : private dataset -> private indicator is not valid for the selected profile"
+                errors["__all__"].data[0].message
+                == "Private indicator private profile : private dataset -> private indicator is not valid for the selected profile"
         )
+
+    def test_adding_private_indicator_of_the_selected_profile(
+            self, client, superuser, private_profile, private_indicator_profile2
+    ):
+        client.force_login(user=superuser)
+        url = reverse("admin:profile_profileindicator_add")
+        data = {
+            "metadata-TOTAL_FORMS": 0,
+            "metadata-INITIAL_FORMS": 0,
+            "chart_configuration": "{}",
+            "profile": private_profile.id,
+            "indicator": private_indicator_profile2.id,
+        }
+        res = client.post(url, data, follow=True)
+
+        assert res.status_code == 200
+        form = res.context["adminform"].form
+        errors = form.errors
+        assert (('__all__' in errors) is False)
+
+    def test_adding_public_indicator_from_different_profile(
+            self, client, superuser, profile, public_indicator_profile2
+    ):
+        client.force_login(user=superuser)
+        url = reverse("admin:profile_profileindicator_add")
+        data = {
+            "metadata-TOTAL_FORMS": 0,
+            "metadata-INITIAL_FORMS": 0,
+            "chart_configuration": "{}",
+            "profile": profile.id,
+            "indicator": public_indicator_profile2.id,
+        }
+        res = client.post(url, data, follow=True)
+
+        assert res.status_code == 200
+        form = res.context["adminform"].form
+        errors = form.errors
+        assert (('__all__' in errors) is False)
