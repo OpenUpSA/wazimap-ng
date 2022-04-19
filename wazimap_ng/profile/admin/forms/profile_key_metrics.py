@@ -20,7 +20,7 @@ class ProfileKeyMetricsForm(HistoryAdminForm):
         model = models.ProfileKeyMetrics
         fields = "__all__"
         widgets = {
-            'variable': VariableFilterWidget
+            "variable": VariableFilterWidget
         }
 
     def __init__(self, *args, **kwargs):

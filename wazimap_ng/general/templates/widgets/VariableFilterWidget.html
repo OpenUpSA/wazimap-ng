@@ -1,7 +1,11 @@
 <div id="variable-permission-filter">
     {{ choice_field }}
 </div>
-<select id="id_indicator" required name="{{ name }}">
+<select
+        id="id_indicator"
+        required
+        name="{{ name }}"
+>
     <option value=''>-------------</option>
     {% for choice in choices %}
         <option

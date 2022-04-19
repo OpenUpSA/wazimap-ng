@@ -6,8 +6,10 @@ from guardian.shortcuts import (
     get_group_perms, get_perms_for_model, get_groups_with_perms
 )
 from django import forms
+from django.db.models import Q
 
 from wazimap_ng.general.services import permissions
+from wazimap_ng.datasets.models import Indicator
 
 
 def customTitledFilter(title):
@@ -51,17 +53,20 @@ class VariableFilterWidget(Widget):
 
     def get_context(self, name, value, attrs=None):
         CHOICES = [('public', 'All public variables'), ('private', 'Private variables of the selected profile')]
-        choice_field = forms.fields.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
 
+        choice_field = forms.fields.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
         queryset = self.choices.queryset.order_by(
             'dataset__profile__name',
             'dataset__name',
             'name'
         )
         selected_permission = "public"
-        if value:
+
+        try:
             value = queryset.get(id=value)
-            selected_permission = value.dataset.permission_type
+            selected_permission = value and value.dataset.permission_type
+        except:
+            pass
 
         return {
             'name': name,
