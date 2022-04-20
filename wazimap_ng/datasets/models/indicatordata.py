@@ -5,12 +5,16 @@ from .indicator import Indicator
 from .geography import Geography
 from wazimap_ng.general.models import BaseModel
 
+
 class IndicatorData(BaseModel):
     """
     Indicator Data for caching results of indicator group according to
     geography.
     """
-    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, verbose_name="variable")
+
+    indicator = models.ForeignKey(
+        Indicator, on_delete=models.CASCADE, verbose_name="variable"
+    )
     geography = models.ForeignKey(Geography, on_delete=models.CASCADE)
     data = JSONField(default=dict, null=True, blank=True)
 
@@ -19,5 +23,7 @@ class IndicatorData(BaseModel):
 
     class Meta:
         verbose_name_plural = "Indicator Data items"
-
-
+        unique_together = (
+            "indicator",
+            "geography",
+        )
