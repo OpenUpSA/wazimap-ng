@@ -27,6 +27,37 @@ def file_size(value):
     if value.size > max_filesize:
         raise ValidationError(f"File too large. Size should not exceed {max_filesize / (1024 * 1024)} MiB.")
 
+def validate_uploaded_file(document, content_type):
+    document_name = document.name
+    headers = []
+    try:
+        if "xls" in document_name or "xlsx" in document_name:
+            book = xlrd.open_workbook(file_contents=document.read())
+            headers = pd.read_excel(book, nrows=1, dtype=str).columns.str.lower().str.strip()
+        elif "csv" in document_name:
+            headers = pd.read_csv(BytesIO(document.read()), nrows=1, dtype=str).columns.str.lower().str.strip()
+    except pd.errors.ParserError as e:
+        raise ValidationError(
+            "Not able to parse passed file. Error while reading file: %s" % str(e)
+        )
+    except pd.errors.EmptyDataError as e:
+        raise ValidationError(
+            "File seems to be empty. Error while reading file: %s" % str(e)
+        )
+
+    required_headers = ["geography"]
+
+    if content_type == QUANTITATIVE:
+        required_headers.append("count")
+    else:
+        required_headers.append("contents")
+
+    missing_headers = [h.capitalize() for h in list(set(required_headers) - set(headers))]
+    if missing_headers:
+        raise ValidationError(
+            f"Invalid File passed. We were not able to find Required header : {', ' .join(missing_headers)}"
+        )
+
 def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)
     return os.path.join('datasets', filename)
@@ -39,7 +70,7 @@ class DatasetFile(BaseModel, SimpleHistory):
             file_size
         ],
         help_text=f"""
-            Uploaded document should be less than {max_filesize / (1024 * 1024)} MiB in size and 
+            Uploaded document should be less than {max_filesize / (1024 * 1024)} MiB in size and
             file extensions should be one of {", ".join(allowed_file_extensions)}.
         """
     )
@@ -47,37 +78,14 @@ class DatasetFile(BaseModel, SimpleHistory):
     name = name = models.CharField(max_length=60)
     dataset_id = models.PositiveSmallIntegerField(null=True, blank=True)
 
-
     def __str__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        return super().save(*args, **kwargs)
 
     def clean(self):
         """
         Cleaner for Document model.
         Check uploaded files and see if header contains Geography & Count
         """
-        document_name = self.document.name
-        headers = []
-        try:
-            if "xls" in document_name or "xlsx" in document_name:
-                book = xlrd.open_workbook(file_contents=self.document.read())
-                headers = pd.read_excel(book, nrows=1, dtype=str).columns.str.lower().str.strip()
-            elif "csv" in document_name:
-                headers = pd.read_csv(BytesIO(self.document.read()), nrows=1, dtype=str).columns.str.lower().str.strip()
-        except pd.errors.ParserError as e:
-            raise ValidationError(
-                "Not able to parse passed file. Error while reading file: %s" % str(e)
-            )
-        except pd.errors.EmptyDataError as e:
-            raise ValidationError(
-                "File seems to be empty. Error while reading file: %s" % str(e)
-            )
-
-        required_headers = ["geography"]
         try:
             dataset = Dataset.objects.get(id=self.dataset_id)
         except Dataset.DoesNotExist:
@@ -85,14 +93,4 @@ class DatasetFile(BaseModel, SimpleHistory):
             raise ValidationError(
                 "Datset not found while uploading dataset file"
             )
-
-        if dataset.content_type == QUANTITATIVE:
-            required_headers.append("count")
-        else:
-            required_headers.append("contents")
-
-        for required_header in required_headers:
-            if required_header not in headers:
-                raise ValidationError(
-                    "Invalid File passed. We were not able to find Required header : %s " % required_header.capitalize()
-                )
+        validate_uploaded_file(self.document, dataset.content_type)

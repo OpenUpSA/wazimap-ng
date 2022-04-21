@@ -1,13 +1,23 @@
 from django import forms
+from django.core.validators import FileExtensionValidator
 
 from wazimap_ng.general.services.permissions import get_user_groups
 from wazimap_ng.general.admin.forms import HistoryAdminForm
 
 from wazimap_ng.datasets.models import Version
+from wazimap_ng.datasets.models.upload import (
+    file_size, allowed_file_extensions, validate_uploaded_file
+)
 from wazimap_ng.profile.models import Profile
 
 class DatasetAdminForm(HistoryAdminForm):
-    import_dataset = forms.FileField(required=False)
+    import_dataset = forms.FileField(
+        required=False,
+        validators=[
+            FileExtensionValidator(allowed_extensions=allowed_file_extensions),
+            file_size
+        ],
+    )
 
     def clean(self):
         cleaned_data = super(DatasetAdminForm, self).clean()
@@ -21,6 +31,11 @@ class DatasetAdminForm(HistoryAdminForm):
                 raise forms.ValidationError(
                     f"Version {version} not valid for profile {profile}"
                 )
+
+        document = cleaned_data.get('import_dataset', None)
+        if document:
+            content_type = cleaned_data.get('content_type', None)
+            validate_uploaded_file(document, content_type)
         return cleaned_data
 
     def get_versions(self, profile):

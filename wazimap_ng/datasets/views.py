@@ -48,11 +48,13 @@ class DatasetList(generics.ListCreateAPIView):
         file_obj = request.data.get('file', None)
         if file_obj:
             try:
-                datasetfile_obj = models.DatasetFile.objects.create(
+                datasetfile_obj = models.DatasetFile(
                     name=dataset_obj.name,
                     document=file_obj,
                     dataset_id=dataset_obj.id
                 )
+                datasetfile_obj.full_clean()
+                datasetfile_obj.save()
             except Exception as err:
                 return Response({
                     'detail': ', '.join(err.messages)
