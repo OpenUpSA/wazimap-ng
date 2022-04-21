@@ -52,8 +52,11 @@ def validate_uploaded_file(document, content_type):
     else:
         required_headers.append("contents")
 
-    missing_headers = [h.capitalize() for h in list(set(required_headers) - set(headers))]
+    missing_headers = [
+        h.capitalize() for h in list(set(required_headers) - set(headers))
+    ]
     if missing_headers:
+        missing_headers.sort()
         raise ValidationError(
             f"Invalid File passed. We were not able to find Required header : {', ' .join(missing_headers)}"
         )
