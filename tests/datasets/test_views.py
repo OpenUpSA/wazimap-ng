@@ -177,7 +177,7 @@ class TestDatasetUploadView(APITestCase):
         assert response.status_code == 400
         assert (
             response.data["detail"] ==
-            "Invalid File passed. We were not able to find Required header : Geography, Count"
+            "Invalid File passed. We were not able to find Required header : Count, Geography"
         )
 
         data = [["Geography", "test"], ["ZA", "x1"]]
@@ -392,7 +392,7 @@ class TestDatasetUploadView(APITestCase):
         assert response.status_code == 400
         assert (
             response.data["detail"] ==
-            "Invalid File passed. We were not able to find Required header : Geography, Contents"
+            "Invalid File passed. We were not able to find Required header : Contents, Geography"
         )
 
         data = [["Geography", "test"], ["ZA", "x1"]]
