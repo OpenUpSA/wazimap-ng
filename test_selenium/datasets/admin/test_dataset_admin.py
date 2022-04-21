@@ -23,11 +23,12 @@ class TestProfileVerisons(BaseTestCase):
         )
         assert profile_field.get_attribute("required") == "true"
         profile_field = Select(profile_field)
-        assert len(profile_field.options) == 3
+        assert len(profile_field.options) == 4
         profile_options = profile_field.options
         assert profile_options[0].text == "---------"
         assert profile_options[1].text == "private_profile"
         assert profile_options[2].text == "public_profile"
+        assert profile_options[3].text == "public_profile2"
 
         version_field = WebDriverWait(self.selenium, 2).until(
             EC.element_to_be_clickable((By.ID, "id_version"))
@@ -73,11 +74,12 @@ class TestProfileVerisons(BaseTestCase):
         )
         assert profile_field.get_attribute("required") == "true"
         profile_field = Select(profile_field)
-        assert len(profile_field.options) == 3
+        assert len(profile_field.options) == 4
         profile_options = profile_field.options
         assert profile_options[0].text == "---------"
         assert profile_options[1].text == "private_profile"
         assert profile_options[2].text == "public_profile"
+        assert profile_options[3].text == "public_profile2"
 
         self.selenium.execute_script(
             "arguments[0].setAttribute('value','100000')", profile_options[1]

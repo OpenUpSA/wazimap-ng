@@ -176,8 +176,8 @@ class TestDatasetUploadView(APITestCase):
 
         assert response.status_code == 400
         assert (
-            response.data["detail"] == 
-            "Invalid File passed. We were not able to find Required header : Geography "
+            response.data["detail"] ==
+            "Invalid File passed. We were not able to find Required header : Count, Geography"
         )
 
         data = [["Geography", "test"], ["ZA", "x1"]]
@@ -194,8 +194,8 @@ class TestDatasetUploadView(APITestCase):
 
         assert response.status_code == 400
         assert (
-            response.data["detail"] == 
-            "Invalid File passed. We were not able to find Required header : Count "
+            response.data["detail"] ==
+            "Invalid File passed. We were not able to find Required header : Count"
         )
 
     def test_validation_for_creating_dataset(self):
@@ -392,7 +392,7 @@ class TestDatasetUploadView(APITestCase):
         assert response.status_code == 400
         assert (
             response.data["detail"] ==
-            "Invalid File passed. We were not able to find Required header : Geography "
+            "Invalid File passed. We were not able to find Required header : Contents, Geography"
         )
 
         data = [["Geography", "test"], ["ZA", "x1"]]
@@ -411,7 +411,7 @@ class TestDatasetUploadView(APITestCase):
         assert response.status_code == 400
         assert (
             response.data["detail"] ==
-            "Invalid File passed. We were not able to find Required header : Contents "
+            "Invalid File passed. We were not able to find Required header : Contents"
         )
 
     def test_request_for_adding_qualitative_dataset(self):

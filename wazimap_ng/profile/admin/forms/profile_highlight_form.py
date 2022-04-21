@@ -6,6 +6,7 @@ from ... import models
 from wazimap_ng.datasets.models import Indicator
 from wazimap_ng.general.widgets import VariableFilterWidget
 from wazimap_ng.general.admin.forms import HistoryAdminForm
+from wazimap_ng.profile.admin.utils import filter_indicators_by_profile
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +28,16 @@ class ProfileHighlightForm(HistoryAdminForm):
         super().__init__(*args, **kwargs)
         is_saving_new_item = "indicator" in self.data
         is_editing_item = self.instance.pk is not None
-        self.fields['indicator'].queryset = Indicator.objects.filter(
+        queryset = Indicator.objects.filter(
             dataset__content_type="quantitative"
         )
+
+        if self.instance:
+            queryset = filter_indicators_by_profile(
+                self.instance.profile_id, queryset
+            )
+
+        self.fields['indicator'].queryset = queryset
 
         try:
             if is_saving_new_item:
