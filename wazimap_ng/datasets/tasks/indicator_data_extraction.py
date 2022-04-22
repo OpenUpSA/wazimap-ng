@@ -12,15 +12,15 @@ logger = logging.getLogger(__name__)
 def indicator_data_extraction(indicator, *args, **kwargs):
     indicator.indicatordata_set.all().delete()
 
-    universe = {}
+    datasetdata_filters = {}
     if indicator.universe and isinstance(indicator.universe.filters, dict):
-        universe = {
+        datasetdata_filters = {
             f"data__{key}": value for key, value in indicator.universe.filters.items()
         }
 
     geography_ids = (
         models.DatasetData.objects.filter(dataset=indicator.dataset)
-        .filter(**universe)
+        .filter(**datasetdata_filters)
         .values_list("geography_id", flat=True)
         .order_by("geography_id")
         .distinct()
@@ -33,7 +33,7 @@ def indicator_data_extraction(indicator, *args, **kwargs):
                 models.DatasetData.objects.filter(
                     dataset=indicator.dataset, geography_id=g
                 )
-                .filter(**universe)
+                .filter(**datasetdata_filters)
                 .order_by("id")
                 .values_list("data", flat=True)
             ),
