@@ -196,8 +196,7 @@ def indicator(dataset):
 
 
 @pytest.fixture
-def datasetdata(indicator, geography):
-    dataset = indicator.dataset
+def datasetdata(dataset, geography):
 
     return [
         DatasetDataFactory(dataset=dataset, geography=geography, data={
