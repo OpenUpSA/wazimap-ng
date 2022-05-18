@@ -1,0 +1,7 @@
+build:
+  docker:
+    web: Dockerfile
+    worker: Dockerfile
+run:
+  web: 'python manage.py collectstatic --noinput && gunicorn wazimap_ng.wsgi --workers=2 --forwarded-allow-ips="*"  --reload  --timeout=300'
+  worker: scripts/django/django_q.sh
