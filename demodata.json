@@ -622,7 +622,13 @@
     "updated": "2021-08-12T16:36:34.751Z",
     "name": "Demo hierarchy",
     "root_geography": 1,
-    "description": ""
+    "description": "",
+    "configuration": {
+      "versions": [
+        "South Africa 2016 boundaries"
+      ],
+      "default_version": "South Africa 2016 boundaries"
+    }
   }
 },
 {
