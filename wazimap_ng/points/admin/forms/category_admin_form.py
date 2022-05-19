@@ -30,21 +30,19 @@ class CategoryAdminForm(HistoryAdminForm):
     def clean(self):
         cleaned_data = super(CategoryAdminForm, self).clean()
         document = cleaned_data.get('import_collection', None)
-        headers = pd.read_csv(BytesIO(document.read()), nrows=1, dtype=str).columns.str.lower().str.strip()
         required_headers = ["name", "longitude", "latitude", "id", "status", "status last updated", "class", "volume",
                             "discharges into"]
-        missing_headers = [
-            h.capitalize() for h in list(set(required_headers) - set(headers))
-        ]
+        if document is not None:
+            headers = pd.read_csv(BytesIO(document.read()), nrows=1, dtype=str).columns.str.lower().str.strip()
+            missing_headers = [
+                h.capitalize() for h in list(set(required_headers) - set(headers))
+            ]
 
-        if missing_headers:
-            missing_headers.sort()
-            raise ValidationError(
-                f"Invalid File passed. We were not able to find Required header : {', '.join(missing_headers)}"
-            )
-
-        print({'headers': headers})
-        print({'missing_headers': missing_headers})
+            if missing_headers:
+                missing_headers.sort()
+                raise ValidationError(
+                    f"Invalid File passed. We were not able to find Required header : {', '.join(missing_headers)}"
+                )
 
     def save(self, commit=True):
         if self.has_changed():
