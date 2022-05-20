@@ -11,6 +11,7 @@ from wazimap_ng.general.admin import filters
 
 @admin.register(models.IndicatorData)
 class IndicatorDataAdmin(DatasetBaseAdminModel):
+    autocomplete_fields = ("geography", )
 
     def indicator__name(self, obj):
         return obj.indicator.name
