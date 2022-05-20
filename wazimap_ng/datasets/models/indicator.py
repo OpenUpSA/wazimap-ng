@@ -5,6 +5,7 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField, ArrayField
 
 from .dataset import Dataset
+from .group import Group
 from .datasetdata import DatasetData
 from .universe import Universe
 from wazimap_ng.general.models import BaseModel, SimpleHistory
@@ -22,13 +23,16 @@ class Indicator(BaseModel, SimpleHistory):
     subindicators = JSONField(default=list, blank=True, null=True)
 
     def get_unique_subindicators(self):
+        subindicators = []
         if len(self.groups) > 0:
-            # TODO this model should be refactored to only allow one group
             group = self.groups[0]
-            subindicators = DatasetData.objects.filter(dataset=self.dataset).get_unique_subindicators(group)
-            return list(subindicators)
+            subindicator_group = Group.objects.filter(
+                dataset=self.dataset, name=group
+            ).first()
+            if subindicator_group:
+                subindicators = subindicator_group.subindicators
 
-        return []
+        return subindicators
 
     def save(self, force_subindicator_update=False, *args, **kwargs):
         first_save = operator.not_(self.subindicators)
