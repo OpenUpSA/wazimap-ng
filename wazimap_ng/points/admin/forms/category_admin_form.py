@@ -30,8 +30,7 @@ class CategoryAdminForm(HistoryAdminForm):
     def clean(self):
         cleaned_data = super(CategoryAdminForm, self).clean()
         document = cleaned_data.get('import_collection', None)
-        required_headers = ["name", "longitude", "latitude", "id", "status", "status last updated", "class", "volume",
-                            "discharges into"]
+        required_headers = ["name", "longitude", "latitude"]
         if document is not None:
             headers = pd.read_csv(BytesIO(document.read()), nrows=1, dtype=str).columns.str.lower().str.strip()
             missing_headers = [
