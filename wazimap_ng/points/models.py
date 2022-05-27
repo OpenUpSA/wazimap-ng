@@ -103,30 +103,3 @@ class CoordinateFile(BaseModel, SimpleHistory):
 
     def __str__(self):
         return self.name
-
-    def clean(self):
-        """
-        Clean points data
-        """
-        document_name = self.document.name
-        headers = []
-        try:
-            headers = pd.read_csv(
-                BytesIO(self.document.read()), nrows=1, dtype=str
-            ).columns.str.lower()
-        except pd.errors.ParserError as e:
-            raise ValidationError(
-                "Not able to parse passed file. Error while reading file: %s" % str(e)
-            )
-        except pd.errors.EmptyDataError as e:
-            raise ValidationError(
-                "File seems to be empty. Error while reading file: %s" % str(e)
-            )
-
-        required_headers = ["longitude", "latitude", "name"]
-
-        for required_header in required_headers:
-            if required_header not in headers:
-                raise ValidationError(
-                    "Invalid File passed. We were not able to find Required header : %s " % required_header.capitalize()
-                )
