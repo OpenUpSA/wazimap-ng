@@ -11,13 +11,6 @@ from django.contrib.postgres.fields.jsonb import KeyTextTransform
 
 
 class DatasetDataQuerySet(models.QuerySet):
-    def filter_by_universe(self, universe):
-        filters = universe.filters
-        if filters and isinstance(filters, dict):
-            filters = {f"data__{k}": v for k, v in filters.items()}
-            return self.filter(**filters)
-        else:
-            return self
 
     def get_unique_subindicators(self, group):
 

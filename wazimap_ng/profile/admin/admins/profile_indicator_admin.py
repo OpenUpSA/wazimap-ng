@@ -7,15 +7,17 @@ from ..forms import ProfileIndicatorAdminForm
 
 from wazimap_ng.general.widgets import customTitledFilter, description
 from wazimap_ng.datasets.models import Indicator, Dataset
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin.admin_base import BaseAdminModel, HistoryAdmin
 from wazimap_ng.general.admin import filters
 from django.db.models.functions import Concat
+
 
 class CategoryIndicatorFilter(filters.CategoryFilter):
     parameter_name = 'subcategory__category__id'
 
+
 @admin.register(models.ProfileIndicator)
-class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
+class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
     list_filter = (
         filters.ProfileNameFilter,
         CategoryIndicatorFilter,
@@ -24,9 +26,9 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
 
     exclude_common_list_display = True
     list_display = (
+        "label",
+        description("Variable", lambda x: x.indicator.name),
         "profile",
-        "label", 
-        description("Indicator", lambda x: x.indicator.name), 
         description("Category", lambda x: x.subcategory.category.name),
         "subcategory",
         "created",
@@ -35,17 +37,15 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
     )
 
     fieldsets = (
-        ("Database fields (can't change after being created)", {
-            'fields': ('profile', 'indicator', 'content_type')
-        }),
         ("Profile fields", {
-          'fields': ('label', 'subcategory', 'description', 'choropleth_method')
+            'fields': (
+            'profile', 'subcategory', 'label', 'indicator', 'content_type', 'choropleth_method', 'description')
         }),
         ("Charts", {
-          'fields': ('chart_configuration',)
+            'fields': ('chart_configuration',)
         })
     )
-    search_fields = ("label", )
+    search_fields = ("label",)
 
     form = ProfileIndicatorAdminForm
 
@@ -55,7 +55,7 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
         js = ("/static/js/profile-indicator-admin.js",)
 
     def get_readonly_fields(self, request, obj=None):
-        if obj: # editing an existing object
+        if obj:  # editing an existing object
             return ("profile",) + self.readonly_fields
         return self.readonly_fields
 
@@ -76,7 +76,7 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel):
             )
 
         elif not obj and request.method == "GET":
-             qs = qs = models.IndicatorSubcategory.objects.none()
+            qs = qs = models.IndicatorSubcategory.objects.none()
 
         form.base_fields["subcategory"].queryset = qs
 

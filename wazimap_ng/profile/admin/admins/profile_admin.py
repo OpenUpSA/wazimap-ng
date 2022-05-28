@@ -5,13 +5,14 @@ from django_json_widget.widgets import JSONEditorWidget
 
 from ... import models
 
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin.admin_base import BaseAdminModel, HistoryAdmin
+from wazimap_ng.general.admin.forms import HistoryAdminForm
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.admin import filters
 
 
 @admin.register(models.Profile)
-class ProfileAdmin(BaseAdminModel):
+class ProfileAdmin(BaseAdminModel, HistoryAdmin):
 
     list_display = (
         "name",
@@ -21,6 +22,16 @@ class ProfileAdmin(BaseAdminModel):
     formfield_overrides = {
         fields.JSONField: {"widget": JSONEditorWidget},
     }
+    fieldsets = (
+        ("", {
+            "fields": (
+                "name", "geography_hierarchy", "permission_type",
+                "description", "configuration"
+            )
+        }),
+    )
+
+    form = HistoryAdminForm
 
     def get_ordering(self, request):
         return [Lower("name")]

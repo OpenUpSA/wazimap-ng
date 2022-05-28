@@ -1,4 +1,4 @@
-from .geography import Geography, GeographyHierarchy
+from .geography import Geography, GeographyHierarchy, Version
 from .dataset import Dataset
 from .indicatordata import IndicatorData
 from .datasetdata import DatasetData

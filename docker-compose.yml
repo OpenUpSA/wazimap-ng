@@ -5,6 +5,7 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+
   db:
     image: kartoza/postgis:12.0
     ports:
@@ -17,11 +18,13 @@ services:
       - POSTGRES_PASS=wazimap_ng
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,pg_trgm
     stop_grace_period: 10s
+
   web:
     build: .
-    command: /app/scripts/django/web.sh
+    command: python manage.py runserver_plus 0.0.0.0:8000
     depends_on:
      - db
+     - selenium
     ports:
       - "8000:8000"
     env_file:
@@ -37,6 +40,8 @@ services:
       - AWS_S3_REGION_NAME
       - DATABASE_URL
       - DJANGO_CONFIGURATION
+      - WERKZEUG_DEBUG_PIN=off
+
   queue:
     build: .
     command: /app/scripts/django/django_q.sh
@@ -55,5 +60,12 @@ services:
       - AWS_S3_REGION_NAME
       - DATABASE_URL
       - DJANGO_CONFIGURATION
+
+  selenium:
+    image: selenium/standalone-chrome:98.0.4758.102
+    ports:
+      - "4444:4444"
+      - "5900:5900"
+
 volumes:
   wazimap-data:

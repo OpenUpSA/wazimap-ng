@@ -13,9 +13,9 @@ class MetricCalculator:
     def absolute_value(data, metric, geography):
         group = metric.indicator.groups[0]
         subindicator = get_subindicator(metric)
-        
+
         filtered_data = [row["count"] for row in data if group in row and row[group] == subindicator]
-            
+
         return get_sum(data, group, subindicator)
 
     @staticmethod
@@ -46,7 +46,7 @@ class MetricCalculator:
         if not geography_has_data:
             return None
 
-        denominator, numerator = total, geography_total        
+        denominator, numerator = total, geography_total
 
         if denominator > 0 and numerator is not None:
             return numerator / denominator

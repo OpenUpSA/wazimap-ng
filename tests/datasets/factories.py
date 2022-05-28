@@ -10,8 +10,15 @@ class GeographyFactory(factory.django.DjangoModelFactory):
 
     depth = factory.Sequence(lambda n: n)
     path = factory.Sequence(lambda n: 'path_%d' % n)
-    version = factory.Sequence(lambda n: 'version_%d' % n)
     code = factory.Sequence(lambda n: 'code_%d' % n)
+
+
+class VersionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Version
+        django_get_or_create = ('name',)
+
+    name = factory.Sequence(lambda n: 'version_%d' % n)
 
 
 class GeographyHierarchyFactory(factory.django.DjangoModelFactory):
@@ -19,6 +26,9 @@ class GeographyHierarchyFactory(factory.django.DjangoModelFactory):
         model = models.GeographyHierarchy
 
     root_geography = factory.SubFactory(GeographyFactory)
+    configuration = {
+        "default_version": "version_0",
+    }
 
 
 class DatasetFactory(factory.django.DjangoModelFactory):
@@ -26,7 +36,7 @@ class DatasetFactory(factory.django.DjangoModelFactory):
         model = models.Dataset
 
     profile = factory.SubFactory("tests.profile.factories.ProfileFactory")
-    geography_hierarchy = factory.SelfAttribute('profile.geography_hierarchy')
+    version = factory.SubFactory(VersionFactory)
     groups = ["age group"]
 
 
@@ -65,8 +75,8 @@ class DatasetFileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.DatasetFile
 
+    name = factory.Sequence(lambda n: 'dataset_file_%d' % n)
     document = factory.django.FileField()
-
 
 class DatasetDataFactory(factory.django.DjangoModelFactory):
     class Meta:

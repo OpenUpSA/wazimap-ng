@@ -5,10 +5,11 @@ from django import forms
 from ... import models
 from wazimap_ng.datasets.models import Indicator
 from wazimap_ng.general.widgets import VariableFilterWidget
+from wazimap_ng.general.admin.forms import HistoryAdminForm
 
 logger = logging.getLogger(__name__)
 
-class ProfileKeyMetricsForm(forms.ModelForm):
+class ProfileKeyMetricsForm(HistoryAdminForm):
     MY_CHOICES = (
         (None, '-------------'),
     )
@@ -19,7 +20,7 @@ class ProfileKeyMetricsForm(forms.ModelForm):
         model = models.ProfileKeyMetrics
         fields = "__all__"
         widgets = {
-            'variable': VariableFilterWidget
+            "variable": VariableFilterWidget
         }
 
     def __init__(self, *args, **kwargs):
@@ -38,7 +39,7 @@ class ProfileKeyMetricsForm(forms.ModelForm):
             elif is_editing_item:
                 indicator = Indicator.objects.get(pk=self.instance.variable.pk)
             else:
-                logger.warn("Unsure how to handle creating ProfileHighlightForm")
+                logger.warning("Unsure how to handle creating ProfileHighlightForm")
                 return
             self.fields['subindicator'].choices = [(idx, s) for (idx, s) in enumerate(indicator.subindicators)]
         except Exception as e:

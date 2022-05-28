@@ -6,8 +6,11 @@ from guardian.shortcuts import (
     get_group_perms, get_perms_for_model, get_groups_with_perms
 )
 from django import forms
+from django.db.models import Q
 
 from wazimap_ng.general.services import permissions
+from wazimap_ng.datasets.models import Indicator
+
 
 def customTitledFilter(title):
     class Wrapper(admin.FieldListFilter):
@@ -15,8 +18,10 @@ def customTitledFilter(title):
             instance = admin.FieldListFilter.create(*args, **kwargs)
             instance.title = title
             return instance
+
     return Wrapper
-    
+
+
 def description(description, func):
     func.short_description = description
     return func
@@ -38,6 +43,7 @@ class SortableWidget(Widget):
             'values': values
         }}
 
+
 class VariableFilterWidget(Widget):
     template_name = 'widgets/VariableFilterWidget.html'
 
@@ -46,14 +52,21 @@ class VariableFilterWidget(Widget):
         js = ("/static/js/variable-filter-widget.js",)
 
     def get_context(self, name, value, attrs=None):
+        CHOICES = [('public', 'All public variables'), ('private', 'Private variables of the selected profile')]
 
-        CHOICES = [('public', 'Public'), ('private', 'Private')]
         choice_field = forms.fields.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
-        queryset = self.choices.queryset
+        queryset = self.choices.queryset.order_by(
+            'dataset__profile__name',
+            'dataset__name',
+            'name'
+        )
         selected_permission = "public"
-        if value:
+
+        try:
             value = queryset.get(id=value)
-            selected_permission = value.dataset.permission_type
+            selected_permission = value and value.dataset.permission_type
+        except:
+            pass
 
         return {
             'name': name,

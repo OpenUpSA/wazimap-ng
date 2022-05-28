@@ -1,2 +1,3 @@
 from .dataset_admin_form import DatasetAdminForm
 from .indicator_admin_form import IndicatorAdminForm
+from .dataset_file_form import DatasetFileAdminForm

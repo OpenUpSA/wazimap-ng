@@ -12,9 +12,10 @@ from tests.profile.factories import (
     ProfileFactory
 )
 from tests.datasets.factories import (
-    IndicatorFactory, GeographyFactory, DatasetDataFactory, GroupFactory,
-    GeographyHierarchyFactory, IndicatorDataFactory
+    IndicatorFactory, GeographyFactory, DatasetFactory, DatasetDataFactory, GroupFactory,
+    GeographyHierarchyFactory, IndicatorDataFactory, VersionFactory
 )
+from tests.boundaries.factories import GeographyBoundaryFactory
 
 from wazimap_ng import cache
 
@@ -133,24 +134,31 @@ def test_update_point_cache_signal(mock_datetime):
 
 @pytest.mark.django_db
 class TestCache(unittest.TestCase):
+    def setUp(self):
+        self.version = VersionFactory()
+        self.geography = GeographyFactory()
+        self.boundary = GeographyBoundaryFactory(version=self.version, geography=self.geography)
+        self.hierarchy = GeographyHierarchyFactory(root_geography=self.geography)
+        self.profile = ProfileFactory(geography_hierarchy=self.hierarchy)
+
     @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
     def test_invalidate_profile_cache_for_indicator_no_update(self, mock_update_profile_cache):
-        indicator_obj = IndicatorFactory()
-        indicator_obj_2 = IndicatorFactory()
-        ProfileIndicatorFactory(indicator=indicator_obj)
-        ProfileKeyMetricsFactory(variable=indicator_obj)
-        ProfileHighlightFactory(indicator=indicator_obj)
+        indicator_obj = IndicatorFactory(dataset=DatasetFactory(version=self.version))
+        indicator_obj_2 = IndicatorFactory(dataset=DatasetFactory(version=self.version))
+        ProfileIndicatorFactory(indicator=indicator_obj, profile=self.profile)
+        ProfileKeyMetricsFactory(variable=indicator_obj, profile=self.profile)
+        ProfileHighlightFactory(indicator=indicator_obj, profile=self.profile)
         mock_update_profile_cache.reset_mock()
         cache.indicator_updated(None, indicator_obj_2)
         self.assertEqual(mock_update_profile_cache.call_count, 0)
 
     @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
     def test_invalidate_profile_cache_for_indicator_update(self, mock_update_profile_cache):
-        indicator_obj = IndicatorFactory()
+        indicator_obj = IndicatorFactory(dataset=DatasetFactory(version=self.version))
         profile_indicator_obj = ProfileIndicatorFactory(indicator=indicator_obj)
         profilekey_metrics_obj = ProfileKeyMetricsFactory(variable=indicator_obj)
         profile_highlights_obj = ProfileHighlightFactory(indicator=indicator_obj)
-        indicator_obj_2 = IndicatorFactory()
+        indicator_obj_2 = IndicatorFactory(dataset=DatasetFactory(version=self.version))
         ProfileIndicatorFactory(indicator=indicator_obj_2)
         ProfileKeyMetricsFactory(variable=indicator_obj_2)
         ProfileHighlightFactory(indicator=indicator_obj_2)
@@ -168,13 +176,15 @@ class TestCache(unittest.TestCase):
     def test_invalidate_profile_cache_for_geography_udpate(self, mock_update_profile_cache):
         mock_update_profile_cache.reset_mock()
         geography = GeographyFactory()
-        datasetdata = DatasetDataFactory(geography=geography)
+        dataset1 = DatasetFactory(version=self.version)
+        datasetdata = DatasetDataFactory(geography=geography, dataset=dataset1)
         geography_hierarchy = GeographyHierarchyFactory(root_geography=geography)
 
         # multiple profiles linked to same hierarchy
         profile1 = ProfileFactory(geography_hierarchy=geography_hierarchy)
         profile2 = ProfileFactory(geography_hierarchy=geography_hierarchy)
-        indicator_data = IndicatorDataFactory(geography=geography)
+        indicator = IndicatorFactory(dataset=DatasetFactory(version=self.version))
+        indicator_data = IndicatorDataFactory(geography=geography, indicator=indicator)
 
         self.assertEqual(mock_update_profile_cache.call_count, 4)
         calls = [
@@ -188,7 +198,8 @@ class TestCache(unittest.TestCase):
     @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
     def test_invalidate_profile_cache_for_group_udpate(self, mock_update_profile_cache):
         mock_update_profile_cache.reset_mock()
-        group = GroupFactory()
+        dataset = DatasetFactory(version=self.version)
+        group = GroupFactory(dataset=dataset)
         self.assertEqual(mock_update_profile_cache.call_count, 2)
         calls = [
             call(group.dataset.profile),
@@ -221,18 +232,17 @@ class TestCache(unittest.TestCase):
     @patch('wazimap_ng.cache.update_profile_cache', autospec=True)
     def test_invalidate_profile_cache_for_geography_hierarchy_udpate(self, mock_update_profile_cache):
         mock_update_profile_cache.reset_mock()
-        profile1 = ProfileFactory()
-        hierarchy = profile1.geography_hierarchy
-        profile2 = ProfileFactory(geography_hierarchy=hierarchy)
-        profile3 = ProfileFactory()
-        assert hierarchy != profile3.geography_hierarchy
+        profile2 = ProfileFactory(geography_hierarchy=self.hierarchy)
+        hierarchy2 = GeographyHierarchyFactory()
+        profile3 = ProfileFactory(geography_hierarchy=hierarchy2)
+        assert self.hierarchy != profile3.geography_hierarchy
 
         mock_update_profile_cache.reset_mock()
-        hierarchy.description = "updated hierarchy"
-        hierarchy.save()
+        self.hierarchy.description = "updated hierarchy"
+        self.hierarchy.save()
         self.assertEqual(mock_update_profile_cache.call_count, 2)
         calls = [
-            call(profile1),
+            call(self.profile),
             call(profile2),
         ]
         mock_update_profile_cache.assert_has_calls(calls, any_order=True)

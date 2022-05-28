@@ -11,10 +11,9 @@ from io import BytesIO
 from wazimap_ng.profile.models import Profile
 from django_q.models import Task
 from wazimap_ng import utils
-from wazimap_ng.general.models import BaseModel
+from wazimap_ng.general.models import BaseModel, SimpleHistory
 from wazimap_ng.config.common import PERMISSION_TYPES
 from colorfield.fields import ColorField
-
 
 
 def get_file_path(instance, filename):
@@ -22,7 +21,7 @@ def get_file_path(instance, filename):
     return os.path.join('points', filename)
 
 
-class Theme(BaseModel):
+class Theme(BaseModel, SimpleHistory):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=30)
     icon = models.CharField(max_length=30, null=True, blank=True)
@@ -35,7 +34,7 @@ class Theme(BaseModel):
         ordering = ["order"]
 
 
-class Category(BaseModel):
+class Category(BaseModel, SimpleHistory):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=50)
     metadata = models.OneToOneField('general.MetaData', on_delete=models.CASCADE, null=True, blank=True)
@@ -66,7 +65,7 @@ class Location(BaseModel):
         return "%s: %s" % (self.category, self.name)
 
 
-class ProfileCategory(BaseModel):
+class ProfileCategory(BaseModel, SimpleHistory):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, related_name="profile_categories")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="collection")
@@ -76,6 +75,7 @@ class ProfileCategory(BaseModel):
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     color = ColorField(blank=True)
     visible_tooltip_attributes = JSONField(default=list, null=True, blank=True)
+    configuration = JSONField(default=dict, blank=True)
 
     def __str__(self):
         return self.label
@@ -91,7 +91,7 @@ class ProfileCategory(BaseModel):
         f = [data.get('key') for location in locations for data in location]
         return list(set(f))
 
-class CoordinateFile(BaseModel):
+class CoordinateFile(BaseModel, SimpleHistory):
     document = models.FileField(
         upload_to=get_file_path,
         validators=[FileExtensionValidator(allowed_extensions=["csv",])],

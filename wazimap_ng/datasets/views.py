@@ -1,6 +1,6 @@
 import operator
 from functools import reduce
-
+from rest_framework import serializers as rest_serializer
 from django.http import Http404
 from django.views.decorators.http import condition
 from django.shortcuts import get_object_or_404
@@ -41,17 +41,24 @@ class DatasetList(generics.ListCreateAPIView):
         response = self.create(request, *args, **kwargs)
 
         dataset_obj = models.Dataset.objects.filter(id=response.data["id"]).first()
-
         # Assign dataset object permission to profile group
         assign_perms_to_group(profile.name, dataset_obj, False)
 
         # Get and create dataset file if user has sent file while creating dataset
         file_obj = request.data.get('file', None)
         if file_obj:
-            datasetfile_obj = models.DatasetFile.objects.create(
-                name=dataset_obj.name,
-                document=file_obj,
-                dataset_id=dataset_obj.id
+            try:
+                datasetfile_obj = models.DatasetFile(
+                    name=dataset_obj.name,
+                    document=file_obj,
+                    dataset_id=dataset_obj.id
+                )
+                datasetfile_obj.full_clean()
+                datasetfile_obj.save()
+            except Exception as err:
+                return Response({
+                    'detail': ', '.join(err.messages)
+                }, status=status.HTTP_400_BAD_REQUEST
             )
 
             task = async_task(
@@ -90,11 +97,18 @@ def dataset_upload(request, dataset_id):
         )
     response = serializers.DatasetDetailViewSerializer(dataset).data
 
-    datasetfile_obj = models.DatasetFile.objects.create(
-        name=dataset.name,
-        document=file_obj,
-        dataset_id=dataset.id
+    try:
+        datasetfile_obj = models.DatasetFile.objects.create(
+            name=dataset.name,
+            document=file_obj,
+            dataset_id=dataset.id
+        )
+    except Exception as err:
+        return Response({
+            'detail': ', '.join(err.messages)
+        }, status=status.HTTP_400_BAD_REQUEST
     )
+
     update_indicators = request.POST.get('update', False)
     overwrite = request.POST.get('overwrite', False)
 
@@ -151,7 +165,7 @@ class DatasetIndicatorsList(generics.ListAPIView):
 
     def get(self, request, dataset_id):
         if models.Dataset.objects.filter(id=dataset_id).count() == 0:
-            raise Http404 
+            raise Http404
 
         queryset = self.get_queryset().filter(dataset=dataset_id)
         queryset = self.paginate_queryset(queryset)
@@ -176,16 +190,19 @@ class GeographyHierarchyViewset(viewsets.ReadOnlyModelViewSet):
 def search_geography(request, profile_id):
     """
     Search autocompletion - provides recommendations from place names
-    Prioritises higher-level geographies in the results, e.g. 
-    Provinces of Municipalities. 
+    Prioritises higher-level geographies in the results, e.g.
+    Provinces of Municipalities.
 
     Querystring parameters
     q - search string
-    max-results number of results to be returned [default is 30] 
+    max-results number of results to be returned [default is 30]
     """
     profile = get_object_or_404(Profile, pk=profile_id)
-    version = profile.geography_hierarchy.root_geography.version
-    
+    version_name = request.GET.get("version", None)
+    if not version_name:
+        version_name = profile.geography_hierarchy.configuration.get("default_version", None)
+    version = get_object_or_404(models.Version, name=version_name)
+
     default_results = 30
     max_results = request.GET.get("max_results", default_results)
     try:
@@ -197,7 +214,7 @@ def search_geography(request, profile_id):
 
     q = request.GET.get("q", "")
 
-    geographies = models.Geography.objects.filter(version=version).search(q)[0:max_results]
+    geographies = models.Geography.objects.filter(geographyboundary__version=version).search(q)[0:max_results]
 
     def sort_key(x):
         exact_match = x.name.lower() == q.lower()
@@ -205,7 +222,7 @@ def search_geography(request, profile_id):
             return 0
 
         else:
-            # TODO South Africa specific geography 
+            # TODO South Africa specific geography
             return {
                 "province": 1,
                 "district": 2,
@@ -216,7 +233,7 @@ def search_geography(request, profile_id):
             }.get(x.level, 7)
 
     geogs = sorted(geographies, key=sort_key)
-    serializer = serializers.AncestorGeographySerializer(geogs, many=True)
+    serializer = serializers.AncestorGeographySerializer(geogs, many=True, context={"version": version})
 
     return Response(serializer.data)
 
@@ -226,9 +243,9 @@ def geography_ancestors(request, geography_code, version):
     Returns parent geographies of the given geography code
     Return a 404 HTTP response if the is the code is not found
     """
-    geos = models.Geography.objects.filter(code=geography_code, version=version)
+    geos = models.Geography.objects.filter(code=geography_code, versions__name=version)
     if geos.count() == 0:
-        raise Http404 
+        raise Http404
 
     geography = geos.first()
     geo_js = AncestorGeographySerializer().to_representation(geography)

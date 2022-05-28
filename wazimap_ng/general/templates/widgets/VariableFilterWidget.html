@@ -1,14 +1,19 @@
 <div id="variable-permission-filter">
-	{{ choice_field }}
+    {{ choice_field }}
 </div>
-<select id="id_indicator" required name="{{name}}">
-<option value=''>-------------</option>
-{% for choice in choices %}
-	<option 
-		value="{{ choice.id }}"
-		data-type="{{ choice.dataset.permission_type }}"
-		class="{% if permission_type != choice.dataset.permission_type %} hidden {% endif %}"
-		{% if value.id == choice.id %} selected {% endif %}
-	> {{ choice }}</option>
-{% endfor %}
+<select
+        id="id_indicator"
+        required
+        name="{{ name }}"
+>
+    <option value=''>-------------</option>
+    {% for choice in choices %}
+        <option
+                value="{{ choice.id }}"
+                title="{{ choice }}"
+                data-type="{{ choice.dataset.permission_type }}"
+                data-profileId="{{ choice.dataset.profile.id }}"
+                {% if value.id == choice.id %} selected {% endif %}
+        > {{ choice }}</option>
+    {% endfor %}
 </select>

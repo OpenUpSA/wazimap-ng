@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 
 from django_q.tasks import async_task
 
-from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin.admin_base import BaseAdminModel, HistoryAdmin
 from wazimap_ng.general.services.permissions import assign_perms_to_group
 from wazimap_ng.general.admin import filters
 
@@ -14,7 +14,7 @@ from wazimap_ng.datasets import hooks
 
 
 @admin.register(models.Category)
-class CategoryAdmin(BaseAdminModel):
+class CategoryAdmin(BaseAdminModel, HistoryAdmin):
     list_display = ("name", "profile")
     form = CategoryAdminForm
     exclude = ("metadata", )
@@ -64,12 +64,16 @@ class CategoryAdmin(BaseAdminModel):
     def save_model(self, request, obj, form, change):
         is_new = obj.pk == None and change == False
         is_profile_updated = change and "profile" in form.changed_data
+        collection_import_file = form.cleaned_data.get("import_collection", None)
+
+        if change and collection_import_file:
+            obj._change_reason = "New Collection uploaded."
 
         super().save_model(request, obj, form, change)
         if is_new or is_profile_updated:
             assign_perms_to_group(obj.profile.name, obj, is_profile_updated)
 
-        collection_import_file = form.cleaned_data.get("import_collection", None)
+
 
         if collection_import_file:
             collection_obj = models.CoordinateFile.objects.create(

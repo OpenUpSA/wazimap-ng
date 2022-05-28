@@ -16,6 +16,7 @@ from .base_admin_model import DatasetBaseAdminModel
 from wazimap_ng.general.services import permissions
 from wazimap_ng.general.widgets import description
 from wazimap_ng.general.admin import filters
+from wazimap_ng.general.admin.admin_base import HistoryAdmin
 
 
 def get_source(indicator):
@@ -36,26 +37,22 @@ class PermissionTypeFilter(filters.DatasetFilter):
 class IndicatorProfileFilter(filters.ProfileFilter):
     parameter_name = 'dataset__profile'
 
-class IndicatorGeographyHierarchyFilter(filters.GeographyHierarchyFilter):
-    parameter_name = 'dataset__geography_hierarchy_id'
-
 
 @admin.register(models.Indicator)
-class IndicatorAdmin(DatasetBaseAdminModel):
+class IndicatorAdmin(DatasetBaseAdminModel, HistoryAdmin):
 
     list_display = (
         "name", "dataset", "universe", description("source", get_source)
     )
 
     list_filter = (
-        PermissionTypeFilter, IndicatorProfileFilter,
-        IndicatorGeographyHierarchyFilter
+        PermissionTypeFilter, IndicatorProfileFilter
     )
 
     form = IndicatorAdminForm
-    fieldsets = [
+    fieldsets = (
         (None, { 'fields': ('dataset', 'groups','universe', 'name',) } ),
-    ]
+    )
 
     autocomplete_fields = ("dataset", )
     search_fields = ("name", )

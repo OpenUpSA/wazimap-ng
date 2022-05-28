@@ -12,7 +12,7 @@
             }
         });
 
-        function appendOptionEl($outerEl, val, text){
+        function appendOptionEl($outerEl, val, text) {
             $outerEl.append($emptyOptionEl.clone().attr("value", val).text(text));
         }
 

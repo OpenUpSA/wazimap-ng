@@ -8,6 +8,7 @@ from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
 
 from wazimap_ng.general.admin.admin_base import BaseAdminModel
+from wazimap_ng.general.admin.forms import HistoryAdminForm
 
 
 @admin.register(models.CoordinateFile)
@@ -22,7 +23,7 @@ class CoordinateFileAdmin(BaseAdminModel):
             )
         }),
     )
-
+    form = HistoryAdminForm
     readonly_fields = (
        "name", "get_document", "get_status", "get_task_link",
        "get_errors",

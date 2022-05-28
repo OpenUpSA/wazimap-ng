@@ -6,7 +6,11 @@ import json
 
 
 from tests.profile.factories import ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory, ProfileIndicatorFactory
-from tests.datasets.factories import DatasetFactory, IndicatorFactory, IndicatorDataFactory, GroupFactory
+from tests.datasets.factories import (
+    DatasetFactory, IndicatorFactory, IndicatorDataFactory, GroupFactory, VersionFactory, GeographyHierarchyFactory,
+    GeographyFactory
+)
+from tests.boundaries.factories import GeographyBoundaryFactory
 
 from wazimap_ng.profile.views import ProfileByUrl
 
@@ -14,10 +18,20 @@ from wazimap_ng.profile.views import ProfileByUrl
 class TestProfileGeographyData(APITestCase):
 
     def setUp(self):
-        self.profile = ProfileFactory()
+        version = VersionFactory()
+        geography = GeographyFactory()
+        geographyboundary = GeographyBoundaryFactory(geography=geography, version=version)
+        hierarchy = GeographyHierarchyFactory(
+            root_geography=geography,
+            configuration={
+                "default_version": version.name,
+            }
+        )
+        self.profile = ProfileFactory(geography_hierarchy=hierarchy)
         dataset = DatasetFactory(
-            geography_hierarchy=self.profile.geography_hierarchy, groups=["age group", "gender"],
-            profile=self.profile
+            groups=["age group", "gender"],
+            profile=self.profile,
+            version=version
         )
         indicator = IndicatorFactory(name="Age by Gender", dataset=dataset, groups=["gender"])
 
@@ -32,7 +46,7 @@ class TestProfileGeographyData(APITestCase):
             {"age group": "15-19", "gender": "F", "count": 9.62006},
             {"age group": "15-19", "gender": "M", "count": 8.79722},
         ]
-            
+
         IndicatorDataFactory(indicator=indicator, geography=self.profile.geography_hierarchy.root_geography, data=self.indicator_data_items_data)
 
     def test_profile_geography_data_(self):
@@ -63,6 +77,3 @@ class TestProfileByUrl:
 
         response.render()
         assert "configuration" in str(response.content)
-
-
-

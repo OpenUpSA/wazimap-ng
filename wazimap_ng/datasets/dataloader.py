@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # TODO should add a memoize decorator here
 @functools.lru_cache()
 def load_geography(geo_code, version):
-    geography = models.Geography.objects.get(code=geo_code, version=version)
+    geography = models.Geography.objects.get(code=geo_code, geographyboundary__version=version)
     return geography
 
 
@@ -28,6 +28,7 @@ def create_groups(dataset, group_names):
             name=g, dataset=dataset
         )
         group.subindicators = subindicators
+        group._change_reason = "Group updated by dataloader task."
         group.save()
         groups.append(group)
     return groups
@@ -44,15 +45,13 @@ def loaddata(dataset, iterable, row_number, overwrite=False):
         logger.debug(f"Deleting previously uploaded data for this dataset")
         dataset.datasetdata_set.all().delete()
 
-    version = dataset.geography_hierarchy.version
-
     for idx, row in enumerate(iterable):
         groups |= set(x for x in row.keys())
         geo_code = row["geography"]
         line_no = row_number+idx+1
         error_lines = []
         try:
-            geography = load_geography(geo_code, version)
+            geography = load_geography(geo_code, dataset.version)
         except models.Geography.DoesNotExist:
             warnings.append(list(row.values()))
             continue

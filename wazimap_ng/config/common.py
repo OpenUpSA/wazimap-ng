@@ -43,6 +43,7 @@ class Common(QCluster, Configuration):
         "django.contrib.gis",
         "django.contrib.staticfiles",
 
+        'django_extensions',
 
         # Third party apps
         "rest_framework",            # utilities for rest apis
@@ -67,6 +68,7 @@ class Common(QCluster, Configuration):
         "guardian",
         "icon_picker_widget",
         "colorfield",
+        "simple_history",
 
         # Your apps
         "wazimap_ng.datasets",
@@ -93,6 +95,7 @@ class Common(QCluster, Configuration):
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "django.middleware.cache.FetchFromCacheMiddleware",
+        "simple_history.middleware.HistoryRequestMiddleware",
     ]
 
     ALLOWED_HOSTS = ["*"]
@@ -101,12 +104,13 @@ class Common(QCluster, Configuration):
     WSGI_APPLICATION = "wazimap_ng.wsgi.application"
 
     # Email
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
-    ADMINS = (
-        ("Author", "adi@openup.org.za"),
-    )
-
+    EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", 'django.core.mail.backends.smtp.EmailBackend')
+    EMAIL_HOST = os.getenv("EMAIL_HOST", None)
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", None)
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", None)
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 
     # Postgres
     DATABASES = {
@@ -283,6 +287,7 @@ class Common(QCluster, Configuration):
         ),
         'DEFAULT_AUTHENTICATION_CLASSES': [
             "rest_framework.authentication.TokenAuthentication",
+            "rest_framework.authentication.SessionAuthentication",
         ],
         'DEFAULT_PERMISSION_CLASSES': [
             "wazimap_ng.profile.authentication.ProfilePermissions",
