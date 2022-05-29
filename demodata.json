@@ -4,14 +4,15 @@
   "pk": 1,
   "fields": {
     "created": "2021-08-12T16:36:58.528Z",
-    "updated": "2021-08-12T16:36:58.528Z",
+    "updated": "2022-05-29T14:50:01.923Z",
     "name": "Demo profile",
     "geography_hierarchy": 1,
     "permission_type": "public",
     "description": "",
     "configuration": {
       "urls": [
-        "localhost"
+        "localhost",
+        "wazimap-production.netlify.app"
       ]
     }
   }
