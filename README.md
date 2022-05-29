@@ -16,7 +16,7 @@ You can find the backend code in this repository. The frontend is available here
 The main new features are:
 
 * Admins now have more flexibility when it comes to loading data. This includes uploading massive datasets and then slicing and dicing in the backend rather than pre-preparing datasets beforehand.
-* Point data is now fully integrated as a first-class spatial object. 
+* Point data is now fully integrated as a first-class spatial object.
 * Choropleths built into the main view. These were hidden behind multiple clicks in the previous version.
 * One platform can host multiple profiles off the same database.
 * The Rich data view allows richer disaggregation of indicators.
@@ -50,13 +50,13 @@ Local development is normally done inside docker-compose so that the supporting 
 Make docker-compose start the supporting services
 
     docker-compose run --rm web python wait_for_postgres.py
-    
+
 Migrate, load development data and start the app
 
     docker-compose run --rm web python manage.py migrate
     docker-compose run --rm web python manage.py loaddata demodata.json
     docker-compose up
-    
+
 Run the tests
 
     docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
@@ -65,6 +65,37 @@ Run Django manage commands inside docker-compose, e.g. create a superuser:
 
     docker-compose run --rm web python manage.py createsuperuser
 
+
+# Demo data
+
+Demo data should consist of the smallest amount of data needed to demonstrate as
+much functionality as possible with the minimum effort. Updates to demo data should
+aim to keep diffs as small as possible as well.
+
+The demo data creates a superuser with username `admin`. Ask for the password
+in the dev channel or update it using `manage.py changepassword` or
+`manage.py createsuperuser`.
+
+Use the following command to generate demo data, diff to check that the change
+looks sane before committing. Update the command here if changes are needed.
+
+```
+docker-compose run --rm web python -Wi manage.py dumpdata \
+  --indent 2 \
+  --natural-foreign \
+  profile \
+  auth.group \
+  auth.user \
+  guardian \
+  datasets \
+  boundaries.geographyboundary \
+  points.category \
+  points.location \
+  points.profilecategory \
+  points.theme \
+  general.metadata \
+    > demodata.json
+```
 
 # Documentation
 These are works in progress:
