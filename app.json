@@ -2,8 +2,7 @@
   "scripts": {
     "dokku": {
       "predeploy": "/app/scripts/django/predeploy.sh"
-    },
-    "release": "echo 'hello world release'"
+    }
   },
   "stack": "container",
   "environments": {
@@ -28,6 +27,9 @@
           "quantity": 1,
           "size": "free"
         }
+      },
+      "scripts": {
+        "postdeploy": "python manage.py migrate && python manage.py loaddata demodata"
       }
     }
   }
