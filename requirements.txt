@@ -14,7 +14,6 @@ django-model-utils==3.1.2
 django_unique_upload==0.2.1
 django-picklefield==2.1.1
 django-treebeard==4.3
-django-json-widget==0.2.0
 django-admin-sortable2==0.7.6
 
 # Rest apis
@@ -83,6 +82,6 @@ django-mock-queries==2.1.5
 lorem==0.1.1
 chardet==3.0.4
 
-django-admin-json-editor==0.2.3
+git+https://github.com/karangupta31/django-admin-json-editor.git@515b207
 django-tinymce==3.4.0
 django-simple-history==3.0.0

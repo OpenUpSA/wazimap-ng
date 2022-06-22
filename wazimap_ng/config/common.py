@@ -54,7 +54,6 @@ class Common(QCluster, Configuration):
         "django_filters",            # for filtering rest endpoints
         "corsheaders",               # enabled cross domain CORS requests
         "treebeard",                 # efficient tree representation
-        "django_json_widget",        # admin widget for JSONField
         'whitenoise.runserver_nostatic',
         "django_admin_json_editor",
         "tinymce",
