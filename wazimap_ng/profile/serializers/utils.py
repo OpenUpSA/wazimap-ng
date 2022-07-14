@@ -40,6 +40,7 @@ def get_indicator_data(profile, indicators, geographies, version):
                 primary_group=F("indicator__groups"),
                 last_updated_at=F("indicator__profileindicator__updated"),
                 content_type=F("indicator__profileindicator__content_type"),
+                chart_type=F("indicator__profileindicator__chart_type") ,
             )
             .order_by("indicator__profileindicator__order")
             )
@@ -96,5 +97,6 @@ def metadata_serializer(obj, dataset_groups_dict):
              "dataset_content_type": x["dataset_content_type"],
              "version": x["version_name"],
              "chart_configuration": x["indicator_chart_configuration"],
+             "chart_type": x["chart_type"],
          },
      )
