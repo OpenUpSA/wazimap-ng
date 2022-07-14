@@ -18,11 +18,11 @@ class TestProfileIndicatorAdminHistory:
         assert bool("change_reason" in fields) == True
 
     def test_history_for_profile_indicator_edit_from_admin(
-        self, client, superuser, profile_indicator
+            self, client, superuser, profile_indicator
     ):
         client.force_login(user=superuser)
         url = reverse("admin:profile_profileindicator_change", args=(profile_indicator.id,))
-        data={
+        data = {
             "profile": profile_indicator.profile_id,
             "indicator": profile_indicator.indicator_id,
             "subcategory": profile_indicator.subcategory_id,
@@ -32,7 +32,8 @@ class TestProfileIndicatorAdminHistory:
             "chart_configuration": "{}",
             "subindicators": [],
             "indicator_variable_type": "public",
-            "change_reason": "Changed Label"
+            "change_reason": "Changed Label",
+            "chart_type": "bar"
         }
 
         res = client.post(url, data, follow=True)
