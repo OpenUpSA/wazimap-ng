@@ -62,8 +62,8 @@ class TestProfileIndicatorAdmin:
             "indicator",
             "content_type",
             "choropleth_method",
-            "chart_type",
             "description",
+            "chart_type",
             "chart_configuration",
             "change_reason",
         ]
