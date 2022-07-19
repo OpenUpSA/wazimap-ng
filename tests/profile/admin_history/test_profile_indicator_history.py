@@ -33,7 +33,8 @@ class TestProfileIndicatorAdminHistory:
             "subindicators": [],
             "indicator_variable_type": "public",
             "change_reason": "Changed Label",
-            "chart_type": "bar"
+            "chart_type": "bar",
+            "choropleth_range": "by_subindicator",
         }
 
         res = client.post(url, data, follow=True)
