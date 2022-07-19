@@ -358,6 +358,11 @@ PI_CONTENT_TYPE = (
     ('html', 'HTML')
 )
 
+PI_CHART_TYPE = (
+    ('bar', 'Bar Chart'),
+    ('line', 'Line Chart')
+)
+
 STAFF_GROUPS = ["ProfileAdmin", "DataAdmin"]
 
 STAFF_EMAIL_ADDRESS = os.getenv(
