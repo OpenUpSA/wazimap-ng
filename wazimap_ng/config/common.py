@@ -363,6 +363,11 @@ PI_CHART_TYPE = (
     ('line', 'Line Chart')
 )
 
+PI_CHOROPLETH_RANGE_TYPE = (
+    ('by_subindicator', 'By Subindicator'),
+    ('by_indicator', 'By Indicator')
+)
+
 STAFF_GROUPS = ["ProfileAdmin", "DataAdmin"]
 
 STAFF_EMAIL_ADDRESS = os.getenv(
