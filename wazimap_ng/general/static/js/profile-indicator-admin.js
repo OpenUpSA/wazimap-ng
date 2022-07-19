@@ -48,7 +48,6 @@
         function showChartTypeDescription($chartTypeEl) {
             const selectedVal = $chartTypeEl.val();
             const selectedSubcategory = $subcategoryEl.val();
-            console.log({selectedVal, selectedSubcategory})
             $(document).find('.field-chart_type .help').remove();
             if (selectedVal === "line") {
                 let helpText = document.createElement("div");
