@@ -40,7 +40,7 @@ def get_indicator_data(profile, indicators, geographies, version):
                 primary_group=F("indicator__groups"),
                 last_updated_at=F("indicator__profileindicator__updated"),
                 content_type=F("indicator__profileindicator__content_type"),
-                chart_type=F("indicator__profileindicator__chart_type") ,
+                chart_type=F("indicator__profileindicator__chart_type"),
             )
             .order_by("indicator__profileindicator__order")
             )
