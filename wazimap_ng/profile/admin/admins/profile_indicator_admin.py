@@ -42,7 +42,7 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
             'profile', 'subcategory', 'label', 'indicator', 'content_type', 'choropleth_method', 'description')
         }),
         ("Charts", {
-            'fields': ('chart_configuration',)
+            'fields': ('chart_type', 'chart_configuration',)
         })
     )
     search_fields = ("label",)

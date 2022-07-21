@@ -3,6 +3,8 @@
         const $profileEl = $(document).find("#id_profile");
         const $subcategoryEl = $(document).find("#id_subcategory");
         const $emptyOptionEl = $("<option></option>");
+        const $chartTypeEl = $(document).find("#id_chart_type");
+        showChartTypeDescription($chartTypeEl, $subcategoryEl);
 
         $profileEl.on('change', function (e) {
             // trigger "loadSubcategory" func only when it was manually changed
@@ -11,6 +13,10 @@
                 loadSubcategory(e.target.value);
             }
         });
+
+        $chartTypeEl.on('change', function () {
+            showChartTypeDescription($chartTypeEl);
+        })
 
         function appendOptionEl($outerEl, val, text) {
             $outerEl.append($emptyOptionEl.clone().attr("value", val).text(text));
@@ -36,6 +42,22 @@
                 })
             } else {
                 clearSubcategories();
+            }
+        }
+
+        function showChartTypeDescription($chartTypeEl) {
+            const selectedVal = $chartTypeEl.val();
+            const selectedSubcategory = $subcategoryEl.val();
+            $(document).find('.field-chart_type .help').remove();
+            if (selectedVal === "line") {
+                let helpText = document.createElement("div");
+                $(helpText).addClass('help');
+                let html = `<span>Categories will be evenly spaced on a linear axis. 
+Ensure categories represent regular intervals and no categories are missing when using line charts. 
+Also <a href='../../../indicatorsubcategory/${selectedSubcategory}/change' target='_blank'>ensure your categories are ordered correctly</a></span>`;
+
+                $(helpText).html(html);
+                $(document).find('.field-chart_type').append(helpText);
             }
         }
     });
