@@ -39,7 +39,8 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
     fieldsets = (
         ("Profile fields", {
             'fields': (
-            'profile', 'subcategory', 'label', 'indicator', 'content_type', 'choropleth_method', 'description')
+                'profile', 'subcategory', 'label', 'indicator', 'content_type', 'choropleth_method', 'choropleth_range',
+                'description')
         }),
         ("Charts", {
             'fields': ('chart_type', 'chart_configuration',)
