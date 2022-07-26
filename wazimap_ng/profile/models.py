@@ -6,7 +6,7 @@ from tinymce.models import HTMLField
 from wazimap_ng.datasets.models import Indicator, GeographyHierarchy
 from wazimap_ng.general.models import BaseModel, SimpleHistory
 from wazimap_ng.config.common import (
-    DENOMINATOR_CHOICES, PERMISSION_TYPES, PI_CONTENT_TYPE, PI_CHART_TYPE
+    DENOMINATOR_CHOICES, PERMISSION_TYPES, PI_CONTENT_TYPE, PI_CHART_TYPE, PI_CHOROPLETH_RANGE_TYPE
 )
 
 
@@ -129,6 +129,7 @@ class ProfileIndicator(BaseModel, SimpleHistory):
     chart_configuration = JSONField(default=dict, blank=True)
     content_type = models.CharField(choices=PI_CONTENT_TYPE, max_length=32, default="indicator")
     chart_type = models.CharField(choices=PI_CHART_TYPE, max_length=32, default="bar")
+    choropleth_range = models.CharField(choices=PI_CHOROPLETH_RANGE_TYPE, max_length=32, default="by_subindicator")
 
     def __str__(self):
         return f"{self.profile.name} -> {self.label}"

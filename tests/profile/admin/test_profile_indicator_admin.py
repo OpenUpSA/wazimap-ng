@@ -62,6 +62,7 @@ class TestProfileIndicatorAdmin:
             "indicator",
             "content_type",
             "choropleth_method",
+            "choropleth_range",
             "description",
             "chart_type",
             "chart_configuration",
@@ -165,6 +166,7 @@ class TestProfileIndicatorAdminFormValidations:
             "indicator",
             "content_type",
             "choropleth_method",
+            "choropleth_range",
             "chart_type"
         ]
         assert list(errors.keys()) == error_fields
