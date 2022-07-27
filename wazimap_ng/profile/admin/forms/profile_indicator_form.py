@@ -27,7 +27,6 @@ class ProfileIndicatorAdminForm(HistoryAdminForm):
         cleaned_data = super(ProfileIndicatorAdminForm, self).clean()
         indicator = cleaned_data.get('indicator', None)
         profile = cleaned_data.get('profile', None)
-
         if not profile and self.instance.id:
             profile = self.instance.profile
 
@@ -41,6 +40,6 @@ class ProfileIndicatorAdminForm(HistoryAdminForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['indicator'].required = True
-        if self.instance:
+        if self.instance.id:
             profile_id = self.instance.profile_id
             self.fields['indicator'].queryset = filter_indicators_by_profile(profile_id)

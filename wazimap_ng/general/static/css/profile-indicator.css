@@ -1,0 +1,10 @@
+.alert-warning{
+  background: #fff3cd url(/static/admin/img/icon-alert.svg) 10px 12px no-repeat;
+  width: fit-content;
+  border-radius: 5px;
+  border: 1px solid #ffecb5;
+  color: #664d03 !important;
+  padding-left: ;
+  padding: 10px 10px 10px 28px;
+  margin: 0 0 10px 0;
+}

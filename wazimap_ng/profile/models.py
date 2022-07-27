@@ -130,6 +130,7 @@ class ProfileIndicator(BaseModel, SimpleHistory):
     content_type = models.CharField(choices=PI_CONTENT_TYPE, max_length=32, default="indicator")
     chart_type = models.CharField(choices=PI_CHART_TYPE, max_length=32, default="bar")
     choropleth_range = models.CharField(choices=PI_CHOROPLETH_RANGE_TYPE, max_length=32, default="by_subindicator")
+    enable_linear_scrubber = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.profile.name} -> {self.label}"
