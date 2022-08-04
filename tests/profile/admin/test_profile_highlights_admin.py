@@ -16,7 +16,7 @@ class TestProfileHighlightAdmin:
 
     def test_indicator_queryset_excludes_qualitative_indicator(
             self, mocked_request, indicator, qualitative_indicator
-        ):
+    ):
         ma = ProfileHighlightAdmin(ProfileHighlight, AdminSite())
         # Assert that there are both quantative and qualitative type of indicator available
         indicators = Indicator.objects.all()
@@ -30,3 +30,11 @@ class TestProfileHighlightAdmin:
         assert queryset.count() == 1
         assert queryset.first().id == indicator.id
         assert indicator.dataset.content_type == "quantitative"
+
+    def test_fieldset(self, mocked_request, profile_highlight):
+        ma = ProfileHighlightAdmin(ProfileHighlight, AdminSite())
+        base_fields = list(ma.get_form(mocked_request, profile_highlight).base_fields)
+
+        assert base_fields == [
+            "label", "indicator", "subindicator", "denominator", "change_reason"
+        ]

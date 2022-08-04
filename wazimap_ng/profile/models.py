@@ -72,7 +72,8 @@ class IndicatorSubcategory(BaseModel, SimpleHistory):
 
 
 class ProfileKeyMetrics(BaseModel, SimpleHistory):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE,
+                                help_text="The profile to which this profile indicator belongs")
     variable = models.ForeignKey(Indicator, on_delete=models.CASCADE, )
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
     # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.
@@ -95,7 +96,8 @@ class ProfileKeyMetrics(BaseModel, SimpleHistory):
 
 
 class ProfileHighlight(BaseModel, SimpleHistory):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE,
+                                help_text="The profile to which this profile indicator belongs")
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE,
                                   help_text="Indicator on which this highlight is based on.", verbose_name="variable")
     # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.

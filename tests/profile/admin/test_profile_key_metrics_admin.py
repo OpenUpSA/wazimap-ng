@@ -7,6 +7,7 @@ from wazimap_ng.profile.admin.admins import ProfileKeyMetricsAdmin
 from wazimap_ng.profile.models import ProfileKeyMetrics
 from wazimap_ng.datasets.models import Indicator
 
+
 @pytest.mark.django_db
 class TestProfileKeyMetricsAdmin:
 
@@ -14,10 +15,9 @@ class TestProfileKeyMetricsAdmin:
         ma = ProfileKeyMetricsAdmin(ProfileKeyMetrics, AdminSite())
         assert str(ma) == 'profile.ProfileKeyMetricsAdmin'
 
-
     def test_variable_queryset_excludes_qualitative_indicator(
             self, mocked_request, indicator, qualitative_indicator
-        ):
+    ):
         ma = ProfileKeyMetricsAdmin(ProfileKeyMetrics, AdminSite())
 
         # Assert that there are both quantative and qualitative type of indicator available
@@ -32,3 +32,11 @@ class TestProfileKeyMetricsAdmin:
         assert queryset.count() == 1
         assert queryset.first().id == indicator.id
         assert indicator.dataset.content_type == "quantitative"
+
+    def test_fieldset(self, mocked_request, profile_key_metric):
+        ma = ProfileKeyMetricsAdmin(ProfileKeyMetrics, AdminSite())
+        base_fields = list(ma.get_form(mocked_request, profile_key_metric).base_fields)
+
+        assert base_fields == [
+            "subcategory", "label", "variable", "subindicator", "denominator", "change_reason"
+        ]
