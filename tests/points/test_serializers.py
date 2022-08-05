@@ -67,7 +67,6 @@ class TestProfileCollectionSerializer:
             "theme": theme_serializer.data,
             "metadata": metadata_serializer.data,
             'visible_tooltip_attributes': ['point_attribute'],
-            "color": "red",
             "configuration": {}
         }
 

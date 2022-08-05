@@ -13,7 +13,6 @@ from django_q.models import Task
 from wazimap_ng import utils
 from wazimap_ng.general.models import BaseModel, SimpleHistory
 from wazimap_ng.config.common import PERMISSION_TYPES
-from colorfield.fields import ColorField
 
 
 def get_file_path(instance, filename):
@@ -73,7 +72,6 @@ class ProfileCategory(BaseModel, SimpleHistory):
     description = HTMLField(blank=True)
     icon = models.CharField(max_length=30, null=True, blank=True)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
-    color = ColorField(blank=True)
     visible_tooltip_attributes = JSONField(default=list, null=True, blank=True)
     configuration = JSONField(default=dict, blank=True)
 

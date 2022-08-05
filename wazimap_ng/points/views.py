@@ -85,7 +85,6 @@ def boundary_point_count_helper(profile, geography, version):
             .filter(category__profilecategory__profile=profile)
             .values(
                 "category__profilecategory__id", "category__profilecategory__label",
-                "category__profilecategory__color",
                 "category__profilecategory__order",
                 "category__profilecategory__theme__name",
                 "category__profilecategory__theme__icon",
@@ -118,7 +117,6 @@ def boundary_point_count_helper(profile, geography, version):
             "label": lc["category__profilecategory__label"],
             "id": lc["category__profilecategory__id"],
             "count": lc["count_category"],
-            "color": lc["category__profilecategory__color"],
             "order": lc["category__profilecategory__order"],
             "metadata": {
                 "source": lc["category__metadata__source"],

@@ -43,8 +43,8 @@ class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
         ("Database fields (can't change after being created)", {
             'fields': ('profile', 'theme', 'category',)
         }),
-        ("Profile Collection Icon & Color", {
-            'fields': ('icon', 'color', )
+        ("Profile Collection Icon", {
+            'fields': ('icon', )
 
         }),
         ("Point Collection description fields", {
