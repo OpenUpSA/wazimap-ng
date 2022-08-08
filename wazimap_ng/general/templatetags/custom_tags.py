@@ -6,7 +6,7 @@ register = template.Library()
 
 @register.filter
 def get_subindicator_link(pi_obj):
-    url = ''
+    url = None
     if pi_obj:
         indicator = pi_obj.indicator
         group = Group.objects.filter(

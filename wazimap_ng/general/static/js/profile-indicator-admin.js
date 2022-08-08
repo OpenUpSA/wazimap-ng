@@ -5,8 +5,17 @@
         const $emptyOptionEl = $("<option></option>");
         const $chartTypeEl = $(document).find("#id_chart_type");
         const $linearScrubber = $(document).find("#id_enable_linear_scrubber");
+        const $variableSelect = $(document).find("#id_indicator")
 
         showChartTypeDescription($chartTypeEl, $subcategoryEl);
+
+        $("#id_indicator").on('change', function (e) {
+            enableLinearScrubberOption(e.target);
+        });
+
+        $('input[name="indicator_variable_type"]').on('change', function (e) {
+            enableLinearScrubberOption($("#id_indicator"));
+        });
 
         $linearScrubber.on('change', function (e) {
             loadHelpText(e.target.checked);
@@ -65,6 +74,18 @@ Also <a href='../../../indicatorsubcategory/${selectedSubcategory}/change' targe
                 $(helpText).html(html);
                 $(document).find('.field-chart_type').append(helpText);
             }
+        }
+
+        function enableLinearScrubberOption(target){
+          if (target.value){
+            $($linearScrubber).removeAttr("disabled");
+            let groupId = $(target).find(":selected").data("groupid");
+            $("#link-to-groups").attr("href", `/admin/datasets/group/${groupId}/change/`);
+          } else {
+            $($linearScrubber).prop('checked', false);
+            $($linearScrubber).parent().find(".alert-warning").hide();
+            $($linearScrubber).attr("disabled", "disabled");
+          }
         }
 
         function loadHelpText(is_checked) {

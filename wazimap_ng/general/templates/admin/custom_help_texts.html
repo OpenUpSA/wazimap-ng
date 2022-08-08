@@ -21,7 +21,11 @@
 	<li class="alert-warning {% if obj and obj.enable_linear_scrubber %} show {% else %} hidden {% endif %}">
 		Categories will be evenly spaced on a linear axis.
 		Ensure categories represent regular intervals and no categories are missing when using line charts.
-		Also <a href="{{obj|get_subindicator_link}}" target="_blank">ensure your categories are ordered correctly</a>
+		{% with subindicator_link=obj|get_subindicator_link %}
+			Also <a href="{% if subindicator_link %} {{subindicator_link}} {% else %}#{% endif %}" target="_blank" id="link-to-groups">
+				ensure your categories are ordered correctly
+			</a>
+		{% endwith %}
  </li>
 </ul>
 {% endif %}

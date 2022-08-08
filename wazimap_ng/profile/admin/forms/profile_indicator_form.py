@@ -43,3 +43,5 @@ class ProfileIndicatorAdminForm(HistoryAdminForm):
         if self.instance.id:
             profile_id = self.instance.profile_id
             self.fields['indicator'].queryset = filter_indicators_by_profile(profile_id)
+        else:
+            self.fields['enable_linear_scrubber'].disabled = True
