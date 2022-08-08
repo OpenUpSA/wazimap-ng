@@ -70,7 +70,6 @@ class ProfileCategory(BaseModel, SimpleHistory):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="collection")
     label = models.CharField(max_length=60, null=False, blank=True, help_text="Label for the category to be displayed on the front-end")
     description = HTMLField(blank=True)
-    icon = models.CharField(max_length=30, null=True, blank=True)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
     visible_tooltip_attributes = JSONField(default=list, null=True, blank=True)
     configuration = JSONField(default=dict, blank=True)

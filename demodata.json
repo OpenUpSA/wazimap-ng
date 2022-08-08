@@ -5227,7 +5227,6 @@
     "category": 1,
     "label": "University points",
     "description": "",
-    "icon": "None",
     "order": 1,
     "visible_tooltip_attributes": [],
     "configuration": {}
