@@ -126,7 +126,7 @@ class BaseAdminModel(admin.ModelAdmin):
             return getattr(permissions, self.custom_queryset_func)(self.model, request.user)
         return qs
 
-    def _get_help_text(self, field):
+    def _get_help_text(self, field, obj):
         widget = field.widget
         if widget.__class__.__name__ == "Select":
             choices = [
@@ -140,7 +140,9 @@ class BaseAdminModel(admin.ModelAdmin):
         else:
             choices = []
         return mark_safe(render_to_string(
-            'admin/custom_help_texts.html', {'choices': choices}
+            'admin/custom_help_texts.html', {
+                'choices': choices, 'label': field.label, 'obj': obj
+            }
         ))
 
     def get_form(self, request, *args, **kwargs):
@@ -150,6 +152,6 @@ class BaseAdminModel(admin.ModelAdmin):
         for field_name in self.help_texts:
             if field_name in form.base_fields:
                 form.base_fields[field_name].help_text = self._get_help_text(
-                    form.base_fields[field_name]
+                    form.base_fields[field_name], next(iter(args), None)
                 )
         return form

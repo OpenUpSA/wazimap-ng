@@ -39,7 +39,7 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
     fieldsets = (
         ("Profile fields", {
             'fields': (
-                'profile', 'subcategory', 'label', 'indicator', 'content_type', 'choropleth_method', 'choropleth_range',
+                'profile', 'subcategory', 'label', 'indicator', 'content_type', 'enable_linear_scrubber', 'choropleth_method', 'choropleth_range',
                 'description')
         }),
         ("Charts", {
@@ -50,10 +50,14 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
 
     form = ProfileIndicatorAdminForm
 
-    help_texts = ["choropleth_method", ]
+    help_texts = ["choropleth_method", "enable_linear_scrubber"]
 
     class Media:
+        css = {
+             'all': ('/static/css/profile-indicator.css',)
+        }
         js = ("/static/js/profile-indicator-admin.js",)
+
 
     def get_readonly_fields(self, request, obj=None):
         if obj:  # editing an existing object
@@ -77,7 +81,7 @@ class ProfileIndicatorAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
             )
 
         elif not obj and request.method == "GET":
-            qs = qs = models.IndicatorSubcategory.objects.none()
+            qs = models.IndicatorSubcategory.objects.none()
 
         form.base_fields["subcategory"].queryset = qs
 

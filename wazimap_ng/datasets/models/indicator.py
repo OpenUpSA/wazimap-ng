@@ -45,6 +45,12 @@ class Indicator(BaseModel, SimpleHistory):
     def __str__(self):
         return f"{self.dataset.profile} : {self.dataset.name} -> {self.name}"
 
+    @property
+    def subindicator_group(self):
+        if self.groups and self.dataset.group_set.exists():
+            return self.dataset.group_set.filter(name=self.groups[0]).first()
+        return None
+
     class Meta:
         ordering = ["id"]
         verbose_name = "Variable"

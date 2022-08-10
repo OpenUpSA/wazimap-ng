@@ -61,6 +61,7 @@ class TestProfileIndicatorAdmin:
             "label",
             "indicator",
             "content_type",
+            "enable_linear_scrubber",
             "choropleth_method",
             "choropleth_range",
             "description",

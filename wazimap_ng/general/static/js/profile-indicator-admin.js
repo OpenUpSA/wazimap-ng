@@ -4,7 +4,22 @@
         const $subcategoryEl = $(document).find("#id_subcategory");
         const $emptyOptionEl = $("<option></option>");
         const $chartTypeEl = $(document).find("#id_chart_type");
+        const $linearScrubber = $(document).find("#id_enable_linear_scrubber");
+        const $variableSelect = $(document).find("#id_indicator")
+
         showChartTypeDescription($chartTypeEl, $subcategoryEl);
+
+        $("#id_indicator").on('change', function (e) {
+            enableLinearScrubberOption(e.target);
+        });
+
+        $('input[name="indicator_variable_type"]').on('change', function (e) {
+            enableLinearScrubberOption($("#id_indicator"));
+        });
+
+        $linearScrubber.on('change', function (e) {
+            loadHelpText(e.target.checked);
+        });
 
         $profileEl.on('change', function (e) {
             // trigger "loadSubcategory" func only when it was manually changed
@@ -52,14 +67,34 @@
             if (selectedVal === "line") {
                 let helpText = document.createElement("div");
                 $(helpText).addClass('help');
-                let html = `<span>Categories will be evenly spaced on a linear axis. 
-Ensure categories represent regular intervals and no categories are missing when using line charts. 
+                let html = `<span>Categories will be evenly spaced on a linear axis.
+Ensure categories represent regular intervals and no categories are missing when using line charts.
 Also <a href='../../../indicatorsubcategory/${selectedSubcategory}/change' target='_blank'>ensure your categories are ordered correctly</a></span>`;
 
                 $(helpText).html(html);
                 $(document).find('.field-chart_type').append(helpText);
             }
         }
+
+        function enableLinearScrubberOption(target){
+          if (target.value){
+            $($linearScrubber).removeAttr("disabled");
+            let groupId = $(target).find(":selected").data("groupid");
+            $("#link-to-groups").attr("href", `/admin/datasets/group/${groupId}/change/`);
+          } else {
+            $($linearScrubber).prop('checked', false);
+            $($linearScrubber).parent().find(".alert-warning").hide();
+            $($linearScrubber).attr("disabled", "disabled");
+          }
+        }
+
+        function loadHelpText(is_checked) {
+          let helpTextLi = $linearScrubber.parent().find("li.alert-warning");
+          if (is_checked){
+            helpTextLi.show();
+          } else {
+            helpTextLi.hide();
+          }
+        }
     });
 })(django.jQuery);
-

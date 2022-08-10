@@ -1,3 +1,6 @@
+{% load custom_tags %}
+
+{% if label == "Choropleth method" %}
 <ul>
 	{% if "absolute_value" in choices %}
 		<li>Absolute value: This method displays the exact value as provided in the data.</li>
@@ -10,3 +13,19 @@
 		<li>Subindicator: This method uses the proportion of a subindicator for the current geography, e.g. 45% of people in this geography are female.</li>
 	{% endif %}
 </ul>
+{% endif %}
+
+{% if label == "Enable linear scrubber" %}
+<ul>
+	<li>For time series and other continuous variables. Allow the user to easily step back and forward in the variable range</li>
+	<li class="alert-warning {% if obj and obj.enable_linear_scrubber %} show {% else %} hidden {% endif %}">
+		Categories will be evenly spaced on a linear axis.
+		Ensure categories represent regular intervals and no categories are missing when using line charts.
+		{% with subindicator_link=obj|get_subindicator_link %}
+			Also <a href="{% if subindicator_link %} {{subindicator_link}} {% else %}#{% endif %}" target="_blank" id="link-to-groups">
+				ensure your categories are ordered correctly
+			</a>
+		{% endwith %}
+ </li>
+</ul>
+{% endif %}

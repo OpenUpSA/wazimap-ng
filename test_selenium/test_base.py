@@ -22,6 +22,7 @@ from tests.datasets.factories import (
     VersionFactory,
     DatasetFactory,
     IndicatorFactory,
+    GroupFactory,
 )
 
 
@@ -95,15 +96,19 @@ class BaseTestCase(LiveServerTestCase):
 
         self.dataset1 = DatasetFactory(name="dataset1", profile=self.public_profile, permission_type="public")
         self.indicator1 = IndicatorFactory(name="indicator1", dataset=self.dataset1)
+        self.group1 = GroupFactory(name=self.indicator1.groups[0], dataset=self.dataset1)
 
         self.dataset2 = DatasetFactory(name="dataset2", profile=self.public_profile, permission_type="private")
         self.indicator2 = IndicatorFactory(name="indicator2", dataset=self.dataset2)
+        self.group2 = GroupFactory(name=self.indicator2.groups[0], dataset=self.dataset2)
 
         self.dataset3 = DatasetFactory(name="dataset3", profile=self.public_profile2, permission_type="public")
         self.indicator3 = IndicatorFactory(name="indicator3", dataset=self.dataset3)
+        self.group3 = GroupFactory(name=self.indicator3.groups[0], dataset=self.dataset3)
 
         self.dataset4 = DatasetFactory(name="dataset4", profile=self.public_profile2, permission_type="private")
         self.indicator4 = IndicatorFactory(name="indicator4", dataset=self.dataset4)
+        self.group4 = GroupFactory(name=self.indicator4.groups[0], dataset=self.dataset4)
 
         # Create superuser
         self.user_password = "mypassword"
