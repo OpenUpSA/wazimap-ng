@@ -81,7 +81,7 @@ class IndicatorAdmin(DatasetBaseAdminModel, HistoryAdmin):
 
         with transaction.atomic():
             super().save_model(request, obj, form, change)
-        
+
         if run_task:
             task = async_task(
                 "wazimap_ng.datasets.tasks.indicator_data_extraction",

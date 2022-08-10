@@ -13,6 +13,7 @@
                 title="{{ choice }}"
                 data-type="{{ choice.dataset.permission_type }}"
                 data-profileId="{{ choice.dataset.profile.id }}"
+                data-groupId="{{choice.subindicator_group.id}}"
                 {% if value.id == choice.id %} selected {% endif %}
         > {{ choice }}</option>
     {% endfor %}
