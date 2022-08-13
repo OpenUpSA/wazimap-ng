@@ -73,7 +73,7 @@ class IndicatorSubcategory(BaseModel, SimpleHistory):
 
 class ProfileKeyMetrics(BaseModel, SimpleHistory):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE,
-                                help_text="The profile to which this profile indicator belongs")
+                                help_text="The profile to which this key metric belongs")
     variable = models.ForeignKey(Indicator, on_delete=models.CASCADE, )
     subcategory = models.ForeignKey(IndicatorSubcategory, on_delete=models.CASCADE)
     # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.
@@ -97,15 +97,15 @@ class ProfileKeyMetrics(BaseModel, SimpleHistory):
 
 class ProfileHighlight(BaseModel, SimpleHistory):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE,
-                                help_text="The profile to which this profile indicator belongs")
+                                help_text="The profile to which this profile highlight belongs")
     indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE,
-                                  help_text="Indicator on which this highlight is based on.", verbose_name="variable")
+                                  help_text="The variable on which this highlight is based on.", verbose_name="variable")
     # TODO using an integer here is brittle. The order of the subindicators may change. Should rather use the final value.
     subindicator = models.PositiveSmallIntegerField(null=True, blank=True)
     denominator = models.CharField(choices=DENOMINATOR_CHOICES, max_length=32,
                                    help_text="Method for calculating the denominator that will normalise this value.")
     label = models.CharField(max_length=255, null=False, blank=True,
-                             help_text="Label for the indicator displayed on the front-end")
+                             help_text="Label for the profile highlight displayed on the front-end")
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
 
     def __str__(self):
