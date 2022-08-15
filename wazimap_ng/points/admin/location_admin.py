@@ -19,6 +19,8 @@ def assign_to_category_action(category):
         queryset.update(category=category)
         messages.info(request, f"Locations assigned to category {category.name}")
 
+    # Escape for %-formatting applied to action descriptions
+    # https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting
     assign_to_category.short_description = f'Assign to {category.name.replace("%", "%%")}'
     assign_to_category.__name__ = f'assign_to_category_{category.id}'
 
