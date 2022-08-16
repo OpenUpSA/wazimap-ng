@@ -12,13 +12,9 @@ from wazimap_ng.general.admin import filters
 
 from .. import models
 
-from icon_picker_widget.widgets import IconPickerWidget
-
-
 class ProfileCategoryAdminForm(HistoryAdminForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['icon'].widget = IconPickerWidget()
 
 
 DEFAULT_SCHEMA = {
@@ -42,10 +38,6 @@ class ProfileCategoryAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
     fieldsets = (
         ("Database fields (can't change after being created)", {
             'fields': ('profile', 'theme', 'category',)
-        }),
-        ("Profile Collection Icon & Color", {
-            'fields': ('icon', 'color', )
-
         }),
         ("Point Collection description fields", {
           'fields': ('label', 'description',)
