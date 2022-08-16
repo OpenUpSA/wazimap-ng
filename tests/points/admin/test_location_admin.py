@@ -6,7 +6,7 @@ from django.contrib.gis.geos import Point
 from wazimap_ng.points.models import Location
 from wazimap_ng.points.admin import LocationAdmin
 
-from tests.points.factories import LocationFactory
+from tests.points.factories import LocationFactory, CategoryFactory
 
 @pytest.fixture()
 def test_location():
@@ -29,3 +29,22 @@ def test(admin_user, rf, test_location):
 
     assert "image" not in form.errors
     assert "data" not in form.errors
+
+@pytest.mark.django_db
+def test_location_action_choices(
+    admin_user, rf, mocked_request, profile
+):
+    category = CategoryFactory(
+        profile=profile, name="test % change"
+    )
+    location_admin = LocationAdmin(model=Location, admin_site=AdminSite())
+    # assert actions
+    actions = location_admin.get_actions(mocked_request)
+    assert actions[f'assign_to_category_{category.id}'][2] == 'Assign to test %% change'
+    assert actions['delete_selected'][2] == 'Delete selected %(verbose_name_plural)s'
+
+    # assert action choices to be displayed
+    action_choices = location_admin.get_action_choices(mocked_request)
+    assert action_choices[0] == ('', '---------')
+    assert action_choices[1] == ('delete_selected', 'Delete selected locations')
+    assert action_choices[2] == (f'assign_to_category_{category.id}', 'Assign to test % change')

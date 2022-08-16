@@ -56,7 +56,7 @@ class ProfileCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProfileCategory
         fields = (
-            "id", "name", "description", "theme", "metadata", "color",
+            "id", "name", "description", "theme", "metadata",
             'visible_tooltip_attributes', "configuration",
         )
 
@@ -73,4 +73,3 @@ class ThemeSerializer(serializers.ModelSerializer):
         if not obj.icon:
             representation["icon"] = ""
         return representation
-
