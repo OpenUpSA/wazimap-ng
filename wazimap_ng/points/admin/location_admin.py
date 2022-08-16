@@ -17,10 +17,12 @@ from .. import models
 def assign_to_category_action(category):
     def assign_to_category(modeladmin, request, queryset):
         queryset.update(category=category)
-        messages.info(request, "Locations assigned to category {0}".format(category.name))
+        messages.info(request, f"Locations assigned to category {category.name}")
 
-    assign_to_category.short_description = "Assign to {0}".format(category.name)
-    assign_to_category.__name__ = 'assign_to_category_{0}'.format(category.id)
+    # Escape for %-formatting applied to action descriptions
+    # https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting
+    assign_to_category.short_description = f'Assign to {category.name.replace("%", "%%")}'
+    assign_to_category.__name__ = f'assign_to_category_{category.id}'
 
     return assign_to_category
 
