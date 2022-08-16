@@ -13,34 +13,30 @@ from wazimap_ng.general.admin import filters
 
 @admin.register(models.ProfileHighlight)
 class ProfileHighlightAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
-
-    list_filter = (filters.ProfileNameFilter, )
+    list_filter = (filters.ProfileNameFilter,)
 
     exclude_common_list_display = True
     list_display = (
-        "profile", 
-        "label", 
+        "profile",
+        "label",
         description("Indicator", lambda x: x.indicator.name),
         "created",
         "updated",
-        "order", 
+        "order",
     )
 
     fieldsets = (
-        ("Database fields (can't change after being created)", {
-            "fields": ("profile", "indicator")
-        }),
         ("Profile fields", {
-          "fields": ("label", "subindicator", "denominator")
-        })
+            "fields": ("profile", "label", "indicator", "subindicator", "denominator")
+        }),
     )
     form = ProfileHighlightForm
-    search_fields = ("label", )
+    search_fields = ("label",)
 
     help_texts = ["denominator", ]
 
     def get_readonly_fields(self, request, obj=None):
-        if obj: # editing an existing object
+        if obj:  # editing an existing object
             return ("profile",) + self.readonly_fields
         return self.readonly_fields
 

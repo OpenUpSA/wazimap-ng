@@ -9,13 +9,12 @@ from wazimap_ng.general.admin.admin_base import BaseAdminModel, HistoryAdmin
 from wazimap_ng.general.admin import filters
 
 
-
 class CategoryMetricsFilter(filters.CategoryFilter):
     parameter_name = 'subcategory__category__id'
 
+
 @admin.register(models.ProfileKeyMetrics)
 class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
-
     exclude_common_list_display = True
     list_display = (
         "label",
@@ -27,6 +26,12 @@ class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
         "updated",
         "order"
     )
+
+    fieldsets = (
+        ("Profile fields", {
+            "fields": ("profile", "subcategory", "label", "variable", "subindicator", "denominator")
+        }),
+    )
     form = ProfileKeyMetricsForm
 
     list_filter = (
@@ -37,15 +42,17 @@ class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
 
     help_texts = ["denominator", ]
 
-    fields = ["profile", "variable", "subindicator", "subcategory", "denominator", "label"]
-    search_fields = ("label", )
+    search_fields = ("label",)
 
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # editing an existing object
+            return ("profile",) + self.readonly_fields
+        return self.readonly_fields
 
     class Media:
         js = (
             "/static/js/variable_subindicators.js",
         )
-
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -58,7 +65,7 @@ class ProfileKeyMetricsAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
                 category__profile_id=profile_id
             )
         elif not obj and request.method == "GET":
-             qs = qs = models.IndicatorSubcategory.objects.none()
+            qs = qs = models.IndicatorSubcategory.objects.none()
 
         form.base_fields["subcategory"].queryset = qs
 
