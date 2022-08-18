@@ -11,7 +11,11 @@ def IndicatorDataSummarySerializer(profile, geography, version):
     children = geography.get_child_geographies(version)
     children_indicator_data = get_profile_data(profile, children, version)
     dataset_groups_dict = get_dataset_groups(profile)
-    subcategories = (models.IndicatorSubcategory.objects.filter(category__profile=profile)
+    subcategory_ids = [data["subcategory_id"] for data in children_indicator_data]
+    subcategories = (models.IndicatorSubcategory.objects.filter(
+                        category__profile=profile,
+                        id__in=subcategory_ids,
+                     )
                      .order_by("category__order", "order")
                      .select_related("category")
                      )
