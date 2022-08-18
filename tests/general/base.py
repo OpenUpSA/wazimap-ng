@@ -4,7 +4,7 @@ from django.core.cache import cache
 from tests.profile.factories import (
     ProfileFactory, ProfileHighlightFactory,
     ProfileKeyMetricsFactory, IndicatorCategoryFactory,
-    IndicatorSubcategoryFactory
+    IndicatorSubcategoryFactory, ProfileIndicatorFactory
 )
 from tests.points.factories import (
     CategoryFactory, LocationFactory
@@ -115,6 +115,20 @@ class ConsolidatedProfileViewBase(APITestCase):
         return ProfileKeyMetricsFactory(
             profile=profile, variable=indicator,
             subindicator=subindicator_index, denominator=denominator,
+            label=label, subcategory=subcategory
+        )
+
+    def create_profile_indicator(
+            self, profile, indicator, label="Profile Indicator",
+        ):
+        category = IndicatorCategoryFactory(
+            profile=profile, name=f'category for {indicator.groups[0]}'
+        )
+        subcategory = IndicatorSubcategoryFactory(
+            category=category, name=f'subcategory for {indicator.groups[0]}'
+        )
+        return ProfileIndicatorFactory(
+            profile=profile, indicator=indicator,
             label=label, subcategory=subcategory
         )
 

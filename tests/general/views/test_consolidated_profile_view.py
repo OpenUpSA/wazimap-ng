@@ -3,7 +3,9 @@ from tests.points.factories import (
 )
 from tests.datasets.factories import GeographyFactory, GeographyHierarchyFactory, VersionFactory
 from tests.boundaries.factories import GeographyBoundaryFactory
-from tests.profile.factories import ProfileFactory
+from tests.profile.factories import (
+    ProfileFactory, IndicatorCategoryFactory, IndicatorSubcategoryFactory
+)
 
 from ..base import ConsolidatedProfileViewBase
 
@@ -1084,3 +1086,185 @@ class TestChildrenData(ConsolidatedProfileViewBase):
 
         assert len(children["muni"]["features"]) == 1
         assert children["muni"]["features"][0]["properties"]["code"] == "MUNI1"
+
+
+class TestProfileGeoSummaryView(ConsolidatedProfileViewBase):
+    """
+    Test summary view for profile geo
+    """
+
+    def get_next_item(self, d):
+        return next(iter(d))
+
+    def test_summary_view(self):
+        """
+        Test summary view for a geo that does not have any children
+        """
+
+        data = [
+            ("Geography", "gender", "age", "count"),
+            (self.geo1.code, "male", "15", 1),
+            (self.geo1.code, "female", "16", 2),
+        ]
+        indicator = self.create_dataset_and_indicator(
+            self.version_v1, self.profile, data, "gender"
+        )
+        profile_indicator = self.create_profile_indicator(
+            self.profile, indicator
+        )
+        response = self.get(
+            'profile-geo-indicator-summary',
+            profile_id=self.profile.pk,
+            geography_code=self.root.code,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+
+        data = response.data
+
+        assert len(response.data) == 1
+        assert self.get_next_item(response.data) == "category for gender"
+        assert self.get_next_item(response.data["category for gender"]) == "subcategories"
+        subcategories = response.data["category for gender"]["subcategories"]
+        assert self.get_next_item(subcategories) == "subcategory for gender"
+        assert self.get_next_item(subcategories["subcategory for gender"])== "indicators"
+        indicators = subcategories["subcategory for gender"]["indicators"]
+        assert len(indicators) == 1
+        assert self.get_next_item(indicators) == profile_indicator.label
+        indicator = indicators[profile_indicator.label]
+        assert indicator["id"] == profile_indicator.id
+        assert indicator["metadata"]["primary_group"] == "gender"
+        assert len(indicator["metadata"]["groups"]) == 2
+
+    def test_summary_view_without_child_geographies(self):
+        """
+        Test summary view for a geo that does not have any children
+        """
+        response = self.get(
+            'profile-geo-indicator-summary',
+            profile_id=self.profile.pk,
+            geography_code=self.geo1.code,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+        assert response.data == {}
+
+    def test_summary_for_subcategory_without_profile_indicator(self):
+        """
+        Check if category is not added to summary if there is no profile indicator
+        """
+        data = [
+            ("Geography", "gender", "age", "count"),
+            (self.geo1.code, "male", "15", 1),
+            (self.geo1.code, "female", "16", 2),
+        ]
+        indicator = self.create_dataset_and_indicator(
+            self.version_v1, self.profile, data, "gender"
+        )
+        profile_indicator = self.create_profile_indicator(
+            self.profile, indicator
+        )
+        category = IndicatorCategoryFactory(
+            profile=self.profile, name='category without indicator'
+        )
+        subcategory = IndicatorSubcategoryFactory(
+            category=category, name='subcategory without indicator'
+        )
+        response = self.get(
+            'profile-geo-indicator-summary',
+            profile_id=self.profile.pk,
+            geography_code=self.root.code,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+        assert len(response.data) == 1
+        assert self.get_next_item(response.data) == "category for gender"
+        assert "category without indicator" not in response.data
+
+    def test_summary_when_child_do_not_have_data(self):
+        """
+        Check if category is not added to summary if there is no indictaor
+        data for children
+        """
+        data = [
+            ("Geography", "gender", "age", "count"),
+            (self.root.code, "male", "15", 1),
+            (self.root.code, "female", "16", 2),
+        ]
+        indicator = self.create_dataset_and_indicator(
+            self.version_v1, self.profile, data, "gender"
+        )
+        profile_indicator = self.create_profile_indicator(
+            self.profile, indicator
+        )
+        response = self.get(
+            'profile-geo-indicator-summary',
+            profile_id=self.profile.pk,
+            geography_code=self.root.code,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+        assert response.data == {}
+
+    def test_summary_for_diff_versions(self):
+        """
+        Test if version affects the ouput of summary
+        """
+        # version 1
+        data = [
+            ("Geography", "gender", "age", "count"),
+            (self.geo1.code, "male", "15", 1),
+            (self.geo2.code, "female", "16", 2),
+        ]
+        indicator = self.create_dataset_and_indicator(
+            self.version_v1, self.profile, data, "gender"
+        )
+        profile_indicator = self.create_profile_indicator(
+            self.profile, indicator
+        )
+        response = self.get(
+            'profile-geo-indicator-summary',
+            profile_id=self.profile.pk,
+            geography_code=self.root.code,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+        assert len(response.data) == 1
+        assert self.get_next_item(response.data) == "category for gender"
+
+        # Version - v2 data
+        version_v2 = VersionFactory(name="v2")
+        self.create_boundary(self.root, version_v2)
+        self.create_boundary(self.geo1, version_v2)
+        self.create_boundary(self.geo2, version_v2)
+        self.update_hierarchy_versions(
+            self.profile.geography_hierarchy, version_v2
+        )
+        indicator_v2 = self.create_dataset_and_indicator(
+            version_v2, self.profile, data, "age"
+        )
+        profile_indicator = self.create_profile_indicator(
+            self.profile, indicator_v2
+        )
+        response = self.get(
+            'profile-geo-indicator-summary',
+            profile_id=self.profile.pk,
+            geography_code=self.root.code,
+            data={
+                'format': 'json',
+                'version': version_v2.name
+            },
+        )
+        assert len(response.data) == 1
+        assert self.get_next_item(response.data) == "category for age"
+        assert "category for gender" not in response.data

@@ -85,10 +85,8 @@ def indicator_data_for_children(request, profile_id, geography_code):
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
 def consolidated_profile_summary(request, profile_id, geography_code):
-    version_name = request.GET.get('version', None)
     profile = get_object_or_404(profile_models.Profile, pk=profile_id)
-    if version_name is None:
-        version_name = profile.geography_hierarchy.default_version
+    version_name = request.GET.get('version', profile.geography_hierarchy.default_version)
     version = get_object_or_404(dataset_models.Version, name=version_name)
     geography = get_object_or_404(
         dataset_models.Geography,
