@@ -9,7 +9,6 @@ from wazimap_ng.utils import qsdict
 
 
 def get_indicator_data(profile, indicators, geographies, version):
-
     data = (IndicatorData.objects
             .filter(
                 indicator__in=indicators,
