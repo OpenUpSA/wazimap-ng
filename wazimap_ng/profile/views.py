@@ -131,14 +131,14 @@ def profile_geography_indicator_data(request, profile_id, geography_code, profil
 @api_view()
 def profile_geography_indicator_child_data(request, profile_id, geography_code, profile_indicator_id):
     profile = get_object_or_404(models.Profile, pk=profile_id)
-    version_name = profile.geography_hierarchy.default_version
-    version = get_object_or_404(Version, name=version_name)
+    profile_indicator = get_object_or_404(models.ProfileIndicator, profile=profile, pk=profile_indicator_id)
+    version = profile_indicator.indicator.dataset.version
     geography = get_object_or_404(
         Geography,
         code=geography_code,
         geographyboundary__version=version
     )
-    profile_indicator = get_object_or_404(models.ProfileIndicator, profile=profile, pk=profile_indicator_id)
+
     js = dict(IndicatorData.objects.filter(
         indicator=profile_indicator.indicator,
         indicator__profileindicator__profile=profile,
