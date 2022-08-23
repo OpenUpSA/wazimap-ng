@@ -1,10 +1,6 @@
-import logging
-
 from .. import models
 from wazimap_ng.utils import expand_nested_list, mergedict, qsdict
 from .utils import get_profile_data, get_dataset_groups, metadata_serializer
-
-logger = logging.getLogger(__name__)
 
 
 def IndicatorDataSummarySerializer(profile, geography, version):
