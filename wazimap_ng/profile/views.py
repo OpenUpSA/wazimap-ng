@@ -114,10 +114,10 @@ class ProfileSubcategoriesList(generics.ListAPIView):
 
 @api_view()
 def profile_geography_indicator_data(request, profile_id, geography_code, profile_indicator_id):
-    version_name = request.GET.get('version', None)
     profile = get_object_or_404(models.Profile, pk=profile_id)
-    if version_name is None:
-        version_name = profile.geography_hierarchy.default_version
+    version_name = request.GET.get(
+        'version', profile.geography_hierarchy.default_version
+    )
     version = get_object_or_404(Version, name=version_name)
     geography = get_object_or_404(
         Geography,
