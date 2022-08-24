@@ -8,6 +8,7 @@ from tests.profile.factories import (
 )
 
 from ..base import ConsolidatedProfileViewBase
+from wazimap_ng.config.common import QUALITATIVE
 
 
 class TestGeneralViews(ConsolidatedProfileViewBase):
@@ -1268,3 +1269,79 @@ class TestProfileGeoSummaryView(ConsolidatedProfileViewBase):
         assert len(response.data) == 1
         assert self.get_next_item(response.data) == "category for age"
         assert "category for gender" not in response.data
+
+    def test_qualitative_indicator_in_summary_view(self):
+        """
+        Test if qualitative indicator is hidden in summary view
+        """
+        # version 1
+        data = [
+            ("Geography", "Contents"),
+            (self.geo1.code, "Test Content 1"),
+            (self.geo2.code, "Test Content 2"),
+        ]
+        indicator = self.create_dataset_and_indicator(
+            self.version_v1, self.profile, data, "contents", QUALITATIVE
+        )
+        profile_indicator = self.create_profile_indicator(
+            self.profile, indicator
+        )
+        response = self.get(
+            'profile-geo-indicator-summary',
+            profile_id=self.profile.pk,
+            geography_code=self.root.code,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+        print(response.data)
+        assert len(response.data) == 0
+        assert response.data == {}
+
+    def test_profile_indicator_chart_config_exclude(self):
+        """
+        Test if profile indicator is:
+
+           * Not excluded if there is no exclude in chart_configuration
+           * Exluded if chart_configuration exlude contains data mapper
+           * Not exluded if chart_configuration exclude does not contain data mapper
+        """
+        data = [
+            ("Geography", "gender", "age", "count"),
+            (self.geo1.code, "male", "15", 1),
+            (self.geo2.code, "female", "16", 2),
+        ]
+        indicator = self.create_dataset_and_indicator(
+            self.version_v1, self.profile, data, "gender"
+        )
+        profile_indicator_1 = self.create_profile_indicator(
+            self.profile, indicator, label="without exclude"
+        )
+        profile_indicator_2 = self.create_profile_indicator(
+            self.profile, indicator, label="with exclude", config={
+                "exclude": ["data mapper"]
+            }
+        )
+        profile_indicator_3 = self.create_profile_indicator(
+            self.profile, indicator, label="with exclude but data mapper not included",
+            config = {
+                "exclude": ["point mapper"]
+            }
+        )
+        response = self.get(
+            'profile-geo-indicator-summary',
+            profile_id=self.profile.pk,
+            geography_code=self.root.code,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+        assert len(response.data) == 1
+        assert self.get_next_item(response.data) == "category for gender"
+        subcategories = response.data["category for gender"]["subcategories"]
+        indicators = subcategories["subcategory for gender"]["indicators"]
+        assert len(indicators) == 2
+        keys = list(indicators.keys())
+        assert keys == ['without exclude', 'with exclude but data mapper not included']

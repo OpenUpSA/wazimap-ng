@@ -20,6 +20,7 @@ from wazimap_ng.datasets.tasks.indicator_data_extraction import (
 )
 from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv
 from tests.datasets.tasks.test_process_uploaded_file import create_datasetfile
+from wazimap_ng.config.common import QUANTITATIVE
 
 
 class ConsolidatedProfileViewBase(APITestCase):
@@ -74,9 +75,9 @@ class ConsolidatedProfileViewBase(APITestCase):
         hierarchy.configuration = configuration
         hierarchy.save()
 
-    def create_dataset(self, profile, version, data):
+    def create_dataset(self, profile, version, data, content_type=QUANTITATIVE):
         dataset = DatasetFactory(
-            profile=profile, version=version
+            profile=profile, version=version, content_type=content_type
         )
         header = list(data[0])
         csv_data = data[1:]
@@ -119,7 +120,7 @@ class ConsolidatedProfileViewBase(APITestCase):
         )
 
     def create_profile_indicator(
-            self, profile, indicator, label="Profile Indicator",
+            self, profile, indicator, label="Profile Indicator", config={}
         ):
         category = IndicatorCategoryFactory(
             profile=profile, name=f'category for {indicator.groups[0]}'
@@ -129,12 +130,12 @@ class ConsolidatedProfileViewBase(APITestCase):
         )
         return ProfileIndicatorFactory(
             profile=profile, indicator=indicator,
-            label=label, subcategory=subcategory
+            label=label, subcategory=subcategory, chart_configuration=config
         )
 
     def create_dataset_and_indicator(
-        self, version, profile, data, subindicator
+        self, version, profile, data, subindicator, contnet_type=QUANTITATIVE
     ):
-        dataset = self.create_dataset(profile, version, data)
+        dataset = self.create_dataset(profile, version, data, contnet_type)
         indicator = self.create_indicator(dataset, subindicator)
         return indicator
