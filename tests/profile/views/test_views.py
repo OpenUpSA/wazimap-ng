@@ -11,8 +11,10 @@ from tests.datasets.factories import (
     GeographyFactory
 )
 from tests.boundaries.factories import GeographyBoundaryFactory
+from tests.general.base import ConsolidatedProfileViewBase
 
 from wazimap_ng.profile.views import ProfileByUrl
+
 
 @pytest.mark.django_db
 class TestProfileGeographyData(APITestCase):
@@ -77,3 +79,162 @@ class TestProfileByUrl:
 
         response.render()
         assert "configuration" in str(response.content)
+
+
+class TestProfileGeographyIndicatorChildData(ConsolidatedProfileViewBase):
+    """
+    Test child data per indicator
+    """
+
+    def test_child_indicator_data(self):
+        """
+        Test child indicator data
+        """
+
+        data = [
+            ("Geography", "gender", "age", "count"),
+            (self.geo1.code, "male", "15", 1),
+            (self.geo2.code, "female", "16", 2),
+        ]
+        indicator = self.create_dataset_and_indicator(
+            self.version_v1, self.profile, data, "gender"
+        )
+        profile_indicator = self.create_profile_indicator(
+            self.profile, indicator
+        )
+
+        response = self.get(
+            'profile-geography-indicator-child-data',
+            profile_id=self.profile.pk,
+            geography_code=self.root.code,
+            profile_indicator_id=profile_indicator.id,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+        assert len(response.data) == 2
+        assert response.data['CHILD1'] == [{'age': '15', 'count': '1', 'gender': 'male'}]
+        assert response.data['CHILD2'] == [{'age': '16', 'count': '2', 'gender': 'female'}]
+
+    def test_indicator_data_view_without_child_geographies(self):
+        """
+        Test indicator data view for a geo that does not have any children
+        """
+        data = [
+            ("Geography", "gender", "age", "count"),
+            (self.geo1.code, "male", "15", 1),
+            (self.geo2.code, "female", "16", 2),
+        ]
+        indicator = self.create_dataset_and_indicator(
+            self.version_v1, self.profile, data, "gender"
+        )
+        profile_indicator = self.create_profile_indicator(
+            self.profile, indicator
+        )
+        response = self.get(
+            'profile-geography-indicator-child-data',
+            profile_id=self.profile.pk,
+            geography_code=self.geo1.code,
+            profile_indicator_id=profile_indicator.id,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+        assert response.data == {}
+
+    def test_if_child_geography_does_not_have_data_for_an_indicator(self):
+        """
+        Check if geography is not added in returned json if it does not have valid
+        data for an indictaor
+        """
+        data = [
+            ("Geography", "gender", "age", "count"),
+            (self.geo1.code, "male", "15", 1),
+            (self.geo1.code, "female", "16", 2),
+        ]
+        indicator = self.create_dataset_and_indicator(
+            self.version_v1, self.profile, data, "gender"
+        )
+        profile_indicator = self.create_profile_indicator(
+            self.profile, indicator
+        )
+
+        response = self.get(
+            'profile-geography-indicator-child-data',
+            profile_id=self.profile.pk,
+            geography_code=self.root.code,
+            profile_indicator_id=profile_indicator.id,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+        assert len(response.data) == 1
+        assert response.data['CHILD1'][0] == {'age': '15', 'count': '1', 'gender': 'male'}
+        assert response.data['CHILD1'][1] == {'age': '16', 'count': '2', 'gender': 'female'}
+        assert 'CHILD2' not in response.data
+
+    def test_if_correct_verion_geographies_are_selected(self):
+        """
+        Test if version affects the ouput of child indictaor data
+        """
+        # version 1
+        data = [
+            ("Geography", "gender", "age", "count"),
+            (self.geo1.code, "male", "15", 1),
+            (self.geo2.code, "female", "16", 2),
+            (self.geo3.code, "female", "18", 2),
+        ]
+        indicator_v1 = self.create_dataset_and_indicator(
+            self.version_v1, self.profile, data, "gender"
+        )
+        profile_indicator_v1 = self.create_profile_indicator(
+            self.profile, indicator_v1
+        )
+
+        response = self.get(
+            'profile-geography-indicator-child-data',
+            profile_id=self.profile.pk,
+            geography_code=self.root.code,
+            profile_indicator_id=profile_indicator_v1.id,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+        assert len(response.data) == 2
+        assert response.data['CHILD1'] == [{'age': '15', 'count': '1', 'gender': 'male'}]
+        assert response.data['CHILD2'] == [{'age': '16', 'count': '2', 'gender': 'female'}]
+        assert 'CHILD3' not in response.data
+
+        # Version - v2 data
+        version_v2 = VersionFactory(name="v2")
+        self.create_boundary(self.root, version_v2)
+        self.create_boundary(self.geo3, version_v2)
+
+        self.update_hierarchy_versions(
+            self.profile.geography_hierarchy, version_v2
+        )
+        indicator_v2 = self.create_dataset_and_indicator(
+            version_v2, self.profile, data, "age"
+        )
+        profile_indicator_v2 = self.create_profile_indicator(
+            self.profile, indicator_v2
+        )
+
+        response = self.get(
+            'profile-geography-indicator-child-data',
+            profile_id=self.profile.pk,
+            geography_code=self.root.code,
+            profile_indicator_id=profile_indicator_v2.id,
+            data={
+                'format': 'json'
+            },
+        )
+        self.assert_http_200_ok()
+        assert len(response.data) == 1
+        assert response.data['CHILD3'] == [{'age': '18', 'count': '2', 'gender': 'female'}]
+        assert 'CHILD1' not in response.data
+        assert 'CHILD2' not in response.data

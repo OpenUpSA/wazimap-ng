@@ -25,6 +25,7 @@ def get_indicator_data(profile, indicators, geographies, version):
                 indicator_group=F("indicator__groups"),
                 profile_indicator_label=F("indicator__profileindicator__label"),
                 subcategory=F("indicator__profileindicator__subcategory__name"),
+                subcategory_id=F("indicator__profileindicator__subcategory_id"),
                 category=F("indicator__profileindicator__subcategory__category__name"),
                 choropleth_method=F("indicator__profileindicator__choropleth_method__name"),
                 dataset=F("indicator__dataset"),

@@ -82,6 +82,22 @@ def indicator_data_for_children(request, profile_id, geography_code):
     )
     return Response(profile_js)
 
+@condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
+@api_view()
+def consolidated_profile_summary(request, profile_id, geography_code):
+    profile = get_object_or_404(profile_models.Profile, pk=profile_id)
+    version_name = request.GET.get('version', profile.geography_hierarchy.default_version)
+    version = get_object_or_404(dataset_models.Version, name=version_name)
+    geography = get_object_or_404(
+        dataset_models.Geography,
+        code=geography_code,
+        geographyboundary__version=version
+    )
+    profile_js = profile_serializers.IndicatorDataSummarySerializer(
+        profile, geography, version
+    )
+    return Response(profile_js)
+
 
 @condition(etag_func=etag_profile_updated, last_modified_func=last_modified_profile_updated)
 @api_view()
