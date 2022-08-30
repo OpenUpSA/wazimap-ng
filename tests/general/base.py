@@ -134,8 +134,8 @@ class ConsolidatedProfileViewBase(APITestCase):
         )
 
     def create_dataset_and_indicator(
-        self, version, profile, data, subindicator, contnet_type=QUANTITATIVE
+        self, version, profile, data, subindicator, content_type=QUANTITATIVE
     ):
-        dataset = self.create_dataset(profile, version, data, contnet_type)
+        dataset = self.create_dataset(profile, version, data, content_type)
         indicator = self.create_indicator(dataset, subindicator)
         return indicator
