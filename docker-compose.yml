@@ -27,39 +27,38 @@ services:
      - selenium
     ports:
       - "8000:8000"
-    env_file:
-      - ./config/django/django.env
     volumes:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
-      - DJANGO_DEFAULT_FILE_STORAGE
+      - DJANGO_DEFAULT_FILE_STORAGE=${DJANGO_DEFAULT_FILE_STORAGE:-"django.core.files.storage.FileSystemStorage"}
       - AWS_STORAGE_BUCKET_NAME
       - AWS_S3_REGION_NAME
       - DATABASE_URL
-      - DJANGO_CONFIGURATION
+      - DJANGO_SECRET_KEY=notsosecret
       - WERKZEUG_DEBUG_PIN=off
+      - EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 
   queue:
     build: .
     command: /app/scripts/django/django_q.sh
     depends_on:
      - db
-    env_file:
-      - ./config/django/django.env
     volumes:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
-      - DJANGO_DEFAULT_FILE_STORAGE
+      - DJANGO_DEFAULT_FILE_STORAGE=${DJANGO_DEFAULT_FILE_STORAGE:-"django.core.files.storage.FileSystemStorage"}
       - AWS_STORAGE_BUCKET_NAME
       - AWS_S3_REGION_NAME
       - DATABASE_URL
-      - DJANGO_CONFIGURATION
+      - DJANGO_SECRET_KEY=notsosecret
+      - EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+      - DJANGO_Q_SYNC=${DJANGO_Q_SYNC:-True}
 
   selenium:
     image: selenium/standalone-chrome:98.0.4758.102

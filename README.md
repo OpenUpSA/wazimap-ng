@@ -97,6 +97,25 @@ docker-compose run --rm web python -Wi manage.py dumpdata \
     > demodata.json
 ```
 
+Configuration is done via environment variables.
+
+*** [Avoid creating/using variables that define an environment](https://12factor.net/) ***. Instead of creating a variable DEV or TEST or PROD and then writing code like `if TEST`, rather make each feature/backing service configurable, and configure them as needed in each environment.
+
+Ensure variable defaults are safe if someone forgot to set them in production. Variables that absolutely must be set in each environment can be left without a default so that the app only starts when configured properly.
+
+| Key | Default | Type | Description |
+|-----|---------|------|-------------|
+| `DATABASE_URL` | undefined | String | `postgresql://user:password@hostname/dbname` style URL |
+| `DJANGO_DEBUG_TOOLBAR` | False | Boolean | Set to `True` to enable the Django Debug toolbar NOT ON A PUBLIC SERVER! |
+| `DJANGO_SECRET_KEY` | undefined | String | Set this to something secret and unguessable in production. The security of your cookies and other crypto stuff in django depends on it. |
+| `EMAIL_BACKEND` ||||
+| `DEFAULT_FILE_STORAGE` ||||
+| `AWS_ACCESS_KEY_ID` ... ||||
+| `DJANGO_Q_SYNC` ||||
+| `ENVIRONMENT_NAME` ||| Only to be used for a server to identify itself e.g. in logs or notifications, and not intended for configuration logic |
+| `DEBUG_CACHE` ||| Set to true enable the cache despite DEBUG being true. This is useful when you want the cache enabled for development. |
+
+
 # Documentation
 These are works in progress:
 
