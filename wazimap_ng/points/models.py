@@ -14,6 +14,8 @@ from wazimap_ng import utils
 from wazimap_ng.general.models import BaseModel, SimpleHistory
 from wazimap_ng.config.common import PERMISSION_TYPES
 
+from colorfield.fields import ColorField
+
 
 def get_file_path(instance, filename):
     filename = utils.get_random_filename(filename)
@@ -21,10 +23,17 @@ def get_file_path(instance, filename):
 
 
 class Theme(BaseModel, SimpleHistory):
+    COLOR_PALETTE = [
+        ("#3a70ff", "theme-1"), ("#993aff", "theme-2"), ("#ad356d", "theme-3"),
+        ("#f04f4f", "theme-4"), ("#ff3a8c", "theme-5"), ("#ff893a", "theme-6"),
+        ("#e7bc20", "theme-7"), ("#48c555", "theme-8"), ("#2ccaad", "theme-9"),
+        ("#0a8286", "theme-10")
+    ]
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=30)
     icon = models.CharField(max_length=30, null=True, blank=True)
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
+    color = ColorField(default='#000000', samples=COLOR_PALETTE)
 
     def __str__(self):
         return f"{self.profile} | {self.name}"

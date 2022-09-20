@@ -46,7 +46,7 @@ class LocationInlineSerializer(serializers.ModelSerializer):
 class InlineThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Theme
-        fields = ("id", "name", "icon",)
+        fields = ("id", "name", "icon", "color",)
 
 class ProfileCategorySerializer(serializers.ModelSerializer):
     metadata = MetaDataSerializer(source="category.metadata")
