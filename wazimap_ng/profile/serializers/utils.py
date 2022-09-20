@@ -43,7 +43,8 @@ def get_indicator_data(profile, indicators, geographies, version):
                 content_type=F("indicator__profileindicator__content_type"),
                 chart_type=F("indicator__profileindicator__chart_type"),
                 choropleth_range=F("indicator__profileindicator__choropleth_range"),
-                enable_linear_scrubber=F("indicator__profileindicator__enable_linear_scrubber")
+                enable_linear_scrubber=F("indicator__profileindicator__enable_linear_scrubber"),
+                profile_indicator_order=F("indicator__profileindicator__order")
             )
             .order_by("indicator__profileindicator__order")
             )
@@ -82,6 +83,8 @@ def metadata_serializer(obj, dataset_groups_dict):
          "profile_indicator_label",
          lambda x: {
              "id": x["profile_indicator_id"],
+             "order": x["profile_indicator_order"],
+             "label": x["profile_indicator_label"],
              "description": x["description"],
              "choropleth_method": x["choropleth_method"],
              "last_updated_at": x["last_updated_at"],
