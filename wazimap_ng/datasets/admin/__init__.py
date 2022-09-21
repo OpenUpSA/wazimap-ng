@@ -3,7 +3,6 @@ from django.contrib.postgres import fields
 from django_json_widget.widgets import JSONEditorWidget
 
 from treebeard.admin import TreeAdmin
-from treebeard.forms import movenodeform_factory
 
 from .indicator_data_admin import IndicatorDataAdmin
 from .dataset_admin import DatasetAdmin
@@ -30,7 +29,6 @@ class GeographyBoundaryInline(admin.TabularInline):
 
 @admin.register(models.Geography)
 class GeographyAdmin(TreeAdmin):
-    form = movenodeform_factory(models.Geography)
 
     def hierarchy(obj):
         return ", ".join(h.name for h in obj.get_root().geographyhierarchy_set.all())
