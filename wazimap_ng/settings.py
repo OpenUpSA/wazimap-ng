@@ -362,52 +362,9 @@ GOOGLE_MAP_API_KEY = os.environ.get("GOOGLE_MAP_API_KEY", "")
 
 FIXTURE_DIRS = "/"
 
-
-##########################
-#
-# constants?
-
-DENOMINATOR_CHOICES = (
-    ('absolute_value', 'Absolute value'),
-    ('subindicators', 'Sub-indicators'),
-    ('sibling', 'Sibling'),
-)
-
-PERMISSION_TYPES = (
-    ('private', 'Private'),
-    ('public', 'Public'),
-)
-
-
-QUANTITATIVE = "quantitative"
-QUALITATIVE = "qualitative"
-
-DATASET_CONTENT_TYPES = (
-    ('quantitative', 'Quantitative'),
-    ('qualitative', 'Qualitative')
-)
-
-PI_CONTENT_TYPE = (
-    ('indicator', 'Indicator'),
-    ('html', 'HTML')
-)
-
-PI_CHART_TYPE = (
-    ('bar', 'Bar Chart'),
-    ('line', 'Line Chart')
-)
-
-PI_CHOROPLETH_RANGE_TYPE = (
-    ('by_subindicator', 'By Subindicator'),
-    ('by_indicator', 'By Indicator')
-)
-
-STAFF_GROUPS = ["ProfileAdmin", "DataAdmin"]
-
 STAFF_EMAIL_ADDRESS = os.getenv(
-    "STAFF_EMAIL_ADDRESS", "info@openup.org.za"
+    "STAFF_EMAIL_ADDRESS", "support@wazimap.co.za"
 )
-
 
 ########################
 #

@@ -12,7 +12,7 @@ from wazimap_ng.profile.models import Profile
 from django_q.models import Task
 from wazimap_ng import utils
 from wazimap_ng.general.models import BaseModel, SimpleHistory
-from wazimap_ng.config.common import PERMISSION_TYPES
+from wazimap_ng.constants import PERMISSION_TYPES
 
 
 def get_file_path(instance, filename):

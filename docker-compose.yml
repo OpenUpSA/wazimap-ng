@@ -24,38 +24,41 @@ services:
     command: python manage.py runserver_plus 0.0.0.0:8000
     depends_on:
      - db
-     - selenium
+     - redis
     ports:
       - "8000:8000"
     volumes:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
+      - DATABASE_URL=postgis://wazimap_ng:wazimap_ng@db/wazimap_ng
+      - REDIS_URL=redis://redis:6379/
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - DJANGO_DEFAULT_FILE_STORAGE=${DJANGO_DEFAULT_FILE_STORAGE:-"django.core.files.storage.FileSystemStorage"}
       - AWS_STORAGE_BUCKET_NAME
       - AWS_S3_REGION_NAME
-      - DATABASE_URL
       - DJANGO_SECRET_KEY=notsosecret
       - WERKZEUG_DEBUG_PIN=off
       - EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 
-  queue:
+  worker:
     build: .
     command: /app/scripts/django/django_q.sh
     depends_on:
      - db
+     - redis
     volumes:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
+      - DATABASE_URL=postgis://wazimap_ng:wazimap_ng@db/wazimap_ng
+      - REDIS_URL=redis://redis:6379/
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - DJANGO_DEFAULT_FILE_STORAGE=${DJANGO_DEFAULT_FILE_STORAGE:-"django.core.files.storage.FileSystemStorage"}
       - AWS_STORAGE_BUCKET_NAME
       - AWS_S3_REGION_NAME
-      - DATABASE_URL
       - DJANGO_SECRET_KEY=notsosecret
       - EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
       - DJANGO_Q_SYNC=${DJANGO_Q_SYNC:-True}

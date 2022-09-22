@@ -16,7 +16,7 @@ from django_q.models import Task
 from .dataset import Dataset
 
 from wazimap_ng import utils
-from wazimap_ng.config.common import QUANTITATIVE
+from wazimap_ng.constants import QUANTITATIVE
 from wazimap_ng.general.models import BaseModel, SimpleHistory
 
 

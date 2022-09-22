@@ -11,7 +11,7 @@ from .custom_permissions import fk_queryset_filter, custom_permissions
 
 from .custom_permissions.queryset_filters import CustomQuerySet
 from .custom_permissions.fk_queryset_filter import CustomFKQuerySet
-from wazimap_ng.config.common import STAFF_GROUPS
+from wazimap_ng.constants import STAFF_GROUPS
 
 def get_user_group(user):
     return user.groups.all().exclude(

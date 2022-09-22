@@ -4,7 +4,9 @@ from django.contrib.postgres.fields import ArrayField
 from .geography import Geography, GeographyHierarchy, Version
 from wazimap_ng.general.models import BaseModel, SimpleHistory
 
-from django.conf import settings
+from wazimap_ng.constants import (
+    PERMISSION_TYPES, DATASET_CONTENT_TYPES, QUANTITATIVE
+)
 
 
 class DatasetQuerySet(models.QuerySet):
@@ -20,8 +22,8 @@ class Dataset(BaseModel, SimpleHistory):
     )
     name = models.CharField(max_length=60)
     groups = ArrayField(models.CharField(max_length=200), blank=True, default=list)
-    permission_type = models.CharField(choices=settings.PERMISSION_TYPES, max_length=32, default="private")
-    content_type = models.CharField(choices=settings.DATASET_CONTENT_TYPES, max_length=32, default=settings.QUANTITATIVE)
+    permission_type = models.CharField(choices=PERMISSION_TYPES, max_length=32, default="private")
+    content_type = models.CharField(choices=DATASET_CONTENT_TYPES, max_length=32, default=QUANTITATIVE)
     version = models.ForeignKey(Version, on_delete=models.CASCADE)
 
     objects = DatasetQuerySet.as_manager()
