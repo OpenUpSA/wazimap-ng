@@ -1,27 +1,27 @@
 import os
 import sys
 from os.path import join
-from distutils.util import strtobool
+import environ
 
-import dj_database_url
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 import sentry_sdk
 
-from wazimap_ng.utils import truthy, int_or_none
+env = environ.Env()
 
 # Set DEBUG to False as a default for safety
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = strtobool(os.getenv("DJANGO_DEBUG", "no"))
+DEBUG = env.bool("DJANGO_DEBUG", False)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 os.environ["GDAL_DATA"] = "/usr/share/gdal/"
 
-ENVIRONMENT_NAME = os.environ.get("ENVIRONMENT_NAME")
+# This is just for an instance identifying itself in logs and messages. Don't use for logic.
+ENVIRONMENT_NAME = env.str("ENVIRONMENT_NAME")
 SENTRY_ENVIRONMENT = f"BE_{ENVIRONMENT_NAME}"
-SENTRY_DSN = os.environ.get("SENTRY_DSN", None)
-SENTRY_PERF_SAMPLE_RATE = os.environ.get("SENTRY_PERF_SAMPLE_RATE", 0.1)
+SENTRY_DSN = env.str("SENTRY_DSN", None)
+SENTRY_PERF_SAMPLE_RATE = env.float("SENTRY_PERF_SAMPLE_RATE", 0.1)
 
 if SENTRY_DSN:
     sentry_sdk.init(SENTRY_DSN,
@@ -98,32 +98,30 @@ MIDDLEWARE = [
 
 ALLOWED_HOSTS = ["*"]
 ROOT_URLCONF = "wazimap_ng.urls"
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+SECRET_KEY = env.str("DJANGO_SECRET_KEY")
 WSGI_APPLICATION = "wazimap_ng.wsgi.application"
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Email
-EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.getenv("EMAIL_HOST", None)
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", None)
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", None)
+EMAIL_BACKEND = env.str("EMAIL_BACKEND", 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = env.str("EMAIL_HOST", None)
+EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", None)
+EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", None)
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "webmaster@localhost")
+DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 
 # Postgres
 DATABASES = {
-    "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL", "postgis://postgres:@postgres:5432/postgres"),
-        conn_max_age=int(os.getenv("POSTGRES_CONN_MAX_AGE", 600))
-    )
+    "default": env.db("DATABASE_URL"),
 }
+DATABASES['default']['CONN_MAX_AGE'] = env.int("POSTGRES_CONN_MAX_AGE", 600)
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 DATABASES['default']['ENGINE'] = "django.contrib.gis.db.backends.postgis"
 
 if DEBUG:
-    if strtobool(os.environ.get("DEBUG_CACHE", "False")):
+    if env.bool("DEBUG_CACHE", False):
         print("\nDEBUG_CACHE=True: Django cache enabled.\n")
         CACHES = {
             "default": {
@@ -287,7 +285,7 @@ LOGGING = {
 # Django Rest Framework
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": int(os.getenv("DJANGO_PAGINATION_LIMIT", 10)),
+    "PAGE_SIZE": env.int("DJANGO_PAGINATION_LIMIT", 10),
     "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%S%z",
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
@@ -333,21 +331,23 @@ ALLOWED_FILE_EXTENSIONS = ["csv", "xls", "xlsx"]
 
 CHUNK_SIZE_LIMIT = 500000
 
-DEFAULT_FILE_STORAGE = os.environ.get("DEFAULT_FILE_STORAGE")
+DEFAULT_FILE_STORAGE = env.str("DJANGO_DEFAULT_FILE_STORAGE")
 
 if DEFAULT_FILE_STORAGE == "storages.backends.s3boto3.S3Boto3Storage":
-    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-    AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME')
+    AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = env.str('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = env.str('AWS_S3_REGION_NAME')
     AWS_DEFAULT_ACL = None
 
 Q_CLUSTER = {
-    "redis": os.environ.get("REDIS_URL"),
-    "workers": int(os.environ.get("Q_CLUSTER_WORKERS", 4)),
-    "recycle": int(os.environ.get("Q_CLUSTER_RECYCLE", 10)),
-    "sync": strtobool(os.environ.get("DJANGO_Q_SYNC", "false")),
+    "redis": env.str("REDIS_URL"),
+    "workers": env.int("Q_CLUSTER_WORKERS", 4),
+    "recycle": env.int("Q_CLUSTER_RECYCLE", 10),
+    "sync": env.bool("DJANGO_Q_SYNC", "false"),
 }
+
+print(Q_CLUSTER)
 
 MAP_WIDGETS = {
     "GooglePointFieldWidget": (
@@ -356,13 +356,13 @@ MAP_WIDGETS = {
         ("GooglePlaceAutocompleteOptions", {'componentRestrictions': {'country': 'za'}}),
         ("markerFitZoom", 12),
     ),
-    "GOOGLE_MAP_API_KEY": os.environ.get("GOOGLE_MAP_API_KEY", "")
+    "GOOGLE_MAP_API_KEY": env.str("GOOGLE_MAP_API_KEY", "")
 }
-GOOGLE_MAP_API_KEY = os.environ.get("GOOGLE_MAP_API_KEY", "")
+GOOGLE_MAP_API_KEY = env.str("GOOGLE_MAP_API_KEY", "")
 
 FIXTURE_DIRS = "/"
 
-STAFF_EMAIL_ADDRESS = os.getenv(
+STAFF_EMAIL_ADDRESS = env.str(
     "STAFF_EMAIL_ADDRESS", "support@wazimap.co.za"
 )
 
