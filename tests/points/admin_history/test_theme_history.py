@@ -28,6 +28,7 @@ class TestThemeAdminHistory:
         data={
             'profile': profile.id,
             'name': "test theme",
+            'color': '#000000',
             'change_reason': 'New Object'
         }
         res = client.post(url, data, follow=True)
@@ -60,6 +61,7 @@ class TestThemeAdminHistory:
         data={
             'profile': profile.id,
             'name': 'Changed theme',
+            'color': '#000000',
             'change_reason': 'Changed Object'
         }
         res = client.post(url, data, follow=True)

@@ -111,7 +111,7 @@ class TestThemeData(ConsolidatedProfileViewBase):
         """
         # Data creation
         theme1 = ThemeFactory(profile=self.profile, name="TH1", order=0)
-        theme2 = ThemeFactory(profile=self.profile, name="TH2", order=1)
+        theme2 = ThemeFactory(profile=self.profile, name="TH2", order=1, color="#F2F2F2")
         profile_category1, profile_category2 = ProfileCategoryFactory.create_batch(
             2, profile=self.profile, category=self.category, theme=theme1
         )
@@ -131,11 +131,13 @@ class TestThemeData(ConsolidatedProfileViewBase):
         assert len(theme_data) == 2
         # asserts for first object
         assert theme_data[0]["name"] == "TH1"
+        assert theme_data[0]["color"] == "#000000"
         assert len(theme_data[0]["subthemes"]) == 2
         assert theme_data[0]["subthemes"][0]['label'] == profile_category1.label
         assert theme_data[0]["subthemes"][1]['label'] == profile_category2.label
         # Assert for 2nd object
         assert theme_data[1]["name"] == "TH2"
+        assert theme_data[1]["color"] == "#F2F2F2"
         assert len(theme_data[1]["subthemes"]) == 2
         assert theme_data[1]["subthemes"][0]['label'] == profile_category3.label
         assert theme_data[1]["subthemes"][1]['label'] == profile_category4.label
