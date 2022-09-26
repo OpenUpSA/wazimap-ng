@@ -31,6 +31,7 @@ services:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
+      - DJANGO_DEBUG=True
       - DATABASE_URL=postgis://wazimap_ng:wazimap_ng@db/wazimap_ng
       - REDIS_URL=redis://redis:6379/
       - AWS_ACCESS_KEY_ID
@@ -40,7 +41,7 @@ services:
       - AWS_S3_REGION_NAME
       - DJANGO_SECRET_KEY=notsosecret
       - WERKZEUG_DEBUG_PIN=off
-      - EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+      - EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
       - ENVIRONMENT_NAME=Dev
 
   worker:
@@ -53,6 +54,7 @@ services:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
+      - DJANGO_DEBUG=True
       - DATABASE_URL=postgis://wazimap_ng:wazimap_ng@db/wazimap_ng
       - REDIS_URL=redis://redis:6379/
       - AWS_ACCESS_KEY_ID
@@ -61,7 +63,7 @@ services:
       - AWS_STORAGE_BUCKET_NAME
       - AWS_S3_REGION_NAME
       - DJANGO_SECRET_KEY=notsosecret
-      - EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+      - EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
       - DJANGO_Q_SYNC=${DJANGO_Q_SYNC:-True}
       - ENVIRONMENT_NAME=Dev
 
