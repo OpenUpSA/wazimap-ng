@@ -108,12 +108,15 @@ Ensure variable defaults are safe if someone forgot to set them in production. V
 | `DATABASE_URL` | undefined | String | `postgresql://user:password@hostname/dbname` style URL |
 | `DJANGO_DEBUG_TOOLBAR` | False | Boolean | Set to `True` to enable the Django Debug toolbar NOT ON A PUBLIC SERVER! |
 | `DJANGO_SECRET_KEY` | undefined | String | Set this to something secret and unguessable in production. The security of your cookies and other crypto stuff in django depends on it. |
-| `EMAIL_BACKEND` ||||
-| `DEFAULT_FILE_STORAGE` ||||
-| `AWS_ACCESS_KEY_ID` ... ||||
-| `DJANGO_Q_SYNC` ||||
+| `EMAIL_BACKEND` | django.core.mail.backends.smtp.EmailBackend |||
+| `DEFAULT_FILE_STORAGE` | undefined | string | e.g. `storages.backends.s3boto3.S3Boto3Storage` or `django.core.files.storage.FileSystemStorage` |
+| `AWS_ACCESS_KEY_ID` ||| Only required if `DEFAULT_FILE_STORAGE` is `storages.backends.s3boto3.S3Boto3Storage` |
+| `AWS_SECRET_ACCESS_KEY` ||| ditto |
+| `AWS_STORAGE_BUCKET_NAME` ||| ditto |
+| `AWS_S3_REGION_NAME` ||| ditto |
+| `DJANGO_Q_SYNC` | False || Usually useful for automated tests |
 | `ENVIRONMENT_NAME` ||| Only to be used for a server to identify itself e.g. in logs or notifications, and not intended for configuration logic |
-| `DEBUG_CACHE` ||| Set to true enable the cache despite DEBUG being true. This is useful when you want the cache enabled for development. |
+| `DEBUG_CACHE` | False | boolean | Set to true enable the cache despite DEBUG being true. This is useful when you want the cache enabled for development. |
 
 
 # Documentation

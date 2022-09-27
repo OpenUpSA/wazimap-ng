@@ -347,8 +347,6 @@ Q_CLUSTER = {
     "sync": env.bool("DJANGO_Q_SYNC", "false"),
 }
 
-print(Q_CLUSTER)
-
 MAP_WIDGETS = {
     "GooglePointFieldWidget": (
         ("zoom", 15),
@@ -376,19 +374,6 @@ if TESTING:
     PASSWORD_HASHERS = [
         'django.contrib.auth.hashers.MD5PasswordHasher',
     ]
-    print('=========================')
-    print('In TEST Mode - Disableling Migrations')
-    print('=========================')
-
-    class DisableMigrations(object):
-
-        def __contains__(self, item):
-            return True
-
-        def __getitem__(self, item):
-            return "notmigrations"
-
-    MIGRATION_MODULES = DisableMigrations()
 
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
     NOSE_ARGS = [
