@@ -117,7 +117,7 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 DATABASES = {
     "default": env.db("DATABASE_URL"),
 }
-DATABASES['default']['CONN_MAX_AGE'] = env.int("POSTGRES_CONN_MAX_AGE", 600)
+DATABASES['default']['CONN_MAX_AGE'] = env.int("DJANGO_CONN_MAX_AGE", 600)
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 DATABASES['default']['ENGINE'] = "django.contrib.gis.db.backends.postgis"
 
@@ -345,7 +345,7 @@ Q_CLUSTER = {
     "redis": env.str("REDIS_URL"),
     "workers": env.int("Q_CLUSTER_WORKERS", 4),
     "recycle": env.int("Q_CLUSTER_RECYCLE", 10),
-    "sync": env.bool("DJANGO_Q_SYNC", "false"),
+    "sync": env.bool("DJANGO_Q_SYNC", False),
 }
 
 MAP_WIDGETS = {
