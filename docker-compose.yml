@@ -15,7 +15,7 @@ x-common-environment:
   EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
   ENVIRONMENT_NAME: Dev
   REDIS_URL: redis://redis:6379/
-  WERKZEUG_DEBUG_PIN: off
+  WERKZEUG_DEBUG_PIN: "off"
 
 services:
   redis:
