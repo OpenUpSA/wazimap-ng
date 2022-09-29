@@ -1,5 +1,22 @@
 version: '3'
 
+x-common-environment:
+  &common-environment
+  AWS_ACCESS_KEY_ID:
+  AWS_S3_REGION_NAME:
+  AWS_SECRET_ACCESS_KEY:
+  AWS_STORAGE_BUCKET_NAME:
+  DATABASE_URL: postgis://wazimap_ng:wazimap_ng@db/wazimap_ng
+  DJANGO_CONN_MAX_AGE: 0
+  DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+  DJANGO_DEFAULT_FILE_STORAGE: ${DJANGO_DEFAULT_FILE_STORAGE:-django.core.files.storage.FileSystemStorage}
+  DJANGO_SECRET_KEY: notsosecret
+  DJANGO_Q_SYNC:
+  EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+  ENVIRONMENT_NAME: Dev
+  REDIS_URL: redis://redis:6379/
+  WERKZEUG_DEBUG_PIN: off
+
 services:
   redis:
     image: redis:latest
@@ -31,19 +48,7 @@ services:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
-      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
-      - DATABASE_URL=postgis://wazimap_ng:wazimap_ng@db/wazimap_ng
-      - REDIS_URL=redis://redis:6379/
-      - AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY
-      - DJANGO_DEFAULT_FILE_STORAGE=${DJANGO_DEFAULT_FILE_STORAGE:-django.core.files.storage.FileSystemStorage}
-      - AWS_STORAGE_BUCKET_NAME
-      - AWS_S3_REGION_NAME
-      - DJANGO_SECRET_KEY=notsosecret
-      - WERKZEUG_DEBUG_PIN=off
-      - EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
-      - ENVIRONMENT_NAME=Dev
-
+      <<: *common-environment
   worker:
     build: .
     command: /app/scripts/django/django_q.sh
@@ -54,18 +59,7 @@ services:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
-      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
-      - DATABASE_URL=postgis://wazimap_ng:wazimap_ng@db/wazimap_ng
-      - REDIS_URL=redis://redis:6379/
-      - AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY
-      - DJANGO_DEFAULT_FILE_STORAGE=${DJANGO_DEFAULT_FILE_STORAGE:-django.core.files.storage.FileSystemStorage}
-      - AWS_STORAGE_BUCKET_NAME
-      - AWS_S3_REGION_NAME
-      - DJANGO_SECRET_KEY=notsosecret
-      - EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
-      - DJANGO_Q_SYNC=${DJANGO_Q_SYNC:-True}
-      - ENVIRONMENT_NAME=Dev
+      <<: *common-environment
 
   selenium:
     image: selenium/standalone-chrome:98.0.4758.102
