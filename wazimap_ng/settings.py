@@ -13,7 +13,8 @@ env = environ.Env()
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.bool("DJANGO_DEBUG", False)
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = environ.Path(__file__) - 2
+PROJ_DIR = ROOT_DIR.path("wazimap_ng")
 
 os.environ["GDAL_DATA"] = "/usr/share/gdal/"
 
@@ -153,7 +154,7 @@ LOGIN_REDIRECT_URL = "/"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
-STATIC_ROOT = os.path.normpath(join(BASE_DIR, "static"))
+STATIC_ROOT = ROOT_DIR.path("static")
 STATICFILES_DIRS = []
 STATIC_URL = "/static/"
 STATICFILES_FINDERS = (
@@ -163,13 +164,13 @@ STATICFILES_FINDERS = (
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
-MEDIA_ROOT = join(os.path.dirname(BASE_DIR), "media")
+MEDIA_ROOT = ROOT_DIR.path("media")
 MEDIA_URL = "/media/"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'general/templates'),],
+        "DIRS": [PROJ_DIR.path('general/templates'),],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -368,7 +369,7 @@ STAFF_EMAIL_ADDRESS = env.str(
 #
 # Test overrides
 
-TESTING = "test" in sys.argv
+TESTING = "test" in sys.argv or "pytest" in sys.argv
 
 if TESTING:
     PASSWORD_HASHERS = [
@@ -377,6 +378,6 @@ if TESTING:
 
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
     NOSE_ARGS = [
-        BASE_DIR,
+        str(PROJ_DIR),
         '-s',
     ]

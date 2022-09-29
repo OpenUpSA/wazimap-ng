@@ -31,7 +31,7 @@ services:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
-      - DJANGO_DEBUG=True
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
       - DATABASE_URL=postgis://wazimap_ng:wazimap_ng@db/wazimap_ng
       - REDIS_URL=redis://redis:6379/
       - AWS_ACCESS_KEY_ID
@@ -54,7 +54,7 @@ services:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
-      - DJANGO_DEBUG=True
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
       - DATABASE_URL=postgis://wazimap_ng:wazimap_ng@db/wazimap_ng
       - REDIS_URL=redis://redis:6379/
       - AWS_ACCESS_KEY_ID
@@ -72,6 +72,7 @@ services:
     ports:
       - "4444:4444"
       - "5900:5900"
+      - "7900:7900"
 
 volumes:
   wazimap-data:
