@@ -31,13 +31,27 @@ def IndicatorDataSummarySerializer(profile, geography, version):
     d_metadata = metadata_serializer(
         children_indicator_data, dataset_groups_dict
     )
+
+    c = qsdict(subcategories,
+        lambda x: x.category.name,
+        lambda x: {
+            "order": x.category.order,
+            "name": x.category.name
+        }
+    )
+
     s = qsdict(subcategories,
-               lambda x: x.category.name,
-               lambda x: "subcategories",
-               "name",
-               )
+        lambda x: x.category.name,
+        lambda x: "subcategories",
+        "name",
+        lambda x: {
+            "order": x.order,
+            "name": x.name
+        }
+    )
 
     new_dict = {}
+    mergedict(new_dict, c)
     mergedict(new_dict, s)
     mergedict(new_dict, d_metadata)
     return new_dict

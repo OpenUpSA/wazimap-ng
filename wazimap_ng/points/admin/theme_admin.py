@@ -24,7 +24,7 @@ class ThemeAdmin(SortableAdminMixin, BaseAdminModel, HistoryAdmin):
 
     fieldsets = (
         ("", {
-            'fields': ('profile', 'name', "icon", )
+            'fields': ('profile', 'name', "icon", "color")
         }),
     )
 

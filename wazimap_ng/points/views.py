@@ -88,6 +88,7 @@ def boundary_point_count_helper(profile, geography, version):
                 "category__profilecategory__order",
                 "category__profilecategory__theme__name",
                 "category__profilecategory__theme__icon",
+                "category__profilecategory__theme__color",
                 "category__profilecategory__theme__id",
                 "category__profilecategory__theme__order",
                 "category__metadata__source", "category__metadata__description",
@@ -107,6 +108,7 @@ def boundary_point_count_helper(profile, geography, version):
                 "name": lc["category__profilecategory__theme__name"],
                 "id": lc["category__profilecategory__theme__id"],
                 "icon": lc["category__profilecategory__theme__icon"],
+                "color": lc["category__profilecategory__theme__color"],
                 "order": lc["category__profilecategory__theme__order"],
                 "subthemes": []
             }
