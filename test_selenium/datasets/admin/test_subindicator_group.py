@@ -1,4 +1,3 @@
-import time
 from test_selenium.test_base import BaseTestCase
 
 from selenium.webdriver.support.ui import WebDriverWait
@@ -58,7 +57,9 @@ class TestSortableWidget(BaseTestCase):
         self.order_subindictaor(3, 0)
         self.order_subindictaor(2, 0)
 
-        time.sleep(2)
+        WebDriverWait(self.selenium, 10).until(
+            EC.text_to_be_present_in_element_value((By.XPATH, "//input[@data-name='subindicators']"), "[3,2,0,1,4,5]")
+        )
 
         # Assert if reordered
         main_div.find_element_by_xpath(
