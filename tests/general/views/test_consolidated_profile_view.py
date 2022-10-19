@@ -1297,7 +1297,6 @@ class TestProfileGeoSummaryView(ConsolidatedProfileViewBase):
             },
         )
         self.assert_http_200_ok()
-        print(response.data)
         assert len(response.data) == 0
         assert response.data == {}
 
@@ -1347,3 +1346,60 @@ class TestProfileGeoSummaryView(ConsolidatedProfileViewBase):
         assert len(indicators) == 2
         keys = list(indicators.keys())
         assert keys == ['without exclude', 'with exclude but data mapper not included']
+
+    def test_subindictaor_orderning(self):
+        """
+        Test subindctaor ordering in summary view
+        """
+
+        def get_age_and_gender_subindicators():
+            response = self.get(
+                'profile-geo-indicator-summary',
+                profile_id=self.profile.pk,
+                geography_code=self.root.code,
+                data={
+                    'format': 'json'
+                },
+            )
+            self.assert_http_200_ok()
+
+            data = response.data
+            subcategories = response.data["category for gender"]["subcategories"]
+            indicators = subcategories["subcategory for gender"]["indicators"]
+            groups = indicators[profile_indicator.label]["metadata"]["groups"]
+            age_group = next((item for item in groups if item['name'] == "age"), None)
+            gender_group = next((item for item in groups if item['name'] == "gender"), None)
+
+            return age_group, gender_group
+
+        data = [
+            ("Geography", "gender", "age", "count"),
+            (self.geo1.code, "male", "17", 1),
+            (self.geo1.code, "female", "16", 2),
+            (self.geo1.code, "female", "15", 2),
+        ]
+        indicator = self.create_dataset_and_indicator(
+            self.version_v1, self.profile, data, "gender"
+        )
+        profile_indicator = self.create_profile_indicator(
+            self.profile, indicator
+        )
+        # subindctaor group objs
+        age_subindctaor_groups = indicator.dataset.group_set.get(name="age")
+        gender_subindctaor_groups = indicator.dataset.group_set.get(name="gender")
+
+        # get subindctaor values from api results
+        age_group, gender_group = get_age_and_gender_subindicators()
+        assert age_group["subindicators"] == ["15", "16", "17"]
+        assert gender_group["subindicators"] == ["female", "male"]
+
+        # reorder subindctaor in subindctaor group objs
+        age_subindctaor_groups.subindicators = ["17", "16", "15"]
+        age_subindctaor_groups.save()
+        gender_subindctaor_groups.subindicators = ["male", "female"]
+        gender_subindctaor_groups.save()
+
+        # Re do api call to verfiy if order is changed
+        age_group, gender_group = get_age_and_gender_subindicators()
+        assert age_group["subindicators"] == ["17", "16", "15"]
+        assert gender_group["subindicators"] == ["male", "female"]
