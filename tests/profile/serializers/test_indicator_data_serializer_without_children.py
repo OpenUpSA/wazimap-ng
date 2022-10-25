@@ -75,6 +75,7 @@ class TestIndicatorSerializerWithoutChildren:
         assert pi_data["id"] == profile_indicator.id
         assert pi_data["dataset_content_type"] == "quantitative"
 
+
 @pytest.mark.django_db
 @pytest.mark.usefixtures("qualitative_groups")
 class TestQualitativeData:
@@ -83,7 +84,8 @@ class TestQualitativeData:
     def test_with_qualitative_data(self, profile, geography, version, qualitative_profile_indicator):
         serializer = IndicatorDataSerializerWithoutChildren(profile, geography, version)
         subcategory = qualitative_profile_indicator.subcategory
-        pi_data = serializer[subcategory.category.name]["subcategories"][subcategory.name]["indicators"][qualitative_profile_indicator.label]
+        pi_data = serializer[subcategory.category.name]["subcategories"][subcategory.name]["indicators"][
+            qualitative_profile_indicator.label]
         assert pi_data["dataset_content_type"] == "qualitative"
         assert pi_data["data"] == [{'content': 'This is example text'}, {'content': 'www.test.com'}]
 
@@ -91,7 +93,7 @@ class TestQualitativeData:
 @pytest.mark.django_db
 class TestExtendedProfileSerializer:
     def test_basic_serializer(
-        self, profile, profile_indicator, groups, indicatordata_json
+            self, profile, profile_indicator, groups, indicatordata_json
     ):
         version = profile.geography_hierarchy.root_geography.geographyboundary_set.get().version
         indicator = profile_indicator.indicator
@@ -117,12 +119,15 @@ class TestExtendedProfileSerializer:
         subcategory_name = profile_indicator.subcategory.name
         assert category_name in profile_data
         assert "subcategories" in profile_data[category_name]
+        assert "order" in profile_data[category_name]
         assert subcategory_name in profile_data[category_name]["subcategories"]
         assert "indicators" in profile_data[category_name]["subcategories"][subcategory_name]
+        assert "order" in profile_data[category_name]["subcategories"][subcategory_name]
         indicator_data = profile_data[category_name]["subcategories"][subcategory_name]["indicators"]
         assert "child_data" not in indicator_data[profile_indicator.label]
         assert "data" in indicator_data[profile_indicator.label]
         assert indicator_data[profile_indicator.label]["data"] == indicatordata_json
+        assert "order" in indicator_data[profile_indicator.label]
 
         # assert highlight
         assert "highlights" in data
