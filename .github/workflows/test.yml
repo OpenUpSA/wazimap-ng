@@ -15,11 +15,12 @@ jobs:
       - run: docker-compose run --rm web python wait_for_postgres.py
       - run: docker-compose run --rm web python manage.py collectstatic --no-input
       - name: Run tests
-        run: docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
+        run: docker-compose run --rm -e DJANGO_Q_SYNC=true web pytest /app/tests
       - name: Run instance monitoring
         run: docker-compose run --rm web df -h
+      - run: docker-compose up -d selenium
       - name: Run selenium tests
-        run: docker-compose run --rm -e DJANGO_CONFIGURATION=Test web python3 manage.py test test_selenium
+        run: docker-compose run --rm -e DJANGO_Q_SYNC=true web python3 manage.py test test_selenium
       - name: Run instance monitoring
         run: docker-compose run --rm web df -h
 

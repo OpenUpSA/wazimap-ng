@@ -20,7 +20,7 @@ from wazimap_ng.datasets.tasks.indicator_data_extraction import (
 )
 from wazimap_ng.datasets.tasks.process_uploaded_file import process_csv
 from tests.datasets.tasks.test_process_uploaded_file import create_datasetfile
-from wazimap_ng.config.common import QUANTITATIVE
+from wazimap_ng.constants import QUANTITATIVE
 
 
 class ConsolidatedProfileViewBase(APITestCase):

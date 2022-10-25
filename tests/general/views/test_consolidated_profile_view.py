@@ -8,7 +8,7 @@ from tests.profile.factories import (
 )
 
 from ..base import ConsolidatedProfileViewBase
-from wazimap_ng.config.common import QUALITATIVE
+from wazimap_ng.constants import QUALITATIVE
 
 
 class TestGeneralViews(ConsolidatedProfileViewBase):

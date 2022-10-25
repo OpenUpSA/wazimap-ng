@@ -8,7 +8,7 @@ from django_json_widget.widgets import JSONEditorWidget
 
 from ... import models
 from wazimap_ng.datasets.models import Indicator
-from wazimap_ng.config.common import (
+from wazimap_ng.constants import (
     DENOMINATOR_CHOICES, PERMISSION_TYPES, PI_CONTENT_TYPE
 )
 from wazimap_ng.profile.admin.utils import filter_indicators_by_profile

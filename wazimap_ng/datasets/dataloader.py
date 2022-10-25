@@ -5,7 +5,7 @@ import logging
 import numpy
 
 from django.db import transaction
-from wazimap_ng.config.common import QUANTITATIVE
+from wazimap_ng.constants import QUANTITATIVE
 
 
 from . import models

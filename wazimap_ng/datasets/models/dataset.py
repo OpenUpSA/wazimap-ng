@@ -4,7 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 from .geography import Geography, GeographyHierarchy, Version
 from wazimap_ng.general.models import BaseModel, SimpleHistory
 
-from wazimap_ng.config.common import (
+from wazimap_ng.constants import (
     PERMISSION_TYPES, DATASET_CONTENT_TYPES, QUANTITATIVE
 )
 

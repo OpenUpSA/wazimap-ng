@@ -5,7 +5,7 @@ from tinymce.models import HTMLField
 
 from wazimap_ng.datasets.models import Indicator, GeographyHierarchy
 from wazimap_ng.general.models import BaseModel, SimpleHistory
-from wazimap_ng.config.common import (
+from wazimap_ng.constants import (
     DENOMINATOR_CHOICES, PERMISSION_TYPES, PI_CONTENT_TYPE, PI_CHART_TYPE, PI_CHOROPLETH_RANGE_TYPE
 )
 

@@ -1,7 +1,7 @@
 from .. import models
 from wazimap_ng.utils import expand_nested_list, mergedict, qsdict
 from .utils import get_indicator_data, get_dataset_groups, metadata_serializer
-from wazimap_ng.config.common import QUANTITATIVE
+from wazimap_ng.constants import QUANTITATIVE
 from django.db.models import Q
 
 
