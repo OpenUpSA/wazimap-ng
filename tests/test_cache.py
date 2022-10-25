@@ -46,8 +46,14 @@ def test_last_modified_without_permissions(mock_check_has_permission, mock_datet
 
 @patch("django.http.request")
 @patch("wazimap_ng.cache.check_has_permission")
-def test_last_modified_with_permissions(mock_check_has_permission, mock_request):
+def test_last_modified_with_permissions(mock_check_has_permission, mock_request, settings):
     mock_check_has_permission.return_value = True
+
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    }
 
     django_cache.set("key_in_cache", "some value")
 
@@ -97,11 +103,17 @@ def test_last_modified_point_updated(mock_last_modified, mock_request):
 
 
 @patch("wazimap_ng.cache.datetime")
-def test_update_profile_cache_signal(mock_datetime):
+def test_update_profile_cache_signal(mock_datetime, settings):
     profile = namedtuple("profile", "id")
     profile.id = 1
 
     mock_datetime.now.return_value = "Some time"
+
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    }
 
     cache.update_profile_cache(profile)
 
@@ -111,7 +123,7 @@ def test_update_profile_cache_signal(mock_datetime):
 
 
 @patch("wazimap_ng.cache.datetime")
-def test_update_point_cache_signal(mock_datetime):
+def test_update_point_cache_signal(mock_datetime, settings):
     category = namedtuple("category", ["id", "theme", "profile"])
     theme = namedtuple("theme", ["id", "profile"])
     profile = namedtuple("profile", "id")
@@ -124,6 +136,12 @@ def test_update_point_cache_signal(mock_datetime):
     category.profile = profile
 
     mock_datetime.now.return_value = "Some time"
+
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    }
 
     cache.update_point_cache(profile, category)
 

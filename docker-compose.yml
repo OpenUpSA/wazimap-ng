@@ -1,5 +1,22 @@
 version: '3'
 
+x-common-environment:
+  &common-environment
+  AWS_ACCESS_KEY_ID:
+  AWS_S3_REGION_NAME:
+  AWS_SECRET_ACCESS_KEY:
+  AWS_STORAGE_BUCKET_NAME:
+  DATABASE_URL: postgis://wazimap_ng:wazimap_ng@db/wazimap_ng
+  DJANGO_CONN_MAX_AGE: 0
+  DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+  DJANGO_DEFAULT_FILE_STORAGE: ${DJANGO_DEFAULT_FILE_STORAGE:-django.core.files.storage.FileSystemStorage}
+  DJANGO_SECRET_KEY: notsosecret
+  DJANGO_Q_SYNC:
+  EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+  ENVIRONMENT_NAME: Dev
+  REDIS_URL: redis://redis:6379/
+  WERKZEUG_DEBUG_PIN: "off"
+
 services:
   redis:
     image: redis:latest
@@ -24,48 +41,32 @@ services:
     command: python manage.py runserver_plus 0.0.0.0:8000
     depends_on:
      - db
-     - selenium
+     - redis
     ports:
       - "8000:8000"
-    env_file:
-      - ./config/django/django.env
     volumes:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
-      - AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY
-      - DJANGO_DEFAULT_FILE_STORAGE
-      - AWS_STORAGE_BUCKET_NAME
-      - AWS_S3_REGION_NAME
-      - DATABASE_URL
-      - DJANGO_CONFIGURATION
-      - WERKZEUG_DEBUG_PIN=off
-
-  queue:
+      <<: *common-environment
+  worker:
     build: .
     command: /app/scripts/django/django_q.sh
     depends_on:
      - db
-    env_file:
-      - ./config/django/django.env
+     - redis
     volumes:
       - ./:/app/
       - ./scripts:/scripts/
     environment:
-      - AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY
-      - DJANGO_DEFAULT_FILE_STORAGE
-      - AWS_STORAGE_BUCKET_NAME
-      - AWS_S3_REGION_NAME
-      - DATABASE_URL
-      - DJANGO_CONFIGURATION
+      <<: *common-environment
 
   selenium:
     image: selenium/standalone-chrome:98.0.4758.102
     ports:
       - "4444:4444"
       - "5900:5900"
+      - "7900:7900"
 
 volumes:
   wazimap-data:
