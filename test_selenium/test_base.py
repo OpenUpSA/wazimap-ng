@@ -19,7 +19,8 @@ from django.contrib.auth.models import User
 from tests.profile.factories import (
     ProfileFactory,
     IndicatorSubcategoryFactory,
-    IndicatorCategoryFactory
+    IndicatorCategoryFactory,
+    ChoroplethMethodFactory
 )
 from tests.datasets.factories import (
     GeographyHierarchyFactory,
@@ -127,6 +128,9 @@ class BaseTestCase(LiveServerTestCase):
         self.superuser.is_superuser = True
         self.superuser.is_staff = True
         self.superuser.save()
+
+        # Choropleth Method
+        self.choropleth_method = ChoroplethMethodFactory(name="test")
 
     def get_url(self, path):
         return f"{self.live_server_url}{path}"

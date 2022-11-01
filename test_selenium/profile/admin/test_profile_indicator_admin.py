@@ -118,7 +118,7 @@ class TestProfileIndicatorAdmin(BaseTestCase):
 
         choropleth_method_element = main_div.find_element(by=By.CSS_SELECTOR, value="select#id_choropleth_method")
         choropleth_method_field = Select(choropleth_method_element)
-        choropleth_method_field.select_by_value("1")
+        choropleth_method_field.select_by_value(str(self.choropleth_method.id))
 
         main_div.find_element_by_css_selector(
             ".submit-row input[value='Save and continue editing']"
