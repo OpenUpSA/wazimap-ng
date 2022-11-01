@@ -104,9 +104,34 @@ class TestProfileIndicatorAdmin(BaseTestCase):
         assert linear_scrubber_checkbox.is_selected() == False
         assert linear_scrubber_checkbox.is_enabled() == False
 
-        variable_field.select_by_value(str(self.indicator2.id))
+        variable_field.select_by_value(str(self.indicator4.id))
         assert linear_scrubber_checkbox.is_enabled() == True
         linear_scrubber_checkbox.click()
         href = "/".join(link_to_group.get_attribute("href").split("/")[3:])
         # Check if link in warning alert also works for private variables
-        assert href == f"admin/datasets/group/{self.group2.id}/change/"
+        assert href == f"admin/datasets/group/{self.group4.id}/change/"
+
+        # Save and continue and check if setting is saved
+        subcategory_element = main_div.find_element(by=By.CSS_SELECTOR, value="select#id_subcategory")
+        subcategory_field = Select(subcategory_element)
+        subcategory_field.select_by_value(str(self.indicator_subcategory.id))
+
+        choropleth_method_element = main_div.find_element(by=By.CSS_SELECTOR, value="select#id_choropleth_method")
+        choropleth_method_field = Select(choropleth_method_element)
+        choropleth_method_field.select_by_value("1")
+
+        main_div.find_element_by_css_selector(
+            ".submit-row input[value='Save and continue editing']"
+        ).click()
+
+        WebDriverWait(self.selenium, 10).until(
+            EC.visibility_of_element_located((By.TAG_NAME, "h1"))
+        )
+
+        main_div = self.get_element("content")
+        header_text = main_div.find_element(by=By.TAG_NAME, value="h1").text
+        assert header_text == "Change profile indicator"
+        linear_scrubber_checkbox = self.get_element("id_enable_linear_scrubber")
+
+        assert linear_scrubber_checkbox.is_selected() == True
+        assert linear_scrubber_checkbox.is_enabled() == True

@@ -16,13 +16,17 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 
 from django.contrib.auth.models import User
-from tests.profile.factories import ProfileFactory
+from tests.profile.factories import (
+    ProfileFactory,
+    IndicatorSubcategoryFactory,
+    IndicatorCategoryFactory
+)
 from tests.datasets.factories import (
     GeographyHierarchyFactory,
     VersionFactory,
     DatasetFactory,
     IndicatorFactory,
-    GroupFactory,
+    GroupFactory
 )
 
 
@@ -109,6 +113,10 @@ class BaseTestCase(LiveServerTestCase):
         self.dataset4 = DatasetFactory(name="dataset4", profile=self.public_profile2, permission_type="private")
         self.indicator4 = IndicatorFactory(name="indicator4", dataset=self.dataset4)
         self.group4 = GroupFactory(name=self.indicator4.groups[0], dataset=self.dataset4)
+
+        # Indicator category and subcategory
+        self.indicator_category = IndicatorCategoryFactory(name="public_profile", profile=self.public_profile2)
+        self.indicator_subcategory = IndicatorSubcategoryFactory(name="public_profile2", category=self.indicator_category)
 
         # Create superuser
         self.user_password = "mypassword"
