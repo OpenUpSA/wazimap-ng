@@ -25,16 +25,17 @@ def IndicatorDataSerializerWithoutChildren(profile, geography, version):
 
     c = qsdict(subcategories,
                lambda x: x.category.name,
-               lambda x: {"description": x.category.description}
+               lambda x: {"description": x.category.description,
+                          "order": x.category.order}
                )
 
     s = qsdict(subcategories,
                lambda x: x.category.name,
                lambda x: "subcategories",
                "name",
-               lambda x: {"description": x.description}
+               lambda x: {"description": x.description,
+                          "order": x.order}
                )
-
 
     d4 = qsdict(indicator_data,
                 "category",
