@@ -169,6 +169,15 @@ class BaseTestCase(LiveServerTestCase):
         ).text
         assert site_header_text == self.site_header_text
 
+    def wait_until(self, tag_name, text):
+        WebDriverWait(self.selenium, 10).until(
+            EC.visibility_of_element_located((By.TAG_NAME, tag_name))
+        )
+
+        main_div = self.get_element("content")
+        header_text = main_div.find_element(by=By.TAG_NAME, value=tag_name).text
+        assert header_text == text
+
     @classmethod
     def tearDownClass(cls):
         cls.selenium.quit()

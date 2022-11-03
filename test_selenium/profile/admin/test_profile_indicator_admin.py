@@ -124,14 +124,8 @@ class TestProfileIndicatorAdmin(BaseTestCase):
             ".submit-row input[value='Save and continue editing']"
         ).click()
 
-        WebDriverWait(self.selenium, 10).until(
-            EC.visibility_of_element_located((By.TAG_NAME, "h1"))
-        )
+        self.wait_until("h1", "Change profile indicator")
 
-        main_div = self.get_element("content")
-        header_text = main_div.find_element(by=By.TAG_NAME, value="h1").text
-        assert header_text == "Change profile indicator"
         linear_scrubber_checkbox = self.get_element("id_enable_linear_scrubber")
-
         assert linear_scrubber_checkbox.is_selected() == True
         assert linear_scrubber_checkbox.is_enabled() == True
