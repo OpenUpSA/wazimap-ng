@@ -342,7 +342,7 @@ if DEFAULT_FILE_STORAGE == "storages.backends.s3boto3.S3Boto3Storage":
     AWS_DEFAULT_ACL = None
 
 Q_CLUSTER = {
-    "redis": env.str("REDIS_URL"),
+    "orm": 'default',
     "workers": env.int("Q_CLUSTER_WORKERS", 4),
     "recycle": env.int("Q_CLUSTER_RECYCLE", 10),
     "sync": env.bool("DJANGO_Q_SYNC", False),
