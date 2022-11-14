@@ -16,13 +16,18 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 
 from django.contrib.auth.models import User
-from tests.profile.factories import ProfileFactory
+from tests.profile.factories import (
+    ProfileFactory,
+    IndicatorSubcategoryFactory,
+    IndicatorCategoryFactory,
+    ChoroplethMethodFactory
+)
 from tests.datasets.factories import (
     GeographyHierarchyFactory,
     VersionFactory,
     DatasetFactory,
     IndicatorFactory,
-    GroupFactory,
+    GroupFactory
 )
 
 
@@ -110,6 +115,10 @@ class BaseTestCase(LiveServerTestCase):
         self.indicator4 = IndicatorFactory(name="indicator4", dataset=self.dataset4)
         self.group4 = GroupFactory(name=self.indicator4.groups[0], dataset=self.dataset4)
 
+        # Indicator category and subcategory
+        self.indicator_category = IndicatorCategoryFactory(name="public_profile", profile=self.public_profile2)
+        self.indicator_subcategory = IndicatorSubcategoryFactory(name="public_profile2", category=self.indicator_category)
+
         # Create superuser
         self.user_password = "mypassword"
         self.superuser = User.objects.create_user(
@@ -119,6 +128,9 @@ class BaseTestCase(LiveServerTestCase):
         self.superuser.is_superuser = True
         self.superuser.is_staff = True
         self.superuser.save()
+
+        # Choropleth Method
+        self.choropleth_method = ChoroplethMethodFactory(name="test")
 
     def get_url(self, path):
         return f"{self.live_server_url}{path}"
@@ -156,6 +168,15 @@ class BaseTestCase(LiveServerTestCase):
             by=By.XPATH, value=".//a[@href='/admin/']"
         ).text
         assert site_header_text == self.site_header_text
+
+    def wait_until(self, tag_name, text):
+        WebDriverWait(self.selenium, 10).until(
+            EC.visibility_of_element_located((By.TAG_NAME, tag_name))
+        )
+
+        main_div = self.get_element("content")
+        header_text = main_div.find_element(by=By.TAG_NAME, value=tag_name).text
+        assert header_text == text
 
     @classmethod
     def tearDownClass(cls):
