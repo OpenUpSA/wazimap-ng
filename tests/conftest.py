@@ -202,17 +202,17 @@ def datasetdata(dataset, geography):
         DatasetDataFactory(dataset=dataset, geography=geography, data={
                            "gender": "male", "age": "15", "language": "isiXhosa", "count": 1}),
         DatasetDataFactory(dataset=dataset, geography=geography, data={
-                           "gender": "male", "age": "15", "language": "isiZulu", "count": 2}),
+                           "gender": "male", "age": "15", "language": "isiZulu", "count": -2}),
         DatasetDataFactory(dataset=dataset, geography=geography, data={
                            "gender": "male", "age": "16", "language": "isiXhosa", "count": 3}),
         DatasetDataFactory(dataset=dataset, geography=geography, data={
-                           "gender": "male", "age": "16", "language": "isiZulu", "count": 4}),
+                           "gender": "male", "age": "16", "language": "isiZulu", "count": -4}),
         DatasetDataFactory(dataset=dataset, geography=geography, data={
                            "gender": "male", "age": "17", "language": "isiXhosa", "count": 5}),
         DatasetDataFactory(dataset=dataset, geography=geography, data={
                            "gender": "male", "age": "17", "language": "isiZulu", "count": 6}),
         DatasetDataFactory(dataset=dataset, geography=geography, data={
-                           "gender": "female", "age": "15", "language": "isiXhosa", "count": 7}),
+                           "gender": "female", "age": "15", "language": "isiXhosa", "count": -7}),
         DatasetDataFactory(dataset=dataset, geography=geography, data={
                            "gender": "female", "age": "15", "language": "isiZulu", "count": 8}),
         DatasetDataFactory(dataset=dataset, geography=geography, data={
@@ -220,7 +220,7 @@ def datasetdata(dataset, geography):
         DatasetDataFactory(dataset=dataset, geography=geography, data={
                            "gender": "female", "age": "16", "language": "isiZulu", "count": 10}),
         DatasetDataFactory(dataset=dataset, geography=geography, data={
-                           "gender": "female", "age": "17", "language": "isiXhosa", "count": 11}),
+                           "gender": "female", "age": "17", "language": "isiXhosa", "count": -11}),
         DatasetDataFactory(dataset=dataset, geography=geography, data={
                            "gender": "female", "age": "17", "language": "isiZulu", "count": 12}),
     ]
@@ -255,16 +255,16 @@ def metadata(licence, dataset):
 def indicatordata_json():
     return [
         {"gender": "male", "age": "15", "language": "isiXhosa", "count": 1},
-        {"gender": "male", "age": "15", "language": "isiZulu", "count": 2},
+        {"gender": "male", "age": "15", "language": "isiZulu", "count": -2},
         {"gender": "male", "age": "16", "language": "isiXhosa", "count": 3},
-        {"gender": "male", "age": "16", "language": "isiZulu", "count": 4},
+        {"gender": "male", "age": "16", "language": "isiZulu", "count": -4},
         {"gender": "male", "age": "17", "language": "isiXhosa", "count": 5},
         {"gender": "male", "age": "17", "language": "isiZulu", "count": 6},
-        {"gender": "female", "age": "15", "language": "isiXhosa", "count": 7},
+        {"gender": "female", "age": "15", "language": "isiXhosa", "count": -7},
         {"gender": "female", "age": "15", "language": "isiZulu", "count": 8},
         {"gender": "female", "age": "16", "language": "isiXhosa", "count": 9},
         {"gender": "female", "age": "16", "language": "isiZulu", "count": 10},
-        {"gender": "female", "age": "17", "language": "isiXhosa", "count": 11},
+        {"gender": "female", "age": "17", "language": "isiXhosa", "count": -11},
         {"gender": "female", "age": "17", "language": "isiZulu", "count": 12},
     ]
 
