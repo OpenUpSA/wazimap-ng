@@ -4,7 +4,6 @@ from os.path import join
 import environ
 
 from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.redis import RedisIntegration
 import sentry_sdk
 
 env = environ.Env()
@@ -26,7 +25,7 @@ SENTRY_PERF_SAMPLE_RATE = env.float("SENTRY_PERF_SAMPLE_RATE", 0.1)
 
 if SENTRY_DSN:
     sentry_sdk.init(SENTRY_DSN,
-        integrations=[DjangoIntegration(), RedisIntegration()],
+        integrations=[DjangoIntegration()],
         send_default_pii=True,
         traces_sample_rate=SENTRY_PERF_SAMPLE_RATE,
         environment=SENTRY_ENVIRONMENT,
