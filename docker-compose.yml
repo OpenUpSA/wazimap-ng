@@ -14,15 +14,9 @@ x-common-environment:
   DJANGO_Q_SYNC:
   EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
   ENVIRONMENT_NAME: Dev
-  REDIS_URL: redis://redis:6379/
   WERKZEUG_DEBUG_PIN: "off"
 
 services:
-  redis:
-    image: redis:latest
-    ports:
-      - "6379:6379"
-
   db:
     image: kartoza/postgis:12.0
     ports:
@@ -41,7 +35,6 @@ services:
     command: python manage.py runserver_plus 0.0.0.0:8000
     depends_on:
      - db
-     - redis
     ports:
       - "8000:8000"
     volumes:
@@ -54,7 +47,6 @@ services:
     command: /app/scripts/django/django_q.sh
     depends_on:
      - db
-     - redis
     volumes:
       - ./:/app/
       - ./scripts:/scripts/
