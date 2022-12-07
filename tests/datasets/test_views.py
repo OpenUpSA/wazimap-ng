@@ -62,7 +62,8 @@ class TestDatasetUploadView(APITestCase):
         # Upload csv related data
         data = [
             ["Geography", "test", "Count"],
-            ["ZA", "x1", "11"]
+            ["ZA", "x1", "11"],
+            ["ZA", "x2", "-22"]
         ]
         content = self.create_csv_file(data).encode("utf-8")
         self.csv_file = SimpleUploadedFile(
@@ -216,6 +217,7 @@ class TestDatasetUploadView(APITestCase):
         assert str(response.data["name"][0]) == "This field is required."
         assert str(response.data["version"][0]) == "This field is required."
 
+
     def test_successful_request_for_new_dataset(self):
         user1 = self.make_user("user1")
         self.group.user_set.add(user1)
@@ -243,9 +245,10 @@ class TestDatasetUploadView(APITestCase):
         assert task.name == "Uploading data: dataset-3"
 
         dataset = Dataset.objects.get(id=response.data["id"])
-        assert DatasetData.objects.filter(dataset=dataset).count() == 1
-        data = DatasetData.objects.filter(dataset=dataset).first()
-        assert data.data == {'test': 'x1', 'count': '11'}
+        assert DatasetData.objects.filter(dataset=dataset).count() == 2
+        dataset_data_objs =  DatasetData.objects.filter(dataset=dataset)
+        assert dataset_data_objs[0].data == {'test': 'x1', 'count': '11'}
+        assert dataset_data_objs[1].data == {'test': 'x2', 'count': '-22'}
 
     def test_successful_request_for_updating_dataset(self):
 
@@ -268,10 +271,13 @@ class TestDatasetUploadView(APITestCase):
         assert task.name == "Uploading data: dataset-1"
 
         assert self.dataset.id == response.data["id"]
-        assert DatasetData.objects.filter(dataset=self.dataset).count() == 2
-        data = DatasetData.objects.filter(dataset=self.dataset)
-        assert data.first().data == {'test': 'y1', 'count': '22'}
-        assert data.last().data == {'test': 'x1', 'count': '11'}
+        assert DatasetData.objects.filter(dataset=self.dataset).count() == 3
+        data = list(DatasetData.objects.filter(dataset=self.dataset).values_list("data", flat=True))
+        assert data == [
+            {'test': 'y1', 'count': '22'},
+            {'test': 'x1', 'count': '11'},
+            {'test': 'x2', 'count': '-22'}
+        ]
 
 
     def test_updating_dataset_with_overwrite(self):
@@ -283,10 +289,9 @@ class TestDatasetUploadView(APITestCase):
         client.force_authenticate(user=user1, token=token)
         url = reverse('dataset-upload', args=(self.dataset.id,))
 
-
         assert DatasetData.objects.filter(dataset=self.dataset).count() == 1
-        data = DatasetData.objects.filter(dataset=self.dataset).first()
-        assert data.data == {'test': 'y1', 'count': '22'}
+        data = list(DatasetData.objects.filter(dataset=self.dataset).values_list("data", flat=True))
+        assert data == [{'test': 'y1', 'count': '22'}]
 
         response = client.post(url, data={
             "file": self.csv_file,
@@ -301,9 +306,9 @@ class TestDatasetUploadView(APITestCase):
         assert task.name == "Uploading data: dataset-1"
 
         assert self.dataset.id == response.data["id"]
-        assert DatasetData.objects.filter(dataset=self.dataset).count() == 1
-        data = DatasetData.objects.filter(dataset=self.dataset).first()
-        assert data.data == {'test': 'x1', 'count': '11'}
+        assert DatasetData.objects.filter(dataset=self.dataset).count() == 2
+        data = list(DatasetData.objects.filter(dataset=self.dataset).values_list("data", flat=True))
+        assert data == [{'test': 'x1', 'count': '11'}, {'test': 'x2', 'count': '-22'}]
 
 
     def test_updating_dataset_with_indicator_update(self):
@@ -334,9 +339,10 @@ class TestDatasetUploadView(APITestCase):
         data = self.variable.indicatordata_set.all().first()
         assert data.data == [
             {'test': 'y1', 'count': '22'},
-            {'test': 'x1', 'count': '11'}
+            {'test': 'x1', 'count': '11'},
+            {'test': 'x2', 'count': '-22'}
         ]
-        assert self.dataset.datasetdata_set.count() == 2
+        assert self.dataset.datasetdata_set.count() == 3
 
     def test_updating_dataset_with_indicator_update_and_overwrite(self):
 
@@ -365,8 +371,8 @@ class TestDatasetUploadView(APITestCase):
 
         assert self.dataset.id == response.data["id"]
         data = self.variable.indicatordata_set.all().first()
-        assert data.data == [{'test': 'x1', 'count': '11'}]
-        assert self.dataset.datasetdata_set.count() == 1
+        assert data.data == [{'test': 'x1', 'count': '11'}, {'test': 'x2', 'count': '-22'}]
+        assert self.dataset.datasetdata_set.count() == 2
 
     def test_invalid_file_for_qualitative_dataset_upload(self):
         user1 = self.make_user("user1")

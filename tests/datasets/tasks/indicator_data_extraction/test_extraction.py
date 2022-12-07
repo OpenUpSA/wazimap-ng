@@ -78,7 +78,7 @@ class TestIndicatorDataExtraction:
         indicator_data = IndicatorData.objects.get(geography=geography)
 
         assert indicator_data.data == [
-            {"gender": "female", "age": "15", "language": "isiXhosa", "count": 7},
+            {"gender": "female", "age": "15", "language": "isiXhosa", "count": -7},
             {"gender": "female", "age": "15", "language": "isiZulu", "count": 8},
             {"gender": "female", "age": "16", "language": "isiXhosa", "count": 9},
             {"gender": "female", "age": "16", "language": "isiZulu", "count": 10},
