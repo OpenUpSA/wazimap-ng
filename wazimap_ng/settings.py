@@ -345,6 +345,8 @@ Q_CLUSTER = {
     "workers": env.int("Q_CLUSTER_WORKERS", 4),
     "recycle": env.int("Q_CLUSTER_RECYCLE", 10),
     "sync": env.bool("DJANGO_Q_SYNC", False),
+    "max_attempts": 1,
+    "ack_failures": True,
 }
 
 MAP_WIDGETS = {
