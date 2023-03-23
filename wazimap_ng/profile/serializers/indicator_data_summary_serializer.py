@@ -36,7 +36,8 @@ def IndicatorDataSummarySerializer(profile, geography, version):
         lambda x: x.category.name,
         lambda x: {
             "order": x.category.order,
-            "name": x.category.name
+            "name": x.category.name,
+            "id": x.category.id,
         }
     )
 
@@ -46,7 +47,8 @@ def IndicatorDataSummarySerializer(profile, geography, version):
         "name",
         lambda x: {
             "order": x.order,
-            "name": x.name
+            "name": x.name,
+            "id": x.id,
         }
     )
 
