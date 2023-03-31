@@ -1129,10 +1129,11 @@ class TestProfileGeoSummaryView(ConsolidatedProfileViewBase):
 
         assert len(response.data) == 1
         assert self.get_next_item(response.data) == "category for gender"
-        assert list(response.data["category for gender"].keys()) == ["order", "name", "subcategories"]
+        assert list(response.data["category for gender"].keys()) == ["order", "name", "id", "subcategories"]
+
         subcategories = response.data["category for gender"]["subcategories"]
         assert self.get_next_item(subcategories) == "subcategory for gender"
-        assert list(subcategories["subcategory for gender"].keys()) == ["order", "name", "indicators"]
+        assert list(subcategories["subcategory for gender"].keys()) == ["order", "name", "id", "indicators"]
         indicators = subcategories["subcategory for gender"]["indicators"]
         assert len(indicators) == 1
         assert self.get_next_item(indicators) == profile_indicator.label
