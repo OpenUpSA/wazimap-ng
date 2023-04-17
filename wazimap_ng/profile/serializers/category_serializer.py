@@ -1,21 +1,30 @@
 from rest_framework import serializers
 
 from .. import models
+from wazimap_ng.datasets.models.dataset import Dataset
+
+
+class DatasetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dataset
+        fields = ["id", "groups"]
 
 
 class IndicatorSerializer(serializers.ModelSerializer):
+    dataset = DatasetSerializer()
+
     class Meta:
         model = models.Indicator
-        fields = ["id", "name", ]
+        fields = ["dataset"]
 
 
 class ProfileIndicatorSerializer(serializers.ModelSerializer):
-    groups = IndicatorSerializer(source="indicator")
+    variable = IndicatorSerializer(source="indicator")
 
     class Meta:
         model = models.ProfileIndicator
         depth = 2
-        fields = ["id", "label", "indicator", "groups"]
+        fields = ["id", "label", "variable"]
 
 
 class IndicatorSubcategorySerializer(serializers.ModelSerializer):
