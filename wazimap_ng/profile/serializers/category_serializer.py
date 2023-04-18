@@ -4,27 +4,16 @@ from .. import models
 from wazimap_ng.datasets.models.dataset import Dataset
 
 
-class DatasetSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Dataset
-        fields = ["id", "groups"]
-
-
-class IndicatorSerializer(serializers.ModelSerializer):
-    dataset = DatasetSerializer()
-
-    class Meta:
-        model = models.Indicator
-        fields = ["dataset"]
-
-
 class ProfileIndicatorSerializer(serializers.ModelSerializer):
-    variable = IndicatorSerializer(source="indicator")
+    groups = serializers.SerializerMethodField(source="get_groups")
+
+    def get_groups(self, obj):
+        return obj.indicator.dataset.group_set.values("name", "subindicators")
 
     class Meta:
         model = models.ProfileIndicator
         depth = 2
-        fields = ["id", "label", "variable"]
+        fields = ["id", "label", "groups"]
 
 
 class IndicatorSubcategorySerializer(serializers.ModelSerializer):
