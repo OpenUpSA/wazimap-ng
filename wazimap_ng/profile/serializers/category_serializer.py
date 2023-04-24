@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from .. import models
-from wazimap_ng.datasets.models.dataset import Dataset
 
 
 class ProfileIndicatorSerializer(serializers.ModelSerializer):
