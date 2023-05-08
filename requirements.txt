@@ -72,7 +72,7 @@ django-colorfield==0.7.2
 
 # amazon-s3
 django-storages==1.7.1
-boto3==1.26.127
+boto3==1.9.93
 
 # object-permissions
 django-guardian==2.2.0
