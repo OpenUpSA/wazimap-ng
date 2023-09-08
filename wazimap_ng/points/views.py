@@ -5,11 +5,12 @@ from collections import defaultdict
 from django.views.decorators.http import condition
 from django.utils.decorators import method_decorator
 from django.http import Http404
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.forms.models import model_to_dict
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
+from django.contrib.postgres.search import SearchQuery
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -54,6 +55,7 @@ class LocationList(generics.ListAPIView):
 
     def list(self, request, profile_id, profile_category_id=None, geography_code=None):
         try:
+            search_query = request.GET.get('q', '')
             profile = Profile.objects.get(id=profile_id)
             profile_category = models.ProfileCategory.objects.get(
                 id=profile_category_id, profile_id=profile_id
@@ -66,6 +68,15 @@ class LocationList(generics.ListAPIView):
                 self.get_queryset(), profile, profile_category.category,
                 geography_code, version_name
             )
+
+            print('============ aaa ============')
+            print(search_query)
+            print(queryset[0].__dict__)
+            print('============ bbb ============')
+            queryset = text_search(queryset, search_query)
+            print(queryset)
+            print('============ ccc ============')
+
             serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
             return Response(data)
@@ -76,6 +87,15 @@ class LocationList(generics.ListAPIView):
     @method_decorator(condition(etag_func=etag_point_updated, last_modified_func=last_modified_point_updated))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
+
+def text_search(qs, text):
+    if len(text) == 0:
+        return qs
+
+    return qs.filter(
+        Q(content_search=SearchQuery(text))
+        | Q(content_search__icontains=text)
+    )
 
 def boundary_point_count_helper(profile, geography, version):
     boundary = geography.geographyboundary_set.filter(version=version).first()

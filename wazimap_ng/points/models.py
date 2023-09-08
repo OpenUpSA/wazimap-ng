@@ -5,6 +5,8 @@ from django.contrib.postgres.fields import JSONField
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
 from tinymce.models import HTMLField
+from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GinIndex
 
 import pandas as pd
 from io import BytesIO
@@ -68,9 +70,13 @@ class Location(BaseModel):
         null=True,
         blank=True
     )
+    content_search = SearchVectorField(null=True)
 
     def __str__(self):
         return "%s: %s" % (self.category, self.name)
+
+    class Meta:
+        indexes = [GinIndex(fields=["content_search"])]
 
 
 class ProfileCategory(BaseModel, SimpleHistory):
