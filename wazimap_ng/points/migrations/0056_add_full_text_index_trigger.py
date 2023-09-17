@@ -11,16 +11,16 @@ class Migration(migrations.Migration):
 
     migration = """
             CREATE TRIGGER content_search_update BEFORE INSERT OR UPDATE
-            ON location FOR EACH ROW EXECUTE PROCEDURE
+            ON points_location FOR EACH ROW EXECUTE PROCEDURE
             tsvector_update_trigger(
-                content_search, 'pg_catalog.english', name, category, coordinates, data, url
+                content_search, 'pg_catalog.english', name, 'data#>>''{key,value}''', url
         );
             -- Force triggers to run and populate the content_search column.
-            UPDATE location set ID = ID;
+            UPDATE points_location set ID = ID;
         """
 
     reverse_migration = """
-        DROP TRIGGER content_search_update ON location;
+        DROP TRIGGER content_search_update ON points_location;
     """
 
     operations = [migrations.RunSQL(migration, reverse_migration)]

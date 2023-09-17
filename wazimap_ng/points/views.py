@@ -70,11 +70,10 @@ class LocationList(generics.ListAPIView):
             )
 
             print('============ aaa ============')
-            print(search_query)
-            print(queryset[0].__dict__)
+            print(models.Location._meta.__dict__)
             print('============ bbb ============')
             queryset = text_search(queryset, search_query)
-            print(queryset)
+            # print(queryset)
             print('============ ccc ============')
 
             serializer = self.get_serializer(queryset, many=True)
