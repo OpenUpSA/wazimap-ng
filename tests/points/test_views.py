@@ -7,7 +7,7 @@ from django.contrib.gis.geos import Point
 
 from wazimap_ng.datasets.models import Geography
 from wazimap_ng.boundaries.models import GeographyBoundary
-from wazimap_ng.points.models import Theme
+from wazimap_ng.points.models import Theme, Location
 from wazimap_ng.points.serializers import ThemeSerializer
 
 from tests.profile.factories import ProfileFactory
@@ -31,6 +31,51 @@ class TestCategoryView(APITestCase):
         self.get('category-points', profile_id=self.profile.pk, profile_category_id=self.profile_category.pk, extra={'format': 'json'})
 
         self.assert_http_200_ok()
+
+    def test_category_points_list_with_filters(self):
+        call_command('loaddata', 'tests/fixtures/tsh.json', verbosity=0)
+
+        geography = Geography.objects.get(code="TSH")
+        hierarchy = GeographyHierarchyFactory(root_geography=geography, configuration={
+            "default_version": "2016 boundaries"
+        })
+        profile = ProfileFactory(geography_hierarchy=hierarchy)
+        profile_category = ProfileCategoryFactory(profile=profile)
+        point_included = (28.545164737571984, -25.560137611089647)
+        point_excluded = (28.950285599062983, -25.344377022208473)
+        loc1 = LocationFactory(
+            name="tsh", category=profile_category.category,
+            coordinates=Point(point_included), data=[
+                {"key": "test", "value": "test"}
+            ]
+        )
+        loc2 = LocationFactory(
+            name="wa", category=profile_category.category,
+            coordinates=Point(point_excluded), data=[
+                {"key": "new", "value": "data"}
+            ]
+        )
+        resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'})
+        assert len(resposne.data["features"]) == 2
+        assert resposne.data["features"][0]["id"] == loc1.id
+        assert resposne.data["features"][1]["id"] == loc2.id
+
+        resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'}, data={'q': 'tsh'})
+        assert len(resposne.data["features"]) == 1
+        assert resposne.data["features"][0]["id"] == loc1.id
+
+        resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'}, data={'q': 'test'})
+        assert resposne.data["features"][0]["id"] == loc1.id
+
+
+        resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'}, data={'q': 'new'})
+        assert resposne.data["features"][0]["id"] == loc2.id
+
+        resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'}, data={'q': 'data'})
+        assert resposne.data["features"][0]["id"] == loc2.id
+
+        resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'}, data={'q': 'wa'})
+        assert resposne.data["features"][0]["id"] == loc2.id
 
     def test_category_points_geography_list(self):
         geography = GeographyFactory()
@@ -299,7 +344,6 @@ class TestLocationView(APITestCase):
             geography_code=self.geography.code
         )
         data = response.data
-        print(data)
 
         results = data["results"]
         assert data["count"] == 2

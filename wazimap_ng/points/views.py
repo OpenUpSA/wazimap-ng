@@ -68,14 +68,7 @@ class LocationList(generics.ListAPIView):
                 self.get_queryset(), profile, profile_category.category,
                 geography_code, version_name
             )
-
-            print('============ aaa ============')
-            print(models.Location._meta.__dict__)
-            print('============ bbb ============')
-            queryset = text_search(queryset, search_query)
-            # print(queryset)
-            print('============ ccc ============')
-
+            queryset = text_search(queryset, search_query.strip())
             serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
             return Response(data)
