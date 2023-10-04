@@ -4,11 +4,6 @@ from django.db import migrations
 from django.contrib.postgres.search import SearchVector
 
 
-def compute_search_vector(apps, schema_editor):
-    Location = apps.get_model('points', 'Location')
-    Location.objects.update(content_search=SearchVector("name", "url", "data"))
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -21,9 +16,9 @@ class Migration(migrations.Migration):
             CREATE FUNCTION update_trigger() RETURNS trigger AS $$
             begin
             new.content_search :=
-                setweight(to_tsvector('pg_catalog.english', coalesce(new.name,'')), 'A') ||
-                setweight(to_tsvector('pg_catalog.english', coalesce(new.url,'')), 'A') ||
-                setweight(to_tsvector('pg_catalog.english', coalesce(new.data::text, '')), 'A');
+                setweight(to_tsvector('simple', coalesce(new.name,'')), 'A') ||
+                setweight(to_tsvector('simple', coalesce(new.url,'')), 'A') ||
+                setweight(to_tsvector('simple', coalesce(new.data::text, '')), 'A');
             return new;
             end
             $$ LANGUAGE plpgsql;
@@ -38,8 +33,5 @@ class Migration(migrations.Migration):
             DROP TRIGGER IF EXISTS search_vector_trigger
             ON points_location;
             """,
-        ),
-        migrations.RunPython(
-            compute_search_vector, reverse_code=migrations.RunPython.noop
-        ),
+        )
     ]
