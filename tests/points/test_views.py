@@ -46,7 +46,7 @@ class TestCategoryView(APITestCase):
         loc1 = LocationFactory(
             name="tsh", category=profile_category.category,
             coordinates=Point(point_included), data=[
-                {"key": "test", "value": "test"}
+                {"key": "test", "value": "test1"}
             ]
         )
         loc2 = LocationFactory(
@@ -55,11 +55,22 @@ class TestCategoryView(APITestCase):
                 {"key": "new", "value": "data"}
             ]
         )
+
+        loc3 = LocationFactory(
+            name="za", category=profile_category.category,
+            coordinates=Point(point_excluded), data=[
+                {"key": "test1", "value": "test"}
+            ]
+        )
+
+        # Check if all locations are returned without query param
         resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'})
-        assert len(resposne.data["features"]) == 2
+        assert len(resposne.data["features"]) == 3
         assert resposne.data["features"][0]["id"] == loc1.id
         assert resposne.data["features"][1]["id"] == loc2.id
+        assert resposne.data["features"][2]["id"] == loc3.id
 
+        # Check if data is filtered accurately for query
         resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'}, data={'q': 'tsh'})
         assert len(resposne.data["features"]) == 1
         assert resposne.data["features"][0]["id"] == loc1.id
@@ -76,6 +87,21 @@ class TestCategoryView(APITestCase):
 
         resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'}, data={'q': 'wa'})
         assert resposne.data["features"][0]["id"] == loc2.id
+
+        # Check if data is filtered accurately for multiple queries
+        resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'}, data={'q': ['test', 'test1']})
+        assert len(resposne.data["features"]) == 2
+        assert resposne.data["features"][0]["id"] == loc1.id
+        assert resposne.data["features"][1]["id"] == loc3.id
+
+        # Check if data is filtered accurately for multiple queries but does not match
+        resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'}, data={'q': ['test', 'test1', 'wa']})
+        assert len(resposne.data["features"]) == 0
+
+        # Check if query string does not break results
+        resposne = self.get('category-points', profile_id=profile.pk, profile_category_id=profile_category.pk, extra={'format': 'json'}, data={'q': [' ', '   ', '']})
+        assert len(resposne.data["features"]) == 3
+
 
     def test_category_points_geography_list(self):
         geography = GeographyFactory()

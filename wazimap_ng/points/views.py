@@ -55,7 +55,7 @@ class LocationList(generics.ListAPIView):
 
     def list(self, request, profile_id, profile_category_id=None, geography_code=None):
         try:
-            search_query = request.GET.get('q', '')
+            search_terms = request.GET.getlist('q', [])
             profile = Profile.objects.get(id=profile_id)
             profile_category = models.ProfileCategory.objects.get(
                 id=profile_category_id, profile_id=profile_id
@@ -68,7 +68,7 @@ class LocationList(generics.ListAPIView):
                 self.get_queryset(), profile, profile_category.category,
                 geography_code, version_name
             )
-            queryset = text_search(queryset, search_query.strip())
+            queryset = text_search(queryset, search_terms)
             serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
             return Response(data)
@@ -80,14 +80,13 @@ class LocationList(generics.ListAPIView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-def text_search(qs, text):
-    if len(text) == 0:
-        return qs
-
-    return qs.filter(
-        Q(content_search=SearchQuery(text))
-        | Q(content_search__icontains=text)
-    )
+def text_search(qs, search_terms):
+    query = Q()
+    for term in search_terms:
+        if term.strip():
+            search_query = SearchQuery(term.strip())
+            query &= Q(content_search=search_query)
+    return qs.filter(query)
 
 def boundary_point_count_helper(profile, geography, version):
     boundary = geography.geographyboundary_set.filter(version=version).first()
