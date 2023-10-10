@@ -5,7 +5,7 @@ from collections import defaultdict
 from django.views.decorators.http import condition
 from django.utils.decorators import method_decorator
 from django.http import Http404
-from django.db.models import Count, Q
+from django.db.models import Count, Q, F
 from django.forms.models import model_to_dict
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
@@ -21,6 +21,8 @@ from wazimap_ng.profile.models import Profile
 from wazimap_ng.datasets.models import Geography
 from wazimap_ng.points.services.locations import get_locations
 from wazimap_ng.general.serializers import MetaDataSerializer
+
+from django.contrib.gis.geos import Point
 
 from . import models
 from . import serializers
@@ -40,7 +42,6 @@ class CategoryList(generics.ListAPIView):
         if profile_id is not None:
             profile = Profile.objects.get(id=profile_id)
             queryset = queryset.filter(profile=profile_id)
-
 
         serializer = self.get_serializer_class()(queryset, many=True)
         data = serializer.data
@@ -80,6 +81,7 @@ class LocationList(generics.ListAPIView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
+
 def text_search(qs, search_terms):
     query = Q()
     for term in search_terms:
@@ -88,24 +90,25 @@ def text_search(qs, search_terms):
             query &= Q(content_search=search_query)
     return qs.filter(query)
 
+
 def boundary_point_count_helper(profile, geography, version):
     boundary = geography.geographyboundary_set.filter(version=version).first()
     locations = models.Location.objects.filter(coordinates__within=boundary.geom)
     location_count = (
         locations
-            .filter(category__profilecategory__profile=profile)
-            .values(
-                "category__profilecategory__id", "category__profilecategory__label",
-                "category__profilecategory__order",
-                "category__profilecategory__theme__name",
-                "category__profilecategory__theme__icon",
-                "category__profilecategory__theme__color",
-                "category__profilecategory__theme__id",
-                "category__profilecategory__theme__order",
-                "category__metadata__source", "category__metadata__description",
-                "category__metadata__licence"
-            )
-            .annotate(count_category=Count("category"))
+        .filter(category__profilecategory__profile=profile)
+        .values(
+            "category__profilecategory__id", "category__profilecategory__label",
+            "category__profilecategory__order",
+            "category__profilecategory__theme__name",
+            "category__profilecategory__theme__icon",
+            "category__profilecategory__theme__color",
+            "category__profilecategory__theme__id",
+            "category__profilecategory__theme__order",
+            "category__metadata__source", "category__metadata__description",
+            "category__metadata__licence"
+        )
+        .annotate(count_category=Count("category"))
     )
 
     theme_dict = {}
@@ -211,3 +214,35 @@ class GeoLocationList(generics.ListAPIView):
         except ObjectDoesNotExist as e:
             logger.exception(e)
             raise Http404
+
+
+class LocationListByDistance(generics.ListAPIView):
+    queryset = models.Location.objects.all()
+    pagination_class = GeoJsonPagination
+    serializer_class = serializers.LocationSerializer
+
+    def list(self, request, profile_id):
+        search_terms = request.GET.getlist('q', [])
+        profile = Profile.objects.get(id=profile_id)
+        profile_category = models.ProfileCategory.objects.get(
+            profile_id=profile_id
+        )
+
+        queryset = get_locations(
+            self.get_queryset(), profile, profile_category.category
+        )
+        queryset = text_search(queryset, search_terms)
+
+        """
+        point1 = Point(-28.995, 25.093)
+
+        distance_query = get_locations(
+            self.get_queryset(), profile, profile_category.category
+        ).annotate(
+            distance=F('coordinates').distance(point1)
+        )
+        """
+
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+        return Response(data)

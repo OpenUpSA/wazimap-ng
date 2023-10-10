@@ -123,6 +123,8 @@ urlpatterns = [
     path("api/v1/profile/<int:profile_id>/points/profile_categories/", cache(points_views.ProfileCategoryList.as_view()), name="profile-category"),
     path("api/v1/profile/<int:profile_id>/points/theme/<int:theme_id>/profile_categories/", cache(points_views.ProfileCategoryList.as_view()), name="profile-category-theme"),
 
+    path("api/v1/profile/<int:profile_id>/points/points_by_distance/", cache(points_views.LocationListByDistance.as_view()), name="points-by-distance"),
+
     re_path(r"^$", RedirectView.as_view(url="/api/v1/datasets/", permanent=False)),
     path("api/v1/data/points/collections/", cache(points_views.CategoryList.as_view())),
     path("api/v1/data/points/collections/profile/<int:profile_id>", cache(points_views.CategoryList.as_view())),
