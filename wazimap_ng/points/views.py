@@ -23,6 +23,7 @@ from wazimap_ng.points.services.locations import get_locations
 from wazimap_ng.general.serializers import MetaDataSerializer
 
 from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
 
 from . import models
 from . import serializers
@@ -224,14 +225,22 @@ class LocationListByDistance(generics.ListAPIView):
     def list(self, request, profile_id):
         search_terms = request.GET.getlist('q', [])
         profile = Profile.objects.get(id=profile_id)
-        profile_category = models.ProfileCategory.objects.get(
+        profile_category = models.ProfileCategory.objects.filter(
             profile_id=profile_id
         )
-
-        queryset = get_locations(
-            self.get_queryset(), profile, profile_category.category
-        )
+        queryset = models.Location.objects.none()
+        for pc in profile_category:
+            queryset |= get_locations(
+                self.get_queryset(), profile, pc.category
+            )
+        
         queryset = text_search(queryset, search_terms)
+
+        reference_point = Point(-28.995, 25.093, srid=4326)
+        queryset = queryset.annotate(
+            distance=Distance('coordinates', reference_point)
+        ).order_by('distance')
+
 
         """
         point1 = Point(-28.995, 25.093)

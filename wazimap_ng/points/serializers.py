@@ -23,6 +23,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class LocationSerializer(GeoFeatureModelSerializer):
     image = serializers.SerializerMethodField()
+    distance = serializers.SerializerMethodField()
 
     def get_image(self, obj):
         request = self.context.get('request')
@@ -30,12 +31,15 @@ class LocationSerializer(GeoFeatureModelSerializer):
             photo_url = obj.image.url
             return request.build_absolute_uri(photo_url)
         return None
+    
+    def get_distance(self, obj):
+        return obj.distance.m / 1000
 
     class Meta:
         model = models.Location
         geo_field = "coordinates"
 
-        fields = ('id', 'data', "name", "url", "image")
+        fields = ('id', 'data', "name", "url", "image", "distance")
 
 class LocationInlineSerializer(serializers.ModelSerializer):
     class Meta:
