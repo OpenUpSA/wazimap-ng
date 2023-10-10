@@ -7,10 +7,12 @@ from wazimap_ng.general.serializers import MetaDataSerializer
 from wazimap_ng.profile.serializers import SimpleProfileSerializer as ProfileSerializer
 from wazimap_ng.datasets.serializers import LicenceSerializer
 
+
 class SimpleThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Theme
         fields = ["id", "name"]
+
 
 class CategorySerializer(serializers.ModelSerializer):
     metadata = MetaDataSerializer()
@@ -21,9 +23,9 @@ class CategorySerializer(serializers.ModelSerializer):
         model = models.Category
         fields = ("id", "profile", "permission_type", "name", "metadata")
 
+
 class LocationSerializer(GeoFeatureModelSerializer):
     image = serializers.SerializerMethodField()
-    distance = serializers.SerializerMethodField()
 
     def get_image(self, obj):
         request = self.context.get('request')
@@ -31,7 +33,17 @@ class LocationSerializer(GeoFeatureModelSerializer):
             photo_url = obj.image.url
             return request.build_absolute_uri(photo_url)
         return None
-    
+
+    class Meta:
+        model = models.Location
+        geo_field = "coordinates"
+
+        fields = ('id', 'data', "name", "url", "image")
+
+
+class LocationThemeSerializer(GeoFeatureModelSerializer):
+    distance = serializers.SerializerMethodField()
+
     def get_distance(self, obj):
         return obj.distance.m / 1000
 
@@ -39,18 +51,20 @@ class LocationSerializer(GeoFeatureModelSerializer):
         model = models.Location
         geo_field = "coordinates"
 
-        fields = ('id', 'data', "name", "url", "image", "distance")
+        fields = ('id', 'data', "name", "url", "distance", "icon")
+
 
 class LocationInlineSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Location
-        fields = ('id', 'coordinates', 'data', )
+        fields = ('id', 'coordinates', 'data',)
 
 
 class InlineThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Theme
         fields = ("id", "name", "icon", "color",)
+
 
 class ProfileCategorySerializer(serializers.ModelSerializer):
     metadata = MetaDataSerializer(source="category.metadata")
@@ -63,6 +77,7 @@ class ProfileCategorySerializer(serializers.ModelSerializer):
             "id", "name", "description", "theme", "metadata",
             'visible_tooltip_attributes', "configuration",
         )
+
 
 class ThemeSerializer(serializers.ModelSerializer):
     categories = ProfileCategorySerializer(many=True, source="profile_categories")
