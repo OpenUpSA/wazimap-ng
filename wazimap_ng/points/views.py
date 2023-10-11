@@ -240,7 +240,7 @@ class LocationListByDistance(generics.ListAPIView):
 
         queryset = text_search(queryset, search_terms)
 
-        reference_point = Point(lat, long, srid=4326)
+        reference_point = Point(long, lat, srid=4326)
         queryset = queryset.annotate(
             distance=Distance('coordinates', reference_point)
         ).order_by('distance')
