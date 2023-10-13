@@ -214,7 +214,10 @@ def search_geography(request, profile_id):
 
     q = request.GET.get("q", "")
 
-    geographies = models.Geography.objects.filter(geographyboundary__version=version).search(q)[0:max_results]
+    geographies = models.Geography.objects.filter(
+        geographyboundary__version=version,
+        name__icontains=q
+    )[0:max_results]
 
     def sort_key(x):
         exact_match = x.name.lower() == q.lower()
