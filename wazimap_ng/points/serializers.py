@@ -46,6 +46,7 @@ class LocationThemeSerializer(GeoFeatureModelSerializer):
     icon = serializers.SerializerMethodField()
     theme_id = serializers.SerializerMethodField()
     theme_name = serializers.SerializerMethodField()
+    category_id =  serializers.SerializerMethodField()
 
     def get_distance(self, obj):
         return obj.distance.m / 1000
@@ -59,11 +60,14 @@ class LocationThemeSerializer(GeoFeatureModelSerializer):
     def get_theme_name(self, obj):
         return obj.theme_name
 
+    def get_category_id(self, obj):
+        return obj.category_id
+
     class Meta:
         model = models.Location
         geo_field = "coordinates"
 
-        fields = ('id', 'data', "name", "url", "distance", "icon", "theme_id", "theme_name")
+        fields = ('id', 'data', "name", "url", "distance", "icon", "theme_id", "theme_name", "category_id")
 
 
 class LocationInlineSerializer(serializers.ModelSerializer):
