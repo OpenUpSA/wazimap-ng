@@ -221,7 +221,6 @@ class LocationListByDistance(generics.ListAPIView):
     queryset = models.Location.objects.all().annotate(icon=F('category__profilecategory__theme__icon'),
                                                       theme_id=F('category__profilecategory__theme__id'),
                                                       theme_name=F('category__profilecategory__theme__name'))
-    pagination_class = GeoJsonPagination
     serializer_class = serializers.LocationThemeSerializer
 
     def list(self, request, profile_id):
@@ -244,7 +243,9 @@ class LocationListByDistance(generics.ListAPIView):
         queryset = queryset.annotate(
             distance=Distance('coordinates', reference_point)
         ).order_by('distance')
+        queryset = self.paginate_queryset(queryset)
 
         serializer = self.get_serializer(queryset, many=True)
+
         data = serializer.data
         return Response(data)
