@@ -88,7 +88,7 @@ def text_search(qs, search_terms):
     for term in search_terms:
         if term.strip():
             search_query = SearchQuery(term.strip())
-            query &= Q(content_search=search_query)
+            query &= Q(Q(content_search=search_query) | Q(content_search__icontains=term.strip()))
     return qs.filter(query)
 
 
