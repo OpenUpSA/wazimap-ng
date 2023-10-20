@@ -87,6 +87,7 @@ class TestUploadFile:
             assert type(dd.coordinates.y) == float
             assert pytest.approx(dd.coordinates.x) == ed[0]
             assert pytest.approx(dd.coordinates.y) == ed[1]
+            assert dd.content_search is not None
 
             if len(dd.data) > 0:
                 if dd.data[0]["key"] == "phone number":
