@@ -222,7 +222,8 @@ class LocationListByDistance(generics.ListAPIView):
                                                       theme_id=F('category__profilecategory__theme__id'),
                                                       theme_name=F('category__profilecategory__theme__name'),
                                                       profile_category_id=F('category__profilecategory__id'),
-                                                      profile_category_label=F('category__profilecategory__label'))
+                                                      profile_category_label=F('category__profilecategory__label'),
+                                                      profile_id=F('category__profilecategory__theme__profile_id'))
     serializer_class = serializers.LocationThemeSerializer
 
     def list(self, request, profile_id):
@@ -239,6 +240,9 @@ class LocationListByDistance(generics.ListAPIView):
                 self.get_queryset(), profile, pc.category
             )
 
+        # if a collection is used by multiple profiles, this query returns duplicated rows
+        # filter by profile_id
+        queryset = queryset.filter(profile_id=profile_id)   
         queryset = text_search(queryset, search_terms)
 
         reference_point = Point(long, lat, srid=4326)
