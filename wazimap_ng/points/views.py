@@ -220,7 +220,9 @@ class GeoLocationList(generics.ListAPIView):
 class LocationListByDistance(generics.ListAPIView):
     queryset = models.Location.objects.all().annotate(icon=F('category__profilecategory__theme__icon'),
                                                       theme_id=F('category__profilecategory__theme__id'),
-                                                      theme_name=F('category__profilecategory__theme__name'))
+                                                      theme_name=F('category__profilecategory__theme__name'),
+                                                      profile_category_id=F('category__profilecategory__id'),
+                                                      profile_category_label=F('category__profilecategory__label'))
     serializer_class = serializers.LocationThemeSerializer
 
     def list(self, request, profile_id):
