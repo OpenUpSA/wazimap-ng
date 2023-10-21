@@ -221,6 +221,7 @@ class LocationListByDistance(generics.ListAPIView):
     queryset = models.Location.objects.all().annotate(icon=F('category__profilecategory__theme__icon'),
                                                       theme_id=F('category__profilecategory__theme__id'),
                                                       theme_name=F('category__profilecategory__theme__name'),
+                                                      color=F('category__profilecategory__theme__color'),
                                                       profile_category_id=F('category__profilecategory__id'),
                                                       profile_category_label=F('category__profilecategory__label'),
                                                       profile_id=F('category__profilecategory__theme__profile_id'))
@@ -242,7 +243,7 @@ class LocationListByDistance(generics.ListAPIView):
 
         # if a collection is used by multiple profiles, this query returns duplicated rows
         # filter by profile_id
-        queryset = queryset.filter(profile_id=profile_id)   
+        queryset = queryset.filter(profile_id=profile_id)
         queryset = text_search(queryset, search_terms)
 
         reference_point = Point(long, lat, srid=4326)
