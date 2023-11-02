@@ -30,6 +30,7 @@ class ContentAdmin(SortableAdminMixin, BaseAdminModel):
     def save_model(self, request, obj, form, change):
         is_new = obj.pk == None and change == False
         super().save_model(request, obj, form, change)
+        is_profile_updated = change and "profile" in form.changed_data
 
         if is_new or is_profile_updated:
             assign_perms_to_group(obj.page.profile.name, obj)
