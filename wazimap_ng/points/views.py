@@ -218,19 +218,20 @@ class GeoLocationList(generics.ListAPIView):
 
 
 class LocationListByDistance(generics.ListAPIView):
-    queryset = models.Location.objects.all().annotate(icon=F('category__profilecategory__theme__icon'),
-                                                      theme_id=F('category__profilecategory__theme__id'),
-                                                      theme_name=F('category__profilecategory__theme__name'),
-                                                      color=F('category__profilecategory__theme__color'),
-                                                      profile_category_id=F('category__profilecategory__id'),
-                                                      profile_category_label=F('category__profilecategory__label'),
-                                                      profile_id=F('category__profilecategory__theme__profile_id'))
+    queryset = models.Location.objects.all().annotate(
+        icon=F('category__profilecategory__theme__icon'),
+        theme_id=F('category__profilecategory__theme__id'),
+        theme_name=F('category__profilecategory__theme__name'),
+        color=F('category__profilecategory__theme__color'),
+        profile_category_id=F('category__profilecategory__id'),
+        profile_category_label=F('category__profilecategory__label'),
+        profile_id=F('category__profilecategory__theme__profile_id'))
     serializer_class = serializers.LocationThemeSerializer
 
     def list(self, request, profile_id):
         search_terms = request.GET.getlist('q', [])
-        lat = float(request.GET.get('lat', None))
-        long = float(request.GET.get('long', None))
+        lat = float(request.GET.get('lat', 0))
+        long = float(request.GET.get('long', 0))
         profile = Profile.objects.get(id=profile_id)
         profile_category = models.ProfileCategory.objects.filter(
             profile_id=profile_id
