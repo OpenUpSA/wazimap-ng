@@ -225,10 +225,9 @@ class LocationListByDistance(generics.ListAPIView):
         search_terms = request.GET.getlist('q', [])
         lat = float(request.GET.get('lat', 0))
         long = float(request.GET.get('long', 0))
-        location_ids = self.queryset.filter(
-            category__profilecategory__profile_id=profile_id
-        ).distinct("id").values_list("id", flat=True)
-        queryset = self.queryset.filter(id__in=location_ids)
+        queryset = self.queryset.filter(
+            category__profilecategory__theme__profile_id=profile_id
+        )
         queryset = text_search(queryset, search_terms)
         reference_point = Point(long, lat, srid=4326)
         queryset = queryset.annotate(
