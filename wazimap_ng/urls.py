@@ -15,8 +15,9 @@ from .profile import views as profile_views
 from .boundaries import views as boundaries_views
 from .general import views as general_views
 from .cache import cache_headers as cache
+from django.views.decorators.cache import cache_page
 
-from wazimap_ng.general.views import logout_view, notifications_view, task_status
+from wazimap_ng.general.views import notifications_view, task_status
 
 
 def trigger_error(request):
@@ -118,7 +119,7 @@ urlpatterns = [
     path("api/v1/profile/<int:profile_id>/points/themes/", cache(points_views.ThemeList.as_view()), name="points-themes"),
     path("api/v1/profile/<int:profile_id>/points/themes/categories/", cache(points_views.ProfileCategoryList.as_view())),
     path("api/v1/profile/<int:profile_id>/points/category/<int:profile_category_id>/points/", cache(points_views.LocationList.as_view()), name="category-points"),
-    path("api/v1/profile/<int:profile_id>/points/geography/<str:geography_code>/points/", cache(points_views.GeoLocationList.as_view()), name="geography-points"),
+    path("api/v1/profile/<int:profile_id>/points/geography/<str:geography_code>/points/", cache_page(60*60)(points_views.GeoLocationList.as_view()), name="geography-points"),
     path("api/v1/profile/<int:profile_id>/points/category/<int:profile_category_id>/geography/<str:geography_code>/points/", cache(points_views.LocationList.as_view()), name="category-points-geography"),
     path("api/v1/profile/<int:profile_id>/points/profile_categories/", cache(points_views.ProfileCategoryList.as_view()), name="profile-category"),
     path("api/v1/profile/<int:profile_id>/points/theme/<int:theme_id>/profile_categories/", cache(points_views.ProfileCategoryList.as_view()), name="profile-category-theme"),

@@ -15,10 +15,11 @@ x-common-environment:
   EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
   ENVIRONMENT_NAME: Dev
   WERKZEUG_DEBUG_PIN: "off"
+  #DEBUG_CACHE_AS_PRODUCTION: True
 
 services:
   db:
-    image: kartoza/postgis:12.0
+    image: kartoza/postgis:11.5-2.8
     ports:
       - "5432:5432"
     volumes:
@@ -32,7 +33,7 @@ services:
 
   web:
     build: .
-    command: python manage.py runserver_plus 0.0.0.0:8000
+    command: python manage.py runserver_plus 0.0.0.0:8000 --keep-meta-shutdown
     depends_on:
      - db
     ports:

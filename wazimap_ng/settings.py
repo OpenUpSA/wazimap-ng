@@ -12,6 +12,8 @@ env = environ.Env()
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.bool("DJANGO_DEBUG", False)
 
+DEBUG_CACHE_AS_PRODUCTION = env.bool("DEBUG_CACHE_AS_PRODUCTION", False)
+
 ROOT_DIR = environ.Path(__file__) - 2
 PROJ_DIR = ROOT_DIR.path("wazimap_ng")
 
@@ -120,7 +122,7 @@ DATABASES['default']['CONN_MAX_AGE'] = env.int("DJANGO_CONN_MAX_AGE", 600)
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 DATABASES['default']['ENGINE'] = "django.contrib.gis.db.backends.postgis"
 
-if DEBUG:
+if DEBUG and not DEBUG_CACHE_AS_PRODUCTION:
     if env.bool("DEBUG_CACHE", False):
         print("\nDEBUG_CACHE=True: Django cache enabled.\n")
         CACHES = {
