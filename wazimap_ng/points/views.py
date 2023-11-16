@@ -218,34 +218,30 @@ class GeoLocationList(generics.ListAPIView):
 
 
 class LocationListByDistance(generics.ListAPIView):
-    queryset = models.Location.objects.all().annotate(icon=F('category__profilecategory__theme__icon'),
-                                                      theme_id=F('category__profilecategory__theme__id'),
-                                                      theme_name=F('category__profilecategory__theme__name'))
+    queryset = models.Location.objects.all()
     serializer_class = serializers.LocationThemeSerializer
 
     def list(self, request, profile_id):
         search_terms = request.GET.getlist('q', [])
-        lat = float(request.GET.get('lat', None))
-        long = float(request.GET.get('long', None))
-        profile = Profile.objects.get(id=profile_id)
-        profile_category = models.ProfileCategory.objects.filter(
-            profile_id=profile_id
+        lat = float(request.GET.get('lat', 0))
+        long = float(request.GET.get('long', 0))
+        queryset = self.queryset.filter(
+            category__profilecategory__theme__profile_id=profile_id
         )
-        queryset = models.Location.objects.none()
-        for pc in profile_category:
-            queryset |= get_locations(
-                self.get_queryset(), profile, pc.category
-            )
-
         queryset = text_search(queryset, search_terms)
-
         reference_point = Point(long, lat, srid=4326)
         queryset = queryset.annotate(
-            distance=Distance('coordinates', reference_point)
+            distance=Distance('coordinates', reference_point),
+            icon=F('category__profilecategory__theme__icon'),
+            theme_id=F('category__profilecategory__theme__id'),
+            theme_name=F('category__profilecategory__theme__name'),
+            color=F('category__profilecategory__theme__color'),
+            profile_category_id=F('category__profilecategory__id'),
+            profile_category_label=F('category__profilecategory__label'),
+            profile_id=F('category__profilecategory__theme__profile_id')
         ).order_by('distance')
+
         queryset = self.paginate_queryset(queryset)
-
         serializer = self.get_serializer(queryset, many=True)
-
         data = serializer.data
         return Response(data)
