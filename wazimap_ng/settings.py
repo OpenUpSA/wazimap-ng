@@ -349,6 +349,8 @@ Q_CLUSTER = {
     "sync": env.bool("DJANGO_Q_SYNC", False),
     "max_attempts": 1,
     "ack_failures": True,
+    "timeout": env.int("Q_CLUSTER_TIMEOUT", 800),
+    "retry": env.int("Q_CLUSTER_RETRY", 900),
 }
 
 MAP_WIDGETS = {
