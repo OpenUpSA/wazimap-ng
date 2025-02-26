@@ -45,25 +45,25 @@ Version 0.8 is due soon and will fix bugs that currently don't have workarounds.
 
 # Local Development
 
-Local development is normally done inside docker-compose so that the supporting services are available and the environment is very similar to how the application is run in production.
+Local development is normally done inside docker compose so that the supporting services are available and the environment is very similar to how the application is run in production.
 
-Make docker-compose start the supporting services
+Make docker compose start the supporting services
 
-    docker-compose run --rm web python wait_for_postgres.py
+    docker compose run --rm web python wait_for_postgres.py
 
 Migrate, load development data and start the app
 
-    docker-compose run --rm web python manage.py migrate
-    docker-compose run --rm web python manage.py loaddata demodata.json
-    docker-compose up
+    docker compose run --rm web python manage.py migrate
+    docker compose run --rm web python manage.py loaddata demodata.json
+    docker compose up
 
 Run the tests
 
-    docker-compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
+    docker compose run --rm -e DJANGO_CONFIGURATION=Test web pytest /app/tests
 
-Run Django manage commands inside docker-compose, e.g. create a superuser:
+Run Django manage commands inside docker compose, e.g. create a superuser:
 
-    docker-compose run --rm web python manage.py createsuperuser
+    docker compose run --rm web python manage.py createsuperuser
 
 
 # Demo data
@@ -80,7 +80,7 @@ Use the following command to generate demo data, diff to check that the change
 looks sane before committing. Update the command here if changes are needed.
 
 ```
-docker-compose run --rm web python -Wi manage.py dumpdata \
+docker compose run --rm web python -Wi manage.py dumpdata \
   --indent 2 \
   --natural-foreign \
   profile \

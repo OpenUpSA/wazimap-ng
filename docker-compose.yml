@@ -1,5 +1,3 @@
-version: '3'
-
 x-common-environment:
   &common-environment
   AWS_ACCESS_KEY_ID:
