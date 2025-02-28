@@ -17,15 +17,15 @@ x-common-environment:
 
 services:
   db:
-    image: kartoza/postgis:11.5-2.8
+    image: postgis/postgis:12-3.3
     ports:
-      - "5432:5432"
+      - "5439:5432"
     volumes:
       - "wazimap-data:/var/lib/postgresql/"
     environment:
       - POSTGRES_DBNAME=wazimap_ng
       - POSTGRES_USER=wazimap_ng
-      - POSTGRES_PASS=wazimap_ng
+      - POSTGRES_PASSWORD=wazimap_ng
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,pg_trgm
     stop_grace_period: 10s
 
