@@ -113,7 +113,11 @@ Ensure variable defaults are safe if someone forgot to set them in production. V
 | `AWS_ACCESS_KEY_ID` ||| Only required if `DEFAULT_FILE_STORAGE` is `storages.backends.s3boto3.S3Boto3Storage` |
 | `AWS_SECRET_ACCESS_KEY` ||| ditto |
 | `AWS_STORAGE_BUCKET_NAME` ||| ditto |
-| `AWS_S3_REGION_NAME` ||| ditto |
+| `AWS_S3_REGION_NAME` ||| ditto. Use `auto` for Cloudflare R2 |
+| `AWS_S3_ENDPOINT_URL` | unset (AWS S3) | string | For S3-compatible storage, e.g. Cloudflare R2: `https://<account_id>.r2.cloudflarestorage.com` |
+| `AWS_S3_SIGNATURE_VERSION` | `s3v4` | string | Request signing version |
+| `AWS_S3_CUSTOM_DOMAIN` | unset | string | Optional public domain for files, e.g. an R2 bucket custom domain like `media.example.org` |
+| `AWS_QUERYSTRING_AUTH` | True | boolean | Set to `False` with `AWS_S3_CUSTOM_DOMAIN` to serve unsigned public URLs |
 | `DJANGO_Q_SYNC` | False || Usually useful for automated tests |
 | `ENVIRONMENT_NAME` ||| Only to be used for a server to identify itself e.g. in logs or notifications, and not intended for configuration logic |
 | `DEBUG_CACHE` | False | boolean | Set to true enable the cache despite DEBUG being true. This is useful when you want the cache enabled for development. |

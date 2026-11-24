@@ -341,6 +341,10 @@ if DEFAULT_FILE_STORAGE == "storages.backends.s3boto3.S3Boto3Storage":
     AWS_STORAGE_BUCKET_NAME = env.str('AWS_STORAGE_BUCKET_NAME')
     AWS_S3_REGION_NAME = env.str('AWS_S3_REGION_NAME')
     AWS_DEFAULT_ACL = None
+    AWS_S3_ENDPOINT_URL = env.str('AWS_S3_ENDPOINT_URL', default=None)
+    AWS_S3_SIGNATURE_VERSION = env.str('AWS_S3_SIGNATURE_VERSION', default='s3v4')
+    AWS_S3_CUSTOM_DOMAIN = env.str('AWS_S3_CUSTOM_DOMAIN', default=None)
+    AWS_QUERYSTRING_AUTH = env.bool('AWS_QUERYSTRING_AUTH', default=True)
 
 Q_CLUSTER = {
     "orm": 'default',
